@@ -154,5 +154,8 @@ public class DecalManager implements INBTSerializable<CompoundTag> {
                     attachedBlocks
             ));
         }
+
+//        if (!decals.isEmpty())
+//            System.out.println("Loaded " + decals.size() + " decals.");
     }
 }
