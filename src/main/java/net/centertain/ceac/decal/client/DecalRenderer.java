@@ -47,19 +47,19 @@ public final class DecalRenderer {
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
         lightTexture.turnOnLightLayer();
         BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(
-                VertexFormat.Mode.QUADS,
-                DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
-        );
         for (Decal decal : ClientDecals.getAll().values()) {
+            buffer.begin(
+                    VertexFormat.Mode.QUADS,
+                    DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
+            );
             renderVolume(
                     decal,
                     cameraPosition,
                     poseStack,
                     buffer
             );
+            BufferUploader.drawWithShader(buffer.end());
         }
-        BufferUploader.drawWithShader(buffer.end());
         lightTexture.turnOffLightLayer();
     }
 
@@ -78,10 +78,13 @@ public final class DecalRenderer {
         ShaderInstance shader = DecalShaders.getInstance();
         if (shader == null)
             return;
+
         var decalOriginUniform = shader.getUniform("DecalOriginRelative");
         if (decalOriginUniform != null)
             decalOriginUniform.set(x, y, z);
+
         Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal());
+
         var decalNormalUniform = shader.getUniform("DecalNormal");
         if (decalNormalUniform != null)
             decalNormalUniform.set(
@@ -93,43 +96,43 @@ public final class DecalRenderer {
         float half = (float) (VOLUME_SIZE / 2.0);
 
         Matrix4f matrix = poseStack.last().pose();
-        float vertexShade = 1.0f; // Will later be used for decal brightness adjustments (yum!)
+        float vertexShade = 1.0f;
 
         // Front (-Z)
-        vertex(buffer, matrix, x - half, y + half, z - half, vertexShade);
-        vertex(buffer, matrix, x + half, y + half, z - half, vertexShade);
-        vertex(buffer, matrix, x + half, y - half, z - half, vertexShade);
-        vertex(buffer, matrix, x - half, y - half, z - half, vertexShade);
+        vertex(buffer, matrix, -half, +half, -half, vertexShade);
+        vertex(buffer, matrix, +half, +half, -half, vertexShade);
+        vertex(buffer, matrix, +half, -half, -half, vertexShade);
+        vertex(buffer, matrix, -half, -half, -half, vertexShade);
 
         // Back (+Z)
-        vertex(buffer, matrix, x + half, y + half, z + half, vertexShade);
-        vertex(buffer, matrix, x - half, y + half, z + half, vertexShade);
-        vertex(buffer, matrix, x - half, y - half, z + half, vertexShade);
-        vertex(buffer, matrix, x + half, y - half, z + half, vertexShade);
+        vertex(buffer, matrix, +half, +half, +half, vertexShade);
+        vertex(buffer, matrix, -half, +half, +half, vertexShade);
+        vertex(buffer, matrix, -half, -half, +half, vertexShade);
+        vertex(buffer, matrix, +half, -half, +half, vertexShade);
 
         // Left (-X)
-        vertex(buffer, matrix, x - half, y + half, z + half, vertexShade);
-        vertex(buffer, matrix, x - half, y + half, z - half, vertexShade);
-        vertex(buffer, matrix, x - half, y - half, z - half, vertexShade);
-        vertex(buffer, matrix, x - half, y - half, z + half, vertexShade);
+        vertex(buffer, matrix, -half, +half, +half, vertexShade);
+        vertex(buffer, matrix, -half, +half, -half, vertexShade);
+        vertex(buffer, matrix, -half, -half, -half, vertexShade);
+        vertex(buffer, matrix, -half, -half, +half, vertexShade);
 
         // Right (+X)
-        vertex(buffer, matrix, x + half, y + half, z - half, vertexShade);
-        vertex(buffer, matrix, x + half, y + half, z + half, vertexShade);
-        vertex(buffer, matrix, x + half, y - half, z + half, vertexShade);
-        vertex(buffer, matrix, x + half, y - half, z - half, vertexShade);
+        vertex(buffer, matrix, +half, +half, -half, vertexShade);
+        vertex(buffer, matrix, +half, +half, +half, vertexShade);
+        vertex(buffer, matrix, +half, -half, +half, vertexShade);
+        vertex(buffer, matrix, +half, -half, -half, vertexShade);
 
         // Top (+Y)
-        vertex(buffer, matrix, x - half, y + half, z + half, vertexShade);
-        vertex(buffer, matrix, x + half, y + half, z + half, vertexShade);
-        vertex(buffer, matrix, x + half, y + half, z - half, vertexShade);
-        vertex(buffer, matrix, x - half, y + half, z - half, vertexShade);
+        vertex(buffer, matrix, -half, +half, +half, vertexShade);
+        vertex(buffer, matrix, +half, +half, +half, vertexShade);
+        vertex(buffer, matrix, +half, +half, -half, vertexShade);
+        vertex(buffer, matrix, -half, +half, -half, vertexShade);
 
         // Bottom (-Y)
-        vertex(buffer, matrix, x - half, y - half, z - half, vertexShade);
-        vertex(buffer, matrix, x + half, y - half, z - half, vertexShade);
-        vertex(buffer, matrix, x + half, y - half, z + half, vertexShade);
-        vertex(buffer, matrix, x - half, y - half, z + half, vertexShade);
+        vertex(buffer, matrix, -half, -half, -half, vertexShade);
+        vertex(buffer, matrix, +half, -half, -half, vertexShade);
+        vertex(buffer, matrix, +half, -half, +half, vertexShade);
+        vertex(buffer, matrix, -half, -half, +half, vertexShade);
     }
 
     private static void vertex(
