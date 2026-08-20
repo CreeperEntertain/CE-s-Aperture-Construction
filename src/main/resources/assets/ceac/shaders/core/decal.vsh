@@ -13,7 +13,9 @@ out vec3 decalPosition;
 out vec4 vertexColor;
 
 void main() {
-    gl_Position = ProjMat * ModelViewMat * vec4(DecalOriginRelative + Position, 1.0);
+    vec3 origin = transpose(IViewRotMat) * DecalOriginRelative;
+
+    gl_Position = ProjMat * ModelViewMat * vec4(origin + Position, 1.0);
     decalPosition = IViewRotMat * Position;
     vertexColor = Color;
 }
