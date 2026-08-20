@@ -38,8 +38,10 @@ public final class TranslucentCapture {
         if (minecraft.level == null)
             return;
         RenderTarget target = TranslucentCaptureTarget.get();
-        if (target == null)
+        if (target == null) {
+            System.out.println("No Targets");
             return;
+        }
 
         PoseStack poseStack = event.getPoseStack();
         Camera camera = event.getCamera();
