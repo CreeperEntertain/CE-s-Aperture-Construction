@@ -1,27 +1,126 @@
 package net.centertain.ceac.decal.client;
 
-import net.centertain.ceac.decal.DecalCapabilities;
-import net.centertain.ceac.decal.DecalManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
+import net.centertain.ceac.decal.Decal;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import org.joml.Matrix4f;
 
 public final class DecalRenderer {
+    private static final double VOLUME_SIZE = 1.1;
+
     private DecalRenderer() {}
 
     public static void render(RenderLevelStageEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
             return;
+        if (ClientDecals.getAll().isEmpty())
+            return;
 
         Camera camera = event.getCamera();
-        BlockPos cameraPos = BlockPos.containing(camera.getPosition());
-        LevelChunk chunk = minecraft.level.getChunkAt(cameraPos);
-        DecalManager manager = DecalCapabilities.get(chunk);
+        Vec3 cameraPosition = camera.getPosition();
+        PoseStack poseStack = event.getPoseStack();
+        ShaderInstance shader = DecalShaders.getInstance();
+        if (shader == null)
+            return;
 
-        if (!manager.getDecals().isEmpty())
-            System.out.println("Client sees " + manager.getDecals().size() + " decals.");
+        RenderSystem.setShader(() -> shader);
+        LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
+        lightTexture.turnOnLightLayer();
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(
+                VertexFormat.Mode.QUADS,
+                DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
+        );
+        for (Decal decal : ClientDecals.getAll().values()) {
+            renderVolume(
+                    decal,
+                    cameraPosition,
+                    poseStack,
+                    buffer
+            );
+        }
+        BufferUploader.drawWithShader(buffer.end());
+        lightTexture.turnOffLightLayer();
+    }
+
+    private static void renderVolume(
+            Decal decal,
+            Vec3 cameraPosition,
+            PoseStack poseStack,
+            BufferBuilder buffer
+    ) {
+        Vec3 origin = decal.getOrigin();
+
+        float x = (float) (origin.x - cameraPosition.x);
+        float y = (float) (origin.y - cameraPosition.y);
+        float z = (float) (origin.z - cameraPosition.z);
+
+        float half = (float) (VOLUME_SIZE / 2.0);
+
+        Matrix4f matrix = poseStack.last().pose();
+        float vertexShade = 1.0f; // Will later be used for decal brightness adjustments (yum!)
+
+        // Front (-Z)
+        vertex(buffer, matrix, x - half, y + half, z - half, vertexShade);
+        vertex(buffer, matrix, x + half, y + half, z - half, vertexShade);
+        vertex(buffer, matrix, x + half, y - half, z - half, vertexShade);
+        vertex(buffer, matrix, x - half, y - half, z - half, vertexShade);
+
+        // Back (+Z)
+        vertex(buffer, matrix, x + half, y + half, z + half, vertexShade);
+        vertex(buffer, matrix, x - half, y + half, z + half, vertexShade);
+        vertex(buffer, matrix, x - half, y - half, z + half, vertexShade);
+        vertex(buffer, matrix, x + half, y - half, z + half, vertexShade);
+
+        // Left (-X)
+        vertex(buffer, matrix, x - half, y + half, z + half, vertexShade);
+        vertex(buffer, matrix, x - half, y + half, z - half, vertexShade);
+        vertex(buffer, matrix, x - half, y - half, z - half, vertexShade);
+        vertex(buffer, matrix, x - half, y - half, z + half, vertexShade);
+
+        // Right (+X)
+        vertex(buffer, matrix, x + half, y + half, z - half, vertexShade);
+        vertex(buffer, matrix, x + half, y + half, z + half, vertexShade);
+        vertex(buffer, matrix, x + half, y - half, z + half, vertexShade);
+        vertex(buffer, matrix, x + half, y - half, z - half, vertexShade);
+
+        // Top (+Y)
+        vertex(buffer, matrix, x - half, y + half, z + half, vertexShade);
+        vertex(buffer, matrix, x + half, y + half, z + half, vertexShade);
+        vertex(buffer, matrix, x + half, y + half, z - half, vertexShade);
+        vertex(buffer, matrix, x - half, y + half, z - half, vertexShade);
+
+        // Bottom (-Y)
+        vertex(buffer, matrix, x - half, y - half, z - half, vertexShade);
+        vertex(buffer, matrix, x + half, y - half, z - half, vertexShade);
+        vertex(buffer, matrix, x + half, y - half, z + half, vertexShade);
+        vertex(buffer, matrix, x - half, y - half, z + half, vertexShade);
+    }
+
+    private static void vertex(
+            BufferBuilder buffer,
+            Matrix4f matrix,
+            float x,
+            float y,
+            float z,
+            float shade
+    ) {
+        shade = Math.max(0.0f, Math.min(1.0f, shade));
+
+        int r = (int) (255.0f * shade);
+        int g = (int) (255.0f * shade);
+        int b = (int) (255.0f * shade);
+
+        buffer.vertex(matrix, x, y, z)
+                .color(r, g, b, 255)
+                .uv2(240, 240)
+                .endVertex();
     }
 }
