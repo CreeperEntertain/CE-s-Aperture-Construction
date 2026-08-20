@@ -12,6 +12,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
+import java.util.Objects;
+
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class DecalRenderer {
@@ -72,6 +74,21 @@ public final class DecalRenderer {
         float x = (float) (origin.x - cameraPosition.x);
         float y = (float) (origin.y - cameraPosition.y);
         float z = (float) (origin.z - cameraPosition.z);
+
+        ShaderInstance shader = DecalShaders.getInstance();
+        if (shader == null)
+            return;
+        var decalOriginUniform = shader.getUniform("DecalOriginRelative");
+        if (decalOriginUniform != null)
+            decalOriginUniform.set(x, y, z);
+        Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal());
+        var decalNormalUniform = shader.getUniform("DecalNormal");
+        if (decalNormalUniform != null)
+            decalNormalUniform.set(
+                    (float) normal.x,
+                    (float) normal.y,
+                    (float) normal.z
+            );
 
         float half = (float) (VOLUME_SIZE / 2.0);
 
