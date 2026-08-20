@@ -1,6 +1,23 @@
 #version 150
 
+uniform sampler2D Sampler1;
+
+out vec4 fragColor;
+
+void main() {
+    float depth = texture(
+            Sampler1,
+            gl_FragCoord.xy / vec2(1920.0, 1080.0)
+    ).r;
+
+    fragColor = vec4(depth, depth, depth, 1.0);
+}
+
+/*
+#version 150
+
 uniform sampler2D Sampler0;
+uniform sampler2D Sampler1;
 
 in vec3 decalPosition;
 in vec4 vertexColor;
@@ -44,3 +61,4 @@ void main() {
 
     fragColor = decal * vertexColor;
 }
+*/

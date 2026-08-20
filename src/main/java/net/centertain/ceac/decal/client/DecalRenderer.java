@@ -1,5 +1,6 @@
 package net.centertain.ceac.decal.client;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.centertain.ceac.decal.Decal;
@@ -41,7 +42,9 @@ public final class DecalRenderer {
                         MOD_ID,
                         "textures/decal/test.png"
                 );
+        RenderTarget mainTarget = minecraft.getMainRenderTarget();
         RenderSystem.setShaderTexture(0, decalTexture);
+        RenderSystem.setShaderTexture(1, mainTarget.getDepthTextureId());
 
 
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
