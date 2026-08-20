@@ -1,16 +1,26 @@
 #version 150
 
+uniform sampler2D Sampler0;
 uniform sampler2D Sampler1;
+
+uniform vec3 DecalNormal;
+uniform vec4 ScreenSize;
+
+in vec3 decalPosition;
+in vec4 vertexColor;
 
 out vec4 fragColor;
 
 void main() {
-    float depth = texture(
-            Sampler1,
-            gl_FragCoord.xy / vec2(1920.0, 1080.0)
-    ).r;
+    vec2 screenUV = gl_FragCoord.xy / ScreenSize.xy;
+    float sceneDepth = texture(Sampler1, screenUV).r;
 
-    fragColor = vec4(depth, depth, depth, 1.0);
+    fragColor = vec4(
+            sceneDepth,
+            sceneDepth,
+            sceneDepth,
+            1.0
+    );
 }
 
 /*

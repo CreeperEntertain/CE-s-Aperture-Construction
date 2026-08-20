@@ -45,6 +45,15 @@ public final class DecalRenderer {
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
         RenderSystem.setShaderTexture(0, decalTexture);
         RenderSystem.setShaderTexture(1, mainTarget.getDepthTextureId());
+        var screenSizeUniform = shader.getUniform("ScreenSize");
+        if (screenSizeUniform != null) {
+            screenSizeUniform.set(
+                    (float) minecraft.getWindow().getWidth(),
+                    (float) minecraft.getWindow().getHeight(),
+                    0.0f,
+                    0.0f
+            );
+        }
 
 
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
