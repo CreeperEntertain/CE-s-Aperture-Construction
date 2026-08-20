@@ -1,6 +1,7 @@
 package net.centertain.ceac;
 
 import com.mojang.logging.LogUtils;
+import net.centertain.ceac.network.ModNetworking;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -34,7 +35,7 @@ public class CeacMod
 
     private void commonSetup(final FMLCommonSetupEvent event)
     {
-
+        event.enqueueWork(ModNetworking::register);
     }
 
     // Add the example block item to the building blocks tab

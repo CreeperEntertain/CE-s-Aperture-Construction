@@ -2,9 +2,15 @@ package net.centertain.ceac.decal;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -71,5 +77,89 @@ public final class Decal {
     }
     public Set<BlockPos> getAttachedBlocks() {
         return attachedBlocks;
+    }
+
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+
+        tag.putUUID("Id", id);
+
+        CompoundTag originTag = new CompoundTag();
+        originTag.putDouble("X", origin.x);
+        originTag.putDouble("Y", origin.y);
+        originTag.putDouble("Z", origin.z);
+        tag.put("Origin", originTag);
+
+        tag.putString("Normal", normal.getName());
+        tag.putInt("RenderingOrder", renderingOrder);
+        tag.putInt("PixelWidth", pixelWidth);
+        tag.putInt("PixelHeight", pixelHeight);
+        tag.putByte("Rotation", rotation);
+        tag.putString("Texture", texture.toString());
+
+        ListTag blocks = new ListTag();
+
+        for (BlockPos pos : attachedBlocks) {
+            blocks.add(NbtUtils.writeBlockPos(pos));
+        }
+
+        tag.put("AttachedBlocks", blocks);
+
+        return tag;
+    }
+    @Nullable
+    public static Decal deserializeNBT(CompoundTag tag) {
+        if (!tag.hasUUID("Id"))
+            return null;
+        UUID id = tag.getUUID("Id");
+
+        if (!tag.contains("Origin", Tag.TAG_COMPOUND))
+            return null;
+        CompoundTag originTag = tag.getCompound("Origin");
+
+        Vec3 origin = new Vec3(
+                originTag.getDouble("X"),
+                originTag.getDouble("Y"),
+                originTag.getDouble("Z")
+        );
+
+        Direction normal = Direction.byName(tag.getString("Normal"));
+        if (normal == null)
+            return null;
+
+        int renderingOrder = tag.getInt("RenderingOrder");
+
+        int pixelWidth = tag.getInt("PixelWidth");
+        int pixelHeight = tag.getInt("PixelHeight");
+        if (pixelWidth <= 0 || pixelHeight <= 0)
+            return null;
+
+        byte rotation = tag.getByte("Rotation");
+        if (rotation < 0 || rotation > 15)
+            return null;
+
+        ResourceLocation texture = ResourceLocation.tryParse(tag.getString("Texture"));
+        if (texture == null)
+            return null;
+
+        Set<BlockPos> attachedBlocks = new HashSet<>();
+        if (tag.contains("AttachedBlocks", Tag.TAG_LIST)) {
+            ListTag blocks = tag.getList("AttachedBlocks", Tag.TAG_COMPOUND);
+            for (int i = 0; i < blocks.size(); i++) {
+                attachedBlocks.add(NbtUtils.readBlockPos(blocks.getCompound(i)));
+            }
+        }
+
+        return new Decal(
+                id,
+                origin,
+                normal,
+                renderingOrder,
+                pixelWidth,
+                pixelHeight,
+                rotation,
+                texture,
+                attachedBlocks
+        );
     }
 }

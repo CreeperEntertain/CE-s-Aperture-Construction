@@ -1,6 +1,7 @@
 package net.centertain.ceac.decal;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -13,11 +14,15 @@ public class DecalTestEvent {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getLevel().isClientSide())
-            return;
         if (!(event.getLevel() instanceof ServerLevel serverLevel))
             return;
-        DecalTest.addTestDecal(serverLevel, event.getPos());
-        event.setCanceled(true);
+        if (!(event.getEntity() instanceof ServerPlayer player))
+            return;
+
+        DecalTest.addTestDecal(
+                serverLevel,
+                player,
+                event.getPos()
+        );
     }
 }
