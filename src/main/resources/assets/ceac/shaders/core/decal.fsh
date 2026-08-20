@@ -6,6 +6,8 @@ uniform sampler2D Sampler1;
 uniform vec3 DecalNormal;
 uniform vec4 ScreenSize;
 
+uniform mat4 InvProjMat;
+
 in vec3 decalPosition;
 in vec4 vertexColor;
 
@@ -13,12 +15,24 @@ out vec4 fragColor;
 
 void main() {
     vec2 screenUV = gl_FragCoord.xy / ScreenSize.xy;
+
     float sceneDepth = texture(Sampler1, screenUV).r;
 
+    vec4 clipPosition = vec4(
+            screenUV * 2.0 - 1.0,
+            sceneDepth * 2.0 - 1.0,
+            1.0
+    );
+
+    vec4 viewPosition = InvProjMat * clipPosition;
+    viewPosition /= viewPosition.w;
+
+    vec3 p = viewPosition.xyz;
+
     fragColor = vec4(
-            sceneDepth,
-            sceneDepth,
-            sceneDepth,
+            abs(p.x),
+            abs(p.y),
+            abs(p.z),
             1.0
     );
 }

@@ -55,6 +55,14 @@ public final class DecalRenderer {
             );
         }
 
+        var invProjMatUniform = shader.getUniform("InvProjMat");
+        if (invProjMatUniform != null) {
+            Matrix4f invProj = new Matrix4f(
+                    RenderSystem.getProjectionMatrix()
+            ).invert();
+            invProjMatUniform.set(invProj);
+        }
+
 
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
         lightTexture.turnOnLightLayer();
