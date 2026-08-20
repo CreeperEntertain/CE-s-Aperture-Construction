@@ -7,12 +7,12 @@ in ivec2 UV2;
 uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
 
+out vec3 worldPosition;
 out vec4 vertexColor;
-out vec2 lightmapUV;
 
 void main() {
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 
+    worldPosition = Position;
     vertexColor = Color;
-    lightmapUV = vec2(UV2) / 256.0;
 }

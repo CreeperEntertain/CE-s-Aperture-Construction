@@ -7,9 +7,12 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
+
+import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class DecalRenderer {
     private static final double VOLUME_SIZE = 1.1;
@@ -31,6 +34,14 @@ public final class DecalRenderer {
             return;
 
         RenderSystem.setShader(() -> shader);
+        ResourceLocation decalTexture =
+                ResourceLocation.fromNamespaceAndPath(
+                        MOD_ID,
+                        "textures/decal/test.png"
+                );
+        RenderSystem.setShaderTexture(0, decalTexture);
+
+
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
         lightTexture.turnOnLightLayer();
         BufferBuilder buffer = Tesselator.getInstance().getBuilder();

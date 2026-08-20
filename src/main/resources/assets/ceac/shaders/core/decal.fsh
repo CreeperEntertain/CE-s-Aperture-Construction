@@ -1,14 +1,18 @@
 #version 150
 
-uniform sampler2D Sampler2;
+uniform sampler2D Sampler0;
 
 in vec4 vertexColor;
-in vec2 lightmapUV;
 
 out vec4 fragColor;
 
 void main() {
-    vec4 light = texture(Sampler2, lightmapUV);
+    vec2 uv = gl_FragCoord.xy / 16.0;
 
-    fragColor = vertexColor * light;
+    vec4 decal = texture(Sampler0, uv);
+
+    if (decal.a <= 0.01)
+        discard;
+
+    fragColor = decal * vertexColor;
 }
