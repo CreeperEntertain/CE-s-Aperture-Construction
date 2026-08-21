@@ -33,14 +33,6 @@ public class DecalShaders {
                 ),
                 shader -> decal = shader
         );
-        event.registerShader(
-                new ShaderInstance(
-                        event.getResourceProvider(),
-                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "translucent_capture"),
-                        DefaultVertexFormat.POSITION
-                ),
-                shader -> translucentCapture = shader
-        );
     }
 
     public static ShaderInstance getInstance() {
