@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "net.centertain.ceac.decal.client.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "ceac.refmap.json",
+  "client": [
+    "LevelRendererMixin",
+    "LevelRendererAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}
