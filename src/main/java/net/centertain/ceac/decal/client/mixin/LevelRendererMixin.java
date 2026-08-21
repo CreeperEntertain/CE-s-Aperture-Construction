@@ -2,6 +2,7 @@ package net.centertain.ceac.decal.client.mixin;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.centertain.ceac.decal.client.TranslucentCaptureState;
 import net.centertain.ceac.decal.client.TranslucentRenderTargets;
 import net.centertain.ceac.decal.client.TranslucentRenderTypes;
 import net.minecraft.client.Camera;
@@ -16,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
-
     @Inject(
             method = "renderLevel",
             at = @At(
@@ -41,20 +41,25 @@ public abstract class LevelRendererMixin {
         if (target == null)
             return;
 
-        target.clear(Minecraft.ON_OSX);
-        target.bindWrite(true);
-
         LevelRendererAccessor renderer = (LevelRendererAccessor) (Object) this;
         Vec3 cameraPos = camera.getPosition();
 
-        renderer.ceac$renderChunkLayer(
-                TranslucentRenderTypes.translucentDepth(),
-                poseStack,
-                cameraPos.x,
-                cameraPos.y,
-                cameraPos.z,
-                projectionMatrix
-        );
+        target.clear(Minecraft.ON_OSX);
+        target.bindWrite(true);
+
+        TranslucentCaptureState.begin();
+        try {
+            renderer.ceac$renderChunkLayer(
+                    RenderType.translucent(), //TranslucentRenderTypes.translucentDepth(),
+                    poseStack,
+                    cameraPos.x,
+                    cameraPos.y,
+                    cameraPos.z,
+                    projectionMatrix
+            );
+        } finally {
+            TranslucentCaptureState.end();
+        }
 
         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
     }

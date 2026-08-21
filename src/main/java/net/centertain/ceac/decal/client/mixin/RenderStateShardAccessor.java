@@ -7,6 +7,11 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(RenderStateShard.class)
 public interface RenderStateShardAccessor {
+    @Accessor("RENDERTYPE_TRANSLUCENT_SHADER")
+    static RenderStateShard.ShaderStateShard ceac$getTranslucentShader() {
+        throw new AssertionError();
+    }
+
     @Accessor("BLOCK_SHEET_MIPPED")
     static RenderStateShard.TextureStateShard ceac$getBlockSheetMipped() {
         throw new AssertionError();
