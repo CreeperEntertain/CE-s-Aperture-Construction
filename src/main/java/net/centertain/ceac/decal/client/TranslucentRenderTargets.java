@@ -25,6 +25,12 @@ public final class TranslucentRenderTargets {
         return translucentDepth;
     }
 
+    public static int getTranslucentDepthTextureId() {
+        if (translucentDepth == null)
+            return 0;
+        return translucentDepth.getDepthTextureId();
+    }
+
     public static void destroy() {
         if (translucentDepth != null) {
             translucentDepth.destroyBuffers();
