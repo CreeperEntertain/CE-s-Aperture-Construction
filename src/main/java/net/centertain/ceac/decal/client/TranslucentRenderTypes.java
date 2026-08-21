@@ -33,19 +33,6 @@ public final class TranslucentRenderTypes {
                     .createCompositeState(false)
     );
 
-    public static RenderType.CompositeState translucentCaptureState() {
-        return RenderType.CompositeState.builder()
-                .setShaderState(new RenderStateShard.ShaderStateShard(DecalShaders::getTranslucentCaptureShader))
-                .setTextureState(RenderStateShardAccessor.ceac$getBlockSheetMipped())
-                .setTransparencyState(NO_TRANSPARENCY)
-                .setDepthTestState(RenderStateShardAccessor.ceac$getLequalDepthTest())
-                .setCullState(RenderStateShardAccessor.ceac$getNoCull())
-                .setLightmapState(RenderStateShardAccessor.ceac$getLightmap())
-                .setOverlayState(RenderStateShardAccessor.ceac$getOverlay())
-                .setWriteMaskState(new RenderStateShard.WriteMaskStateShard(true, true))
-                .createCompositeState(true);
-    }
-
     private TranslucentRenderTypes() {}
 
     public static RenderType translucentDepth() {

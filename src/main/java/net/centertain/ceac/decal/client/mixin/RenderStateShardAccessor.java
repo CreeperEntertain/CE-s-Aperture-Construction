@@ -7,11 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(RenderStateShard.class)
 public interface RenderStateShardAccessor {
-    @Accessor("TRANSLUCENT_TARGET")
-    static RenderStateShard.OutputStateShard ceac$getTranslucentTarget() {
-        throw new AssertionError();
-    }
-
     @Accessor("BLOCK_SHEET_MIPPED")
     static RenderStateShard.TextureStateShard ceac$getBlockSheetMipped() {
         throw new AssertionError();
@@ -34,11 +29,6 @@ public interface RenderStateShardAccessor {
 
     @Accessor("OVERLAY")
     static RenderStateShard.OverlayStateShard ceac$getOverlay() {
-        throw new AssertionError();
-    }
-
-    @Accessor("RENDERTYPE_TRANSLUCENT_SHADER")
-    static RenderStateShard.ShaderStateShard ceac$getTranslucentShader() {
         throw new AssertionError();
     }
 }

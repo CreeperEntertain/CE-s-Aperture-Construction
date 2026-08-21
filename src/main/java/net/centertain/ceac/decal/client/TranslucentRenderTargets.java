@@ -19,6 +19,7 @@ public final class TranslucentRenderTargets {
                 Minecraft.ON_OSX
         );
         translucentDepth.setClearColor(1.0F, 1.0F, 1.0F, 1.0F);
+        translucentDepth.clear(Minecraft.ON_OSX);
     }
 
     public static void resize(int width, int height) {
