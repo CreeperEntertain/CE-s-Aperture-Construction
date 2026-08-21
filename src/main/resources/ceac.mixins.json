@@ -6,7 +6,8 @@
   "client": [
     "LevelRendererMixin",
     "LevelRendererAccessor",
-    "RenderStateShardAccessor"
+    "RenderStateShardAccessor",
+    "RenderStateShardMixin"
   ],
   "injectors": {
     "defaultRequire": 1
