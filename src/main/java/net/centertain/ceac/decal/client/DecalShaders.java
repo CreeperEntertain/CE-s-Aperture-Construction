@@ -1,6 +1,7 @@
 package net.centertain.ceac.decal.client;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -32,6 +33,14 @@ public class DecalShaders {
                         DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
                 ),
                 shader -> decal = shader
+        );
+        event.registerShader(
+                new ShaderInstance(
+                        event.getResourceProvider(),
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "translucent_depth"),
+                        DefaultVertexFormat.BLOCK
+                ),
+                shader -> translucentCapture = shader
         );
     }
 

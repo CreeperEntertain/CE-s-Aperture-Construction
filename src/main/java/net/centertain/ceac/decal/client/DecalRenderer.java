@@ -43,8 +43,14 @@ public final class DecalRenderer {
                         "textures/decal/test.png"
                 );
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
+        RenderTarget translucentTarget = TranslucentRenderTargets.getTranslucentDepth();
+        if (translucentTarget == null) {
+            System.out.println("TranslucentTarget is null.");
+            return;
+        }
         RenderSystem.setShaderTexture(0, decalTexture);
         RenderSystem.setShaderTexture(1, mainTarget.getDepthTextureId());
+        RenderSystem.setShaderTexture(2, translucentTarget.getDepthTextureId());
         var screenSizeUniform = shader.getUniform("ScreenSize");
         if (screenSizeUniform != null) {
             screenSizeUniform.set(

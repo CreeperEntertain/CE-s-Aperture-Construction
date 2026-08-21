@@ -7,10 +7,12 @@ import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 
 public final class TranslucentRenderTypes {
+    private static final RenderStateShard.ShaderStateShard CEAC_TRANSLUCENT_DEPTH_SHADER =
+            new RenderStateShard.ShaderStateShard(DecalShaders::getTranslucentCaptureShader);
     private static final RenderStateShard.TransparencyStateShard NO_TRANSPARENCY =
             new RenderStateShard.TransparencyStateShard("ceac_no_transparency", () -> {}, () -> {});
-    private static final RenderStateShard.WriteMaskStateShard DEPTH_ONLY =
-            new RenderStateShard.WriteMaskStateShard(true, false);
+    private static final RenderStateShard.WriteMaskStateShard COLOR_AND_DEPTH =
+            new RenderStateShard.WriteMaskStateShard(true, true);
 
     private static final RenderType TRANSLUCENT_DEPTH = RenderType.create(
             "ceac_translucent_depth",
@@ -20,14 +22,14 @@ public final class TranslucentRenderTypes {
             true,
             false,
             RenderType.CompositeState.builder()
-                    .setShaderState(RenderStateShardAccessor.ceac$getTranslucentShader())
+                    .setShaderState(CEAC_TRANSLUCENT_DEPTH_SHADER)
                     .setTextureState(RenderStateShardAccessor.ceac$getBlockSheetMipped())
                     .setTransparencyState(NO_TRANSPARENCY)
                     .setDepthTestState(RenderStateShardAccessor.ceac$getLequalDepthTest())
                     .setCullState(RenderStateShardAccessor.ceac$getNoCull())
                     .setLightmapState(RenderStateShardAccessor.ceac$getLightmap())
                     .setOverlayState(RenderStateShardAccessor.ceac$getOverlay())
-                    .setWriteMaskState(DEPTH_ONLY)
+                    .setWriteMaskState(COLOR_AND_DEPTH)
                     .createCompositeState(false)
     );
 
