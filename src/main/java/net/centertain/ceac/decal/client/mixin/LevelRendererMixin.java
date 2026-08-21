@@ -47,8 +47,6 @@ public abstract class LevelRendererMixin {
         target.clear(Minecraft.ON_OSX);
         target.bindWrite(true);
 
-        System.out.println("[CEAC] Rendering translucent depth into texture " + target.getDepthTextureId());
-
         LevelRendererAccessor renderer = (LevelRendererAccessor) (Object) this;
         Vec3 cameraPos = camera.getPosition();
 
@@ -60,8 +58,6 @@ public abstract class LevelRendererMixin {
                 cameraPos.z,
                 projectionMatrix
         );
-
-        System.out.println("[CEAC] Depth texture ID: " + target.getDepthTextureId());
 
         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
     }
