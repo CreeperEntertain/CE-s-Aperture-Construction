@@ -2,10 +2,16 @@ package net.centertain.ceac.decal.client.mixin;
 
 import net.minecraft.client.renderer.RenderStateShard;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(RenderStateShard.class)
 public interface RenderStateShardAccessor {
+    @Accessor("TRANSLUCENT_TARGET")
+    static RenderStateShard.OutputStateShard ceac$getTranslucentTarget() {
+        throw new AssertionError();
+    }
+
     @Accessor("BLOCK_SHEET_MIPPED")
     static RenderStateShard.TextureStateShard ceac$getBlockSheetMipped() {
         throw new AssertionError();
