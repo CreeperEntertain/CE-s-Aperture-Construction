@@ -3,6 +3,7 @@ package net.centertain.ceac.decal.client.mixin;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.decal.client.TranslucentRenderTargets;
+import net.centertain.ceac.decal.client.TranslucentRenderTypes;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -46,11 +47,13 @@ public abstract class LevelRendererMixin {
         target.clear(Minecraft.ON_OSX);
         target.bindWrite(true);
 
+        System.out.println("[CEAC] Rendering translucent depth into texture " + target.getDepthTextureId());
+
         LevelRendererAccessor renderer = (LevelRendererAccessor) (Object) this;
         Vec3 cameraPos = camera.getPosition();
 
         renderer.ceac$renderChunkLayer(
-                RenderType.translucent(),
+                TranslucentRenderTypes.translucentDepth(),
                 poseStack,
                 cameraPos.x,
                 cameraPos.y,
