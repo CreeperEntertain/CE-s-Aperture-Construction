@@ -57,5 +57,9 @@ public abstract class LevelRendererMixin {
                 cameraPos.z,
                 projectionMatrix
         );
+
+        System.out.println("[CEAC] Depth texture ID: " + target.getDepthTextureId());
+
+        Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
     }
 }
