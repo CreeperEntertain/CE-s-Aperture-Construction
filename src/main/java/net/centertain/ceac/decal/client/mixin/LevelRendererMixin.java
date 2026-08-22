@@ -1,10 +1,12 @@
 package net.centertain.ceac.decal.client.mixin;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.shaders.Uniform;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.centertain.ceac.decal.client.DecalShaders;
 import net.centertain.ceac.decal.client.TranslucentCaptureState;
 import net.centertain.ceac.decal.client.TranslucentRenderTargets;
-import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
@@ -17,12 +19,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
+
     @Inject(
             method = "renderLevel",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/renderer/LevelRenderer;renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
-                    // ordinal = 3,
                     shift = At.Shift.AFTER
             )
     )
@@ -38,7 +40,6 @@ public abstract class LevelRendererMixin {
             CallbackInfo ci
     ) {
         RenderTarget target = TranslucentRenderTargets.getTranslucentDepth();
-        System.out.println("Test1");
         if (target == null)
             return;
 
@@ -46,12 +47,17 @@ public abstract class LevelRendererMixin {
         Vec3 cameraPos = camera.getPosition();
 
         target.clear(Minecraft.ON_OSX);
-        target.bindWrite(true);
+
+        // TEMPORARILY kept as the destination whilst validating capture shader
+        Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
 
         TranslucentCaptureState.begin();
+
         try {
-            //System.out.println("CEAC: BEFORE renderChunkLayer");
-            //System.out.println("CEAC: render type = " + RenderType.translucent());
+            RenderSystem.enableDepthTest();
+            RenderSystem.disableCull();
+            RenderSystem.disableBlend();
+
             renderer.ceac$renderChunkLayer(
                     RenderType.translucent(),
                     poseStack,
@@ -60,7 +66,9 @@ public abstract class LevelRendererMixin {
                     cameraPos.z,
                     projectionMatrix
             );
-            //System.out.println("CEAC: AFTER renderChunkLayer");
+
+            RenderSystem.enableDepthTest();
+            RenderSystem.enableCull();
         } finally {
             TranslucentCaptureState.end();
             Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
@@ -69,9 +77,13 @@ public abstract class LevelRendererMixin {
 
     @Inject(
             method = "renderChunkLayer",
-            at = @At("HEAD")
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/ShaderInstance;apply()V",
+                    shift = At.Shift.BEFORE
+            )
     )
-    private void ceac$debugRenderChunkLayer(
+    private void ceac$prepareCaptureShader(
             RenderType renderType,
             PoseStack poseStack,
             double camX,
@@ -82,6 +94,19 @@ public abstract class LevelRendererMixin {
     ) {
         if (!TranslucentCaptureState.isActive())
             return;
-        //System.out.println("CEAC: renderChunkLayer ENTERED: " + renderType);
+        ShaderInstance capture = DecalShaders.getTranslucentCapture();
+        if (RenderSystem.getShader() != capture)
+            return;
+
+        Uniform modelView = capture.getUniform("ModelViewMat");
+        Uniform proj = capture.getUniform("ProjMat");
+        Uniform chunkOffset = capture.getUniform("ChunkOffset");
+
+        assert modelView != null;
+        modelView.set(poseStack.last().pose());
+        assert proj != null;
+        proj.set(projectionMatrix);
+        assert chunkOffset != null;
+        chunkOffset.set(0.0F, 0.0F, 0.0F);
     }
 }
