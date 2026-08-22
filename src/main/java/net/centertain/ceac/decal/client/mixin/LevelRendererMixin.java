@@ -4,7 +4,6 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.decal.client.TranslucentCaptureState;
 import net.centertain.ceac.decal.client.TranslucentRenderTargets;
-import net.centertain.ceac.decal.client.TranslucentRenderTypes;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
@@ -50,7 +49,7 @@ public abstract class LevelRendererMixin {
         TranslucentCaptureState.begin();
         try {
             renderer.ceac$renderChunkLayer(
-                    RenderType.translucent(), //TranslucentRenderTypes.translucentDepth(),
+                    RenderType.translucent(),
                     poseStack,
                     cameraPos.x,
                     cameraPos.y,

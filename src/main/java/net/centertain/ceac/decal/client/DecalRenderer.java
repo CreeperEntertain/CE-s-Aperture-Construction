@@ -38,12 +38,7 @@ public final class DecalRenderer {
         if (shader == null)
             return;
 
-        RenderSystem.setShader(() -> shader);
-        ResourceLocation decalTexture =
-                ResourceLocation.fromNamespaceAndPath(
-                        MOD_ID,
-                        "textures/decal/test.png"
-                );
+        ResourceLocation decalTexture = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png");
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
         RenderTarget translucentTarget = TranslucentRenderTargets.getTranslucentDepth();
         if (translucentTarget == null) {
@@ -51,14 +46,22 @@ public final class DecalRenderer {
             return;
         }
 
-        LevelRendererAccessor levelRenderer = ((LevelRendererAccessor)Minecraft.getInstance().levelRenderer);
-        int depthTexture = Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS
-                ? levelRenderer.ceac$getTranslucentTarget().getDepthTextureId()
-                : mainTarget.getDepthTextureId();
+        boolean fabulous = minecraft.options.graphicsMode().get() == GraphicsStatus.FABULOUS;
+        int depthTexture;
 
+        if (fabulous) {
+            LevelRendererAccessor levelRenderer = ((LevelRendererAccessor) minecraft.levelRenderer);
+            depthTexture = levelRenderer.ceac$getTranslucentTarget().getDepthTextureId();
+        } else {
+            translucentTarget.copyDepthFrom(mainTarget);
+            depthTexture = translucentTarget.getDepthTextureId();
+        }
+
+        mainTarget.bindWrite(false);
+
+        RenderSystem.setShader(() -> shader);
         RenderSystem.setShaderTexture(0, decalTexture);
         RenderSystem.setShaderTexture(1, depthTexture);
-        RenderSystem.setShaderTexture(2, translucentTarget.getDepthTextureId());
         var screenSizeUniform = shader.getUniform("ScreenSize");
         if (screenSizeUniform != null) {
             screenSizeUniform.set(
@@ -77,6 +80,14 @@ public final class DecalRenderer {
 
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
         lightTexture.turnOnLightLayer();
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        if (!fabulous) {
+            RenderSystem.disableDepthTest();
+            RenderSystem.depthMask(false);
+        }
         BufferBuilder buffer = Tesselator.getInstance().getBuilder();
         for (Decal decal : ClientDecals.getAll().values()) {
             buffer.begin(
@@ -91,6 +102,11 @@ public final class DecalRenderer {
             );
             BufferUploader.drawWithShader(buffer.end());
         }
+        if (!fabulous) {
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
+        }
+        RenderSystem.disableBlend();
         lightTexture.turnOffLightLayer();
     }
 
