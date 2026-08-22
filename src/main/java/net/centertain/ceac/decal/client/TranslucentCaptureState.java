@@ -1,19 +1,24 @@
 package net.centertain.ceac.decal.client;
 
+import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
+
 public final class TranslucentCaptureState {
-    private static boolean capturing;
+    private static boolean active;
 
     private TranslucentCaptureState() {}
 
     public static void begin() {
-        capturing = true;
+        active = true;
+        TranslucentKBuffer.clear();
+        TranslucentKBuffer.bind();
     }
 
     public static void end() {
-        capturing = false;
+        active = false;
+        TranslucentKBuffer.barrier();
     }
 
-    public static boolean isCapturing() {
-        return capturing;
+    public static boolean isActive() {
+        return active;
     }
 }

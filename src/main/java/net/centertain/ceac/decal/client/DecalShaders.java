@@ -20,6 +20,7 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 )
 public class DecalShaders {
     private static ShaderInstance decal;
+    private static ShaderInstance translucentCapture;
 
     private DecalShaders() {}
 
@@ -33,9 +34,20 @@ public class DecalShaders {
                 ),
                 shader -> decal = shader
         );
+        event.registerShader(
+                new ShaderInstance(
+                        event.getResourceProvider(),
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "decal_translucent_capture"),
+                        DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
+                ),
+                shader -> translucentCapture = shader
+        );
     }
 
     public static ShaderInstance getInstance() {
         return decal;
+    }
+    public static ShaderInstance getTranslucentCapture() {
+        return translucentCapture;
     }
 }
