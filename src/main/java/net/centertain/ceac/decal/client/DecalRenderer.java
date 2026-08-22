@@ -4,7 +4,9 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.centertain.ceac.decal.Decal;
+import net.centertain.ceac.decal.client.mixin.LevelRendererAccessor;
 import net.minecraft.client.Camera;
+import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -48,8 +50,14 @@ public final class DecalRenderer {
             System.out.println("TranslucentTarget is null.");
             return;
         }
+
+        LevelRendererAccessor levelRenderer = ((LevelRendererAccessor)Minecraft.getInstance().levelRenderer);
+        int depthTexture = Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FABULOUS
+                ? levelRenderer.ceac$getTranslucentTarget().getDepthTextureId()
+                : mainTarget.getDepthTextureId();
+
         RenderSystem.setShaderTexture(0, decalTexture);
-        RenderSystem.setShaderTexture(1, mainTarget.getDepthTextureId());
+        RenderSystem.setShaderTexture(1, depthTexture);
         RenderSystem.setShaderTexture(2, translucentTarget.getDepthTextureId());
         var screenSizeUniform = shader.getUniform("ScreenSize");
         if (screenSizeUniform != null) {
