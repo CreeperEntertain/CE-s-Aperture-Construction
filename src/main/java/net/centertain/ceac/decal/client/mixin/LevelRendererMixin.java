@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.decal.client.DecalShaders;
 import net.centertain.ceac.decal.client.TranslucentCaptureState;
 import net.centertain.ceac.decal.client.TranslucentRenderTargets;
+import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
@@ -19,7 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
-
     @Inject(
             method = "renderLevel",
             at = @At(
@@ -54,7 +54,8 @@ public abstract class LevelRendererMixin {
         TranslucentCaptureState.begin();
 
         try {
-            RenderSystem.enableDepthTest();
+            RenderSystem.disableDepthTest();
+            RenderSystem.depthMask(false);
             RenderSystem.disableCull();
             RenderSystem.disableBlend();
 
@@ -67,6 +68,7 @@ public abstract class LevelRendererMixin {
                     projectionMatrix
             );
 
+            RenderSystem.depthMask(true);
             RenderSystem.enableDepthTest();
             RenderSystem.enableCull();
         } finally {
@@ -108,5 +110,7 @@ public abstract class LevelRendererMixin {
         proj.set(projectionMatrix);
         assert chunkOffset != null;
         chunkOffset.set(0.0F, 0.0F, 0.0F);
+
+        TranslucentKBuffer.setShaderUniforms(capture);
     }
 }

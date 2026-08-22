@@ -9,6 +9,8 @@ public final class TranslucentCaptureState {
 
     public static void begin() {
         active = true;
+        TranslucentKBuffer.clear();
+        TranslucentKBuffer.bind();
     }
 
     public static void end() {

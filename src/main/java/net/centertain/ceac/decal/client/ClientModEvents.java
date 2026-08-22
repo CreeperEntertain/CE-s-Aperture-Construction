@@ -13,15 +13,20 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
         bus = Mod.EventBusSubscriber.Bus.MOD,
         value = Dist.CLIENT
 )
-public class CeacClient {
+public class ClientModEvents
+{
     @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
+    public static void onClientSetup(final FMLClientSetupEvent event)
+    {
         event.enqueueWork(() -> {
             Minecraft minecraft = Minecraft.getInstance();
-            TranslucentRenderTargets.init(
-                    minecraft.getWindow().getWidth(),
-                    minecraft.getWindow().getHeight()
-            );
+
+            int width = minecraft.getWindow().getWidth();
+            int height = minecraft.getWindow().getHeight();
+
+            System.out.println("CEAC: initializing render targets at " + width + "x" + height);
+            TranslucentRenderTargets.init(width, height);
+            System.out.println("CEAC: translucent target = " + TranslucentRenderTargets.getTranslucentDepth());
         });
     }
 }
