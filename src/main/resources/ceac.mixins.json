@@ -5,9 +5,7 @@
   "refmap": "ceac.refmap.json",
   "client": [
     "LevelRendererMixin",
-    "LevelRendererAccessor",
-    "RenderStateShardAccessor",
-    "RenderStateShardMixin"
+    "LevelRendererAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
