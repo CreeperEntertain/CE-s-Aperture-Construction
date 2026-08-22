@@ -1,7 +1,5 @@
 #version 150
 
-in vec4 debugColor;
-
 out vec4 fragColor;
 
 void main() {

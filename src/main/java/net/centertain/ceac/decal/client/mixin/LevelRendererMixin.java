@@ -22,7 +22,7 @@ public abstract class LevelRendererMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/renderer/LevelRenderer;renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
-                    ordinal = 3,
+                    // ordinal = 3,
                     shift = At.Shift.AFTER
             )
     )
@@ -38,6 +38,7 @@ public abstract class LevelRendererMixin {
             CallbackInfo ci
     ) {
         RenderTarget target = TranslucentRenderTargets.getTranslucentDepth();
+        System.out.println("Test1");
         if (target == null)
             return;
 
@@ -49,6 +50,8 @@ public abstract class LevelRendererMixin {
 
         TranslucentCaptureState.begin();
         try {
+            //System.out.println("CEAC: BEFORE renderChunkLayer");
+            //System.out.println("CEAC: render type = " + RenderType.translucent());
             renderer.ceac$renderChunkLayer(
                     RenderType.translucent(),
                     poseStack,
@@ -57,9 +60,28 @@ public abstract class LevelRendererMixin {
                     cameraPos.z,
                     projectionMatrix
             );
+            //System.out.println("CEAC: AFTER renderChunkLayer");
         } finally {
             TranslucentCaptureState.end();
             Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
         }
+    }
+
+    @Inject(
+            method = "renderChunkLayer",
+            at = @At("HEAD")
+    )
+    private void ceac$debugRenderChunkLayer(
+            RenderType renderType,
+            PoseStack poseStack,
+            double camX,
+            double camY,
+            double camZ,
+            Matrix4f projectionMatrix,
+            CallbackInfo ci
+    ) {
+        if (!TranslucentCaptureState.isActive())
+            return;
+        //System.out.println("CEAC: renderChunkLayer ENTERED: " + renderType);
     }
 }
