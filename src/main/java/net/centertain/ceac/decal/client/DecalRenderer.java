@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.client.mixin.LevelRendererAccessor;
+import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
@@ -60,6 +61,10 @@ public final class DecalRenderer {
         mainTarget.bindWrite(false);
 
         RenderSystem.setShader(() -> shader);
+
+        TranslucentKBuffer.bind();
+        TranslucentKBuffer.barrier();
+
         RenderSystem.setShaderTexture(0, decalTexture);
         RenderSystem.setShaderTexture(1, depthTexture);
         var screenSizeUniform = shader.getUniform("ScreenSize");

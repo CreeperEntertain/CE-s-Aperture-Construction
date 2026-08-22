@@ -10,7 +10,7 @@ import java.nio.ByteOrder;
 public final class TranslucentKBuffer {
     public static final int LAYERS = 4;
 
-    private static final int FRAGMENT_BYTES = 8;
+    private static final int FRAGMENT_BYTES = 4;
 
     private static int width;
     private static int height;
@@ -73,7 +73,6 @@ public final class TranslucentKBuffer {
 
         for (int i = 0; i < pixels * LAYERS; i++) {
             fragmentData.putInt(0xFFFFFFFF);
-            fragmentData.putInt(0);
         }
         fragmentData.flip();
 

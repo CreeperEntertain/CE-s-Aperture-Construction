@@ -1,9 +1,7 @@
 package net.centertain.ceac.decal.client.mixin;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.centertain.ceac.decal.client.DecalShaders;
 import net.centertain.ceac.decal.client.TranslucentCaptureState;
 import net.centertain.ceac.decal.client.TranslucentRenderTargets;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
@@ -51,7 +49,6 @@ public abstract class LevelRendererMixin {
 
         TranslucentCaptureState.begin();
         try {
-            TranslucentKBuffer.setShaderUniforms(DecalShaders.getTranslucentCapture());
             renderer.ceac$renderChunkLayer(
                     RenderType.translucent(),
                     poseStack,
@@ -62,53 +59,7 @@ public abstract class LevelRendererMixin {
             );
         } finally {
             TranslucentCaptureState.end();
+            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
         }
-
-        Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-    }
-
-    @Inject(
-            method = "renderLevel",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/LevelRenderer;renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
-                    ordinal = 3,
-                    shift = At.Shift.BEFORE
-            )
-    )
-    private void ceac$captureTranslucency(
-            PoseStack poseStack,
-            float partialTick,
-            long finishNanoTime,
-            boolean renderBlockOutline,
-            Camera camera,
-            GameRenderer gameRenderer,
-            LightTexture lightTexture,
-            Matrix4f projectionMatrix,
-            CallbackInfo ci
-    ) {
-        TranslucentKBuffer.clear();
-        TranslucentKBuffer.bind();
-
-        ShaderInstance shader = DecalShaders.getTranslucentCapture();
-        if (shader == null)
-            return;
-        RenderSystem.setShader(() -> shader);
-        shader.apply();
-
-        LevelRendererAccessor renderer = (LevelRendererAccessor) (Object) this;
-        Vec3 cameraPos = camera.getPosition();
-
-        renderer.ceac$renderChunkLayer(
-                RenderType.translucent(),
-                poseStack,
-                cameraPos.x,
-                cameraPos.y,
-                cameraPos.z,
-                projectionMatrix
-        );
-
-        shader.clear();
-        TranslucentKBuffer.barrier();
     }
 }

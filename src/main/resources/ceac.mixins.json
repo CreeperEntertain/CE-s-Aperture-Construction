@@ -4,10 +4,9 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "ceac.refmap.json",
   "client": [
-    "LevelRendererMixin",
     "LevelRendererAccessor",
-    "RenderStateShardAccessor",
-    "RenderStateShardMixin"
+    "LevelRendererMixin",
+    "RenderStateShardAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

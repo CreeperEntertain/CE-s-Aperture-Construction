@@ -38,7 +38,7 @@ public class DecalShaders {
                 new ShaderInstance(
                         event.getResourceProvider(),
                         ResourceLocation.fromNamespaceAndPath(MOD_ID, "decal_translucent_capture"),
-                        DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
+                        DefaultVertexFormat.BLOCK
                 ),
                 shader -> translucentCapture = shader
         );
