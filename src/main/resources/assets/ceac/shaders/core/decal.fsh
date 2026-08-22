@@ -1,3 +1,4 @@
+/*
 #version 150
 
 uniform sampler2D Sampler2;
@@ -15,13 +16,12 @@ void main() {
 
     fragColor = vec4(depth, depth, depth, 1.0);
 }
+*/
 
-/*
 #version 150
 
 uniform sampler2D Sampler0;
 uniform sampler2D Sampler1;
-uniform sampler2D Sampler2;
 
 uniform vec3 DecalNormal;
 uniform vec3 DecalOriginRelative;
@@ -40,10 +40,7 @@ void main() {
 
     vec2 screenUV = gl_FragCoord.xy / ScreenSize.xy;
 
-    float opaqueDepth = texture2D(Sampler1, screenUV).r;
-    float translucentDepth = texture2D(Sampler2, screenUV).r;
-
-    float sceneDepth = translucentDepth;
+    float sceneDepth = texture2D(Sampler1, screenUV).r;
 
     vec4 clipPosition = vec4(
             screenUV * 2.0 - 1.0,
@@ -110,4 +107,3 @@ void main() {
 
     fragColor = decal * vertexColor;
 }
-*/
