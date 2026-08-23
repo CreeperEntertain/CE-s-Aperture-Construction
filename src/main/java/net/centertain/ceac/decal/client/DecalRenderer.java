@@ -45,6 +45,12 @@ public final class DecalRenderer {
         opaqueDepthTarget.copyDepthFrom(mainTarget);
     }
 
+    public static int getOpaqueDepthTexture() {
+        return opaqueDepthTarget != null
+                ? opaqueDepthTarget.getDepthTextureId()
+                : 0;
+    }
+
     public static void render(RenderLevelStageEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)

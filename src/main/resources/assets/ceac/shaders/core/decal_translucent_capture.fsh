@@ -1,16 +1,20 @@
 #version 430
 
 const uint LAYERS = 4u;
-const uint EMPTY = 0xFFFFFFFFu;
 
 layout(std430, binding = 0) buffer FragmentBuffer {
-    uint depths[];
+    uint fragments[];
 };
 layout(std430, binding = 1) buffer LockBuffer {
     uint locks[];
 };
 
 uniform vec4 ScreenSize;
+uniform sampler2D Sampler0;
+
+in vec4 vertexColor;
+in vec2 texCoord;
+in vec2 lightCoord;
 
 void main() {
     if (!gl_FrontFacing)
@@ -29,8 +33,18 @@ void main() {
     if (layer >= LAYERS)
         return;
 
-    uint newDepth = floatBitsToUint(gl_FragCoord.z);
-    uint base = pixelIndex * LAYERS;
+    vec4 color = texture(Sampler0, texCoord) * vertexColor;
 
-    depths[base + layer] = newDepth;
+    if (color.a <= 0.01)
+        discard;
+
+    color = clamp(color, 0.0, 1.0);
+
+    uint newDepth = floatBitsToUint(gl_FragCoord.z);
+
+    uint base = pixelIndex * LAYERS * 2u;
+    uint offset = base + layer * 2u;
+
+    fragments[offset] = newDepth;
+    fragments[offset + 1u] = packUnorm4x8(color);
 }

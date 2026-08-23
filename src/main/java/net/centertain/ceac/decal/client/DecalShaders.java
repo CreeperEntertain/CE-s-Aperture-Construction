@@ -22,6 +22,7 @@ public class DecalShaders {
     private static ShaderInstance decal;
     private static ShaderInstance translucentCapture;
     private static ShaderInstance kBufferDebug;
+    private static ShaderInstance kBufferComposite;
 
     private static KBufferSortShader kBufferSort;
 
@@ -29,7 +30,7 @@ public class DecalShaders {
 
     @SubscribeEvent
     public static void registerShaders(RegisterShadersEvent event) throws IOException {
-        // Draw shaders
+        // Draw/composite shaders
         event.registerShader(
                 new ShaderInstance(
                         event.getResourceProvider(),
@@ -53,6 +54,14 @@ public class DecalShaders {
                         DefaultVertexFormat.POSITION
                 ),
                 shader -> kBufferDebug = shader
+        );
+        event.registerShader(
+                new ShaderInstance(
+                        event.getResourceProvider(),
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "kbuffer_composite"),
+                        DefaultVertexFormat.POSITION
+                ),
+                shader -> kBufferComposite = shader
         );
 
         // Compute shaders
@@ -79,5 +88,8 @@ public class DecalShaders {
     }
     public static ShaderInstance getKBufferDebug() {
         return kBufferDebug;
+    }
+    public static ShaderInstance getKBufferComposite() {
+        return kBufferComposite;
     }
 }

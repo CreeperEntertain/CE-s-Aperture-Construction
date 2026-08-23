@@ -48,8 +48,7 @@ public abstract class LevelRendererMixin {
 
         target.clear(Minecraft.ON_OSX);
 
-        // TEMPORARILY kept as the destination whilst validating capture shader
-        Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+        target.bindWrite(true);
 
         TranslucentCaptureState.begin();
 

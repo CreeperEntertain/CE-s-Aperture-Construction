@@ -10,7 +10,7 @@ import java.nio.IntBuffer;
 public final class TranslucentKBuffer {
     public static final int LAYERS = 4;
 
-    private static final int FRAGMENT_BYTES = Integer.BYTES;
+    private static final int FRAGMENT_BYTES = Integer.BYTES * 2;
 
     private static int width;
     private static int height;

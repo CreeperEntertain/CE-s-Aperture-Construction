@@ -6,7 +6,7 @@ const uint EMPTY = 0xFFFFFFFFu;
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(std430, binding = 0) buffer FragmentBuffer {
-    uint depths[];
+    uint fragments[];
 };
 
 uniform vec4 ScreenSize;
@@ -19,30 +19,42 @@ void main() {
     uint height = uint(ScreenSize.y);
 
     if (x >= width || y >= height)
-        return;
+    return;
 
     uint pixelIndex = y * width + x;
-    uint base = pixelIndex * LAYERS;
+    uint base = pixelIndex * LAYERS * 2u;
 
-    uint values[LAYERS];
+    uint depths[LAYERS];
+    uint colors[LAYERS];
 
     for (uint i = 0u; i < LAYERS; i++) {
-        values[i] = depths[base + i];
+        uint offset = base + i * 2u;
+
+        depths[i] = fragments[offset];
+        colors[i] = fragments[offset + 1u];
     }
 
     for (uint i = 1u; i < LAYERS; i++) {
-        uint value = values[i];
+        uint depth = depths[i];
+        uint color = colors[i];
+
         uint j = i;
 
-        while (j > 0u && values[j - 1u] > value) {
-            values[j] = values[j - 1u];
+        while (j > 0u &&
+            depths[j - 1u] > depth) {
+            depths[j] = depths[j - 1u];
+            colors[j] = colors[j - 1u];
             j--;
         }
 
-        values[j] = value;
+        depths[j] = depth;
+        colors[j] = color;
     }
 
     for (uint i = 0u; i < LAYERS; i++) {
-        depths[base + i] = values[i];
+        uint offset = base + i * 2u;
+
+        fragments[offset] = depths[i];
+        fragments[offset + 1u] = colors[i];
     }
 }
