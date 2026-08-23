@@ -1,6 +1,7 @@
 package net.centertain.ceac.decal.client;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.centertain.ceac.decal.Decal;
@@ -23,13 +24,34 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 public final class DecalRenderer {
     private static final double VOLUME_SIZE = 1.1;
 
+    private static RenderTarget opaqueDepthTarget;
+
     private DecalRenderer() {}
+
+    public static void captureOpaqueDepth() {
+        Minecraft minecraft = Minecraft.getInstance();
+        RenderTarget mainTarget = minecraft.getMainRenderTarget();
+
+        int width = mainTarget.width;
+        int height = mainTarget.height;
+
+        if (opaqueDepthTarget == null) {
+            opaqueDepthTarget = new TextureTarget(width, height, true, Minecraft.ON_OSX);
+            opaqueDepthTarget.resize(width, height, true);
+        } else if (opaqueDepthTarget.width != width ||
+                opaqueDepthTarget.height != height) {
+            opaqueDepthTarget.resize(width, height, true);
+        }
+        opaqueDepthTarget.copyDepthFrom(mainTarget);
+    }
 
     public static void render(RenderLevelStageEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
             return;
         if (ClientDecals.getAll().isEmpty())
+            return;
+        if (opaqueDepthTarget == null)
             return;
 
         Camera camera = event.getCamera();
@@ -41,7 +63,7 @@ public final class DecalRenderer {
 
         ResourceLocation decalTexture = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png");
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
-        int depthTexture = mainTarget.getDepthTextureId();
+        int depthTexture = opaqueDepthTarget.getDepthTextureId();
 
         mainTarget.bindWrite(false);
 

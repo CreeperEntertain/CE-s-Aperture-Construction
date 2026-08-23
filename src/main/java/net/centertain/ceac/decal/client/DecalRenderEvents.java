@@ -17,8 +17,9 @@ public final class DecalRenderEvents {
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS)
-            return;
-        DecalRenderer.render(event);
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS) {
+            DecalRenderer.captureOpaqueDepth();
+            DecalRenderer.render(event);
+        }
     }
 }
