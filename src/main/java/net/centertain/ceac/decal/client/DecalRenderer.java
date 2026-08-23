@@ -41,30 +41,11 @@ public final class DecalRenderer {
 
         ResourceLocation decalTexture = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png");
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
-        RenderTarget translucentTarget = TranslucentRenderTargets.getTranslucentDepth();
-        if (translucentTarget == null) {
-            System.out.println("TranslucentTarget is null.");
-            return;
-        }
-
-        boolean fabulous = minecraft.options.graphicsMode().get() == GraphicsStatus.FABULOUS;
-        int depthTexture;
-
-        if (fabulous) {
-            LevelRendererAccessor levelRenderer = ((LevelRendererAccessor) minecraft.levelRenderer);
-            depthTexture = levelRenderer.ceac$getTranslucentTarget().getDepthTextureId();
-        } else {
-            translucentTarget.copyDepthFrom(mainTarget);
-            depthTexture = translucentTarget.getDepthTextureId();
-        }
+        int depthTexture = mainTarget.getDepthTextureId();
 
         mainTarget.bindWrite(false);
 
         RenderSystem.setShader(() -> shader);
-
-        TranslucentKBuffer.bind();
-        TranslucentKBuffer.barrier();
-
         RenderSystem.setShaderTexture(0, decalTexture);
         RenderSystem.setShaderTexture(1, depthTexture);
         var screenSizeUniform = shader.getUniform("ScreenSize");
@@ -88,11 +69,9 @@ public final class DecalRenderer {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
 
-        if (!fabulous) {
-            RenderSystem.disableDepthTest();
-            RenderSystem.depthMask(false);
-        }
         BufferBuilder buffer = Tesselator.getInstance().getBuilder();
         for (Decal decal : ClientDecals.getAll().values()) {
             buffer.begin(
@@ -107,10 +86,9 @@ public final class DecalRenderer {
             );
             BufferUploader.drawWithShader(buffer.end());
         }
-        if (!fabulous) {
-            RenderSystem.depthMask(true);
-            RenderSystem.enableDepthTest();
-        }
+
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
         lightTexture.turnOffLightLayer();
     }
