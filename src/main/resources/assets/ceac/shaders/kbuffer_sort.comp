@@ -1,0 +1,48 @@
+#version 430
+
+const uint LAYERS = 4u;
+const uint EMPTY = 0xFFFFFFFFu;
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(std430, binding = 0) buffer FragmentBuffer {
+    uint depths[];
+};
+
+uniform vec4 ScreenSize;
+
+void main() {
+    uint x = gl_GlobalInvocationID.x;
+    uint y = gl_GlobalInvocationID.y;
+
+    uint width = uint(ScreenSize.x);
+    uint height = uint(ScreenSize.y);
+
+    if (x >= width || y >= height)
+        return;
+
+    uint pixelIndex = y * width + x;
+    uint base = pixelIndex * LAYERS;
+
+    uint values[LAYERS];
+
+    for (uint i = 0u; i < LAYERS; i++) {
+        values[i] = depths[base + i];
+    }
+
+    for (uint i = 1u; i < LAYERS; i++) {
+        uint value = values[i];
+        uint j = i;
+
+        while (j > 0u && values[j - 1u] > value) {
+            values[j] = values[j - 1u];
+            j--;
+        }
+
+        values[j] = value;
+    }
+
+    for (uint i = 0u; i < LAYERS; i++) {
+        depths[base + i] = values[i];
+    }
+}

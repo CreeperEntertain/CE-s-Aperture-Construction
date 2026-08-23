@@ -22,44 +22,34 @@ void main() {
 
     uint base = pixelIndex * LAYERS;
 
-    uint d0 = depths[base + 0u];
-    uint d1 = depths[base + 1u];
-    uint d2 = depths[base + 2u];
-    uint d3 = depths[base + 3u];
+    uint layer = LAYERS;
 
-    uint nearest = EMPTY;
-    uint layer = 0u;
+    for (uint i = LAYERS; i > 0u; i--) {
+        uint index = i - 1u;
 
-    if (d0 != EMPTY) {
-        nearest = d0;
-        layer = 0u;
+        if (depths[base + index] != EMPTY) {
+            layer = index;
+            break;
+        }
     }
 
-    if (d1 != EMPTY && (nearest == EMPTY || d1 < nearest)) {
-        nearest = d1;
-        layer = 1u;
-    }
-
-    if (d2 != EMPTY && (nearest == EMPTY || d2 < nearest)) {
-        nearest = d2;
-        layer = 2u;
-    }
-
-    if (d3 != EMPTY && (nearest == EMPTY || d3 < nearest)) {
-        nearest = d3;
-        layer = 3u;
-    }
-
-    if (nearest == EMPTY) {
+    if (layer == LAYERS) {
         fragColor = vec4(0.0);
         return;
     }
 
-    if (layer == 0u)
+    // RGBY loop:
+    // 0 = Red
+    // 1 = Green
+    // 2 = Blue
+    // 3 = Yellow
+    uint color = layer % 4u;
+
+    if (color == 0u)
         fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    else if (layer == 1u)
+    else if (color == 1u)
         fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-    else if (layer == 2u)
+    else if (color == 2u)
         fragColor = vec4(0.0, 0.0, 1.0, 1.0);
     else
         fragColor = vec4(1.0, 1.0, 0.0, 1.0);

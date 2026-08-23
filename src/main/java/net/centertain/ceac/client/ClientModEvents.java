@@ -1,5 +1,6 @@
-package net.centertain.ceac.decal.client;
+package net.centertain.ceac.client;
 
+import net.centertain.ceac.decal.client.TranslucentRenderTargets;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -24,9 +25,7 @@ public class ClientModEvents
             int width = minecraft.getWindow().getWidth();
             int height = minecraft.getWindow().getHeight();
 
-            System.out.println("CEAC: initializing render targets at " + width + "x" + height);
             TranslucentRenderTargets.init(width, height);
-            System.out.println("CEAC: translucent target = " + TranslucentRenderTargets.getTranslucentDepth());
         });
     }
 }

@@ -6,7 +6,6 @@ const uint EMPTY = 0xFFFFFFFFu;
 layout(std430, binding = 0) buffer FragmentBuffer {
     uint depths[];
 };
-
 layout(std430, binding = 1) buffer LockBuffer {
     uint locks[];
 };
@@ -15,7 +14,7 @@ uniform vec4 ScreenSize;
 
 void main() {
     if (!gl_FrontFacing)
-    return;
+        return;
 
     uint width = uint(ScreenSize.x);
 
@@ -28,7 +27,7 @@ void main() {
     uint layer = atomicAdd(locks[pixelIndex], 1u);
 
     if (layer >= LAYERS)
-    return;
+        return;
 
     uint newDepth = floatBitsToUint(gl_FragCoord.z);
     uint base = pixelIndex * LAYERS;

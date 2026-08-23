@@ -15,6 +15,11 @@ public final class TranslucentCaptureState {
 
     public static void end() {
         TranslucentKBuffer.barrier();
+        DecalShaders.sortKBuffer(
+                TranslucentKBuffer.getWidth(),
+                TranslucentKBuffer.getHeight()
+        );
+        TranslucentKBuffer.barrier();
         active = false;
     }
 

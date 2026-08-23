@@ -1,6 +1,7 @@
 package net.centertain.ceac.decal.client;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.centertain.ceac.decal.client.render.KBufferSortShader;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -22,10 +23,13 @@ public class DecalShaders {
     private static ShaderInstance translucentCapture;
     private static ShaderInstance kBufferDebug;
 
+    private static KBufferSortShader kBufferSort;
+
     private DecalShaders() {}
 
     @SubscribeEvent
     public static void registerShaders(RegisterShadersEvent event) throws IOException {
+        // Draw shaders
         event.registerShader(
                 new ShaderInstance(
                         event.getResourceProvider(),
@@ -50,6 +54,21 @@ public class DecalShaders {
                 ),
                 shader -> kBufferDebug = shader
         );
+
+        // Compute shaders
+        if (kBufferSort != null)
+            kBufferSort.destroy();
+        kBufferSort = new KBufferSortShader();
+        kBufferSort.compile(
+                event.getResourceProvider(),
+                ResourceLocation.fromNamespaceAndPath(MOD_ID, "shaders/kbuffer_sort.comp")
+        );
+    }
+
+    public static void sortKBuffer(int width, int height) {
+        if (kBufferSort == null)
+            return;
+        kBufferSort.dispatch(width, height);
     }
 
     public static ShaderInstance getInstance() {
