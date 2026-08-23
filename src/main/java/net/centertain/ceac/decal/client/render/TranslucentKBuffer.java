@@ -3,9 +3,9 @@ package net.centertain.ceac.decal.client.render;
 import com.mojang.blaze3d.shaders.Uniform;
 import net.minecraft.client.renderer.ShaderInstance;
 import org.lwjgl.opengl.*;
+import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 
 public final class TranslucentKBuffer {
     public static final int LAYERS = 4;
@@ -16,6 +16,7 @@ public final class TranslucentKBuffer {
     private static int height;
 
     private static int fragmentBuffer;
+    private static int lockBuffer;
 
     private static boolean initialized;
 
@@ -37,6 +38,13 @@ public final class TranslucentKBuffer {
         GL15.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, fragmentBytes, GL15.GL_DYNAMIC_DRAW);
         GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 0, fragmentBuffer);
 
+        lockBuffer = GL15.glGenBuffers();
+        GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, lockBuffer);
+
+        long lockBytes = (long) pixels * Integer.BYTES;
+
+        GL15.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, lockBytes, GL15.GL_DYNAMIC_DRAW);
+
         GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
 
         initialized = true;
@@ -50,22 +58,38 @@ public final class TranslucentKBuffer {
     }
 
     public static void clear() {
-        if (!initialized || fragmentBuffer == 0)
+        if (!initialized)
             return;
 
-        ByteBuffer clearValue = ByteBuffer.allocateDirect(Integer.BYTES).order(ByteOrder.nativeOrder());
-
-        clearValue.putInt(0xFFFFFFFF);
-        clearValue.flip();
-
         GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, fragmentBuffer);
-        GL43.glClearBufferData(
-                GL43.GL_SHADER_STORAGE_BUFFER,
-                GL30.GL_R32UI,
-                GL30.GL_RED_INTEGER,
-                GL11.GL_UNSIGNED_INT,
-                clearValue
-        );
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer fragmentClear = stack.mallocInt(1);
+            fragmentClear.put(0, -1);
+
+            GL43.glClearBufferData(
+                    GL43.GL_SHADER_STORAGE_BUFFER,
+                    GL30.GL_R32UI,
+                    GL30.GL_RED_INTEGER,
+                    GL11.GL_UNSIGNED_INT,
+                    fragmentClear
+            );
+        }
+
+        GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, lockBuffer);
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer lockClear = stack.callocInt(1);
+
+            GL43.glClearBufferData(
+                    GL43.GL_SHADER_STORAGE_BUFFER,
+                    GL30.GL_R32UI,
+                    GL30.GL_RED_INTEGER,
+                    GL11.GL_UNSIGNED_INT,
+                    lockClear
+            );
+        }
+
         GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
     }
 
@@ -73,6 +97,7 @@ public final class TranslucentKBuffer {
         if (!initialized)
             return;
         GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 0, fragmentBuffer);
+        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, lockBuffer);
     }
 
     public static void setShaderUniforms(ShaderInstance shader) {
@@ -99,6 +124,10 @@ public final class TranslucentKBuffer {
         if (fragmentBuffer != 0) {
             GL15.glDeleteBuffers(fragmentBuffer);
             fragmentBuffer = 0;
+        }
+        if (lockBuffer != 0) {
+            GL15.glDeleteBuffers(lockBuffer);
+            lockBuffer = 0;
         }
         initialized = false;
     }

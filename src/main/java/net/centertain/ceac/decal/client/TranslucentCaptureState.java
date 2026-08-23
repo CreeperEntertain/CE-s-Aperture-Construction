@@ -14,8 +14,8 @@ public final class TranslucentCaptureState {
     }
 
     public static void end() {
-        active = false;
         TranslucentKBuffer.barrier();
+        active = false;
     }
 
     public static boolean isActive() {
