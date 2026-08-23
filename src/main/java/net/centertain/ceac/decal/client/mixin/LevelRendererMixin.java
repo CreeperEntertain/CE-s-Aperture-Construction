@@ -4,6 +4,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.centertain.ceac.decal.client.DecalRenderer;
 import net.centertain.ceac.decal.client.DecalShaders;
 import net.centertain.ceac.decal.client.TranslucentCaptureState;
 import net.centertain.ceac.decal.client.TranslucentRenderTargets;
@@ -47,7 +48,6 @@ public abstract class LevelRendererMixin {
         Vec3 cameraPos = camera.getPosition();
 
         target.clear(Minecraft.ON_OSX);
-
         target.bindWrite(true);
 
         TranslucentCaptureState.begin();
@@ -72,8 +72,16 @@ public abstract class LevelRendererMixin {
             RenderSystem.enableCull();
         } finally {
             TranslucentCaptureState.end();
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+
+            Minecraft.getInstance()
+                    .getMainRenderTarget()
+                    .bindWrite(false);
         }
+
+        DecalRenderer.renderKBuffer(camera);
+        TranslucentKBuffer.barrier();
+        TranslucentCaptureState.composite();
+        Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
     }
 
     @Inject(

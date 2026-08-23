@@ -1,0 +1,61 @@
+{
+  "vertex": "ceac:decal_kbuffer_capture",
+  "fragment": "ceac:decal_kbuffer_capture",
+
+  "attributes": [
+    "Position"
+  ],
+
+  "samplers": [
+    {
+      "name": "Sampler0"
+    }
+  ],
+
+  "uniforms": [
+    {
+      "name": "DecalOriginRelative",
+      "type": "float",
+      "count": 3,
+      "values": [0.0, 0.0, 0.0]
+    },
+    {
+      "name": "DecalNormal",
+      "type": "float",
+      "count": 3,
+      "values": [0.0, 0.0, 1.0]
+    },
+    {
+      "name": "ScreenSize",
+      "type": "float",
+      "count": 4,
+      "values": [
+        1920.0,
+        1080.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "InvProjMat",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+      ]
+    },
+    {
+      "name": "IViewRotMat",
+      "type": "matrix3x3",
+      "count": 9,
+      "values": [
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
+        0.0, 0.0, 1.0
+      ]
+    }
+  ]
+}

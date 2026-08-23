@@ -23,6 +23,7 @@ public class DecalShaders {
     private static ShaderInstance translucentCapture;
     private static ShaderInstance kBufferDebug;
     private static ShaderInstance kBufferComposite;
+    private static ShaderInstance decalKBufferCapture;
 
     private static KBufferSortShader kBufferSort;
 
@@ -63,6 +64,14 @@ public class DecalShaders {
                 ),
                 shader -> kBufferComposite = shader
         );
+        event.registerShader(
+                new ShaderInstance(
+                        event.getResourceProvider(),
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "decal_kbuffer_capture"),
+                        DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
+                ),
+                shader -> decalKBufferCapture = shader
+        );
 
         // Compute shaders
         if (kBufferSort != null)
@@ -91,5 +100,8 @@ public class DecalShaders {
     }
     public static ShaderInstance getKBufferComposite() {
         return kBufferComposite;
+    }
+    public static ShaderInstance getDecalKBufferCapture() {
+        return decalKBufferCapture;
     }
 }

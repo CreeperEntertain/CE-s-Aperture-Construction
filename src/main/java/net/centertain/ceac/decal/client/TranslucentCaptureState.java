@@ -19,16 +19,16 @@ public final class TranslucentCaptureState {
     }
 
     public static void end() {
+        TranslucentKBuffer.barrier();
+        DecalShaders.sortKBuffer(
+                TranslucentKBuffer.getWidth(),
+                TranslucentKBuffer.getHeight()
+        );
+        TranslucentKBuffer.barrier();
+    }
+
+    public static void composite() {
         try {
-            TranslucentKBuffer.barrier();
-
-            DecalShaders.sortKBuffer(
-                    TranslucentKBuffer.getWidth(),
-                    TranslucentKBuffer.getHeight()
-            );
-
-            TranslucentKBuffer.barrier();
-
             ShaderInstance shader = DecalShaders.getKBufferComposite();
             if (shader == null)
                 return;

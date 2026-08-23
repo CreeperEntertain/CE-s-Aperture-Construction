@@ -5,19 +5,16 @@ import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.centertain.ceac.decal.Decal;
-import net.centertain.ceac.decal.client.mixin.LevelRendererAccessor;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.client.Camera;
-import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-
-import java.util.Objects;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
@@ -102,40 +99,118 @@ public final class DecalRenderer {
 
         BufferBuilder buffer = Tesselator.getInstance().getBuilder();
         for (Decal decal : ClientDecals.getAll().values()) {
-            buffer.begin(
-                    VertexFormat.Mode.QUADS,
-                    DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
-            );
+            buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP);
             renderVolume(
                     decal,
                     cameraPosition,
                     poseStack,
-                    buffer
+                    buffer,
+                    shader
             );
             BufferUploader.drawWithShader(buffer.end());
         }
 
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
         RenderSystem.disableBlend();
+
         lightTexture.turnOffLightLayer();
+    }
+
+    public static void renderKBuffer(
+            Camera camera
+    ) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null)
+            return;
+        if (ClientDecals.getAll().isEmpty())
+            return;
+        ShaderInstance shader = DecalShaders.getDecalKBufferCapture();
+        if (shader == null)
+            return;
+
+        TranslucentKBuffer.bind();
+        TranslucentKBuffer.setShaderUniforms(shader);
+
+        Matrix4f invProj = new Matrix4f(RenderSystem.getProjectionMatrix()).invert();
+
+        var invProjMatUniform = shader.getUniform("InvProjMat");
+
+        if (invProjMatUniform != null)
+            invProjMatUniform.set(invProj);
+
+        Matrix3f viewRotation = new Matrix3f().rotate(camera.rotation());
+        Matrix3f inverseViewRotation = new Matrix3f(viewRotation).invert();
+
+        var iViewRotMatUniform = shader.getUniform("IViewRotMat");
+
+        if (iViewRotMatUniform != null)
+            iViewRotMatUniform.set(inverseViewRotation);
+
+        RenderSystem.setShader(() -> shader);
+
+        RenderSystem.setShaderTexture(0, ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png"));
+
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.disableCull();
+        RenderSystem.disableBlend();
+
+        Vec3 cameraPosition = camera.getPosition();
+
+        for (Decal decal : ClientDecals.getAll().values()) {
+            Vec3 origin = decal.getOrigin();
+
+            float x = (float) (origin.x - cameraPosition.x);
+            float y = (float) (origin.y - cameraPosition.y);
+            float z = (float) (origin.z - cameraPosition.z);
+
+            var originUniform = shader.getUniform("DecalOriginRelative");
+
+            if (originUniform != null)
+                originUniform.set(x, y, z);
+
+            Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal());
+
+            var normalUniform = shader.getUniform("DecalNormal");
+
+            if (normalUniform != null) {
+                normalUniform.set(
+                        (float) normal.x,
+                        (float) normal.y,
+                        (float) normal.z
+                );
+            }
+
+            BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+
+            buffer.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION);
+
+            buffer.vertex(-1.0, -1.0, 0.0).endVertex();
+            buffer.vertex( 3.0, -1.0, 0.0).endVertex();
+            buffer.vertex(-1.0,  3.0, 0.0).endVertex();
+
+            BufferUploader.drawWithShader(buffer.end());
+        }
+
+        RenderSystem.enableCull();
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
     }
 
     private static void renderVolume(
             Decal decal,
             Vec3 cameraPosition,
             PoseStack poseStack,
-            BufferBuilder buffer
+            BufferBuilder buffer,
+            ShaderInstance shader
     ) {
         Vec3 origin = decal.getOrigin();
 
         float x = (float) (origin.x - cameraPosition.x);
         float y = (float) (origin.y - cameraPosition.y);
         float z = (float) (origin.z - cameraPosition.z);
-
-        ShaderInstance shader = DecalShaders.getInstance();
-        if (shader == null)
-            return;
 
         var decalOriginUniform = shader.getUniform("DecalOriginRelative");
         if (decalOriginUniform != null)
@@ -156,37 +231,31 @@ public final class DecalRenderer {
         Matrix4f matrix = poseStack.last().pose();
         float vertexShade = 1.0f;
 
-        // Front (-Z)
         vertex(buffer, matrix, -half, +half, -half, vertexShade);
         vertex(buffer, matrix, +half, +half, -half, vertexShade);
         vertex(buffer, matrix, +half, -half, -half, vertexShade);
         vertex(buffer, matrix, -half, -half, -half, vertexShade);
 
-        // Back (+Z)
         vertex(buffer, matrix, +half, +half, +half, vertexShade);
         vertex(buffer, matrix, -half, +half, +half, vertexShade);
         vertex(buffer, matrix, -half, -half, +half, vertexShade);
         vertex(buffer, matrix, +half, -half, +half, vertexShade);
 
-        // Left (-X)
         vertex(buffer, matrix, -half, +half, +half, vertexShade);
         vertex(buffer, matrix, -half, +half, -half, vertexShade);
         vertex(buffer, matrix, -half, -half, -half, vertexShade);
         vertex(buffer, matrix, -half, -half, +half, vertexShade);
 
-        // Right (+X)
         vertex(buffer, matrix, +half, +half, -half, vertexShade);
         vertex(buffer, matrix, +half, +half, +half, vertexShade);
         vertex(buffer, matrix, +half, -half, +half, vertexShade);
         vertex(buffer, matrix, +half, -half, -half, vertexShade);
 
-        // Top (+Y)
         vertex(buffer, matrix, -half, +half, +half, vertexShade);
         vertex(buffer, matrix, +half, +half, +half, vertexShade);
         vertex(buffer, matrix, +half, +half, -half, vertexShade);
         vertex(buffer, matrix, -half, +half, -half, vertexShade);
 
-        // Bottom (-Y)
         vertex(buffer, matrix, -half, -half, -half, vertexShade);
         vertex(buffer, matrix, +half, -half, -half, vertexShade);
         vertex(buffer, matrix, +half, -half, +half, vertexShade);
