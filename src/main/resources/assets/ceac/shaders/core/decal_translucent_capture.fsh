@@ -18,7 +18,14 @@ in vec2 lightCoord;
 
 void main() {
     if (!gl_FrontFacing)
-        return;
+    return;
+
+    vec4 color = texture(Sampler0, texCoord) * vertexColor;
+
+    if (color.a <= 0.01)
+        discard;
+
+    color = clamp(color, 0.0, 1.0);
 
     uint width = uint(ScreenSize.x);
 
@@ -31,14 +38,7 @@ void main() {
     uint layer = atomicAdd(locks[pixelIndex], 1u);
 
     if (layer >= LAYERS)
-        return;
-
-    vec4 color = texture(Sampler0, texCoord) * vertexColor;
-
-    if (color.a <= 0.01)
-        discard;
-
-    color = clamp(color, 0.0, 1.0);
+    return;
 
     uint newDepth = floatBitsToUint(gl_FragCoord.z);
 
