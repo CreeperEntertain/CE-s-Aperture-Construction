@@ -163,6 +163,7 @@ public final class DecalRenderer {
         RenderSystem.setShader(() -> shader);
 
         RenderSystem.setShaderTexture(0, ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png"));
+        RenderSystem.setShaderTexture(1, DecalRenderer.getOpaqueDepthTexture());
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();

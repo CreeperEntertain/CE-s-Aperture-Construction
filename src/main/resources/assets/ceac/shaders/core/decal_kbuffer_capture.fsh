@@ -24,6 +24,7 @@ layout(std430, binding = 2) readonly buffer DecalBuffer {
 };
 
 uniform sampler2D Sampler0;
+uniform sampler2D Sampler1;
 
 uniform float DecalCount;
 uniform vec4 ScreenSize;
@@ -46,6 +47,8 @@ void main() {
 
     vec2 screenUV = gl_FragCoord.xy / ScreenSize.xy;
 
+    float opaqueDepth = texture(Sampler1, screenUV).r;
+
     for (uint i = 0u; i < LAYERS; i++) {
         uint offset = base + i * 2u;
         uint depthBits = fragments[offset];
@@ -54,6 +57,9 @@ void main() {
         continue;
 
         float depth = uintBitsToFloat(depthBits);
+
+        if (depth >= opaqueDepth)
+            continue;
 
         // Reconstruct translucent surface position.
         vec4 clipPosition = vec4(
@@ -103,7 +109,7 @@ void main() {
 
             if (u < 0.0 || u > 1.0 ||
                 v < 0.0 || v > 1.0)
-            continue;
+                continue;
 
             vec4 decal = texture(Sampler0, vec2(u, v));
 
