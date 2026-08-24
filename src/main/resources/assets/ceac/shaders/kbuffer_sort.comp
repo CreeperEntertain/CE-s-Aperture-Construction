@@ -37,7 +37,7 @@ void main() {
     uint height = uint(ScreenSize.y);
 
     if (x >= width || y >= height)
-    return;
+        return;
 
     uint pixelIndex = y * width + x;
     uint base = pixelIndex * LAYERS * 2u;
@@ -45,7 +45,26 @@ void main() {
     uint depths[LAYERS];
     uint colors[LAYERS];
 
-    for (uint i = 0u; i < LAYERS; i++) {
+    uint firstDepth = fragments[base];
+
+    if (firstDepth == EMPTY)
+        return;
+
+    depths[0] = firstDepth;
+    colors[0] = fragments[base + 1u];
+
+    if (LAYERS == 1u)
+        return;
+
+    uint secondDepth = fragments[base + 2u];
+
+    if (secondDepth == EMPTY)
+        return;
+
+    depths[1] = secondDepth;
+    colors[1] = fragments[base + 3u];
+
+    for (uint i = 2u; i < LAYERS; i++) {
         uint offset = base + i * 2u;
 
         depths[i] = fragments[offset];
