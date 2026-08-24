@@ -15,7 +15,7 @@ reducedDebugInfo:false
 showSubtitles:false
 directionalAudio:false
 touchscreen:false
-fullscreen:false
+fullscreen:true
 bobView:true
 toggleCrouch:false
 toggleSprint:false
@@ -36,8 +36,8 @@ simulationDistance:12
 entityDistanceScaling:1.0
 guiScale:0
 particles:0
-maxFps:120
-graphicsMode:1
+maxFps:50
+graphicsMode:2
 ao:true
 prioritizeChunkUpdates:0
 biomeBlendRadius:2
