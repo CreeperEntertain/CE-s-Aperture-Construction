@@ -1,7 +1,6 @@
 #version 430
 
 const uint LAYERS = 4u;
-const uint EMPTY = 0xFFFFFFFFu;
 
 const float VOLUME_SIZE = 1.1;
 const float HALF_VOLUME = VOLUME_SIZE / 2.0;
@@ -15,7 +14,7 @@ layout(std430, binding = 0) readonly buffer FragmentBuffer {
     uint fragments[];
 };
 
-layout(std430, binding = 1) buffer LockBuffer {
+layout(std430, binding = 1) readonly buffer LockBuffer {
     uint locks[];
 };
 
@@ -43,25 +42,29 @@ void main() {
 
     uint pixelIndex = uint(pixel.y) * width + uint(pixel.x);
 
+    uint count = locks[pixelIndex];
+
+    if (count == 0u)
+        return;
+
+    if (count > LAYERS)
+        count = LAYERS;
+
     uint base = pixelIndex * LAYERS * 2u;
 
     vec2 screenUV = gl_FragCoord.xy / ScreenSize.xy;
 
     float opaqueDepth = texture(Sampler1, screenUV).r;
 
-    for (uint i = 0u; i < LAYERS; i++) {
+    for (uint i = 0u; i < count; i++) {
         uint offset = base + i * 2u;
         uint depthBits = fragments[offset];
-
-        if (depthBits == EMPTY)
-        continue;
 
         float depth = uintBitsToFloat(depthBits);
 
         if (depth >= opaqueDepth)
             continue;
 
-        // Reconstruct translucent surface position.
         vec4 clipPosition = vec4(
                 screenUV * 2.0 - 1.0,
                 depth * 2.0 - 1.0,

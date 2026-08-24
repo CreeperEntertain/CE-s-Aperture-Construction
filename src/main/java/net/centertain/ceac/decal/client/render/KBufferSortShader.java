@@ -51,8 +51,18 @@ public final class KBufferSortShader {
         if (program == 0)
             return;
         GL20.glUseProgram(program);
-        GL20.glUniform4f(screenSizeLocation, (float) width, (float) height, 0.0F, 0.0F);
-        GL43.glDispatchCompute((width + 7) / 8, (height + 7) / 8, 1);
+        GL20.glUniform4f(
+                screenSizeLocation,
+                (float) width,
+                (float) height,
+                0.0F,
+                0.0F
+        );
+        GL43.glDispatchCompute(
+                (width + 7) / 8,
+                (height + 7) / 8,
+                1
+        );
         GL20.glUseProgram(0);
     }
 

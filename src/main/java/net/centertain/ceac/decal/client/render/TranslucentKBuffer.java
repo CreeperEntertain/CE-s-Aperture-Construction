@@ -112,36 +112,17 @@ public final class TranslucentKBuffer {
     public static void clear() {
         if (!initialized)
             return;
-
-        GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, fragmentBuffer);
-
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer fragmentClear = stack.mallocInt(1);
-            fragmentClear.put(0, -1);
-
-            GL43.glClearBufferData(
-                    GL43.GL_SHADER_STORAGE_BUFFER,
-                    GL30.GL_R32UI,
-                    GL30.GL_RED_INTEGER,
-                    GL11.GL_UNSIGNED_INT,
-                    fragmentClear
-            );
-        }
-
         GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, lockBuffer);
-
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer lockClear = stack.callocInt(1);
-
+            IntBuffer zero = stack.callocInt(1);
             GL43.glClearBufferData(
                     GL43.GL_SHADER_STORAGE_BUFFER,
                     GL30.GL_R32UI,
                     GL30.GL_RED_INTEGER,
                     GL11.GL_UNSIGNED_INT,
-                    lockClear
+                    zero
             );
         }
-
         GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
     }
 

@@ -43,18 +43,23 @@ void main() {
     return;
 
     uint pixelIndex = y * width + x;
+    uint base = pixelIndex * LAYERS * 2u;
+
     uint count = locks[pixelIndex];
 
-    if (count <= 1u)
+    if (count == 0u)
     return;
 
     if (count > LAYERS)
     count = LAYERS;
 
-    uint base = pixelIndex * LAYERS * 2u;
-
     uint depths[LAYERS];
     uint colors[LAYERS];
+
+    for (uint i = 0u; i < LAYERS; i++) {
+        depths[i] = 0xFFFFFFFFu;
+        colors[i] = 0u;
+    }
 
     for (uint i = 0u; i < count; i++) {
         uint offset = base + i * 2u;
@@ -63,10 +68,10 @@ void main() {
         colors[i] = fragments[offset + 1u];
     }
 
-    for (uint pass = 0u; pass < count; pass++) {
+    for (uint pass = 0u; pass < LAYERS; pass++) {
         uint start = pass & 1u;
 
-        for (uint i = start; i + 1u < count; i += 2u) {
+        for (uint i = start; i + 1u < LAYERS; i += 2u) {
             compareSwap(
                     depths[i],
                     colors[i],
