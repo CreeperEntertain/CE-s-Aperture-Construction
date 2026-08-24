@@ -56,6 +56,12 @@
         0.0, 1.0, 0.0,
         0.0, 0.0, 1.0
       ]
+    },
+    {
+      "name": "DecalCount",
+      "type": "float",
+      "count": 1,
+      "values": [0.0]
     }
   ]
 }

@@ -17,6 +17,8 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
+import java.util.Collection;
+
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class DecalRenderer {
@@ -136,7 +138,7 @@ public final class DecalRenderer {
 
         Matrix4f invProj = new Matrix4f(RenderSystem.getProjectionMatrix()).invert();
 
-        Uniform invProjMatUniform = shader.getUniform("InvProjMat");
+        var invProjMatUniform = shader.getUniform("InvProjMat");
 
         if (invProjMatUniform != null)
             invProjMatUniform.set(invProj);
@@ -144,10 +146,19 @@ public final class DecalRenderer {
         Matrix3f viewRotation = new Matrix3f().rotate(camera.rotation());
         Matrix3f inverseViewRotation = new Matrix3f(viewRotation).invert();
 
-        Uniform iViewRotMatUniform = shader.getUniform("IViewRotMat");
+        var iViewRotMatUniform = shader.getUniform("IViewRotMat");
 
         if (iViewRotMatUniform != null)
             iViewRotMatUniform.set(inverseViewRotation);
+
+        Collection<Decal> decals = ClientDecals.getAll().values();
+
+        TranslucentKBuffer.uploadDecals(decals, camera.getPosition());
+
+        var decalCountUniform = shader.getUniform("DecalCount");
+
+        if (decalCountUniform != null)
+            decalCountUniform.set((float) decals.size());
 
         RenderSystem.setShader(() -> shader);
 
@@ -159,40 +170,15 @@ public final class DecalRenderer {
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
 
-        for (Decal decal : ClientDecals.getAll().values()) {
-            Vec3 origin = decal.getOrigin();
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
 
-            float x = (float) (origin.x - camera.getPosition().x);
-            float y = (float) (origin.y - camera.getPosition().y);
-            float z = (float) (origin.z - camera.getPosition().z);
+        buffer.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION);
 
-            Uniform originUniform = shader.getUniform("DecalOriginRelative");
+        buffer.vertex(-1.0, -1.0, 0.0).endVertex();
+        buffer.vertex( 3.0, -1.0, 0.0).endVertex();
+        buffer.vertex(-1.0,  3.0, 0.0).endVertex();
 
-            if (originUniform != null)
-                originUniform.set(x, y, z);
-
-            Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal());
-
-            Uniform normalUniform = shader.getUniform("DecalNormal");
-
-            if (normalUniform != null) {
-                normalUniform.set(
-                        (float) normal.x,
-                        (float) normal.y,
-                        (float) normal.z
-                );
-            }
-
-            BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-
-            buffer.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION);
-
-            buffer.vertex(-1.0, -1.0, 0.0).endVertex();
-            buffer.vertex( 3.0, -1.0, 0.0).endVertex();
-            buffer.vertex(-1.0,  3.0, 0.0).endVertex();
-
-            BufferUploader.drawWithShader(buffer.end());
-        }
+        BufferUploader.drawWithShader(buffer.end());
 
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();

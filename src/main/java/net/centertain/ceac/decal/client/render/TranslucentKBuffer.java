@@ -1,11 +1,15 @@
 package net.centertain.ceac.decal.client.render;
 
 import com.mojang.blaze3d.shaders.Uniform;
+import net.centertain.ceac.decal.Decal;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Collection;
 
 public final class TranslucentKBuffer {
     public static final int LAYERS = 4;
@@ -17,6 +21,8 @@ public final class TranslucentKBuffer {
 
     private static int fragmentBuffer;
     private static int lockBuffer;
+    private static int decalBuffer;
+    private static int decalCapacity;
 
     private static boolean initialized;
 
@@ -55,6 +61,60 @@ public final class TranslucentKBuffer {
         if (w == width && h == height && initialized)
             return;
         init(w, h);
+    }
+
+    public static void uploadDecals(Collection<Decal> decals, Vec3 cameraPosition) {
+        int count = decals.size();
+        if (count == 0)
+            return;
+        if (decalBuffer == 0 || decalCapacity < count) {
+            if (decalBuffer != 0)
+                GL15.glDeleteBuffers(decalBuffer);
+
+            decalBuffer = GL15.glGenBuffers();
+            decalCapacity = Math.max(count, 64);
+
+            GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, decalBuffer);
+            GL15.glBufferData(
+                    GL43.GL_SHADER_STORAGE_BUFFER,
+                    (long) decalCapacity * 8L * Float.BYTES,
+                    GL15.GL_DYNAMIC_DRAW
+            );
+        } else {
+            GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, decalBuffer);
+        }
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer data = stack.mallocFloat(count * 8);
+
+            for (Decal decal : decals) {
+                Vec3 origin = decal.getOrigin();
+
+                Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal()).normalize();
+
+                data.put((float) (origin.x - cameraPosition.x));
+                data.put((float) (origin.y - cameraPosition.y));
+                data.put((float) (origin.z - cameraPosition.z));
+                data.put(0.0f);
+
+                data.put((float) normal.x);
+                data.put((float) normal.y);
+                data.put((float) normal.z);
+                data.put(0.0f);
+            }
+            data.flip();
+            GL15.glBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER, 0, data);
+        }
+        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 2, decalBuffer);
+        GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
+    public static void destroyDecalBuffer() {
+        if (decalBuffer != 0) {
+            GL15.glDeleteBuffers(decalBuffer);
+            decalBuffer = 0;
+            decalCapacity = 0;
+        }
     }
 
     public static void clear() {
