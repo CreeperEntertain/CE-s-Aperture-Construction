@@ -35,10 +35,15 @@ void main() {
     uint(pixel.y) * width +
     uint(pixel.x);
 
+    uint current = locks[pixelIndex];
+
+    if (current >= LAYERS)
+        return;
+
     uint layer = atomicAdd(locks[pixelIndex], 1u);
 
     if (layer >= LAYERS)
-    return;
+        return;
 
     uint newDepth = floatBitsToUint(gl_FragCoord.z);
 
