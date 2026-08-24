@@ -11,6 +11,24 @@ layout(std430, binding = 0) buffer FragmentBuffer {
 
 uniform vec4 ScreenSize;
 
+void compareSwap(
+        inout uint depthA,
+        inout uint colorA,
+        inout uint depthB,
+        inout uint colorB
+) {
+    if (depthA > depthB) {
+        uint tempDepth = depthA;
+        uint tempColor = colorA;
+
+        depthA = depthB;
+        colorA = colorB;
+
+        depthB = tempDepth;
+        colorB = tempColor;
+    }
+}
+
 void main() {
     uint x = gl_GlobalInvocationID.x;
     uint y = gl_GlobalInvocationID.y;
@@ -34,21 +52,18 @@ void main() {
         colors[i] = fragments[offset + 1u];
     }
 
-    for (uint i = 1u; i < LAYERS; i++) {
-        uint depth = depths[i];
-        uint color = colors[i];
+    // Odd-even transposition sort
+    for (uint pass = 0u; pass < LAYERS; pass++) {
+        uint start = pass & 1u;
 
-        uint j = i;
-
-        while (j > 0u &&
-            depths[j - 1u] > depth) {
-            depths[j] = depths[j - 1u];
-            colors[j] = colors[j - 1u];
-            j--;
+        for (uint i = start; i + 1u < LAYERS;i += 2u) {
+            compareSwap(
+                    depths[i],
+                    colors[i],
+                    depths[i + 1u],
+                    colors[i + 1u]
+            );
         }
-
-        depths[j] = depth;
-        colors[j] = color;
     }
 
     for (uint i = 0u; i < LAYERS; i++) {
