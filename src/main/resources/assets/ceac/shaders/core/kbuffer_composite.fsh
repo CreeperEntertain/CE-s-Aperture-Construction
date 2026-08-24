@@ -24,7 +24,7 @@ void main() {
     uint(pixel.x);
 
     uint base = pixelIndex * LAYERS * 2u;
-    
+
     float opaqueDepth = texture(Sampler0, screenUV).r;
     vec4 result = vec4(0.0);
 

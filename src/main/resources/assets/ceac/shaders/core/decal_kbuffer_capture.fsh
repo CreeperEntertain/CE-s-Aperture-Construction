@@ -26,6 +26,8 @@ uniform mat3 IViewRotMat;
 out vec4 fragColor;
 
 void main() {
+    fragColor = vec4(0.0);
+
     ivec2 pixel = ivec2(gl_FragCoord.xy);
 
     uint width = uint(ScreenSize.x);

@@ -2,6 +2,7 @@ package net.centertain.ceac.decal.client;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.centertain.ceac.decal.Decal;
@@ -135,7 +136,7 @@ public final class DecalRenderer {
 
         Matrix4f invProj = new Matrix4f(RenderSystem.getProjectionMatrix()).invert();
 
-        var invProjMatUniform = shader.getUniform("InvProjMat");
+        Uniform invProjMatUniform = shader.getUniform("InvProjMat");
 
         if (invProjMatUniform != null)
             invProjMatUniform.set(invProj);
@@ -143,7 +144,7 @@ public final class DecalRenderer {
         Matrix3f viewRotation = new Matrix3f().rotate(camera.rotation());
         Matrix3f inverseViewRotation = new Matrix3f(viewRotation).invert();
 
-        var iViewRotMatUniform = shader.getUniform("IViewRotMat");
+        Uniform iViewRotMatUniform = shader.getUniform("IViewRotMat");
 
         if (iViewRotMatUniform != null)
             iViewRotMatUniform.set(inverseViewRotation);
@@ -152,28 +153,27 @@ public final class DecalRenderer {
 
         RenderSystem.setShaderTexture(0, ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png"));
 
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.disableCull();
-        RenderSystem.disableBlend();
-
-        Vec3 cameraPosition = camera.getPosition();
 
         for (Decal decal : ClientDecals.getAll().values()) {
             Vec3 origin = decal.getOrigin();
 
-            float x = (float) (origin.x - cameraPosition.x);
-            float y = (float) (origin.y - cameraPosition.y);
-            float z = (float) (origin.z - cameraPosition.z);
+            float x = (float) (origin.x - camera.getPosition().x);
+            float y = (float) (origin.y - camera.getPosition().y);
+            float z = (float) (origin.z - camera.getPosition().z);
 
-            var originUniform = shader.getUniform("DecalOriginRelative");
+            Uniform originUniform = shader.getUniform("DecalOriginRelative");
 
             if (originUniform != null)
                 originUniform.set(x, y, z);
 
             Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal());
 
-            var normalUniform = shader.getUniform("DecalNormal");
+            Uniform normalUniform = shader.getUniform("DecalNormal");
 
             if (normalUniform != null) {
                 normalUniform.set(
@@ -194,9 +194,10 @@ public final class DecalRenderer {
             BufferUploader.drawWithShader(buffer.end());
         }
 
-        RenderSystem.enableCull();
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
     }
 
     private static void renderVolume(
