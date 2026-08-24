@@ -3,6 +3,7 @@ package net.centertain.ceac.client;
 import net.centertain.ceac.decal.client.TranslucentRenderTargets;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -25,5 +26,11 @@ public class ClientForgeEvents {
         int height = minecraft.getWindow().getHeight();
 
         TranslucentRenderTargets.resize(width, height);
+    }
+
+    @SubscribeEvent
+    public static void onGameShuttingDown(GameShuttingDownEvent event)
+    {
+        TranslucentRenderTargets.destroy();
     }
 }

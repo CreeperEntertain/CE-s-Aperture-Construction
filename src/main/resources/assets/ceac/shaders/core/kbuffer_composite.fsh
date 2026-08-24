@@ -15,6 +15,9 @@ in vec2 screenUV;
 out vec4 fragColor;
 
 void main() {
+    fragColor = vec4(0.0);
+
+    /*
     uint width = uint(ScreenSize.x);
 
     ivec2 pixel = ivec2(screenUV * ScreenSize.xy);
@@ -41,4 +44,5 @@ void main() {
         result.a = color.a + result.a * (1.0 - color.a);
     }
     fragColor = result;
+    */
 }

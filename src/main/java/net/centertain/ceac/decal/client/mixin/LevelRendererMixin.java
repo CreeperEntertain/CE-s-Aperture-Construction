@@ -47,7 +47,7 @@ public abstract class LevelRendererMixin {
         LevelRendererAccessor renderer = (LevelRendererAccessor) (Object) this;
         Vec3 cameraPos = camera.getPosition();
 
-        target.clear(Minecraft.ON_OSX);
+        target.clear(true);
         target.bindWrite(true);
 
         TranslucentCaptureState.begin();
@@ -72,10 +72,7 @@ public abstract class LevelRendererMixin {
             RenderSystem.enableCull();
         } finally {
             TranslucentCaptureState.end();
-
-            Minecraft.getInstance()
-                    .getMainRenderTarget()
-                    .bindWrite(false);
+            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
         }
 
         DecalRenderer.renderKBuffer(camera);
