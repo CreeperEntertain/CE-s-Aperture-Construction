@@ -109,14 +109,6 @@ public final class TranslucentKBuffer {
         GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
     }
 
-    public static void destroyDecalBuffer() {
-        if (decalBuffer != 0) {
-            GL15.glDeleteBuffers(decalBuffer);
-            decalBuffer = 0;
-            decalCapacity = 0;
-        }
-    }
-
     public static void clear() {
         if (!initialized)
             return;
