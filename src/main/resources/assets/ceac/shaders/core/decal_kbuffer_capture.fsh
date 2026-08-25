@@ -77,10 +77,10 @@ void main() {
         vec3 surfaceView = viewPosition.xyz;
         vec3 surfaceCameraRelative = IViewRotMat * surfaceView;
 
-        for (uint decalIndex = 0u;float(decalIndex) < DecalCount;++decalIndex) {
-            vec3 decalOrigin = decals[decalIndex].origin.xyz;
+        for (uint decalIndex = 0u; decalIndex < uint(DecalCount);++decalIndex) {
 
-            vec3 surfaceDecalRelative = surfaceCameraRelative - decalOrigin;
+            DecalData decal = decals[decalIndex];
+            vec3 surfaceDecalRelative = surfaceCameraRelative - decal.origin.xyz;
 
             if (
                 abs(surfaceDecalRelative.x) > HALF_VOLUME ||
@@ -89,12 +89,8 @@ void main() {
             )
                 continue;
 
-            vec3 tangent = decals[decalIndex].tangent.xyz;
-
-            vec3 bitangent = decals[decalIndex].bitangent.xyz;
-
-            float u = dot(surfaceDecalRelative, tangent);
-            float v = dot(surfaceDecalRelative, bitangent);
+            float u = dot(surfaceDecalRelative, decal.tangent.xyz);
+            float v = dot(surfaceDecalRelative, decal.bitangent.xyz);
 
             u = u / VOLUME_SIZE + 0.5;
             v = 1.0 - (v / VOLUME_SIZE + 0.5);
@@ -102,14 +98,13 @@ void main() {
             if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
                 continue;
 
-            vec4 decal = texture(Sampler0, vec2(u, v));
+            vec4 decalColor = texture(Sampler0, vec2(u, v));
 
-            if (decal.a <= 0.01)
+            if (decalColor.a <= 0.01)
                 continue;
 
-            fragColor = decal;
+            fragColor = decalColor;
             gl_FragDepth = max(0.0, depth - 1e-5);
-
             return;
         }
     }
