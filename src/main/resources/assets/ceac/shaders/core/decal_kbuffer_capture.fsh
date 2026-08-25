@@ -115,7 +115,7 @@ void main() {
             vec4 decal = texture(Sampler0, vec2(u, v));
 
             if (decal.a <= 0.01)
-               continue;
+                continue;
 
             fragColor = decal;
 
