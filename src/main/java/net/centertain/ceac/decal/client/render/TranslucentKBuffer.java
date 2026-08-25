@@ -77,7 +77,7 @@ public final class TranslucentKBuffer {
             GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, decalBuffer);
             GL15.glBufferData(
                     GL43.GL_SHADER_STORAGE_BUFFER,
-                    (long) decalCapacity * 8L * Float.BYTES,
+                    (long) decalCapacity * 12L * Float.BYTES,
                     GL15.GL_DYNAMIC_DRAW
             );
         } else {
@@ -85,21 +85,39 @@ public final class TranslucentKBuffer {
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            FloatBuffer data = stack.mallocFloat(count * 8);
+            FloatBuffer data = stack.mallocFloat(count * 12);
 
             for (Decal decal : decals) {
                 Vec3 origin = decal.getOrigin();
 
                 Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal()).normalize();
 
+                Vec3 reference;
+
+                if (Math.abs(normal.y) < 0.999)
+                    reference = new Vec3(0.0, 1.0, 0.0);
+                else
+                    reference = new Vec3(1.0, 0.0, 0.0);
+
+                Vec3 tangent = reference.cross(normal).normalize();
+                Vec3 bitangent = normal.cross(tangent).normalize();
+
+                // Origin
                 data.put((float) (origin.x - cameraPosition.x));
                 data.put((float) (origin.y - cameraPosition.y));
                 data.put((float) (origin.z - cameraPosition.z));
                 data.put(0.0f);
 
-                data.put((float) normal.x);
-                data.put((float) normal.y);
-                data.put((float) normal.z);
+                // Tangent
+                data.put((float) tangent.x);
+                data.put((float) tangent.y);
+                data.put((float) tangent.z);
+                data.put(0.0f);
+
+                // Bitangent
+                data.put((float) bitangent.x);
+                data.put((float) bitangent.y);
+                data.put((float) bitangent.z);
                 data.put(0.0f);
             }
             data.flip();

@@ -7,7 +7,8 @@ const float HALF_VOLUME = VOLUME_SIZE / 2.0;
 
 struct DecalData {
     vec4 origin;
-    vec4 normal;
+    vec4 tangent;
+    vec4 bitangent;
 };
 
 layout(std430, binding = 0) readonly buffer FragmentBuffer {
@@ -78,7 +79,6 @@ void main() {
 
         for (uint decalIndex = 0u;float(decalIndex) < DecalCount;++decalIndex) {
             vec3 decalOrigin = decals[decalIndex].origin.xyz;
-            vec3 normal = normalize(decals[decalIndex].normal.xyz);
 
             vec3 surfaceDecalRelative = surfaceCameraRelative - decalOrigin;
 
@@ -89,16 +89,9 @@ void main() {
             )
                 continue;
 
-            vec3 reference;
+            vec3 tangent = decals[decalIndex].tangent.xyz;
 
-            if (abs(normal.y) < 0.999)
-                reference = vec3(0.0, 1.0, 0.0);
-            else
-                reference = vec3(1.0, 0.0, 0.0);
-
-            vec3 tangent = normalize(cross(reference, normal));
-
-            vec3 bitangent = normalize(cross(normal, tangent));
+            vec3 bitangent = decals[decalIndex].bitangent.xyz;
 
             float u = dot(surfaceDecalRelative, tangent);
             float v = dot(surfaceDecalRelative, bitangent);
