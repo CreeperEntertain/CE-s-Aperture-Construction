@@ -79,7 +79,6 @@ public abstract class LevelRendererMixin {
         if (Minecraft.getInstance().options.graphicsMode().get() != GraphicsStatus.FABULOUS)
             DecalRenderer.renderKBuffer(camera, false);
         TranslucentKBuffer.barrier();
-        TranslucentCaptureState.composite();
         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
     }
 
