@@ -6,8 +6,6 @@
   "client": [
     "LevelRendererAccessor",
     "LevelRendererMixin",
-    "RenderStateShardAccessor",
-    "RenderStateShardMixin",
     "RenderSystemMixin"
   ],
   "injectors": {

@@ -21,7 +21,6 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 public class DecalShaders {
     private static ShaderInstance decal;
     private static ShaderInstance translucentCapture;
-    private static ShaderInstance kBufferDebug;
     private static ShaderInstance kBufferComposite;
     private static ShaderInstance decalKBufferCapture;
 
@@ -47,14 +46,6 @@ public class DecalShaders {
                         DefaultVertexFormat.BLOCK
                 ),
                 shader -> translucentCapture = shader
-        );
-        event.registerShader(
-                new ShaderInstance(
-                        event.getResourceProvider(),
-                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "kbuffer_debug"),
-                        DefaultVertexFormat.POSITION
-                ),
-                shader -> kBufferDebug = shader
         );
         event.registerShader(
                 new ShaderInstance(
@@ -94,9 +85,6 @@ public class DecalShaders {
     }
     public static ShaderInstance getTranslucentCapture() {
         return translucentCapture;
-    }
-    public static ShaderInstance getKBufferDebug() {
-        return kBufferDebug;
     }
     public static ShaderInstance getKBufferComposite() {
         return kBufferComposite;
