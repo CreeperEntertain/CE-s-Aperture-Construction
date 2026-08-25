@@ -17,7 +17,7 @@ public final class DecalRenderEvents {
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             DecalRenderer.captureOpaqueDepth();
             DecalRenderer.render(event);
         }
