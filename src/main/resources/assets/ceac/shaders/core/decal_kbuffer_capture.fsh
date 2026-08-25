@@ -59,7 +59,6 @@ void main() {
         uint offset = i * pixelCount * 2u + pixelIndex * 2u;
 
         uint depthBits = fragments[offset];
-
         float depth = uintBitsToFloat(depthBits);
 
         if (depth >= opaqueDepth)
@@ -72,7 +71,6 @@ void main() {
         );
 
         vec4 viewPosition = InvProjMat * clipPosition;
-
         viewPosition /= viewPosition.w;
 
         vec3 surfaceView = viewPosition.xyz;
@@ -80,7 +78,6 @@ void main() {
 
         for (uint decalIndex = 0u;float(decalIndex) < DecalCount;++decalIndex) {
             vec3 decalOrigin = decals[decalIndex].origin.xyz;
-
             vec3 normal = normalize(decals[decalIndex].normal.xyz);
 
             vec3 surfaceDecalRelative = surfaceCameraRelative - decalOrigin;
@@ -118,8 +115,10 @@ void main() {
                 continue;
 
             fragColor = decal;
+            gl_FragDepth = max(0.0, depth - 1e-5);
 
             return;
         }
     }
+    discard;
 }

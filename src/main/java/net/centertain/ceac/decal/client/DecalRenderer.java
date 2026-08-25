@@ -16,6 +16,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Collection;
 
@@ -122,7 +123,8 @@ public final class DecalRenderer {
     }
 
     public static void renderKBuffer(
-            Camera camera
+            Camera camera,
+            boolean fabulous
     ) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
@@ -167,8 +169,14 @@ public final class DecalRenderer {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
+        if (fabulous) {
+            RenderSystem.enableDepthTest();
+            RenderSystem.depthFunc(GL11.GL_ALWAYS);
+            RenderSystem.depthMask(true);
+        } else {
+            RenderSystem.disableDepthTest();
+            RenderSystem.depthMask(false);
+        }
         RenderSystem.disableCull();
 
         BufferBuilder buffer = Tesselator.getInstance().getBuilder();

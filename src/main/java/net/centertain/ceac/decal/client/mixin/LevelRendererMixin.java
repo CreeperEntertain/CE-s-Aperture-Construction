@@ -3,13 +3,14 @@ package net.centertain.ceac.decal.client.mixin;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.*;
 import net.centertain.ceac.decal.client.DecalRenderer;
 import net.centertain.ceac.decal.client.DecalShaders;
 import net.centertain.ceac.decal.client.TranslucentCaptureState;
 import net.centertain.ceac.decal.client.TranslucentRenderTargets;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.client.Camera;
+import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.world.phys.Vec3;
@@ -75,10 +76,39 @@ public abstract class LevelRendererMixin {
             Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
         }
 
-        DecalRenderer.renderKBuffer(camera);
+        if (Minecraft.getInstance().options.graphicsMode().get() != GraphicsStatus.FABULOUS)
+            DecalRenderer.renderKBuffer(camera, false);
         TranslucentKBuffer.barrier();
         TranslucentCaptureState.composite();
         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+    }
+
+    @Inject(
+            method = "renderChunkLayer",
+            at = @At("HEAD")
+    )
+    private void ceac$renderFabulousKBuffer(
+            RenderType renderType,
+            PoseStack poseStack,
+            double camX,
+            double camY,
+            double camZ,
+            Matrix4f projectionMatrix,
+            CallbackInfo ci
+    ) {
+        if (renderType != RenderType.translucent())
+            return;
+        if (TranslucentCaptureState.isActive())
+            return;
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.options.graphicsMode().get() != GraphicsStatus.FABULOUS)
+            return;
+        LevelRendererAccessor renderer = (LevelRendererAccessor) (Object) this;
+        RenderTarget translucentTarget = renderer.ceac$getTranslucentTarget();
+        if (translucentTarget == null)
+            return;
+        translucentTarget.bindWrite(false);
+        DecalRenderer.renderKBuffer(minecraft.gameRenderer.getMainCamera(), true);
     }
 
     @Inject(
