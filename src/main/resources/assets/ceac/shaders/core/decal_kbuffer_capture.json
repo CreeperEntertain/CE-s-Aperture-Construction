@@ -17,27 +17,10 @@
 
   "uniforms": [
     {
-      "name": "DecalOriginRelative",
-      "type": "float",
-      "count": 3,
-      "values": [0.0, 0.0, 0.0]
-    },
-    {
-      "name": "DecalNormal",
-      "type": "float",
-      "count": 3,
-      "values": [0.0, 0.0, 1.0]
-    },
-    {
       "name": "ScreenSize",
       "type": "float",
       "count": 4,
-      "values": [
-        1920.0,
-        1080.0,
-        0.0,
-        0.0
-      ]
+      "values": [1920.0, 1080.0, 0.0, 0.0]
     },
     {
       "name": "InvProjMat",
@@ -62,6 +45,24 @@
     },
     {
       "name": "DecalCount",
+      "type": "float",
+      "count": 1,
+      "values": [0.0]
+    },
+    {
+      "name": "CameraPosition",
+      "type": "float",
+      "count": 3,
+      "values": [0.0, 0.0, 0.0]
+    },
+    {
+      "name": "CellSize",
+      "type": "float",
+      "count": 1,
+      "values": [1.1]
+    },
+    {
+      "name": "CellCount",
       "type": "float",
       "count": 1,
       "values": [0.0]

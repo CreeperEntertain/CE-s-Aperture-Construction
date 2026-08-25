@@ -12,6 +12,11 @@ struct DecalData {
     vec4 bitangent;
 };
 
+struct CellData {
+    ivec4 cell;
+    ivec4 data;
+};
+
 layout(std430, binding = 0) readonly buffer FragmentBuffer {
     uint fragments[];
 };
@@ -24,16 +29,72 @@ layout(std430, binding = 2) readonly buffer DecalBuffer {
     DecalData decals[];
 };
 
+layout(std430, binding = 3) readonly buffer CellBuffer {
+    CellData cells[];
+};
+
+layout(std430, binding = 4) readonly buffer DecalIndexBuffer {
+    uint decalIndices[];
+};
+
 uniform sampler2D Sampler0;
 uniform sampler2D Sampler1;
 
 uniform float DecalCount;
+uniform float CellSize;
+uniform float CellCount;
 uniform vec4 ScreenSize;
+
+uniform vec3 CameraPosition;
 
 uniform mat4 InvProjMat;
 uniform mat3 IViewRotMat;
 
 out vec4 fragColor;
+
+bool findCell(
+        ivec3 cell,
+        out uint offset,
+        out uint count
+) {
+    int low = 0;
+    int high = int(CellCount) - 1;
+
+    while (low <= high) {
+        int middle = (low + high) >> 1;
+
+        CellData entry = cells[middle];
+
+        if (
+            entry.cell.x == cell.x &&
+            entry.cell.y == cell.y &&
+            entry.cell.z == cell.z
+        ) {
+            offset = uint(entry.data.x);
+            count = uint(entry.data.y);
+            return true;
+        }
+
+        if (
+            entry.cell.x < cell.x ||
+            (
+                entry.cell.x == cell.x &&
+                entry.cell.y < cell.y
+            ) ||
+            (
+                entry.cell.x == cell.x &&
+                entry.cell.y == cell.y &&
+                entry.cell.z < cell.z
+            )
+        ) {
+            low = middle + 1;
+        } else {
+            high = middle - 1;
+        }
+    }
+
+    return false;
+}
 
 void main() {
     fragColor = vec4(0.0);
@@ -76,10 +137,21 @@ void main() {
 
         vec3 surfaceCameraRelative = IViewRotMat * (viewPosition.xyz / viewPosition.w);
 
-        for (uint decalIndex = 0u; decalIndex < uint(DecalCount);++decalIndex) {
+        vec3 surfaceWorld = surfaceCameraRelative + CameraPosition;
+
+        ivec3 cell = ivec3(floor(surfaceWorld / CellSize));
+
+        uint decalOffset;
+        uint decalCount;
+
+        if (!findCell(cell, decalOffset, decalCount))
+            continue;
+
+        for (uint j = 0u; j < decalCount; ++j) {
+            uint decalIndex = decalIndices[decalOffset + j];
 
             DecalData decal = decals[decalIndex];
-            vec3 surfaceDecalRelative = surfaceCameraRelative - decal.origin.xyz;
+            vec3 surfaceDecalRelative = surfaceWorld - decal.origin.xyz;
 
             if (
                 abs(surfaceDecalRelative.x) > HALF_VOLUME ||

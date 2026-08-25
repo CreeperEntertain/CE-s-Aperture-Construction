@@ -135,8 +135,20 @@ public final class DecalRenderer {
         if (shader == null)
             return;
 
+        Collection<Decal> decals = ClientDecals.getAll().values();
+
+        TranslucentKBuffer.uploadDecals(decals);
         TranslucentKBuffer.bind();
         TranslucentKBuffer.setShaderUniforms(shader);
+
+        var cameraPositionUniform = shader.getUniform("CameraPosition");
+
+        if (cameraPositionUniform != null)
+            cameraPositionUniform.set(
+                    (float) camera.getPosition().x,
+                    (float) camera.getPosition().y,
+                    (float) camera.getPosition().z
+            );
 
         Matrix4f invProj = new Matrix4f(RenderSystem.getProjectionMatrix()).invert();
 
@@ -152,10 +164,6 @@ public final class DecalRenderer {
 
         if (iViewRotMatUniform != null)
             iViewRotMatUniform.set(inverseViewRotation);
-
-        Collection<Decal> decals = ClientDecals.getAll().values();
-
-        TranslucentKBuffer.uploadDecals(decals, camera.getPosition());
 
         var decalCountUniform = shader.getUniform("DecalCount");
 
