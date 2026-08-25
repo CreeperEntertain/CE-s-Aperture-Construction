@@ -5,6 +5,7 @@ const uint LAYERS = 4u;
 layout(std430, binding = 0) buffer FragmentBuffer {
     uint fragments[];
 };
+
 layout(std430, binding = 1) buffer LockBuffer {
     uint locks[];
 };
@@ -28,6 +29,7 @@ void main() {
     color = clamp(color, 0.0, 1.0);
 
     uint width = uint(ScreenSize.x);
+    uint pixelCount = uint(ScreenSize.x * ScreenSize.y);
 
     ivec2 pixel = ivec2(gl_FragCoord.xy);
 
@@ -42,8 +44,8 @@ void main() {
 
     uint newDepth = floatBitsToUint(gl_FragCoord.z);
 
-    uint base = pixelIndex * LAYERS * 2u;
-    uint offset = base + layer * 2u;
+    uint base = layer * pixelCount * 2u;
+    uint offset = base + pixelIndex * 2u;
 
     fragments[offset] = newDepth;
     fragments[offset + 1u] = packUnorm4x8(color);

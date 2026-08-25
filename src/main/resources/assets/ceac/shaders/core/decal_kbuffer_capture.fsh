@@ -39,6 +39,7 @@ void main() {
     ivec2 pixel = ivec2(gl_FragCoord.xy);
 
     uint width = uint(ScreenSize.x);
+    uint pixelCount = uint(ScreenSize.x * ScreenSize.y);
 
     uint pixelIndex = uint(pixel.y) * width + uint(pixel.x);
 
@@ -50,14 +51,13 @@ void main() {
     if (count > LAYERS)
         count = LAYERS;
 
-    uint base = pixelIndex * LAYERS * 2u;
-
     vec2 screenUV = gl_FragCoord.xy / ScreenSize.xy;
 
     float opaqueDepth = texture(Sampler1, screenUV).r;
 
-    for (uint i = 0u; i < count; i++) {
-        uint offset = base + i * 2u;
+    for (uint i = 0u; i < count; ++i) {
+        uint offset = i * pixelCount * 2u + pixelIndex * 2u;
+
         uint depthBits = fragments[offset];
 
         float depth = uintBitsToFloat(depthBits);
@@ -78,19 +78,18 @@ void main() {
         vec3 surfaceView = viewPosition.xyz;
         vec3 surfaceCameraRelative = IViewRotMat * surfaceView;
 
-        for (uint decalIndex = 0u;
-            float(decalIndex) < DecalCount;
-            decalIndex++) {
-
+        for (uint decalIndex = 0u;float(decalIndex) < DecalCount;++decalIndex) {
             vec3 decalOrigin = decals[decalIndex].origin.xyz;
 
             vec3 normal = normalize(decals[decalIndex].normal.xyz);
 
             vec3 surfaceDecalRelative = surfaceCameraRelative - decalOrigin;
 
-            if (abs(surfaceDecalRelative.x) > HALF_VOLUME ||
+            if (
+                abs(surfaceDecalRelative.x) > HALF_VOLUME ||
                 abs(surfaceDecalRelative.y) > HALF_VOLUME ||
-                abs(surfaceDecalRelative.z) > HALF_VOLUME)
+                abs(surfaceDecalRelative.z) > HALF_VOLUME
+            )
                 continue;
 
             vec3 reference;
@@ -110,14 +109,13 @@ void main() {
             u = u / VOLUME_SIZE + 0.5;
             v = 1.0 - (v / VOLUME_SIZE + 0.5);
 
-            if (u < 0.0 || u > 1.0 ||
-                v < 0.0 || v > 1.0)
+            if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
                 continue;
 
             vec4 decal = texture(Sampler0, vec2(u, v));
 
             if (decal.a <= 0.01)
-                continue;
+               continue;
 
             fragColor = decal;
 
