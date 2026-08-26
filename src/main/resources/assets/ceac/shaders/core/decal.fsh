@@ -1,17 +1,15 @@
-#version 150
+#version 430
 
 uniform sampler2D Sampler0;
 uniform sampler2D Sampler1;
 
-uniform vec3 DecalNormal;
-uniform vec3 DecalOriginRelative;
 uniform vec4 ScreenSize;
 
 uniform mat4 InvProjMat;
 uniform mat3 IViewRotMat;
 
-in vec3 decalPosition;
-in vec4 vertexColor;
+flat in vec3 decalOriginRelative;
+flat in vec3 decalNormal;
 
 out vec4 fragColor;
 
@@ -31,7 +29,7 @@ void main() {
 
     vec3 surfaceView = viewPosition.xyz;
     vec3 surfaceCameraRelative = IViewRotMat * surfaceView;
-    vec3 surfaceDecalRelative = surfaceCameraRelative - DecalOriginRelative;
+    vec3 surfaceDecalRelative = surfaceCameraRelative - decalOriginRelative;
 
 
     // Volume content checks
@@ -46,7 +44,7 @@ void main() {
 
     // Projection plane tangent math
 
-    vec3 normal = normalize(DecalNormal);
+    vec3 normal = normalize(decalNormal);
     vec3 reference;
 
     if (abs(normal.y) < 0.999)
@@ -65,17 +63,16 @@ void main() {
     u = u / 1.1 + 0.5;
     v = 1.0 - (v / 1.1 + 0.5);
 
-    if (u < 0.0 || u > 1.0 ||
-        v < 0.0 || v > 1.0)
+    if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
         discard;
 
 
     // Decal sampling
 
-    vec4 decal = texture(Sampler0, vec2(u, v));
+    vec4 decal = texture2D(Sampler0, vec2(u, v));
 
     if (decal.a <= 0.01)
         discard;
 
-    fragColor = decal * vertexColor;
+    fragColor = decal;
 }

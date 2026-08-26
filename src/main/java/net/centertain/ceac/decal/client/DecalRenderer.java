@@ -4,7 +4,11 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.client.Camera;
@@ -14,10 +18,13 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.util.Collection;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
@@ -26,6 +33,14 @@ public final class DecalRenderer {
     private static final double VOLUME_SIZE = 1.1;
 
     private static RenderTarget opaqueDepthTarget;
+
+    private static int decalVolumeVao;
+    private static int decalVolumeVbo;
+
+    private static int decalInstanceVbo;
+    private static int decalInstanceCapacity;
+
+    private static boolean decalVolumeInitialized;
 
     private DecalRenderer() {}
 
@@ -39,8 +54,7 @@ public final class DecalRenderer {
         if (opaqueDepthTarget == null) {
             opaqueDepthTarget = new TextureTarget(width, height, true, Minecraft.ON_OSX);
             opaqueDepthTarget.resize(width, height, true);
-        } else if (opaqueDepthTarget.width != width ||
-                opaqueDepthTarget.height != height) {
+        } else if (opaqueDepthTarget.width != width || opaqueDepthTarget.height != height) {
             opaqueDepthTarget.resize(width, height, true);
         }
         opaqueDepthTarget.copyDepthFrom(mainTarget);
@@ -62,36 +76,60 @@ public final class DecalRenderer {
             return;
 
         Camera camera = event.getCamera();
-        Vec3 cameraPosition = camera.getPosition();
-        PoseStack poseStack = event.getPoseStack();
         ShaderInstance shader = DecalShaders.getInstance();
         if (shader == null)
             return;
 
+        Collection<Decal> decals = ClientDecals.getAll().values();
+
+        int decalCount = decals.size();
+
+        ensureDecalVolumeBuffer();
+        uploadDecalInstances(decals, camera.getPosition());
+
         ResourceLocation decalTexture = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png");
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
-        int depthTexture = opaqueDepthTarget.getDepthTextureId();
 
         mainTarget.bindWrite(false);
 
         RenderSystem.setShader(() -> shader);
         RenderSystem.setShaderTexture(0, decalTexture);
-        RenderSystem.setShaderTexture(1, depthTexture);
-        var screenSizeUniform = shader.getUniform("ScreenSize");
-        if (screenSizeUniform != null) {
-            screenSizeUniform.set(
+        RenderSystem.setShaderTexture(1, opaqueDepthTarget.getDepthTextureId());
+
+        shader.setSampler("Sampler0", RenderSystem.getShaderTexture(0));
+        shader.setSampler("Sampler1", RenderSystem.getShaderTexture(1));
+
+        Uniform decalPoseMat = shader.getUniform("DecalPoseMat");
+
+        if (decalPoseMat != null)
+            decalPoseMat.set(event.getPoseStack().last().pose());
+
+        Uniform projection = shader.getUniform("ProjMat");
+
+        if (projection != null)
+            projection.set(RenderSystem.getProjectionMatrix());
+
+        Uniform inverseProjection = shader.getUniform("InvProjMat");
+
+        if (inverseProjection != null) {
+            Matrix4f invProj = new Matrix4f(RenderSystem.getProjectionMatrix()).invert();
+            inverseProjection.set(invProj);
+        }
+
+        Uniform inverseViewRotation = shader.getUniform("IViewRotMat");
+
+        if (inverseViewRotation != null)
+            inverseViewRotation.set(RenderSystem.getInverseViewRotationMatrix());
+
+        Uniform screenSize = shader.getUniform("ScreenSize");
+
+        if (screenSize != null)
+            screenSize.set(
                     (float) minecraft.getWindow().getWidth(),
                     (float) minecraft.getWindow().getHeight(),
                     0.0f,
                     0.0f
             );
-        }
-
-        var invProjMatUniform = shader.getUniform("InvProjMat");
-        if (invProjMatUniform != null) {
-            Matrix4f invProj = new Matrix4f(RenderSystem.getProjectionMatrix()).invert();
-            invProjMatUniform.set(invProj);
-        }
 
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
         lightTexture.turnOnLightLayer();
@@ -101,25 +139,143 @@ public final class DecalRenderer {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
 
-        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        for (Decal decal : ClientDecals.getAll().values()) {
-            buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP);
-            renderVolume(
-                    decal,
-                    cameraPosition,
-                    poseStack,
-                    buffer,
-                    shader
-            );
-            BufferUploader.drawWithShader(buffer.end());
-        }
+        shader.apply();
+
+        GL30.glBindVertexArray(decalVolumeVao);
+        GL31.glDrawArraysInstanced(GL11.GL_TRIANGLES, 0, 36, decalCount);
+        GL30.glBindVertexArray(0);
+
+        shader.clear();
 
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
-        RenderSystem.enableCull();
         RenderSystem.disableBlend();
 
         lightTexture.turnOffLightLayer();
+    }
+
+    private static void uploadDecalInstances(
+            Collection<Decal> decals,
+            Vec3 cameraPosition
+    ) {
+        int count = decals.size();
+
+        if (decalInstanceVbo == 0)
+            decalInstanceVbo = GL15.glGenBuffers();
+
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, decalInstanceVbo);
+
+        if (decalInstanceCapacity < count) {
+            decalInstanceCapacity = Math.max(count, Math.max(decalInstanceCapacity * 2, 64));
+
+            GL15.glBufferData(
+                    GL15.GL_ARRAY_BUFFER,
+                    (long) decalInstanceCapacity *
+                            6L *
+                            Float.BYTES,
+                    GL15.GL_DYNAMIC_DRAW
+            );
+        }
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer data = stack.mallocFloat(count * 6);
+
+            for (Decal decal : decals) {
+                Vec3 origin = decal.getOrigin();
+                Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal());
+
+                data.put((float) (origin.x - cameraPosition.x));
+                data.put((float) (origin.y - cameraPosition.y));
+                data.put((float) (origin.z - cameraPosition.z));
+
+                data.put((float) normal.x);
+                data.put((float) normal.y);
+                data.put((float) normal.z);
+            }
+
+            data.flip();
+
+            GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, data);
+        }
+        
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+    }
+
+    private static void ensureDecalVolumeBuffer() {
+        if (decalVolumeInitialized)
+            return;
+
+        float[] vertices = getVertices();
+
+        decalVolumeVao = GL30.glGenVertexArrays();
+        decalVolumeVbo = GL15.glGenBuffers();
+        decalInstanceVbo = GL15.glGenBuffers();
+        decalInstanceCapacity = 64;
+
+        GL30.glBindVertexArray(decalVolumeVao);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, decalVolumeVbo);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices, GL15.GL_STATIC_DRAW);
+        GL20.glEnableVertexAttribArray(0);
+        GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 3 * Float.BYTES, 0L);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, decalInstanceVbo);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (long) decalInstanceCapacity * 6L * Float.BYTES, GL15.GL_DYNAMIC_DRAW);
+        GL20.glEnableVertexAttribArray(1);
+        GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, 6 * Float.BYTES, 0L);
+        GL33.glVertexAttribDivisor(1, 1);
+        GL20.glEnableVertexAttribArray(2);
+        GL20.glVertexAttribPointer(2, 3, GL11.GL_FLOAT, false, 6 * Float.BYTES, 3L * Float.BYTES);
+        GL33.glVertexAttribDivisor(2, 1);
+        GL30.glBindVertexArray(0);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+        decalVolumeInitialized = true;
+    }
+
+    private static float @NotNull [] getVertices() {
+        float half = (float) (VOLUME_SIZE / 2.0);
+        return new float[]{
+                -half, +half, -half,
+                +half, +half, -half,
+                +half, -half, -half,
+                -half, +half, -half,
+                +half, -half, -half,
+                -half, -half, -half,
+
+                +half, +half, +half,
+                -half, +half, +half,
+                -half, -half, +half,
+                +half, +half, +half,
+                -half, -half, +half,
+                +half, -half, +half,
+
+                -half, +half, +half,
+                -half, +half, -half,
+                -half, -half, -half,
+                -half, +half, +half,
+                -half, -half, -half,
+                -half, -half, +half,
+
+                +half, +half, -half,
+                +half, +half, +half,
+                +half, -half, +half,
+                +half, +half, -half,
+                +half, -half, +half,
+                +half, -half, -half,
+
+                -half, +half, +half,
+                +half, +half, +half,
+                +half, +half, -half,
+                -half, +half, +half,
+                +half, +half, -half,
+                -half, +half, -half,
+
+                -half, -half, -half,
+                +half, -half, -half,
+                +half, -half, +half,
+                -half, -half, -half,
+                +half, -half, +half,
+                -half, -half, +half
+        };
     }
 
     public static void renderKBuffer(
@@ -141,7 +297,7 @@ public final class DecalRenderer {
         TranslucentKBuffer.bind();
         TranslucentKBuffer.setShaderUniforms(shader);
 
-        var cameraPositionUniform = shader.getUniform("CameraPosition");
+        Uniform cameraPositionUniform = shader.getUniform("CameraPosition");
 
         if (cameraPositionUniform != null)
             cameraPositionUniform.set(
@@ -152,7 +308,7 @@ public final class DecalRenderer {
 
         Matrix4f invProj = new Matrix4f(RenderSystem.getProjectionMatrix()).invert();
 
-        var invProjMatUniform = shader.getUniform("InvProjMat");
+        Uniform invProjMatUniform = shader.getUniform("InvProjMat");
 
         if (invProjMatUniform != null)
             invProjMatUniform.set(invProj);
@@ -160,12 +316,12 @@ public final class DecalRenderer {
         Matrix3f viewRotation = new Matrix3f().rotate(camera.rotation());
         Matrix3f inverseViewRotation = new Matrix3f(viewRotation).invert();
 
-        var iViewRotMatUniform = shader.getUniform("IViewRotMat");
+        Uniform iViewRotMatUniform = shader.getUniform("IViewRotMat");
 
         if (iViewRotMatUniform != null)
             iViewRotMatUniform.set(inverseViewRotation);
 
-        var decalCountUniform = shader.getUniform("DecalCount");
+        Uniform decalCountUniform = shader.getUniform("DecalCount");
 
         if (decalCountUniform != null)
             decalCountUniform.set((float) decals.size());
@@ -192,8 +348,8 @@ public final class DecalRenderer {
         buffer.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION);
 
         buffer.vertex(-1.0, -1.0, 0.0).endVertex();
-        buffer.vertex( 3.0, -1.0, 0.0).endVertex();
-        buffer.vertex(-1.0,  3.0, 0.0).endVertex();
+        buffer.vertex(3.0, -1.0, 0.0).endVertex();
+        buffer.vertex(-1.0, 3.0, 0.0).endVertex();
 
         BufferUploader.drawWithShader(buffer.end());
 
@@ -201,88 +357,5 @@ public final class DecalRenderer {
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
-    }
-
-    private static void renderVolume(
-            Decal decal,
-            Vec3 cameraPosition,
-            PoseStack poseStack,
-            BufferBuilder buffer,
-            ShaderInstance shader
-    ) {
-        Vec3 origin = decal.getOrigin();
-
-        float x = (float) (origin.x - cameraPosition.x);
-        float y = (float) (origin.y - cameraPosition.y);
-        float z = (float) (origin.z - cameraPosition.z);
-
-        var decalOriginUniform = shader.getUniform("DecalOriginRelative");
-        if (decalOriginUniform != null)
-            decalOriginUniform.set(x, y, z);
-
-        Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal());
-
-        var decalNormalUniform = shader.getUniform("DecalNormal");
-        if (decalNormalUniform != null)
-            decalNormalUniform.set(
-                    (float) normal.x,
-                    (float) normal.y,
-                    (float) normal.z
-            );
-
-        float half = (float) (VOLUME_SIZE / 2.0);
-
-        Matrix4f matrix = poseStack.last().pose();
-        float vertexShade = 1.0f;
-
-        vertex(buffer, matrix, -half, +half, -half, vertexShade);
-        vertex(buffer, matrix, +half, +half, -half, vertexShade);
-        vertex(buffer, matrix, +half, -half, -half, vertexShade);
-        vertex(buffer, matrix, -half, -half, -half, vertexShade);
-
-        vertex(buffer, matrix, +half, +half, +half, vertexShade);
-        vertex(buffer, matrix, -half, +half, +half, vertexShade);
-        vertex(buffer, matrix, -half, -half, +half, vertexShade);
-        vertex(buffer, matrix, +half, -half, +half, vertexShade);
-
-        vertex(buffer, matrix, -half, +half, +half, vertexShade);
-        vertex(buffer, matrix, -half, +half, -half, vertexShade);
-        vertex(buffer, matrix, -half, -half, -half, vertexShade);
-        vertex(buffer, matrix, -half, -half, +half, vertexShade);
-
-        vertex(buffer, matrix, +half, +half, -half, vertexShade);
-        vertex(buffer, matrix, +half, +half, +half, vertexShade);
-        vertex(buffer, matrix, +half, -half, +half, vertexShade);
-        vertex(buffer, matrix, +half, -half, -half, vertexShade);
-
-        vertex(buffer, matrix, -half, +half, +half, vertexShade);
-        vertex(buffer, matrix, +half, +half, +half, vertexShade);
-        vertex(buffer, matrix, +half, +half, -half, vertexShade);
-        vertex(buffer, matrix, -half, +half, -half, vertexShade);
-
-        vertex(buffer, matrix, -half, -half, -half, vertexShade);
-        vertex(buffer, matrix, +half, -half, -half, vertexShade);
-        vertex(buffer, matrix, +half, -half, +half, vertexShade);
-        vertex(buffer, matrix, -half, -half, +half, vertexShade);
-    }
-
-    private static void vertex(
-            BufferBuilder buffer,
-            Matrix4f matrix,
-            float x,
-            float y,
-            float z,
-            float shade
-    ) {
-        shade = Math.max(0.0f, Math.min(1.0f, shade));
-
-        int r = (int) (255.0f * shade);
-        int g = (int) (255.0f * shade);
-        int b = (int) (255.0f * shade);
-
-        buffer.vertex(matrix, x, y, z)
-                .color(r, g, b, 255)
-                .uv2(240, 240)
-                .endVertex();
     }
 }

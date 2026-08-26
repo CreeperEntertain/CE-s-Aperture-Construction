@@ -1,21 +1,21 @@
-#version 150
+#version 430
 
-in vec3 Position;
-in vec4 Color;
+layout(location = 0) in vec3 Position;
+layout(location = 1) in vec3 DecalOriginRelative;
+layout(location = 2) in vec3 DecalNormal;
 
-uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
-uniform mat3 IViewRotMat;
+uniform mat4 DecalPoseMat;
 
-uniform vec3 DecalOriginRelative;
-
-out vec3 decalPosition;
-out vec4 vertexColor;
+flat out vec3 decalOriginRelative;
+flat out vec3 decalNormal;
 
 void main() {
-    vec3 origin = transpose(IViewRotMat) * DecalOriginRelative;
+    vec3 origin = (DecalPoseMat * vec4(DecalOriginRelative, 1.0)).xyz;
+    vec3 position = (DecalPoseMat * vec4(Position, 1.0)).xyz;
 
-    gl_Position = ProjMat * ModelViewMat * vec4(origin + Position, 1.0);
-    decalPosition = IViewRotMat * Position;
-    vertexColor = Color;
+    gl_Position = ProjMat * vec4(origin + position, 1.0);
+
+    decalOriginRelative = DecalOriginRelative;
+    decalNormal = DecalNormal;
 }
