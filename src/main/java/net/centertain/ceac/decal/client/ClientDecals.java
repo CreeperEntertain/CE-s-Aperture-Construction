@@ -2,9 +2,7 @@ package net.centertain.ceac.decal.client;
 
 import net.centertain.ceac.decal.Decal;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public final class ClientDecals {
     private static final Map<UUID, Decal> DECALS = new HashMap<>();
@@ -22,5 +20,11 @@ public final class ClientDecals {
     }
     public static void clear() {
         DECALS.clear();
+    }
+
+    public static List<Decal> getByRenderOrder() {
+        List<Decal> decals = new ArrayList<>(DECALS.values());
+        decals.sort(Comparator.comparingInt(Decal::getRenderingOrder).reversed());
+        return decals;
     }
 }
