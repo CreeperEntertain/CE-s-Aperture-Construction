@@ -22,6 +22,8 @@ public class DecalShaders {
     private static ShaderInstance decal;
     private static ShaderInstance translucentCapture;
     private static ShaderInstance decalKBufferCapture;
+    private static ShaderInstance decalCoverage;
+    private static ShaderInstance decalOpaqueResolve;
 
     private static KBufferSortShader kBufferSort;
 
@@ -54,6 +56,22 @@ public class DecalShaders {
                 ),
                 shader -> decalKBufferCapture = shader
         );
+        event.registerShader(
+                new ShaderInstance(
+                        event.getResourceProvider(),
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "decal_coverage"),
+                        DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
+                ),
+                shader -> decalCoverage = shader
+        );
+        event.registerShader(
+                new ShaderInstance(
+                        event.getResourceProvider(),
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "decal_opaque_resolve"),
+                        DefaultVertexFormat.POSITION
+                ),
+                shader -> decalOpaqueResolve = shader
+        );
 
         // Compute shaders
         if (kBufferSort != null)
@@ -79,5 +97,11 @@ public class DecalShaders {
     }
     public static ShaderInstance getDecalKBufferCapture() {
         return decalKBufferCapture;
+    }
+    public static ShaderInstance getDecalCoverage() {
+        return decalCoverage;
+    }
+    public static ShaderInstance getDecalOpaqueResolve() {
+        return decalOpaqueResolve;
     }
 }

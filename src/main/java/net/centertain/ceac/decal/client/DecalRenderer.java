@@ -26,6 +26,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.util.Collection;
+import java.util.List;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
@@ -33,6 +34,7 @@ public final class DecalRenderer {
     private static final double VOLUME_SIZE = 1.1;
 
     private static RenderTarget opaqueDepthTarget;
+    private static RenderTarget decalCoverageTarget;
 
     private static int decalVolumeVao;
     private static int decalVolumeVbo;
@@ -66,6 +68,22 @@ public final class DecalRenderer {
                 : 0;
     }
 
+    private static void ensureDecalCoverageTarget() {
+        Minecraft minecraft = Minecraft.getInstance();
+        RenderTarget mainTarget = minecraft.getMainRenderTarget();
+
+        int width = mainTarget.width;
+        int height = mainTarget.height;
+
+        if (decalCoverageTarget == null) {
+            decalCoverageTarget = new TextureTarget(width, height, true, Minecraft.ON_OSX);
+            decalCoverageTarget.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            decalCoverageTarget.resize(width, height, true);
+        } else if (decalCoverageTarget.width != width || decalCoverageTarget.height != height) {
+            decalCoverageTarget.resize(width, height, true);
+        }
+    }
+
     public static void render(RenderLevelStageEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
@@ -76,55 +94,42 @@ public final class DecalRenderer {
             return;
 
         Camera camera = event.getCamera();
-        ShaderInstance shader = DecalShaders.getInstance();
-        if (shader == null)
+        ShaderInstance coverageShader = DecalShaders.getDecalCoverage();
+        ShaderInstance resolveShader = DecalShaders.getDecalOpaqueResolve();
+
+        if (coverageShader == null || resolveShader == null)
             return;
 
-        Collection<Decal> decals = ClientDecals.getAll().values();
+        List<Decal> decals = ClientDecals.getByRenderOrder();
 
         int decalCount = decals.size();
 
         ensureDecalVolumeBuffer();
+        ensureDecalCoverageTarget();
         uploadDecalInstances(decals, camera.getPosition());
 
         ResourceLocation decalTexture = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png");
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
 
-        mainTarget.bindWrite(false);
+        Uniform coverageDecalPoseMat = coverageShader.getUniform("DecalPoseMat");
 
-        RenderSystem.setShader(() -> shader);
-        RenderSystem.setShaderTexture(0, decalTexture);
-        RenderSystem.setShaderTexture(1, opaqueDepthTarget.getDepthTextureId());
+        if (coverageDecalPoseMat != null)
+            coverageDecalPoseMat.set(event.getPoseStack().last().pose());
 
-        shader.setSampler("Sampler0", RenderSystem.getShaderTexture(0));
-        shader.setSampler("Sampler1", RenderSystem.getShaderTexture(1));
+        Uniform coverageProjection = coverageShader.getUniform("ProjMat");
 
-        Uniform decalPoseMat = shader.getUniform("DecalPoseMat");
+        if (coverageProjection != null)
+            coverageProjection.set(RenderSystem.getProjectionMatrix());
 
-        if (decalPoseMat != null)
-            decalPoseMat.set(event.getPoseStack().last().pose());
+        Uniform coveragePass = coverageShader.getUniform("CoveragePass");
 
-        Uniform projection = shader.getUniform("ProjMat");
+        if (coveragePass != null)
+            coveragePass.set(1);
 
-        if (projection != null)
-            projection.set(RenderSystem.getProjectionMatrix());
+        Uniform coverageScreenSize = coverageShader.getUniform("ScreenSize");
 
-        Uniform inverseProjection = shader.getUniform("InvProjMat");
-
-        if (inverseProjection != null) {
-            Matrix4f invProj = new Matrix4f(RenderSystem.getProjectionMatrix()).invert();
-            inverseProjection.set(invProj);
-        }
-
-        Uniform inverseViewRotation = shader.getUniform("IViewRotMat");
-
-        if (inverseViewRotation != null)
-            inverseViewRotation.set(RenderSystem.getInverseViewRotationMatrix());
-
-        Uniform screenSize = shader.getUniform("ScreenSize");
-
-        if (screenSize != null)
-            screenSize.set(
+        if (coverageScreenSize != null)
+            coverageScreenSize.set(
                     (float) minecraft.getWindow().getWidth(),
                     (float) minecraft.getWindow().getHeight(),
                     0.0f,
@@ -134,20 +139,101 @@ public final class DecalRenderer {
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
         lightTexture.turnOnLightLayer();
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
+        decalCoverageTarget.bindWrite(false);
+        decalCoverageTarget.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        decalCoverageTarget.clear(false);
 
-        shader.apply();
+        RenderSystem.setShader(() -> coverageShader);
+        RenderSystem.disableBlend();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(GL11.GL_LESS);
+        RenderSystem.depthMask(true);
+
+        coverageShader.apply();
 
         GL30.glBindVertexArray(decalVolumeVao);
         GL31.glDrawArraysInstanced(GL11.GL_TRIANGLES, 0, 36, decalCount);
         GL30.glBindVertexArray(0);
 
-        shader.clear();
+        coverageShader.clear();
+
+        if (coveragePass != null)
+            coveragePass.set(0);
+
+        TranslucentKBuffer.uploadDecals(decals);
+        TranslucentKBuffer.bind();
+        TranslucentKBuffer.setShaderUniforms(resolveShader);
+
+        Uniform cameraPositionUniform = resolveShader.getUniform("CameraPosition");
+
+        if (cameraPositionUniform != null)
+            cameraPositionUniform.set(
+                    (float) camera.getPosition().x,
+                    (float) camera.getPosition().y,
+                    (float) camera.getPosition().z
+            );
+
+        Matrix4f invProj = new Matrix4f(RenderSystem.getProjectionMatrix()).invert();
+
+        Uniform invProjMatUniform = resolveShader.getUniform("InvProjMat");
+
+        if (invProjMatUniform != null)
+            invProjMatUniform.set(invProj);
+
+        Matrix3f viewRotation = new Matrix3f().rotate(camera.rotation());
+        Matrix3f inverseViewRotation = new Matrix3f(viewRotation).invert();
+
+        Uniform iViewRotMatUniform = resolveShader.getUniform("IViewRotMat");
+
+        if (iViewRotMatUniform != null)
+            iViewRotMatUniform.set(inverseViewRotation);
+
+        Uniform decalCountUniform = resolveShader.getUniform("DecalCount");
+
+        if (decalCountUniform != null)
+            decalCountUniform.set((float) decals.size());
+
+        Uniform screenSizeUniform = resolveShader.getUniform("ScreenSize");
+
+        if (screenSizeUniform != null)
+            screenSizeUniform.set(
+                    (float) minecraft.getWindow().getWidth(),
+                    (float) minecraft.getWindow().getHeight(),
+                    0.0f,
+                    0.0f
+            );
+
+        mainTarget.bindWrite(false);
+
+        RenderSystem.setShader(() -> resolveShader);
+        RenderSystem.setShaderTexture(0, decalTexture);
+        RenderSystem.setShaderTexture(1, opaqueDepthTarget.getDepthTextureId());
+        RenderSystem.setShaderTexture(2, decalCoverageTarget.getColorTextureId());
+
+        resolveShader.setSampler("Sampler0", RenderSystem.getShaderTexture(0));
+        resolveShader.setSampler("Sampler1", RenderSystem.getShaderTexture(1));
+        resolveShader.setSampler("Coverage", RenderSystem.getShaderTexture(2));
+
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        resolveShader.apply();
+
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+
+        buffer.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION);
+        buffer.vertex(-1.0, -1.0, 0.0).endVertex();
+        buffer.vertex(3.0, -1.0, 0.0).endVertex();
+        buffer.vertex(-1.0, 3.0, 0.0).endVertex();
+
+        BufferUploader.drawWithShader(buffer.end());
+
+        resolveShader.clear();
 
         RenderSystem.depthMask(true);
+        RenderSystem.depthFunc(GL11.GL_LEQUAL);
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
 
