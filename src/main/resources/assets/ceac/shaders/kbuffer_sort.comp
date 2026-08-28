@@ -14,24 +14,6 @@ layout(std430, binding = 1) readonly buffer LockBuffer {
 
 uniform vec4 ScreenSize;
 
-void compareSwap(
-        inout uint depthA,
-        inout uint colorA,
-        inout uint depthB,
-        inout uint colorB
-) {
-    if (depthA > depthB) {
-        uint tempDepth = depthA;
-        uint tempColor = colorA;
-
-        depthA = depthB;
-        colorA = colorB;
-
-        depthB = tempDepth;
-        colorB = tempColor;
-    }
-}
-
 void main() {
     uint x = gl_GlobalInvocationID.x;
     uint y = gl_GlobalInvocationID.y;
@@ -63,17 +45,20 @@ void main() {
         colors[i] = fragments[offset + 1u];
     }
 
-    for (uint pass = 0u; pass < count; ++pass) {
-        uint start = pass & 1u;
+    for (uint i = 1u; i < count; ++i) {
+        uint depth = depths[i];
+        uint color = colors[i];
 
-        for (uint i = start; i + 1u < count; i += 2u) {
-            compareSwap(
-                    depths[i],
-                    colors[i],
-                    depths[i + 1u],
-                    colors[i + 1u]
-            );
+        uint j = i;
+
+        while (j > 0u && depths[j - 1u] > depth) {
+            depths[j] = depths[j - 1u];
+            colors[j] = colors[j - 1u];
+            --j;
         }
+
+        depths[j] = depth;
+        colors[j] = color;
     }
 
     for (uint i = 0u; i < count; ++i) {
