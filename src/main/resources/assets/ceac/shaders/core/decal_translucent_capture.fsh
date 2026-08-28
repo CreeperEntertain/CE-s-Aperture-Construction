@@ -17,6 +17,8 @@ in vec4 vertexColor;
 in vec2 texCoord;
 in vec2 lightCoord;
 
+out vec4 fragColor;
+
 void main() {
     if (!gl_FrontFacing)
     return;
@@ -28,25 +30,25 @@ void main() {
 
     color = clamp(color, 0.0, 1.0);
 
+    fragColor = color;
+
     uint width = uint(ScreenSize.x);
+
     uint pixelCount = uint(ScreenSize.x * ScreenSize.y);
 
     ivec2 pixel = ivec2(gl_FragCoord.xy);
 
-    uint pixelIndex =
-    uint(pixel.y) * width +
-    uint(pixel.x);
+    uint pixelIndex = uint(pixel.y) * width + uint(pixel.x);
 
     uint layer = atomicAdd(locks[pixelIndex], 1u);
 
     if (layer >= LAYERS)
         return;
 
-    uint newDepth = floatBitsToUint(gl_FragCoord.z);
+    uint depth = floatBitsToUint(gl_FragCoord.z);
 
-    uint base = layer * pixelCount * 2u;
-    uint offset = base + pixelIndex * 2u;
+    uint offset = layer * pixelCount * 2u + pixelIndex * 2u;
 
-    fragments[offset] = newDepth;
+    fragments[offset] = depth;
     fragments[offset + 1u] = packUnorm4x8(color);
 }

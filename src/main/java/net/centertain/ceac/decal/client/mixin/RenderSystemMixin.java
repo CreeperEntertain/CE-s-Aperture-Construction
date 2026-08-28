@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 
 @Mixin(RenderSystem.class)
 public abstract class RenderSystemMixin {
-
     @Redirect(
             method = "setShader",
             at = @At(
@@ -24,9 +23,9 @@ public abstract class RenderSystemMixin {
     private static Object ceac$replaceShader(
             Supplier<ShaderInstance> supplier
     ) {
-        ShaderInstance shaderInstance = supplier.get();
-        if (TranslucentCaptureState.isActive() && shaderInstance == GameRenderer.getRendertypeTranslucentShader())
+        ShaderInstance shader = supplier.get();
+        if (TranslucentCaptureState.isActive() && shader == GameRenderer.getRendertypeTranslucentShader())
             return DecalShaders.getTranslucentCapture();
-        return shaderInstance;
+        return shader;
     }
 }

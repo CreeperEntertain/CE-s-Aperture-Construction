@@ -1,19 +1,15 @@
 package net.centertain.ceac.decal.client.mixin;
 
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.centertain.ceac.decal.client.DecalRenderer;
 import net.centertain.ceac.decal.client.DecalShaders;
 import net.centertain.ceac.decal.client.TranslucentCaptureState;
-import net.centertain.ceac.decal.client.TranslucentRenderTargets;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
-import net.minecraft.client.Camera;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,70 +19,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
     @Inject(
-            method = "renderLevel",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/LevelRenderer;renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
-                    shift = At.Shift.AFTER
-            )
+            method = "renderChunkLayer",
+            at = @At("HEAD")
     )
-    private void ceac$renderTranslucentDepth(
+    private void ceac$beginTranslucentCapture(
+            RenderType renderType,
             PoseStack poseStack,
-            float partialTick,
-            long finishNanoTime,
-            boolean renderBlockOutline,
-            Camera camera,
-            GameRenderer gameRenderer,
-            LightTexture lightTexture,
+            double camX,
+            double camY,
+            double camZ,
             Matrix4f projectionMatrix,
             CallbackInfo ci
     ) {
-        RenderTarget target = TranslucentRenderTargets.getTranslucentDepth();
-        if (target == null)
-            return;
-
-        LevelRendererAccessor renderer = (LevelRendererAccessor) (Object) this;
-        Vec3 cameraPos = camera.getPosition();
-
-        target.clear(true);
-        target.bindWrite(true);
-
-        TranslucentCaptureState.begin();
-
-        try {
-            RenderSystem.disableDepthTest();
-            RenderSystem.depthMask(false);
-            RenderSystem.disableCull();
-            RenderSystem.disableBlend();
-
-            renderer.ceac$renderChunkLayer(
-                    RenderType.translucent(),
-                    poseStack,
-                    cameraPos.x,
-                    cameraPos.y,
-                    cameraPos.z,
-                    projectionMatrix
-            );
-
-            RenderSystem.depthMask(true);
-            RenderSystem.enableDepthTest();
-            RenderSystem.enableCull();
-        } finally {
-            TranslucentCaptureState.end();
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-        }
-
-        if (Minecraft.getInstance().options.graphicsMode().get() != GraphicsStatus.FABULOUS)
-            DecalRenderer.renderKBuffer(camera, false);
-        TranslucentKBuffer.barrier();
-        Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+        if (renderType == RenderType.translucent())
+            TranslucentCaptureState.begin();
     }
 
     @Inject(
             method = "renderChunkLayer",
-            at = @At("HEAD")
+            at = @At("TAIL")
     )
-    private void ceac$renderFabulousKBuffer(
+    private void ceac$endTranslucentCapture(
             RenderType renderType,
             PoseStack poseStack,
             double camX,
@@ -97,17 +50,15 @@ public abstract class LevelRendererMixin {
     ) {
         if (renderType != RenderType.translucent())
             return;
-        if (TranslucentCaptureState.isActive())
-            return;
+
+        TranslucentCaptureState.end();
+
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.options.graphicsMode().get() != GraphicsStatus.FABULOUS)
-            return;
-        LevelRendererAccessor renderer = (LevelRendererAccessor) (Object) this;
-        RenderTarget translucentTarget = renderer.ceac$getTranslucentTarget();
-        if (translucentTarget == null)
-            return;
-        translucentTarget.bindWrite(false);
-        DecalRenderer.renderKBuffer(minecraft.gameRenderer.getMainCamera(), true);
+
+        DecalRenderer.renderKBuffer(
+                minecraft.gameRenderer.getMainCamera(),
+                minecraft.options.graphicsMode().get() == GraphicsStatus.FABULOUS
+        );
     }
 
     @Inject(
@@ -137,12 +88,12 @@ public abstract class LevelRendererMixin {
         Uniform proj = capture.getUniform("ProjMat");
         Uniform chunkOffset = capture.getUniform("ChunkOffset");
 
-        assert modelView != null;
-        modelView.set(poseStack.last().pose());
-        assert proj != null;
-        proj.set(projectionMatrix);
-        assert chunkOffset != null;
-        chunkOffset.set(0.0F, 0.0F, 0.0F);
+        if (modelView != null)
+            modelView.set(poseStack.last().pose());
+        if (proj != null)
+            proj.set(projectionMatrix);
+        if (chunkOffset != null)
+            chunkOffset.set(0.0F, 0.0F, 0.0F);
 
         TranslucentKBuffer.setShaderUniforms(capture);
     }
