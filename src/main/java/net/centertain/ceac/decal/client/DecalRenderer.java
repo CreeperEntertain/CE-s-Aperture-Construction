@@ -47,6 +47,26 @@ public final class DecalRenderer {
 
     private DecalRenderer() {}
 
+    private static boolean cameraInsideAnyDecalVolume(
+            Collection<Decal> decals,
+            Vec3 cameraPosition
+    ) {
+        double half = VOLUME_SIZE / 2.0;
+
+        for (Decal decal : decals) {
+            Vec3 origin = decal.getOrigin();
+
+            double dx = cameraPosition.x - origin.x;
+            double dy = cameraPosition.y - origin.y;
+            double dz = cameraPosition.z - origin.z;
+
+            if (Math.abs(dx) <= half && Math.abs(dy) <= half && Math.abs(dz) <= half)
+                return true;
+        }
+
+        return false;
+    }
+
     public static void captureOpaqueDepth() {
         Minecraft minecraft = Minecraft.getInstance();
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
@@ -152,6 +172,14 @@ public final class DecalRenderer {
         RenderSystem.depthFunc(GL11.GL_LESS);
         RenderSystem.depthMask(false);
 
+        boolean cameraInsideVolume = cameraInsideAnyDecalVolume(decals, camera.getPosition());
+        if (cameraInsideVolume)
+            RenderSystem.disableCull();
+        else {
+            RenderSystem.enableCull();
+            GL11.glCullFace(GL11.GL_BACK);
+        }
+
         coverageShader.apply();
 
         GL30.glBindVertexArray(decalVolumeVao);
@@ -159,6 +187,8 @@ public final class DecalRenderer {
         GL30.glBindVertexArray(0);
 
         coverageShader.clear();
+
+        RenderSystem.disableCull();
 
         if (coveragePass != null)
             coveragePass.set(0);
@@ -238,6 +268,7 @@ public final class DecalRenderer {
         RenderSystem.depthMask(true);
         RenderSystem.depthFunc(GL11.GL_LEQUAL);
         RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
         RenderSystem.disableBlend();
 
         lightTexture.turnOffLightLayer();
