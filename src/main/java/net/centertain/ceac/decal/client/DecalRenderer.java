@@ -139,6 +139,8 @@ public final class DecalRenderer {
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
         lightTexture.turnOnLightLayer();
 
+        RenderTarget translucentDepthTarget = TranslucentRenderTargets.getTranslucentDepth();
+        decalCoverageTarget.copyDepthFrom(translucentDepthTarget);
         decalCoverageTarget.bindWrite(false);
         decalCoverageTarget.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         decalCoverageTarget.clear(false);
@@ -147,7 +149,7 @@ public final class DecalRenderer {
         RenderSystem.disableBlend();
         RenderSystem.enableDepthTest();
         RenderSystem.depthFunc(GL11.GL_LESS);
-        RenderSystem.depthMask(true);
+        RenderSystem.depthMask(false);
 
         coverageShader.apply();
 
