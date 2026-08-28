@@ -25,6 +25,7 @@ import org.joml.Vector4f;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Collection;
 import java.util.List;
@@ -39,6 +40,7 @@ public final class DecalRenderer {
 
     private static int decalVolumeVao;
     private static int decalVolumeVbo;
+    private static int decalVolumeEbo;
 
     private static int decalInstanceVbo;
     private static int decalInstanceCapacity;
@@ -183,7 +185,7 @@ public final class DecalRenderer {
         coverageShader.apply();
 
         GL30.glBindVertexArray(decalVolumeVao);
-        GL31.glDrawArraysInstanced(GL11.GL_TRIANGLES, 0, 36, decalCount);
+        GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, 36, GL11.GL_UNSIGNED_BYTE, 0L, decalCount);
         GL30.glBindVertexArray(0);
 
         coverageShader.clear();
@@ -336,10 +338,43 @@ public final class DecalRenderer {
         if (decalVolumeInitialized)
             return;
 
-        float[] vertices = getVertices();
+        float half = (float) (VOLUME_SIZE / 2.0);
+
+        float[] vertices = {
+                -half, +half, -half, // 0
+                +half, +half, -half, // 1
+                +half, -half, -half, // 2
+                -half, -half, -half, // 3
+
+                +half, +half, +half, // 4
+                -half, +half, +half, // 5
+                -half, -half, +half, // 6
+                +half, -half, +half  // 7
+        };
+
+        byte[] indices = {
+                0, 1, 2,
+                0, 2, 3,
+
+                4, 5, 6,
+                4, 6, 7,
+
+                5, 0, 3,
+                5, 3, 6,
+
+                1, 4, 7,
+                1, 7, 2,
+
+                5, 4, 1,
+                5, 1, 0,
+
+                3, 2, 7,
+                3, 7, 6
+        };
 
         decalVolumeVao = GL30.glGenVertexArrays();
         decalVolumeVbo = GL15.glGenBuffers();
+        decalVolumeEbo = GL15.glGenBuffers();
         decalInstanceVbo = GL15.glGenBuffers();
         decalInstanceCapacity = 64;
 
@@ -356,6 +391,14 @@ public final class DecalRenderer {
         GL20.glEnableVertexAttribArray(2);
         GL20.glVertexAttribPointer(2, 3, GL11.GL_FLOAT, false, 6 * Float.BYTES, 3L * Float.BYTES);
         GL33.glVertexAttribDivisor(2, 1);
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, decalVolumeEbo);
+
+        ByteBuffer indexBuffer = org.lwjgl.BufferUtils.createByteBuffer(indices.length);
+
+        indexBuffer.put(indices);
+        indexBuffer.flip();
+
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indexBuffer, GL15.GL_STATIC_DRAW);
         GL30.glBindVertexArray(0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
