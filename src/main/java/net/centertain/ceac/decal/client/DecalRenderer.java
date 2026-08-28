@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.decal.Decal;
+import net.centertain.ceac.decal.client.mixin.LevelRendererAccessor;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -37,6 +38,7 @@ public final class DecalRenderer {
 
     private static RenderTarget opaqueDepthTarget;
     private static RenderTarget decalCoverageTarget;
+    private static RenderTarget translucentColorSnapshot;
 
     private static int decalVolumeVao;
     private static int decalVolumeVbo;
@@ -452,6 +454,20 @@ public final class DecalRenderer {
         };
     }
 
+    private static void ensureTranslucentColorSnapshot() {
+        Minecraft minecraft = Minecraft.getInstance();
+        RenderTarget mainTarget = minecraft.getMainRenderTarget();
+
+        int width = mainTarget.width;
+        int height = mainTarget.height;
+
+        if (translucentColorSnapshot == null) {
+            translucentColorSnapshot = new TextureTarget(width, height, true, Minecraft.ON_OSX);
+            translucentColorSnapshot.resize(width, height, true);
+        } else if (translucentColorSnapshot.width != width || translucentColorSnapshot.height != height)
+            translucentColorSnapshot.resize(width, height, true);
+    }
+
     public static void renderKBuffer(
             Camera camera,
             boolean fabulous
@@ -500,17 +516,52 @@ public final class DecalRenderer {
         if (decalCountUniform != null)
             decalCountUniform.set((float) decals.size());
 
+        Uniform fabulousUniform = shader.getUniform("Fabulous");
+
+        if (fabulousUniform != null)
+            fabulousUniform.set(fabulous ? 1 : 0);
+
         RenderSystem.setShader(() -> shader);
 
         RenderSystem.setShaderTexture(0, ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png"));
         RenderSystem.setShaderTexture(1, DecalRenderer.getOpaqueDepthTexture());
 
+        if (fabulous) {
+            RenderTarget translucentTarget = ((LevelRendererAccessor) minecraft.levelRenderer).ceac$getTranslucentTarget();
+            if (translucentTarget == null)
+                return;
+
+            ensureTranslucentColorSnapshot();
+
+            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, translucentTarget.frameBufferId);
+            GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, translucentColorSnapshot.frameBufferId);
+            GL30.glBlitFramebuffer( // Why the fuck so long :(
+                    0,
+                    0,
+                    translucentTarget.width,
+                    translucentTarget.height,
+                    0,
+                    0,
+                    translucentColorSnapshot.width,
+                    translucentColorSnapshot.height,
+                    GL11.GL_COLOR_BUFFER_BIT,
+                    GL11.GL_NEAREST
+            );
+
+            translucentTarget.bindWrite(false);
+
+            RenderSystem.setShaderTexture(2, translucentColorSnapshot.getColorTextureId());
+
+            shader.setSampler("SurfaceColor", RenderSystem.getShaderTexture(2));
+        }
+
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         if (fabulous) {
+            RenderSystem.disableBlend();
             RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(GL11.GL_ALWAYS);
-            RenderSystem.depthMask(true);
+            RenderSystem.depthMask(false);
         } else {
             RenderSystem.disableDepthTest();
             RenderSystem.depthMask(false);

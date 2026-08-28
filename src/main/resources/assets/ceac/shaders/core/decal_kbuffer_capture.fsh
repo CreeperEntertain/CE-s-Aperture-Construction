@@ -96,9 +96,17 @@ bool findCell(
     return false;
 }
 
-void main() {
-    fragColor = vec4(0.0);
+vec4 over(
+        vec4 foreground,
+        vec4 background
+) {
+    return vec4(
+            foreground.rgb * foreground.a + background.rgb * (1.0 - foreground.a),
+            foreground.a + background.a * (1.0 - foreground.a)
+    );
+}
 
+void main() {
     ivec2 pixel = ivec2(gl_FragCoord.xy);
 
     uint width = uint(ScreenSize.x);
@@ -110,24 +118,33 @@ void main() {
     uint count = locks[pixelIndex];
 
     if (count == 0u)
-        return;
+        discard;
 
     if (count > LAYERS)
         count = LAYERS;
 
     vec2 screenUV = gl_FragCoord.xy / ScreenSize.xy;
-    vec2 clipXY = screenUV * 2.0 - 1.0;
 
     float opaqueDepth = texture(Sampler1, screenUV).r;
+
+    vec4 layers[LAYERS];
+
+    bool decalApplied = false;
 
     for (uint i = 0u; i < count; ++i) {
         uint offset = i * layerStride + pixelIndex * 2u;
 
-        uint depthBits = fragments[offset];
-        float depth = uintBitsToFloat(depthBits);
+        float depth = uintBitsToFloat(fragments[offset]);
+
+        layers[i] = unpackUnorm4x8(fragments[offset + 1u]);
+
+        if (decalApplied)
+            continue;
 
         if (depth >= opaqueDepth)
             continue;
+
+        vec2 clipXY = screenUV * 2.0 - 1.0;
 
         vec4 viewPosition = InvProjMat * vec4(
                 clipXY,
@@ -135,7 +152,9 @@ void main() {
                 1.0
         );
 
-        vec3 surfaceCameraRelative = IViewRotMat * (viewPosition.xyz / viewPosition.w);
+        viewPosition /= viewPosition.w;
+
+        vec3 surfaceCameraRelative = IViewRotMat * viewPosition.xyz;
 
         vec3 surfaceWorld = surfaceCameraRelative + CameraPosition;
 
@@ -172,10 +191,21 @@ void main() {
             if (decalColor.a <= 0.01)
                 continue;
 
-            fragColor = decalColor;
-            gl_FragDepth = max(0.0, depth - 1e-5);
-            return;
+            layers[i] = over(decalColor, layers[i]);
+
+            decalApplied = true;
+            break;
         }
     }
-    discard;
+    if (!decalApplied)
+        discard;
+
+    vec4 result = vec4(0.0);
+
+    // K-buffer is nearest > farthest
+    // Thus, inverted composite
+    for (int i = int(count) - 1; i >= 0; --i)
+        result = over(layers[i], result);
+
+    fragColor = result;
 }
