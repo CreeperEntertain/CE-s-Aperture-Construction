@@ -11,10 +11,9 @@ flat out vec3 decalOriginRelative;
 flat out vec3 decalNormal;
 
 void main() {
-    vec3 origin = (DecalPoseMat * vec4(DecalOriginRelative, 1.0)).xyz;
     vec3 position = (DecalPoseMat * vec4(Position, 1.0)).xyz;
 
-    gl_Position = ProjMat * vec4(origin + position, 1.0);
+    gl_Position = ProjMat * vec4(DecalOriginRelative + position, 1.0);
 
     decalOriginRelative = DecalOriginRelative;
     decalNormal = DecalNormal;

@@ -8,8 +8,7 @@ uniform mat4 ProjMat;
 uniform mat4 DecalPoseMat;
 
 void main() {
-    vec3 origin = (DecalPoseMat * vec4(DecalOriginRelative, 1.0)).xyz;
     vec3 position = (DecalPoseMat * vec4(Position, 1.0)).xyz;
 
-    gl_Position = ProjMat * vec4(origin + position, 1.0);
+    gl_Position = ProjMat * vec4(DecalOriginRelative + position, 1.0);
 }

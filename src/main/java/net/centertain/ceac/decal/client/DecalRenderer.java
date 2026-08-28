@@ -21,6 +21,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryStack;
 
@@ -106,7 +107,7 @@ public final class DecalRenderer {
 
         ensureDecalVolumeBuffer();
         ensureDecalCoverageTarget();
-        uploadDecalInstances(decals, camera.getPosition());
+        uploadDecalInstances(decals, camera.getPosition(), event.getPoseStack().last().pose());
 
         ResourceLocation decalTexture = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png");
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
@@ -244,7 +245,8 @@ public final class DecalRenderer {
 
     private static void uploadDecalInstances(
             Collection<Decal> decals,
-            Vec3 cameraPosition
+            Vec3 cameraPosition,
+            Matrix4f decalPoseMat
     ) {
         int count = decals.size();
 
@@ -272,9 +274,19 @@ public final class DecalRenderer {
                 Vec3 origin = decal.getOrigin();
                 Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal());
 
-                data.put((float) (origin.x - cameraPosition.x));
-                data.put((float) (origin.y - cameraPosition.y));
-                data.put((float) (origin.z - cameraPosition.z));
+                Vector4f transformed =
+                        new Vector4f(
+                                (float)(origin.x - cameraPosition.x),
+                                (float)(origin.y - cameraPosition.y),
+                                (float)(origin.z - cameraPosition.z),
+                                1.0f
+                        );
+
+                transformed.mul(decalPoseMat);
+
+                data.put(transformed.x());
+                data.put(transformed.y());
+                data.put(transformed.z());
 
                 data.put((float) normal.x);
                 data.put((float) normal.y);
