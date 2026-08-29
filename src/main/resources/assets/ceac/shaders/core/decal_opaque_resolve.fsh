@@ -140,7 +140,7 @@ void main() {
             continue;
 
         fragColor = decalColor;
-            return;
+        return;
     }
     discard;
 }
