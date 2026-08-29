@@ -140,8 +140,12 @@ public abstract class LevelRendererMixin {
         Uniform modelView = capture.getUniform("ModelViewMat");
         Uniform proj = capture.getUniform("ProjMat");
         Uniform chunkOffset = capture.getUniform("ChunkOffset");
-        Uniform fogShape = capture.getUniform("FogShape");
         Uniform alphaCutoff = capture.getUniform("AlphaCutoff");
+        Uniform colorModulator = capture.getUniform("ColorModulator");
+        Uniform fogStart = capture.getUniform("FogStart");
+        Uniform fogEnd = capture.getUniform("FogEnd");
+        Uniform fogColor = capture.getUniform("FogColor");
+        Uniform fogShape = capture.getUniform("FogShape");
 
         if (modelView != null)
             modelView.set(poseStack.last().pose());
@@ -149,8 +153,6 @@ public abstract class LevelRendererMixin {
             proj.set(projectionMatrix);
         if (chunkOffset != null)
             chunkOffset.set(0.0F, 0.0F, 0.0F);
-        if (fogShape != null)
-            fogShape.set(0);
         if (alphaCutoff != null) {
             RenderType type = OpaqueLightmapCaptureState.getRenderType();
             if (type == RenderType.cutoutMipped())
@@ -160,6 +162,20 @@ public abstract class LevelRendererMixin {
             else
                 alphaCutoff.set(0.0F);
         }
+        if (colorModulator != null) {
+            float[] color = RenderSystem.getShaderColor();
+            colorModulator.set(color[0], color[1], color[2], color[3]);
+        }
+        if (fogStart != null)
+            fogStart.set(RenderSystem.getShaderFogStart());
+        if (fogEnd != null)
+            fogEnd.set(RenderSystem.getShaderFogEnd());
+        if (fogColor != null) {
+            float[] color = RenderSystem.getShaderFogColor();
+            fogColor.set(color[0], color[1], color[2], color[3]);
+        }
+        if (fogShape != null)
+            fogShape.set(0);
 
         GL42.glBindImageTexture(
                 0,

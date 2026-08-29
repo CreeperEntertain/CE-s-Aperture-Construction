@@ -1,5 +1,7 @@
 #version 430
 
+#moj_import <fog.glsl>
+
 const uint LAYERS = 4u;
 
 layout(std430, binding = 0) buffer FragmentBuffer {
@@ -13,6 +15,12 @@ layout(std430, binding = 1) buffer LockBuffer {
 uniform vec4 ScreenSize;
 uniform sampler2D Sampler0;
 
+uniform vec4 ColorModulator;
+uniform float FogStart;
+uniform float FogEnd;
+uniform vec4 FogColor;
+
+in float vertexDistance;
 in vec4 vertexColor;
 in vec2 texCoord;
 in vec2 lightCoord;
@@ -23,12 +31,13 @@ void main() {
     if (!gl_FrontFacing)
     return;
 
-    vec4 color = texture(Sampler0, texCoord) * vertexColor;
+    vec4 color = texture(Sampler0, texCoord) * vertexColor * ColorModulator;
 
     if (color.a <= 0.01)
         discard;
 
     color = clamp(color, 0.0, 1.0);
+    color = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
 
     fragColor = color;
 
