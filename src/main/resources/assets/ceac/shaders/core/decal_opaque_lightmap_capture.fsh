@@ -2,7 +2,8 @@
 
 #moj_import <fog.glsl>
 
-layout(rgba8, binding = 0) uniform writeonly image2D LightmapCoords;
+layout(r32ui, binding = 0) uniform coherent uimage2D LightmapDepth;
+layout(rgba8, binding = 1) uniform writeonly image2D LightmapCoords;
 
 uniform sampler2D Sampler0;
 
@@ -25,9 +26,14 @@ void main() {
     if (AlphaCutoff > 0.0 && color.a < AlphaCutoff)
         discard;
 
+    uint depthBits = floatBitsToUint(gl_FragCoord.z);
+
     ivec2 pixel = ivec2(gl_FragCoord.xy);
 
-    imageStore(LightmapCoords, pixel, vec4(lightCoords / 256.0, 0.0, 1.0));
+    uint previousDepth = imageAtomicMin(LightmapDepth, pixel, depthBits);
+
+    if (depthBits <= previousDepth)
+        imageStore(LightmapCoords, pixel, vec4(lightCoords / 256.0, 0.0, 1.0));
 
     fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
 }

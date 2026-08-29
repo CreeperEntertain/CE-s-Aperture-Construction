@@ -179,6 +179,15 @@ public abstract class LevelRendererMixin {
 
         GL42.glBindImageTexture(
                 0,
+                DecalRenderer.getOpaqueLightmapDepthTexture(),
+                0,
+                false,
+                0,
+                GL15.GL_READ_WRITE,
+                GL30.GL_R32UI
+        );
+        GL42.glBindImageTexture(
+                1,
                 DecalRenderer.getOpaqueLightmapTexture(),
                 0,
                 false,

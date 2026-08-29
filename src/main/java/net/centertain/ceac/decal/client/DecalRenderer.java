@@ -30,6 +30,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.List;
 
@@ -46,6 +47,11 @@ public final class DecalRenderer {
     private static int decalVolumeVao;
     private static int decalVolumeVbo;
     private static int decalVolumeEbo;
+
+    private static int opaqueLightmapDepthTexture;
+    private static int opaqueLightmapDepthWidth;
+    private static int opaqueLightmapDepthHeight;
+    private static int opaqueLightmapDepthFramebuffer;
 
     private static int decalInstanceVbo;
     private static int decalInstanceCapacity;
@@ -96,12 +102,68 @@ public final class DecalRenderer {
                 : 0;
     }
 
+    private static void ensureOpaqueLightmapDepthTexture(
+            int width,
+            int height
+    ) {
+        if (
+                opaqueLightmapDepthTexture != 0 &&
+                        opaqueLightmapDepthWidth == width &&
+                        opaqueLightmapDepthHeight == height
+        )
+            return;
+
+        if (opaqueLightmapDepthTexture != 0)
+            GL11.glDeleteTextures(opaqueLightmapDepthTexture);
+
+        if (opaqueLightmapDepthFramebuffer != 0)
+            GL30.glDeleteFramebuffers(opaqueLightmapDepthFramebuffer);
+
+        opaqueLightmapDepthTexture = GL11.glGenTextures();
+        opaqueLightmapDepthFramebuffer = GL30.glGenFramebuffers();
+
+        opaqueLightmapDepthWidth = width;
+        opaqueLightmapDepthHeight = height;
+
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, opaqueLightmapDepthTexture);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+        GL42.glTexStorage2D(GL11.GL_TEXTURE_2D, 1, GL30.GL_R32UI, width, height);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, opaqueLightmapDepthFramebuffer);
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, opaqueLightmapDepthTexture, 0);
+        GL11.glDrawBuffer(GL30.GL_COLOR_ATTACHMENT0);
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+    }
+    public static int getOpaqueLightmapDepthTexture() {
+        return opaqueLightmapDepthTexture;
+    }
+
     public static void captureOpaqueLightmap() {
         Minecraft minecraft = Minecraft.getInstance();
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
 
         int width = mainTarget.width;
         int height = mainTarget.height;
+
+        ensureOpaqueLightmapDepthTexture(width, height);
+
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, opaqueLightmapDepthFramebuffer);
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer clearValue = stack.mallocInt(4);
+
+            clearValue.put(0, -1);
+            clearValue.put(1, 0);
+            clearValue.put(2, 0);
+            clearValue.put(3, 0);
+
+            GL30.glClearBufferuiv(GL30.GL_COLOR, 0, clearValue);
+        }
+
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
 
         if (opaqueLightmapTarget == null) {
             opaqueLightmapTarget = new TextureTarget(width, height, false, Minecraft.ON_OSX);
