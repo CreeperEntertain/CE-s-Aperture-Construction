@@ -1,6 +1,10 @@
 #version 430
 
+#extension GL_ARB_fragment_shader_interlock : require
+
 #moj_import <fog.glsl>
+
+layout(pixel_interlock_unordered) in;
 
 layout(r32ui, binding = 0) uniform coherent uimage2D LightmapDepth;
 layout(rgba8, binding = 1) uniform writeonly image2D LightmapCoords;
@@ -26,14 +30,20 @@ void main() {
     if (AlphaCutoff > 0.0 && color.a < AlphaCutoff)
         discard;
 
-    uint depthBits = floatBitsToUint(gl_FragCoord.z);
-
     ivec2 pixel = ivec2(gl_FragCoord.xy);
 
-    uint previousDepth = imageAtomicMin(LightmapDepth, pixel, depthBits);
+    uint depthBits = floatBitsToUint(gl_FragCoord.z);
 
-    if (depthBits <= previousDepth)
+    beginInvocationInterlockARB();
+
+    uint previousDepth = imageLoad(LightmapDepth, pixel).r;
+
+    if (depthBits < previousDepth) {
+        imageStore(LightmapDepth, pixel, uvec4(depthBits, 0u, 0u, 0u));
         imageStore(LightmapCoords, pixel, vec4(lightCoords / 256.0, 0.0, 1.0));
+    }
+
+    endInvocationInterlockARB();
 
     fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
 }
