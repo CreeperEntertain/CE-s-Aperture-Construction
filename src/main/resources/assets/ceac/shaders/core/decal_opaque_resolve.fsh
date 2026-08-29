@@ -30,6 +30,8 @@ layout(std430, binding = 4) readonly buffer DecalIndexBuffer {
 uniform sampler2D Sampler0;
 uniform sampler2D Sampler1;
 uniform sampler2D Coverage;
+uniform sampler2D LightmapCoords;
+uniform sampler2D Lightmap;
 
 uniform float DecalCount;
 uniform float CellSize;
@@ -138,6 +140,14 @@ void main() {
 
         if (decalColor.a <= 0.01)
             continue;
+
+        vec2 lightCoords = texture(LightmapCoords, screenUV).rg;
+
+        vec2 lightUV = clamp(lightCoords, vec2(0.5 / 16.0), vec2(15.5 / 16.0));
+
+        vec4 lightColor = texture(Lightmap, lightUV);
+
+        decalColor.rgb *= lightColor.rgb;
 
         fragColor = decalColor;
         return;

@@ -3,14 +3,16 @@ package net.centertain.ceac.decal.client.mixin;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import net.centertain.ceac.decal.client.DecalRenderer;
-import net.centertain.ceac.decal.client.DecalShaders;
-import net.centertain.ceac.decal.client.TranslucentCaptureState;
+import net.centertain.ceac.decal.client.*;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
+import net.minecraft.client.Camera;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL42;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,10 +21,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
     @Inject(
+            method = "renderLevel",
+            at = @At("HEAD")
+    )
+    private void ceac$beginOpaqueLightmapFrame(
+            PoseStack poseStack,
+            float partialTick,
+            long finishNanoTime,
+            boolean renderBlockOutline,
+            Camera camera,
+            GameRenderer gameRenderer,
+            LightTexture lightTexture,
+            Matrix4f projectionMatrix,
+            CallbackInfo ci
+    ) {
+        if (ClientDecals.getAll().isEmpty())
+            return;
+        DecalRenderer.captureOpaqueLightmap();
+    }
+
+    @Inject(
             method = "renderChunkLayer",
             at = @At("HEAD")
     )
-    private void ceac$beginTranslucentCapture(
+    private void ceac$beginRenderLayerCapture(
             RenderType renderType,
             PoseStack poseStack,
             double camX,
@@ -31,15 +53,23 @@ public abstract class LevelRendererMixin {
             Matrix4f projectionMatrix,
             CallbackInfo ci
     ) {
-        if (renderType == RenderType.translucent())
+        if (renderType == RenderType.translucent()) {
             TranslucentCaptureState.begin();
+            return;
+        }
+        if (
+                renderType == RenderType.solid() ||
+                renderType == RenderType.cutoutMipped() ||
+                renderType == RenderType.cutout()
+        )
+            OpaqueLightmapCaptureState.begin(renderType);
     }
 
     @Inject(
             method = "renderChunkLayer",
             at = @At("TAIL")
     )
-    private void ceac$endTranslucentCapture(
+    private void ceac$endRenderLayerCapture(
             RenderType renderType,
             PoseStack poseStack,
             double camX,
@@ -48,17 +78,17 @@ public abstract class LevelRendererMixin {
             Matrix4f projectionMatrix,
             CallbackInfo ci
     ) {
-        if (renderType != RenderType.translucent())
+        if (renderType == RenderType.translucent()) {
+            TranslucentCaptureState.end();
+            Minecraft minecraft = Minecraft.getInstance();
+            DecalRenderer.renderKBuffer(
+                    minecraft.gameRenderer.getMainCamera(),
+                    minecraft.options.graphicsMode().get() == GraphicsStatus.FABULOUS
+            );
             return;
-
-        TranslucentCaptureState.end();
-
-        Minecraft minecraft = Minecraft.getInstance();
-
-        DecalRenderer.renderKBuffer(
-                minecraft.gameRenderer.getMainCamera(),
-                minecraft.options.graphicsMode().get() == GraphicsStatus.FABULOUS
-        );
+        }
+        if (OpaqueLightmapCaptureState.isActive())
+            OpaqueLightmapCaptureState.end();
     }
 
     @Inject(
@@ -78,15 +108,40 @@ public abstract class LevelRendererMixin {
             Matrix4f projectionMatrix,
             CallbackInfo ci
     ) {
-        if (!TranslucentCaptureState.isActive())
+        if (TranslucentCaptureState.isActive()) {
+            ShaderInstance capture = DecalShaders.getTranslucentCapture();
+            if (RenderSystem.getShader() != capture)
+                return;
+
+            Uniform modelView = capture.getUniform("ModelViewMat");
+            Uniform proj = capture.getUniform("ProjMat");
+            Uniform chunkOffset = capture.getUniform("ChunkOffset");
+
+            if (modelView != null)
+                modelView.set(poseStack.last().pose());
+            if (proj != null)
+                proj.set(projectionMatrix);
+            if (chunkOffset != null)
+                chunkOffset.set(0.0F, 0.0F, 0.0F);
+
+            TranslucentKBuffer.setShaderUniforms(capture);
+
             return;
-        ShaderInstance capture = DecalShaders.getTranslucentCapture();
+        }
+
+        if (!OpaqueLightmapCaptureState.isActive())
+            return;
+
+        ShaderInstance capture = DecalShaders.getOpaqueLightmapCapture();
+
         if (RenderSystem.getShader() != capture)
             return;
 
         Uniform modelView = capture.getUniform("ModelViewMat");
         Uniform proj = capture.getUniform("ProjMat");
         Uniform chunkOffset = capture.getUniform("ChunkOffset");
+        Uniform fogShape = capture.getUniform("FogShape");
+        Uniform alphaCutoff = capture.getUniform("AlphaCutoff");
 
         if (modelView != null)
             modelView.set(poseStack.last().pose());
@@ -94,7 +149,26 @@ public abstract class LevelRendererMixin {
             proj.set(projectionMatrix);
         if (chunkOffset != null)
             chunkOffset.set(0.0F, 0.0F, 0.0F);
+        if (fogShape != null)
+            fogShape.set(0);
+        if (alphaCutoff != null) {
+            RenderType type = OpaqueLightmapCaptureState.getRenderType();
+            if (type == RenderType.cutoutMipped())
+                alphaCutoff.set(0.5F);
+            else if (type == RenderType.cutout())
+                alphaCutoff.set(0.1F);
+            else
+                alphaCutoff.set(0.0F);
+        }
 
-        TranslucentKBuffer.setShaderUniforms(capture);
+        GL42.glBindImageTexture(
+                0,
+                DecalRenderer.getOpaqueLightmapTexture(),
+                0,
+                false,
+                0,
+                GL15.GL_WRITE_ONLY,
+                GL30.GL_RGBA8
+        );
     }
 }

@@ -2,6 +2,7 @@ package net.centertain.ceac.decal.client.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.centertain.ceac.decal.client.DecalShaders;
+import net.centertain.ceac.decal.client.OpaqueLightmapCaptureState;
 import net.centertain.ceac.decal.client.TranslucentCaptureState;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -24,8 +25,16 @@ public abstract class RenderSystemMixin {
             Supplier<ShaderInstance> supplier
     ) {
         ShaderInstance shader = supplier.get();
-        if (TranslucentCaptureState.isActive() && shader == GameRenderer.getRendertypeTranslucentShader())
-            return DecalShaders.getTranslucentCapture();
+        if (TranslucentCaptureState.isActive())
+            if (shader == GameRenderer.getRendertypeTranslucentShader())
+                return DecalShaders.getTranslucentCapture();
+        if (OpaqueLightmapCaptureState.isActive())
+            if (
+                    shader == GameRenderer.getRendertypeSolidShader() ||
+                    shader == GameRenderer.getRendertypeCutoutMippedShader() ||
+                    shader == GameRenderer.getRendertypeCutoutShader()
+            )
+                return DecalShaders.getOpaqueLightmapCapture();
         return shader;
     }
 }

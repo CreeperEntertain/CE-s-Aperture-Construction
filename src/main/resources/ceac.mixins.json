@@ -6,6 +6,7 @@
   "client": [
     "LevelRendererAccessor",
     "LevelRendererMixin",
+    "LightTextureAccessor",
     "RenderSystemMixin"
   ],
   "injectors": {

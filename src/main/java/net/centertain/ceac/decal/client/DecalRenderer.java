@@ -11,11 +11,13 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.client.mixin.LevelRendererAccessor;
+import net.centertain.ceac.decal.client.mixin.LightTextureAccessor;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -39,6 +41,7 @@ public final class DecalRenderer {
     private static RenderTarget opaqueDepthTarget;
     private static RenderTarget decalCoverageTarget;
     private static RenderTarget translucentColorSnapshot;
+    private static RenderTarget opaqueLightmapTarget;
 
     private static int decalVolumeVao;
     private static int decalVolumeVbo;
@@ -90,6 +93,43 @@ public final class DecalRenderer {
     public static int getOpaqueDepthTexture() {
         return opaqueDepthTarget != null
                 ? opaqueDepthTarget.getDepthTextureId()
+                : 0;
+    }
+
+    public static void captureOpaqueLightmap() {
+        Minecraft minecraft = Minecraft.getInstance();
+        RenderTarget mainTarget = minecraft.getMainRenderTarget();
+
+        int width = mainTarget.width;
+        int height = mainTarget.height;
+
+        if (opaqueLightmapTarget == null) {
+            opaqueLightmapTarget = new TextureTarget(width, height, false, Minecraft.ON_OSX);
+            opaqueLightmapTarget.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            opaqueLightmapTarget.resize(width, height, true);
+        } else if (opaqueLightmapTarget.width != width || opaqueLightmapTarget.height != height) {
+            opaqueLightmapTarget.resize(width, height, true);
+        }
+
+        opaqueLightmapTarget.bindWrite(false);
+        opaqueLightmapTarget.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        opaqueLightmapTarget.clear(false);
+
+        mainTarget.bindWrite(false);
+
+        int texture = opaqueLightmapTarget.getColorTextureId();
+
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+    }
+
+    public static int getOpaqueLightmapTexture() {
+        return opaqueLightmapTarget != null
+                ? opaqueLightmapTarget.getColorTextureId()
                 : 0;
     }
 
@@ -163,6 +203,7 @@ public final class DecalRenderer {
 
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
         lightTexture.turnOnLightLayer();
+        DynamicTexture lightmap = ((LightTextureAccessor) lightTexture).ceac$getLightTexture();
 
         RenderTarget translucentDepthTarget = TranslucentRenderTargets.getTranslucentDepth();
         decalCoverageTarget.copyDepthFrom(translucentDepthTarget);
@@ -196,6 +237,8 @@ public final class DecalRenderer {
 
         if (coveragePass != null)
             coveragePass.set(0);
+
+        GL42.glMemoryBarrier(GL42.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL42.GL_TEXTURE_FETCH_BARRIER_BIT);
 
         TranslucentKBuffer.uploadDecals(decals);
         TranslucentKBuffer.bind();
@@ -246,10 +289,14 @@ public final class DecalRenderer {
         RenderSystem.setShaderTexture(0, decalTexture);
         RenderSystem.setShaderTexture(1, opaqueDepthTarget.getDepthTextureId());
         RenderSystem.setShaderTexture(2, decalCoverageTarget.getColorTextureId());
+        RenderSystem.setShaderTexture(3, getOpaqueLightmapTexture());
+        RenderSystem.setShaderTexture(4, lightmap.getId());
 
         resolveShader.setSampler("Sampler0", RenderSystem.getShaderTexture(0));
         resolveShader.setSampler("Sampler1", RenderSystem.getShaderTexture(1));
         resolveShader.setSampler("Coverage", RenderSystem.getShaderTexture(2));
+        resolveShader.setSampler("LightmapCoords", RenderSystem.getShaderTexture(3));
+        resolveShader.setSampler("Lightmap", RenderSystem.getShaderTexture(4));
 
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
