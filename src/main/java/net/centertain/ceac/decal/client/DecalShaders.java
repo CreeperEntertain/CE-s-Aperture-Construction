@@ -59,7 +59,7 @@ public class DecalShaders {
                 new ShaderInstance(
                         event.getResourceProvider(),
                         ResourceLocation.fromNamespaceAndPath(MOD_ID, "decal_opaque_resolve"),
-                        DefaultVertexFormat.POSITION
+                        DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
                 ),
                 shader -> decalOpaqueResolve = shader
         );
