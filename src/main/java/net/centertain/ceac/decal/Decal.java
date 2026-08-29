@@ -21,6 +21,8 @@ public final class Decal {
     private final Direction normal;
     private final int renderingOrder;
 
+    private final boolean glowing;
+
     private final int pixelWidth;
     private final int pixelHeight;
 
@@ -34,6 +36,7 @@ public final class Decal {
             Vec3 origin,
             Direction normal,
             int renderingOrder,
+            boolean glowing,
             int pixelWidth,
             int pixelHeight,
             byte rotation,
@@ -44,6 +47,7 @@ public final class Decal {
         this.origin = origin;
         this.normal = normal;
         this.renderingOrder = renderingOrder;
+        this.glowing = glowing;
         this.pixelWidth = pixelWidth;
         this.pixelHeight = pixelHeight;
         this.rotation = rotation;
@@ -62,6 +66,9 @@ public final class Decal {
     }
     public int getRenderingOrder() {
         return renderingOrder;
+    }
+    public boolean getGlowing() {
+        return glowing;
     }
     public int getPixelWidth() {
         return pixelWidth;
@@ -94,6 +101,7 @@ public final class Decal {
         tag.putInt("RenderingOrder", renderingOrder);
         tag.putInt("PixelWidth", pixelWidth);
         tag.putInt("PixelHeight", pixelHeight);
+        tag.putBoolean("Glowing", glowing);
         tag.putByte("Rotation", rotation);
         tag.putString("Texture", texture.toString());
 
@@ -129,6 +137,8 @@ public final class Decal {
 
         int renderingOrder = tag.getInt("RenderingOrder");
 
+        boolean glowing = tag.getBoolean("Glowing");
+
         int pixelWidth = tag.getInt("PixelWidth");
         int pixelHeight = tag.getInt("PixelHeight");
         if (pixelWidth <= 0 || pixelHeight <= 0)
@@ -155,6 +165,7 @@ public final class Decal {
                 origin,
                 normal,
                 renderingOrder,
+                glowing,
                 pixelWidth,
                 pixelHeight,
                 rotation,

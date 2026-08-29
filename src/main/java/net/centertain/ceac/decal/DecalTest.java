@@ -26,6 +26,7 @@ public class DecalTest {
                 pos.getCenter(),
                 Direction.NORTH,
                 0,
+                false,
                 16,
                 16,
                 (byte) 0,
