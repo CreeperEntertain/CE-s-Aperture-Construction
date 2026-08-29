@@ -1,5 +1,7 @@
 #version 430
 
+#moj_import <light.glsl>
+
 const uint LAYERS = 4u;
 
 const float VOLUME_SIZE = 1.1;
@@ -194,12 +196,12 @@ void main() {
 
             uint lightPacked = fragments[offset + 2u];
 
-            uint lightX = lightPacked & 0xFFu;
-            uint lightY = (lightPacked >> 8u) & 0xFFu;
+            ivec2 lightCoords = ivec2(
+                    int(lightPacked & 0xFFu),
+                    int((lightPacked >> 8u) & 0xFFu)
+            );
 
-            vec2 lightUV = (vec2(float(lightX), float(lightY)) + 0.5) / 256.0;
-
-            vec4 lightColor = texture(Lightmap, lightUV);
+            vec4 lightColor = minecraft_sample_lightmap(Lightmap, lightCoords);
 
             decalColor.rgb *= lightColor.rgb;
 
