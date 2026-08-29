@@ -568,10 +568,20 @@ public final class DecalRenderer {
         if (fabulousUniform != null)
             fabulousUniform.set(fabulous ? 1 : 0);
 
+        LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
+        lightTexture.turnOnLightLayer();
+
+        DynamicTexture lightmap = ((LightTextureAccessor) lightTexture).ceac$getLightTexture();
+
         RenderSystem.setShader(() -> shader);
 
         RenderSystem.setShaderTexture(0, ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png"));
         RenderSystem.setShaderTexture(1, DecalRenderer.getOpaqueDepthTexture());
+        RenderSystem.setShaderTexture(3, lightmap.getId());
+
+        shader.setSampler("Sampler0", RenderSystem.getShaderTexture(0));
+        shader.setSampler("Sampler1", RenderSystem.getShaderTexture(1));
+        shader.setSampler("Lightmap", RenderSystem.getShaderTexture(3));
 
         if (fabulous) {
             RenderTarget translucentTarget = ((LevelRendererAccessor) minecraft.levelRenderer).ceac$getTranslucentTarget();
@@ -582,7 +592,7 @@ public final class DecalRenderer {
 
             GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, translucentTarget.frameBufferId);
             GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, translucentColorSnapshot.frameBufferId);
-            GL30.glBlitFramebuffer( // Why the fuck so long :(
+            GL30.glBlitFramebuffer(
                     0,
                     0,
                     translucentTarget.width,

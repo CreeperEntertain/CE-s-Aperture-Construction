@@ -15,7 +15,7 @@ import java.util.*;
 public final class TranslucentKBuffer {
     public static final int LAYERS = 4;
 
-    private static final int FRAGMENT_BYTES = Integer.BYTES * 2;
+    private static final int FRAGMENT_BYTES = Integer.BYTES * 3;
 
     private static final float CELL_SIZE = 1.1f;
     private static final float HALF_VOLUME = 1.1f / 2.0f;

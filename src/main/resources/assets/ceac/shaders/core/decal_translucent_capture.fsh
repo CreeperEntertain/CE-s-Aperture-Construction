@@ -33,7 +33,6 @@ void main() {
     fragColor = color;
 
     uint width = uint(ScreenSize.x);
-
     uint pixelCount = uint(ScreenSize.x * ScreenSize.y);
 
     ivec2 pixel = ivec2(gl_FragCoord.xy);
@@ -47,8 +46,15 @@ void main() {
 
     uint depth = floatBitsToUint(gl_FragCoord.z);
 
-    uint offset = layer * pixelCount * 2u + pixelIndex * 2u;
+    uint lightX = uint(clamp(lightCoord.x * 256.0, 0.0, 255.0));
+    uint lightY = uint(clamp(lightCoord.y * 256.0, 0.0, 255.0));
+
+    uint packedLightmap = (lightX & 0xFFu) | ((lightY & 0xFFu) << 8u);
+
+    uint layerStride = pixelCount * 3u;
+    uint offset = layer * layerStride + pixelIndex * 3u;
 
     fragments[offset] = depth;
     fragments[offset + 1u] = packUnorm4x8(color);
+    fragments[offset + 2u] = packedLightmap;
 }

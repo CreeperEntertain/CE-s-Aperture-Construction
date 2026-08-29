@@ -39,6 +39,7 @@ layout(std430, binding = 4) readonly buffer DecalIndexBuffer {
 
 uniform sampler2D Sampler0;
 uniform sampler2D Sampler1;
+uniform sampler2D Lightmap;
 
 uniform float DecalCount;
 uniform float CellSize;
@@ -113,7 +114,7 @@ void main() {
     uint pixelCount = uint(ScreenSize.x * ScreenSize.y);
 
     uint pixelIndex = uint(pixel.y) * width + uint(pixel.x);
-    uint layerStride = pixelCount * 2u;
+    uint layerStride = pixelCount * 3u;
 
     uint count = locks[pixelIndex];
 
@@ -132,7 +133,7 @@ void main() {
     bool decalApplied = false;
 
     for (uint i = 0u; i < count; ++i) {
-        uint offset = i * layerStride + pixelIndex * 2u;
+        uint offset = i * layerStride + pixelIndex * 3u;
 
         float depth = uintBitsToFloat(fragments[offset]);
 
@@ -190,6 +191,17 @@ void main() {
 
             if (decalColor.a <= 0.01)
                 continue;
+
+            uint lightPacked = fragments[offset + 2u];
+
+            uint lightX = lightPacked & 0xFFu;
+            uint lightY = (lightPacked >> 8u) & 0xFFu;
+
+            vec2 lightUV = (vec2(float(lightX), float(lightY)) + 0.5) / 256.0;
+
+            vec4 lightColor = texture(Lightmap, lightUV);
+
+            decalColor.rgb *= lightColor.rgb;
 
             layers[i] = over(decalColor, layers[i]);
 
