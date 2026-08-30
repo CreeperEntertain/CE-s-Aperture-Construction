@@ -176,6 +176,7 @@ public final class Decal {
         double blockDepth = tag.getDouble("BlockDepth");
         if (blockDepth < 0 || blockDepth > 16)
             return null;
+        blockDepth = 1.1;
 
         byte rotation = tag.getByte("Rotation");
         if (rotation < 0 || rotation > 15)

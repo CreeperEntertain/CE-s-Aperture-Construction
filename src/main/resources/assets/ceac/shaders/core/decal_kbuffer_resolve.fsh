@@ -4,10 +4,6 @@
 
 const uint LAYERS = 4u;
 
-const float VOLUME_SIZE = 1.1;
-const float HALF_VOLUME = VOLUME_SIZE / 2.0;
-const float INV_VOLUME_SIZE = 1.0 / VOLUME_SIZE;
-
 const float MAX_ANGLE = radians(45.0);
 const float FADE_ANGLE = radians(35.0);
 const float MIN_DOT = cos(MAX_ANGLE);
@@ -15,8 +11,8 @@ const float FADE_DOT = cos(FADE_ANGLE);
 
 struct DecalData {
     vec4 origin;
-    vec4 tangent;
-    vec4 bitangent;
+    vec4 normal;
+    vec4 volumeAndRotation;
 };
 
 struct CellData {
@@ -109,6 +105,33 @@ float angleFade(vec3 surfaceNormal, vec3 decalNormal) {
     return smoothstep(MIN_DOT, FADE_DOT, d);
 }
 
+void getDecalBasis(
+        vec3 normal,
+        float rotation,
+        out vec3 tangent,
+        out vec3 bitangent
+) {
+    normal = normalize(normal);
+
+    vec3 reference = abs(normal.y) < 0.999
+        ? vec3(0.0, 1.0, 0.0)
+        : vec3(1.0, 0.0, 0.0);
+
+    tangent = normalize(cross(reference, normal));
+    bitangent = normalize(cross(normal, tangent));
+
+    float angle = radians(22.5) * rotation;
+
+    float c = cos(angle);
+    float s = sin(angle);
+
+    vec3 rotatedTangent = tangent * c + bitangent * s;
+    vec3 rotatedBitangent = -tangent * s + bitangent * c;
+
+    tangent = rotatedTangent;
+    bitangent = rotatedBitangent;
+}
+
 void main() {
     ivec2 pixel = ivec2(gl_FragCoord.xy);
 
@@ -156,20 +179,34 @@ void main() {
         for (uint j = 0u; j < decalCount; ++j) {
             DecalData decal = decals[decalIndices[decalOffset + j]];
 
-            vec3 decalNormal = normalize(cross(decal.tangent.xyz, decal.bitangent.xyz));
+            vec3 decalNormal = normalize(decal.normal.xyz);
 
             float fade = angleFade(surfaceNormal, decalNormal);
 
             if (fade <= 0.0)
                 continue;
 
+            vec3 tangent;
+            vec3 bitangent;
+
+            getDecalBasis(
+                    decalNormal,
+                    decal.volumeAndRotation.w,
+                    tangent,
+                    bitangent
+            );
+
             vec3 r = surfaceWorld - decal.origin.xyz;
 
-            if (abs(r.x) > HALF_VOLUME || abs(r.y) > HALF_VOLUME || abs(r.z) > HALF_VOLUME)
+            vec3 local = vec3(dot(r, tangent), dot(r, bitangent), dot(r, decalNormal));
+
+            vec3 halfVolume = decal.volumeAndRotation.xyz * 0.5;
+
+            if (abs(local.x) > halfVolume.x || abs(local.y) > halfVolume.y || abs(local.z) > halfVolume.z)
                 continue;
 
-            float u = dot(r, decal.tangent.xyz) * INV_VOLUME_SIZE + 0.5;
-            float v = 0.5 - dot(r, decal.bitangent.xyz) * INV_VOLUME_SIZE;
+            float u = local.x / decal.volumeAndRotation.x + 0.5;
+            float v = 0.5 - local.y / decal.volumeAndRotation.y;
 
             if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
                 continue;
@@ -188,8 +225,7 @@ void main() {
                     int((lightPacked >> 8u) & 0xFFu)
             );
 
-            color.rgb *=
-            minecraft_sample_lightmap(Lightmap, lightCoords).rgb;
+            color.rgb *= minecraft_sample_lightmap(Lightmap, lightCoords).rgb;
 
             layers[i] = over(color, layers[i]);
             decalApplied = true;

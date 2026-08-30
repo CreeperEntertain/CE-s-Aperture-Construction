@@ -106,15 +106,9 @@ public final class TranslucentKBuffer {
                 Vec3 origin = decal.getOrigin();
                 Vec3 normal = decal.getNormal();
 
-                Vec3 reference;
-
-                if (Math.abs(normal.y) < 0.999)
-                    reference = new Vec3(0.0, 1.0, 0.0);
-                else
-                    reference = new Vec3(1.0, 0.0, 0.0);
-
-                Vec3 tangent = reference.cross(normal).normalize();
-                Vec3 bitangent = normal.cross(tangent).normalize();
+                double width = decal.getPixelWidth() / 16.0;
+                double height = decal.getPixelHeight() / 16.0;
+                double depth = decal.getBlockDepth();
 
                 // Origin
                 data.put((float) origin.x);
@@ -122,17 +116,17 @@ public final class TranslucentKBuffer {
                 data.put((float) origin.z);
                 data.put(0.0f);
 
-                // Tangent
-                data.put((float) tangent.x);
-                data.put((float) tangent.y);
-                data.put((float) tangent.z);
+                // Normal
+                data.put((float) normal.x);
+                data.put((float) normal.y);
+                data.put((float) normal.z);
                 data.put(0.0f);
 
-                // Bitangent
-                data.put((float) bitangent.x);
-                data.put((float) bitangent.y);
-                data.put((float) bitangent.z);
-                data.put(0.0f);
+                // Volume + rotation
+                data.put((float) width);
+                data.put((float) height);
+                data.put((float) depth);
+                data.put((float) (decal.getRotation() & 0xFF));
             }
             data.flip();
             GL15.glBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER, 0, data);
