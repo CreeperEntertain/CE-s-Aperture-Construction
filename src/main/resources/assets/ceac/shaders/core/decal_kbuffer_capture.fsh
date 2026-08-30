@@ -8,6 +8,11 @@ const float VOLUME_SIZE = 1.1;
 const float HALF_VOLUME = VOLUME_SIZE / 2.0;
 const float INV_VOLUME_SIZE = 1.0 / VOLUME_SIZE;
 
+const float MAX_ANGLE = radians(45.0);
+const float FADE_ANGLE = radians(35.0);
+const float MIN_DOT = cos(MAX_ANGLE);
+const float FADE_DOT = cos(FADE_ANGLE);
+
 struct DecalData {
     vec4 origin;
     vec4 tangent;
@@ -55,58 +60,53 @@ uniform mat3 IViewRotMat;
 
 out vec4 fragColor;
 
-bool findCell(
-        ivec3 cell,
-        out uint offset,
-        out uint count
-) {
+bool findCell(ivec3 cell, out uint offset, out uint count)
+{
     int low = 0;
     int high = int(CellCount) - 1;
 
     while (low <= high) {
         int middle = (low + high) >> 1;
+        CellData e = cells[middle];
 
-        CellData entry = cells[middle];
-
-        if (
-            entry.cell.x == cell.x &&
-            entry.cell.y == cell.y &&
-            entry.cell.z == cell.z
-        ) {
-            offset = uint(entry.data.x);
-            count = uint(entry.data.y);
+        if (e.cell.x == cell.x && e.cell.y == cell.y && e.cell.z == cell.z) {
+            offset = uint(e.data.x);
+            count = uint(e.data.y);
             return true;
         }
 
         if (
-            entry.cell.x < cell.x ||
-            (
-                entry.cell.x == cell.x &&
-                entry.cell.y < cell.y
-            ) ||
-            (
-                entry.cell.x == cell.x &&
-                entry.cell.y == cell.y &&
-                entry.cell.z < cell.z
-            )
-        ) {
+            e.cell.x < cell.x ||
+            (e.cell.x == cell.x && e.cell.y < cell.y) ||
+            (e.cell.x == cell.x && e.cell.y == cell.y && e.cell.z < cell.z)
+        )
             low = middle + 1;
-        } else {
+        else
             high = middle - 1;
-        }
     }
 
     return false;
 }
 
-vec4 over(
-        vec4 foreground,
-        vec4 background
-) {
-    return vec4(
-            foreground.rgb * foreground.a + background.rgb * (1.0 - foreground.a),
-            foreground.a + background.a * (1.0 - foreground.a)
-    );
+vec4 over(vec4 f, vec4 b) {
+    return vec4(f.rgb * f.a + b.rgb * (1.0 - f.a), f.a + b.a * (1.0 - f.a));
+}
+
+vec3 worldPos(vec2 uv, float depth){
+    vec4 p = InvProjMat * vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
+
+    p /= p.w;
+
+    return IViewRotMat * p.xyz + CameraPosition;
+}
+
+float angleFade(vec3 surfaceNormal, vec3 decalNormal) {
+    float d = dot(surfaceNormal, decalNormal);
+
+    if (d <= MIN_DOT)
+        return 0.0;
+
+    return smoothstep(MIN_DOT, FADE_DOT, d);
 }
 
 void main() {
@@ -126,40 +126,24 @@ void main() {
     if (count > LAYERS)
         count = LAYERS;
 
-    vec2 screenUV = gl_FragCoord.xy / ScreenSize.xy;
-
-    float opaqueDepth = texture(Sampler1, screenUV).r;
+    vec2 uv = gl_FragCoord.xy / ScreenSize.xy;
+    float opaqueDepth = texture(Sampler1, uv).r;
 
     vec4 layers[LAYERS];
-
     bool decalApplied = false;
 
     for (uint i = 0u; i < count; ++i) {
         uint offset = i * layerStride + pixelIndex * 3u;
 
         float depth = uintBitsToFloat(fragments[offset]);
-
         layers[i] = unpackUnorm4x8(fragments[offset + 1u]);
 
-        if (decalApplied)
+        if (decalApplied || depth >= opaqueDepth)
             continue;
 
-        if (depth >= opaqueDepth)
-            continue;
+        vec3 surfaceWorld = worldPos(uv, depth);
 
-        vec2 clipXY = screenUV * 2.0 - 1.0;
-
-        vec4 viewPosition = InvProjMat * vec4(
-                clipXY,
-                depth * 2.0 - 1.0,
-                1.0
-        );
-
-        viewPosition /= viewPosition.w;
-
-        vec3 surfaceCameraRelative = IViewRotMat * viewPosition.xyz;
-
-        vec3 surfaceWorld = surfaceCameraRelative + CameraPosition;
+        vec3 surfaceNormal = normalize(cross(dFdx(surfaceWorld), dFdy(surfaceWorld)));
 
         ivec3 cell = ivec3(floor(surfaceWorld / CellSize));
 
@@ -170,29 +154,32 @@ void main() {
             continue;
 
         for (uint j = 0u; j < decalCount; ++j) {
-            uint decalIndex = decalIndices[decalOffset + j];
+            DecalData decal = decals[decalIndices[decalOffset + j]];
 
-            DecalData decal = decals[decalIndex];
-            vec3 surfaceDecalRelative = surfaceWorld - decal.origin.xyz;
+            vec3 decalNormal = normalize(cross(decal.tangent.xyz, decal.bitangent.xyz));
 
-            if (
-                abs(surfaceDecalRelative.x) > HALF_VOLUME ||
-                abs(surfaceDecalRelative.y) > HALF_VOLUME ||
-                abs(surfaceDecalRelative.z) > HALF_VOLUME
-            )
+            float fade = angleFade(surfaceNormal, decalNormal);
+
+            if (fade <= 0.0)
                 continue;
 
-            float u = dot(surfaceDecalRelative, decal.tangent.xyz) * INV_VOLUME_SIZE + 0.5;
+            vec3 r = surfaceWorld - decal.origin.xyz;
 
-            float v = 0.5 - dot(surfaceDecalRelative, decal.bitangent.xyz) * INV_VOLUME_SIZE;
+            if (abs(r.x) > HALF_VOLUME || abs(r.y) > HALF_VOLUME || abs(r.z) > HALF_VOLUME)
+                continue;
+
+            float u = dot(r, decal.tangent.xyz) * INV_VOLUME_SIZE + 0.5;
+            float v = 0.5 - dot(r, decal.bitangent.xyz) * INV_VOLUME_SIZE;
 
             if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
                 continue;
 
-            vec4 decalColor = texture(Sampler0, vec2(u, v));
+            vec4 color = texture(Sampler0, vec2(u, v));
 
-            if (decalColor.a <= 0.01)
+            if (color.a <= 0.01)
                 continue;
+
+            color.a *= fade;
 
             uint lightPacked = fragments[offset + 2u];
 
@@ -201,12 +188,10 @@ void main() {
                     int((lightPacked >> 8u) & 0xFFu)
             );
 
-            vec4 lightColor = minecraft_sample_lightmap(Lightmap, lightCoords);
+            color.rgb *=
+            minecraft_sample_lightmap(Lightmap, lightCoords).rgb;
 
-            decalColor.rgb *= lightColor.rgb;
-
-            layers[i] = over(decalColor, layers[i]);
-
+            layers[i] = over(color, layers[i]);
             decalApplied = true;
             break;
         }
@@ -216,8 +201,6 @@ void main() {
 
     vec4 result = vec4(0.0);
 
-    // K-buffer is nearest > farthest
-    // Thus, inverted composite
     for (int i = int(count) - 1; i >= 0; --i)
         result = over(layers[i], result);
 

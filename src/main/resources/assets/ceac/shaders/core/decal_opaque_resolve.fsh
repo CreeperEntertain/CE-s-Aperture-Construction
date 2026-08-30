@@ -4,6 +4,11 @@ const float VOLUME_SIZE = 1.1;
 const float HALF_VOLUME = VOLUME_SIZE / 2.0;
 const float INV_VOLUME_SIZE = 1.0 / VOLUME_SIZE;
 
+const float MAX_ANGLE = radians(45.0);
+const float FADE_ANGLE = radians(35.0);
+const float MIN_DOT = cos(MAX_ANGLE);
+const float FADE_DOT = cos(FADE_ANGLE);
+
 struct DecalData {
     vec4 origin;
     vec4 tangent;
@@ -44,70 +49,63 @@ uniform mat3 IViewRotMat;
 
 out vec4 fragColor;
 
-bool findCell(
-        ivec3 cell,
-        out uint offset,
-        out uint count
-) {
+bool findCell(ivec3 cell, out uint offset, out uint count) {
     int low = 0;
     int high = int(CellCount) - 1;
 
     while (low <= high) {
         int middle = (low + high) >> 1;
+        CellData e = cells[middle];
 
-        CellData entry = cells[middle];
-
-        if (
-            entry.cell.x == cell.x &&
-            entry.cell.y == cell.y &&
-            entry.cell.z == cell.z
-        ) {
-            offset = uint(entry.data.x);
-            count = uint(entry.data.y);
+        if (e.cell.x == cell.x && e.cell.y == cell.y && e.cell.z == cell.z) {
+            offset = uint(e.data.x);
+            count = uint(e.data.y);
             return true;
         }
 
         if (
-            entry.cell.x < cell.x ||
-            (
-                entry.cell.x == cell.x &&
-                entry.cell.y < cell.y
-            ) ||
-            (
-                entry.cell.x == cell.x &&
-                entry.cell.y == cell.y &&
-                entry.cell.z < cell.z
-            )
-        ) {
+            e.cell.x < cell.x ||
+            (e.cell.x == cell.x && e.cell.y < cell.y) ||
+            (e.cell.x == cell.x && e.cell.y == cell.y && e.cell.z < cell.z)
+        )
             low = middle + 1;
-        } else {
+        else
             high = middle - 1;
-        }
     }
     return false;
 }
 
+vec3 worldPos(vec2 uv, float depth) {
+    vec4 p = InvProjMat * vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
+
+    p /= p.w;
+
+    return IViewRotMat * p.xyz + CameraPosition;
+}
+
+float angleFade(vec3 surfaceNormal, vec3 decalNormal) {
+    float d = dot(surfaceNormal, decalNormal);
+
+    if (d <= MIN_DOT)
+        return 0.0;
+
+    return smoothstep(MIN_DOT, FADE_DOT, d);
+}
+
 void main() {
-    vec2 screenUV = gl_FragCoord.xy / ScreenSize.xy;
+    vec2 uv = gl_FragCoord.xy / ScreenSize.xy;
 
-    if (texture(Coverage, screenUV).r >= 1.0)
+    if (texture(Coverage, uv).r >= 1.0)
         discard;
 
-    float sceneDepth = texture(Sampler1, screenUV).r;
+    float depth = texture(Sampler1, uv).r;
 
-    if (sceneDepth >= 1.0)
+    if (depth >= 1.0)
         discard;
 
-    vec4 viewPosition = InvProjMat * vec4(
-            screenUV * 2.0 - 1.0,
-            sceneDepth * 2.0 - 1.0,
-            1.0
-    );
+    vec3 surfaceWorld = worldPos(uv, depth);
 
-    viewPosition /= viewPosition.w;
-
-    vec3 surfaceCameraRelative = IViewRotMat * viewPosition.xyz;
-    vec3 surfaceWorld = surfaceCameraRelative + CameraPosition;
+    vec3 surfaceNormal = normalize(cross(dFdx(surfaceWorld), dFdy(surfaceWorld)));
 
     ivec3 cell = ivec3(floor(surfaceWorld / CellSize));
 
@@ -118,38 +116,42 @@ void main() {
         discard;
 
     for (uint j = 0u; j < decalCount; ++j) {
-        uint decalIndex = decalIndices[decalOffset + j];
+        DecalData decal = decals[decalIndices[decalOffset + j]];
 
-        DecalData decal = decals[decalIndex];
-        vec3 surfaceDecalRelative = surfaceWorld - decal.origin.xyz;
+        vec3 decalNormal = normalize(cross(decal.tangent.xyz, decal.bitangent.xyz));
 
-        if (
-            abs(surfaceDecalRelative.x) > HALF_VOLUME ||
-            abs(surfaceDecalRelative.y) > HALF_VOLUME ||
-            abs(surfaceDecalRelative.z) > HALF_VOLUME
-        )
+        float fade = angleFade(surfaceNormal, decalNormal);
+
+        if (fade <= 0.0)
             continue;
 
-        float u = dot(surfaceDecalRelative, decal.tangent.xyz) * INV_VOLUME_SIZE + 0.5;
-        float v = 0.5 - dot(surfaceDecalRelative, decal.bitangent.xyz) * INV_VOLUME_SIZE;
+        vec3 r = surfaceWorld - decal.origin.xyz;
+
+        if (abs(r.x) > HALF_VOLUME ||
+            abs(r.y) > HALF_VOLUME ||
+            abs(r.z) > HALF_VOLUME)
+            continue;
+
+        float u = dot(r, decal.tangent.xyz) * INV_VOLUME_SIZE + 0.5;
+        float v = 0.5 - dot(r, decal.bitangent.xyz) * INV_VOLUME_SIZE;
 
         if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
             continue;
 
-        vec4 decalColor = texture(Sampler0, vec2(u, v));
+        vec4 color = texture(Sampler0, vec2(u, v));
 
-        if (decalColor.a <= 0.01)
+        if (color.a <= 0.01)
             continue;
 
-        vec2 lightCoords = texture(LightmapCoords, screenUV).rg;
+        color.a *= fade;
+
+        vec2 lightCoords = texture(LightmapCoords, uv).rg;
 
         vec2 lightUV = clamp(lightCoords, vec2(0.5 / 16.0), vec2(15.5 / 16.0));
 
-        vec4 lightColor = texture(Lightmap, lightUV);
+        color.rgb *= texture(Lightmap, lightUV).rgb;
 
-        decalColor.rgb *= lightColor.rgb;
-
-        fragColor = decalColor;
+        fragColor = color;
         return;
     }
     discard;
