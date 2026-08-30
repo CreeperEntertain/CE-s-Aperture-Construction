@@ -35,7 +35,7 @@ public final class TranslucentKBuffer {
     private static int decalIndexBuffer;
     private static int decalIndexCapacity;
 
-    private static boolean spatialIndexDirty = true;
+    private static volatile boolean spatialIndexDirty = true;
 
     private static boolean initialized;
 
