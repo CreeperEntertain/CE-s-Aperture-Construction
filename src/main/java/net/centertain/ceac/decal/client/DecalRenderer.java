@@ -582,7 +582,7 @@ public final class DecalRenderer {
         if (shader == null)
             return;
 
-        Collection<Decal> decals = ClientDecals.getAll().values();
+        List<Decal> decals = ClientDecals.getByRenderOrder();
 
         TranslucentKBuffer.uploadDecals(decals);
         TranslucentKBuffer.bind();
