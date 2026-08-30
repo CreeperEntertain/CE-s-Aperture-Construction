@@ -3,9 +3,10 @@ package net.centertain.ceac.decal.client;
 import net.centertain.ceac.decal.Decal;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ClientDecals {
-    private static final Map<UUID, Decal> DECALS = new HashMap<>();
+    private static final Map<UUID, Decal> DECALS = new ConcurrentHashMap<>();
 
     private ClientDecals() {}
 
