@@ -115,6 +115,25 @@ void getDecalBasis(
     bitangent = rotatedBitangent;
 }
 
+vec3 worldPosTexel(ivec2 pixel) {
+    ivec2 size = textureSize(Sampler1, 0);
+
+    pixel = clamp(pixel, ivec2(0), size - 1);
+
+    vec2 uv = (vec2(pixel) + 0.5) / vec2(size);
+    float depth = texelFetch(Sampler1, pixel, 0).r;
+
+    return worldPos(uv, depth);
+}
+
+vec3 surfaceNormal(ivec2 pixel) {
+    vec3 center = worldPosTexel(pixel);
+    vec3 right = worldPosTexel(pixel + ivec2(1, 0));
+    vec3 down = worldPosTexel(pixel + ivec2(0, 1));
+
+    return normalize(cross(right - center, down - center));
+}
+
 void main() {
     vec2 uv = gl_FragCoord.xy / ScreenSize.xy;
 
@@ -128,7 +147,7 @@ void main() {
 
     vec3 surfaceWorld = worldPos(uv, depth);
 
-    vec3 surfaceNormal = normalize(cross(dFdx(surfaceWorld), dFdy(surfaceWorld)));
+    vec3 surfaceNormal = surfaceNormal(ivec2(gl_FragCoord.xy));
 
     ivec3 cell = ivec3(floor(surfaceWorld / CellSize));
 

@@ -168,6 +168,9 @@ void main() {
 
         vec3 surfaceNormal = normalize(cross(dFdx(surfaceWorld), dFdy(surfaceWorld)));
 
+        if (dot(surfaceNormal, CameraPosition - surfaceWorld) < 0.0)
+            surfaceNormal = -surfaceNormal;
+
         ivec3 cell = ivec3(floor(surfaceWorld / CellSize));
 
         uint decalOffset;
