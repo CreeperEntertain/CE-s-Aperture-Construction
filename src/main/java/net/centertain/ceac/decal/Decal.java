@@ -25,6 +25,7 @@ public final class Decal {
 
     private final int pixelWidth;
     private final int pixelHeight;
+    private final double blockDepth;
 
     private final byte rotation;
     private final ResourceLocation texture;
@@ -39,6 +40,7 @@ public final class Decal {
             boolean glowing,
             int pixelWidth,
             int pixelHeight,
+            double blockDepth,
             byte rotation,
             ResourceLocation texture,
             Set<BlockPos> attachedBlocks
@@ -50,6 +52,7 @@ public final class Decal {
         this.glowing = glowing;
         this.pixelWidth = pixelWidth;
         this.pixelHeight = pixelHeight;
+        this.blockDepth = blockDepth;
         this.rotation = rotation;
         this.texture = texture;
         this.attachedBlocks = Set.copyOf(attachedBlocks);
@@ -76,6 +79,9 @@ public final class Decal {
     public int getPixelHeight() {
         return pixelHeight;
     }
+    public double getBlockDepth() {
+        return blockDepth;
+    }
     public byte getRotation() {
         return rotation;
     }
@@ -101,6 +107,7 @@ public final class Decal {
         tag.putInt("RenderingOrder", renderingOrder);
         tag.putInt("PixelWidth", pixelWidth);
         tag.putInt("PixelHeight", pixelHeight);
+        tag.putDouble("BlockDepth", blockDepth);
         tag.putBoolean("Glowing", glowing);
         tag.putByte("Rotation", rotation);
         tag.putString("Texture", texture.toString());
@@ -144,6 +151,10 @@ public final class Decal {
         if (pixelWidth <= 0 || pixelHeight <= 0)
             return null;
 
+        double blockDepth = tag.getDouble("BlockDepth");
+        if (blockDepth < 0 || blockDepth > 16)
+            return null;
+
         byte rotation = tag.getByte("Rotation");
         if (rotation < 0 || rotation > 15)
             return null;
@@ -168,6 +179,7 @@ public final class Decal {
                 glowing,
                 pixelWidth,
                 pixelHeight,
+                blockDepth,
                 rotation,
                 texture,
                 attachedBlocks

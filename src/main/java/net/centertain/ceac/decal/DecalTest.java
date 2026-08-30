@@ -29,6 +29,7 @@ public class DecalTest {
                 false,
                 16,
                 16,
+                1.1,
                 (byte) 0,
                 ResourceLocation.fromNamespaceAndPath(CeacMod.MOD_ID, "textures/decal/test.png"),
                 Set.of(pos)
