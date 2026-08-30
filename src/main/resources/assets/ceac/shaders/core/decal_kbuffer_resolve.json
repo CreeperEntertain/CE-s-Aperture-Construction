@@ -1,6 +1,6 @@
 {
-  "vertex": "ceac:decal_kbuffer_capture",
-  "fragment": "ceac:decal_kbuffer_capture",
+  "vertex": "ceac:decal_kbuffer_resolve",
+  "fragment": "ceac:decal_kbuffer_resolve",
 
   "attributes": [
     "Position"

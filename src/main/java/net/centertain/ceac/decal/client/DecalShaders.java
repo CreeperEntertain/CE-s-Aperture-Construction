@@ -20,7 +20,7 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 )
 public class DecalShaders {
     private static ShaderInstance translucentCapture;
-    private static ShaderInstance decalKBufferCapture;
+    private static ShaderInstance decalKBufferResolve;
     private static ShaderInstance decalCoverage;
     private static ShaderInstance decalOpaqueResolve;
     private static ShaderInstance opaqueLightmapCapture;
@@ -43,10 +43,10 @@ public class DecalShaders {
         event.registerShader(
                 new ShaderInstance(
                         event.getResourceProvider(),
-                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "decal_kbuffer_capture"),
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "decal_kbuffer_resolve"),
                         DefaultVertexFormat.POSITION_COLOR_LIGHTMAP
                 ),
-                shader -> decalKBufferCapture = shader
+                shader -> decalKBufferResolve = shader
         );
         event.registerShader(
                 new ShaderInstance(
@@ -92,8 +92,8 @@ public class DecalShaders {
     public static ShaderInstance getTranslucentCapture() {
         return translucentCapture;
     }
-    public static ShaderInstance getDecalKBufferCapture() {
-        return decalKBufferCapture;
+    public static ShaderInstance getDecalKBufferResolve() {
+        return decalKBufferResolve;
     }
     public static ShaderInstance getDecalCoverage() {
         return decalCoverage;

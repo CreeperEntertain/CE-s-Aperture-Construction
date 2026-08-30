@@ -586,7 +586,7 @@ public final class DecalRenderer {
             return;
         if (ClientDecals.getAll().isEmpty())
             return;
-        ShaderInstance shader = DecalShaders.getDecalKBufferCapture();
+        ShaderInstance shader = DecalShaders.getDecalKBufferResolve();
         if (shader == null)
             return;
 
