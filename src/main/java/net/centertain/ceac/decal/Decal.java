@@ -18,7 +18,7 @@ public final class Decal {
     private final UUID id;
 
     private final Vec3 origin;
-    private final Direction normal;
+    private final Vec3 normal;
     private final int renderingOrder;
 
     private final boolean glowing;
@@ -35,7 +35,7 @@ public final class Decal {
     public Decal(
             UUID id,
             Vec3 origin,
-            Direction normal,
+            Vec3 normal,
             int renderingOrder,
             boolean glowing,
             int pixelWidth,
@@ -64,7 +64,7 @@ public final class Decal {
     public Vec3 getOrigin() {
         return origin;
     }
-    public Direction getNormal() {
+    public Vec3 getNormal() {
         return normal;
     }
     public int getRenderingOrder() {
@@ -103,7 +103,12 @@ public final class Decal {
         originTag.putDouble("Z", origin.z);
         tag.put("Origin", originTag);
 
-        tag.putString("Normal", normal.getName());
+        CompoundTag normalTag = new CompoundTag();
+        normalTag.putDouble("X", normal.x);
+        normalTag.putDouble("Y", normal.y);
+        normalTag.putDouble("Z", normal.z);
+        tag.put("Normal", normalTag);
+
         tag.putInt("RenderingOrder", renderingOrder);
         tag.putInt("PixelWidth", pixelWidth);
         tag.putInt("PixelHeight", pixelHeight);
@@ -138,9 +143,26 @@ public final class Decal {
                 originTag.getDouble("Z")
         );
 
-        Direction normal = Direction.byName(tag.getString("Normal"));
-        if (normal == null)
+        Vec3 normal;
+        if (tag.contains("Normal", Tag.TAG_COMPOUND)) {
+            // New format
+            CompoundTag normalTag = tag.getCompound("Normal");
+            normal = new Vec3(
+                    normalTag.getDouble("X"),
+                    normalTag.getDouble("Y"),
+                    normalTag.getDouble("Z")
+            );
+        } else if (tag.contains("Normal", Tag.TAG_STRING)) {
+            // Old format preservation
+            Direction oldNormal = Direction.byName(tag.getString("Normal"));
+            if (oldNormal == null)
+                return null;
+            normal = Vec3.atLowerCornerOf(oldNormal.getNormal());
+        } else
             return null;
+        if (normal.lengthSqr() < 1.0e-12)
+            return null;
+        normal = normal.normalize();
 
         int renderingOrder = tag.getInt("RenderingOrder");
 

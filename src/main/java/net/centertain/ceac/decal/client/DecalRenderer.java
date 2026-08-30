@@ -416,7 +416,7 @@ public final class DecalRenderer {
 
             for (Decal decal : decals) {
                 Vec3 origin = decal.getOrigin();
-                Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal());
+                Vec3 normal = decal.getNormal();
 
                 Vector4f transformed =
                         new Vector4f(

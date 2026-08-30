@@ -104,8 +104,7 @@ public final class TranslucentKBuffer {
 
             for (Decal decal : decalList) {
                 Vec3 origin = decal.getOrigin();
-
-                Vec3 normal = Vec3.atLowerCornerOf(decal.getNormal().getNormal()).normalize();
+                Vec3 normal = decal.getNormal();
 
                 Vec3 reference;
 

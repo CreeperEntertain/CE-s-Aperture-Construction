@@ -4,11 +4,11 @@ import net.centertain.ceac.CeacMod;
 import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.decal.network.SyncDecalPacket;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
 
 import java.util.Set;
@@ -24,7 +24,7 @@ public class DecalTest {
         Decal decal = new Decal(
                 UUID.randomUUID(),
                 pos.getCenter(),
-                Direction.NORTH,
+                new Vec3(0, 0, -1),
                 0,
                 false,
                 16,
