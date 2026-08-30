@@ -214,5 +214,8 @@ void main() {
         fragColor = color;
         return;
     }
-    discard;
+    discard; // ━━━━━━━━━━━━━━━┓
+    // The compiler just lies. This is 100% reachable.
+    // I learned the hard way once removing it caused...
+    // issues.
 }
