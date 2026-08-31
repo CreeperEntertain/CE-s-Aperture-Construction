@@ -35,7 +35,8 @@ public abstract class LevelRendererMixin {
             Matrix4f projectionMatrix,
             CallbackInfo ci
     ) {
-        if (ClientDecals.getAll().isEmpty())
+        Matrix4f viewProjection = new Matrix4f(projectionMatrix).mul(poseStack.last().pose());
+        if (ClientDecals.getAllCulled(viewProjection, camera.getPosition()).isEmpty())
             return;
         DecalRenderer.captureOpaqueLightmap();
     }
@@ -81,9 +82,11 @@ public abstract class LevelRendererMixin {
         if (renderType == RenderType.translucent()) {
             TranslucentCaptureState.end();
             Minecraft minecraft = Minecraft.getInstance();
+            Matrix4f viewProjection = new Matrix4f(projectionMatrix).mul(poseStack.last().pose());
             DecalRenderer.renderKBuffer(
                     minecraft.gameRenderer.getMainCamera(),
-                    minecraft.options.graphicsMode().get() == GraphicsStatus.FABULOUS
+                    minecraft.options.graphicsMode().get() == GraphicsStatus.FABULOUS,
+                    viewProjection
             );
             return;
         }

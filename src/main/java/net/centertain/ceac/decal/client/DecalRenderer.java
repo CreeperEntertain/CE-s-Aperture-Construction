@@ -37,8 +37,6 @@ import java.util.List;
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class DecalRenderer {
-    private static final double VOLUME_SIZE = 1.1;
-
     private static RenderTarget opaqueDepthTarget;
     private static RenderTarget decalCoverageTarget;
     private static RenderTarget translucentColorSnapshot;
@@ -238,7 +236,8 @@ public final class DecalRenderer {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
             return;
-        if (ClientDecals.getAll().isEmpty())
+        Matrix4f viewProjection = new Matrix4f(event.getProjectionMatrix()).mul(event.getPoseStack().last().pose());
+        if (ClientDecals.getAllCulled(viewProjection, event.getCamera().getPosition()).isEmpty())
             return;
         if (opaqueDepthTarget == null)
             return;
@@ -250,7 +249,7 @@ public final class DecalRenderer {
         if (coverageShader == null || resolveShader == null)
             return;
 
-        List<Decal> decals = ClientDecals.getByRenderOrder();
+        List<Decal> decals = ClientDecals.getByRenderOrderCulled(viewProjection, camera.getPosition());
 
         int decalCount = decals.size();
 
@@ -571,18 +570,19 @@ public final class DecalRenderer {
 
     public static void renderKBuffer(
             Camera camera,
-            boolean fabulous
+            boolean fabulous,
+            Matrix4f viewProjection
     ) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null)
             return;
-        if (ClientDecals.getAll().isEmpty())
+        if (ClientDecals.getAllCulled(viewProjection, camera.getPosition()).isEmpty())
             return;
         ShaderInstance shader = DecalShaders.getDecalKBufferResolve();
         if (shader == null)
             return;
 
-        List<Decal> decals = ClientDecals.getByRenderOrder();
+        List<Decal> decals = ClientDecals.getByRenderOrderCulled(viewProjection, camera.getPosition());
 
         TranslucentKBuffer.uploadDecals(decals);
         TranslucentKBuffer.bind();
