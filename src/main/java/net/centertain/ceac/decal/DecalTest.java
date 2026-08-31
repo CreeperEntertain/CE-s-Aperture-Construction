@@ -1,6 +1,8 @@
 package net.centertain.ceac.decal;
 
 import net.centertain.ceac.CeacMod;
+import net.centertain.ceac.decal.server.DecalCapabilities;
+import net.centertain.ceac.decal.server.DecalManager;
 import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.decal.network.SyncDecalPacket;
 import net.minecraft.core.BlockPos;

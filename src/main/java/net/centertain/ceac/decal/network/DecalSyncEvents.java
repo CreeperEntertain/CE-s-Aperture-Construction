@@ -1,8 +1,8 @@
 package net.centertain.ceac.decal.network;
 
 import net.centertain.ceac.decal.Decal;
-import net.centertain.ceac.decal.DecalCapabilities;
-import net.centertain.ceac.decal.DecalManager;
+import net.centertain.ceac.decal.server.DecalCapabilities;
+import net.centertain.ceac.decal.server.DecalManager;
 import net.centertain.ceac.network.ModNetworking;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;

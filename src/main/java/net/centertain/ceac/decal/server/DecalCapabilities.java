@@ -1,5 +1,6 @@
-package net.centertain.ceac.decal;
+package net.centertain.ceac.decal.server;
 
+import net.centertain.ceac.decal.ModCapabilities;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 public class DecalCapabilities {

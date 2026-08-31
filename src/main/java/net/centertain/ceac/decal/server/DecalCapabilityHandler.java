@@ -1,4 +1,4 @@
-package net.centertain.ceac.decal;
+package net.centertain.ceac.decal.server;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.chunk.LevelChunk;

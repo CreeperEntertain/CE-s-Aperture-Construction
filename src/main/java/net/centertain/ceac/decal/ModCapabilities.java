@@ -1,5 +1,6 @@
 package net.centertain.ceac.decal;
 
+import net.centertain.ceac.decal.server.DecalManager;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;

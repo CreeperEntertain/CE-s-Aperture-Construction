@@ -1,5 +1,6 @@
-package net.centertain.ceac.decal;
+package net.centertain.ceac.decal.server;
 
+import net.centertain.ceac.decal.Decal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
