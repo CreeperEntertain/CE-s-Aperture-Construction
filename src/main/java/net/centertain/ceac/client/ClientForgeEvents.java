@@ -1,7 +1,7 @@
 package net.centertain.ceac.client;
 
 import net.centertain.ceac.decal.client.ClientDecals;
-import net.centertain.ceac.decal.client.TranslucentRenderTargets;
+import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;

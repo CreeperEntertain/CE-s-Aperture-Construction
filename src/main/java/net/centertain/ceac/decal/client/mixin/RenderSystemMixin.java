@@ -1,9 +1,9 @@
 package net.centertain.ceac.decal.client.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.centertain.ceac.decal.client.DecalShaders;
-import net.centertain.ceac.decal.client.OpaqueLightmapCaptureState;
-import net.centertain.ceac.decal.client.TranslucentCaptureState;
+import net.centertain.ceac.decal.client.render.DecalShaders;
+import net.centertain.ceac.decal.client.render.OpaqueLightmapCaptureState;
+import net.centertain.ceac.decal.client.render.TranslucentCaptureState;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
 import org.spongepowered.asm.mixin.Mixin;

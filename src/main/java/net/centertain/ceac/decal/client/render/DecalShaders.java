@@ -1,7 +1,6 @@
-package net.centertain.ceac.decal.client;
+package net.centertain.ceac.decal.client.render;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import net.centertain.ceac.decal.client.render.KBufferSortShader;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;

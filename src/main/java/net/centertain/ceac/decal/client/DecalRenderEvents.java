@@ -1,5 +1,6 @@
 package net.centertain.ceac.decal.client;
 
+import net.centertain.ceac.decal.client.render.DecalRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

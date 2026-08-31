@@ -1,12 +1,8 @@
-package net.centertain.ceac.decal.client;
+package net.centertain.ceac.decal.client.render;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.GlStateManager;
-import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
 
 public final class TranslucentRenderTargets {
     private static RenderTarget translucentDepth;

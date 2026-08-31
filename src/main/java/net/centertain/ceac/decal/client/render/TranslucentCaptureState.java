@@ -1,11 +1,4 @@
-package net.centertain.ceac.decal.client;
-
-import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ShaderInstance;
+package net.centertain.ceac.decal.client.render;
 
 public final class TranslucentCaptureState {
     private static boolean active;

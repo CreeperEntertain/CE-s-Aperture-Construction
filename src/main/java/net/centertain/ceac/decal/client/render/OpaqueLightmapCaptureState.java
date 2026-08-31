@@ -1,4 +1,4 @@
-package net.centertain.ceac.decal.client;
+package net.centertain.ceac.decal.client.render;
 
 import net.minecraft.client.renderer.RenderType;
 
