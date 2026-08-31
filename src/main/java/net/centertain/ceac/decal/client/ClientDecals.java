@@ -1,6 +1,7 @@
 package net.centertain.ceac.decal.client;
 
 import net.centertain.ceac.decal.Decal;
+import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,9 +13,12 @@ public final class ClientDecals {
 
     public static void put(Decal decal) {
         DECALS.put(decal.getId(), decal);
+        TranslucentKBuffer.markSpatialIndexDirty();
     }
     public static boolean remove(UUID id) {
-        return DECALS.remove(id) != null;
+        boolean status = DECALS.remove(id) != null;
+        TranslucentKBuffer.markSpatialIndexDirty();
+        return status;
     }
     public static Map<UUID, Decal> getAll() {
         return DECALS;

@@ -1,6 +1,5 @@
 package net.centertain.ceac.decal;
 
-import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -25,7 +24,5 @@ public class DecalTestEvent {
                 player,
                 event.getPos()
         );
-
-        TranslucentKBuffer.markSpatialIndexDirty();
     }
 }
