@@ -25,6 +25,7 @@ public final class ClientDecals {
     }
     public static void clear() {
         DECALS.clear();
+        TranslucentKBuffer.markSpatialIndexDirty();
     }
 
     public static List<Decal> getByRenderOrder() {

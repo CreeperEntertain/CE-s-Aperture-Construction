@@ -1,8 +1,10 @@
 package net.centertain.ceac.client;
 
+import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.TranslucentRenderTargets;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -32,5 +34,10 @@ public class ClientForgeEvents {
     public static void onGameShuttingDown(GameShuttingDownEvent event)
     {
         TranslucentRenderTargets.destroy();
+    }
+
+    @SubscribeEvent
+    public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        ClientDecals.clear();
     }
 }
