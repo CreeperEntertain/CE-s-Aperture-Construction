@@ -319,6 +319,9 @@ public final class TranslucentKBuffer {
     public static int getHeight() {
         return height;
     }
+    public static int getDecalBuffer() {
+        return decalBuffer;
+    }
 
     public static void destroy() {
         if (fragmentBuffer != 0) {

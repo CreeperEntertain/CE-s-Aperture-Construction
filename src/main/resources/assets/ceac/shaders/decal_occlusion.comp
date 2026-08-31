@@ -1,0 +1,160 @@
+#version 430
+
+layout(local_size_x = 64) in;
+
+struct DecalData {
+    vec4 origin;
+    vec4 normal;
+    vec4 volumeAndRotation;
+};
+
+layout(std430, binding = 0) readonly buffer DecalBuffer {
+    DecalData decals[];
+};
+
+layout(std430, binding = 1) writeonly buffer VisibilityBuffer {
+    uint visible[];
+};
+
+layout(binding = 0) uniform sampler2D DepthPyramid;
+
+uniform mat4 ViewProjection;
+uniform int DecalCount;
+uniform int PyramidLevels;
+uniform vec2 ScreenSize;
+uniform vec3 CameraPosition;
+
+const uint VISIBLE = 1u;
+const uint OCCLUDED = 0u;
+
+void getDecalBasis(
+        vec3 normal,
+        float rotation,
+        out vec3 tangent,
+        out vec3 bitangent
+) {
+    normal = normalize(normal);
+
+    vec3 reference = abs(normal.y) < 0.999
+        ? vec3(0.0, 1.0, 0.0)
+        : vec3(1.0, 0.0, 0.0);
+
+    tangent = normalize(cross(reference, normal));
+    bitangent = normalize(cross(normal, tangent));
+
+    float angle = radians(22.5) * rotation;
+
+    float c = cos(angle);
+    float s = sin(angle);
+
+    vec3 rotatedTangent = tangent * c + bitangent * s;
+    vec3 rotatedBitangent = -tangent * s + bitangent * c;
+
+    tangent = rotatedTangent;
+    bitangent = rotatedBitangent;
+}
+
+void main() {
+    uint decalIndex = gl_GlobalInvocationID.x;
+
+    if (decalIndex >= uint(DecalCount))
+        return;
+
+    visible[decalIndex] = VISIBLE;
+
+    DecalData decal = decals[decalIndex];
+
+    vec3 normal = normalize(decal.normal.xyz);
+
+    vec3 tangent;
+    vec3 bitangent;
+
+    getDecalBasis(
+            normal,
+            decal.volumeAndRotation.w,
+            tangent,
+            bitangent
+    );
+
+    vec3 halfVolume = decal.volumeAndRotation.xyz * 0.5;
+
+    vec3 corners[8];
+
+    for (int x = -1; x <= 1; x += 2) {
+        for (int y = -1; y <= 1; y += 2) {
+            for (int z = -1; z <= 1; z += 2) {
+                int index =
+                (x > 0 ? 4 : 0) +
+                (y > 0 ? 2 : 0) +
+                (z > 0 ? 1 : 0);
+
+                corners[index] =
+                    decal.origin.xyz +
+                    tangent * halfVolume.x * float(x) +
+                    bitangent * halfVolume.y * float(y) +
+                    normal * halfVolume.z * float(z);
+            }
+        }
+    }
+
+    vec2 minScreen = vec2(1.0);
+    vec2 maxScreen = vec2(0.0);
+
+    float minDepth = 1.0;
+
+    for (int i = 0; i < 8; ++i) {
+        vec4 clip = ViewProjection * vec4(corners[i] - CameraPosition, 1.0);
+
+        if (clip.w <= 0.0)
+            return;
+
+        vec3 ndc = clip.xyz / clip.w;
+
+        float depth = ndc.z * 0.5 + 0.5;
+
+        minDepth = min(minDepth, depth);
+
+        vec2 screen = ndc.xy * 0.5 + 0.5;
+
+        minScreen = min(minScreen, screen);
+        maxScreen = max(maxScreen, screen);
+    }
+
+    if (maxScreen.x <= 0.0 || maxScreen.y <= 0.0 || minScreen.x >= 1.0 || minScreen.y >= 1.0)
+        return;
+
+    minScreen = clamp(minScreen, vec2(0.0), vec2(1.0));
+    maxScreen = clamp(maxScreen, vec2(0.0), vec2(1.0));
+
+    vec2 pixelMin = minScreen * ScreenSize;
+    vec2 pixelMax = maxScreen * ScreenSize;
+
+    vec2 extent = max(pixelMax - pixelMin, vec2(1.0));
+
+    float largestExtent = max(extent.x, extent.y);
+
+    int level = int(ceil(log2(largestExtent)));
+
+    level = clamp(level, 0, int(PyramidLevels) - 1);
+
+    ivec2 pyramidSize = textureSize(DepthPyramid, level);
+
+    vec2 scale = vec2(pyramidSize) / ScreenSize;
+
+    ivec2 minTexel = ivec2(floor(pixelMin * scale));
+    ivec2 maxTexel = ivec2(floor(pixelMax * scale));
+
+    minTexel = clamp(minTexel, ivec2(0), pyramidSize - 1);
+    maxTexel = clamp(maxTexel, ivec2(0), pyramidSize - 1);
+
+    float maxSceneDepth = 0.0;
+
+    for (int y = minTexel.y; y <= maxTexel.y; ++y) {
+        for (int x = minTexel.x; x <= maxTexel.x; ++x) {
+            maxSceneDepth = max(maxSceneDepth, texelFetch(DepthPyramid, ivec2(x, y), level).r);
+        }
+    }
+
+    if (maxSceneDepth < minDepth)
+    visible[decalIndex] = OCCLUDED;
+}

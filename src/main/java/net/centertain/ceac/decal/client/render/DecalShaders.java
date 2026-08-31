@@ -1,12 +1,16 @@
 package net.centertain.ceac.decal.client.render;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.centertain.ceac.decal.client.render.compute.DecalOcclusionShader;
+import net.centertain.ceac.decal.client.render.compute.KBufferSortShader;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.joml.Matrix4f;
 
 import java.io.IOException;
 
@@ -25,6 +29,7 @@ public class DecalShaders {
     private static ShaderInstance opaqueLightmapCapture;
 
     private static KBufferSortShader kBufferSort;
+    private static DecalOcclusionShader decalOcclusion;
 
     private DecalShaders() {}
 
@@ -73,6 +78,8 @@ public class DecalShaders {
         );
 
         // Compute shaders
+
+        // kbuffer_sort
         if (kBufferSort != null)
             kBufferSort.destroy();
         kBufferSort = new KBufferSortShader();
@@ -80,12 +87,45 @@ public class DecalShaders {
                 event.getResourceProvider(),
                 ResourceLocation.fromNamespaceAndPath(MOD_ID, "shaders/kbuffer_sort.comp")
         );
+        //decal_occlusion
+        if (decalOcclusion != null)
+            decalOcclusion.destroy();
+        decalOcclusion = new DecalOcclusionShader();
+        decalOcclusion.compile(
+                event.getResourceProvider(),
+                ResourceLocation.fromNamespaceAndPath(MOD_ID, "shaders/decal_occlusion.comp")
+        );
     }
 
     public static void sortKBuffer(int width, int height) {
         if (kBufferSort == null)
             return;
         kBufferSort.dispatch(width, height);
+    }
+
+    public static boolean[] runDecalOcclusion(
+            int decalCount,
+            Matrix4f viewProjection,
+            int decalBuffer,
+            int depthPyramidTexture,
+            int pyramidLevels,
+            int width,
+            int height,
+            Vec3 cameraPosition
+    ) {
+        if (decalOcclusion == null)
+            return new boolean[decalCount];
+        decalOcclusion.dispatch(
+                decalCount,
+                viewProjection,
+                decalBuffer,
+                depthPyramidTexture,
+                pyramidLevels,
+                width,
+                height,
+                cameraPosition
+        );
+        return decalOcclusion.readVisibility(decalCount);
     }
 
     public static ShaderInstance getTranslucentCapture() {

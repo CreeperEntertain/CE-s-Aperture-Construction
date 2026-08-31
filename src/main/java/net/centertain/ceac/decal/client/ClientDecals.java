@@ -44,11 +44,16 @@ public final class ClientDecals {
         return DecalCuller.getFrustumCulledMap(getAll(), viewProjection, cameraPosition);
     }
     public static List<Decal> getByRenderOrderCulled(Matrix4f viewProjection, Vec3 cameraPosition) { // Should be used for actual rendering purposes
-        List<Decal> decals = DecalCuller.getFrustumCulledList(getByRenderOrder(), viewProjection, cameraPosition);
+        List<Decal> decals = DecalCuller.getOcclusionCulledList(
+                DecalCuller.getFrustumCulledList(getByRenderOrder(), viewProjection, cameraPosition),
+                viewProjection,
+                cameraPosition
+        );
         if (decals.size() != lastCulledCount) {
             lastCulledCount = decals.size();
             TranslucentKBuffer.markSpatialIndexDirty();
         }
+        System.out.println(decals.size());
         return decals;
     }
 }

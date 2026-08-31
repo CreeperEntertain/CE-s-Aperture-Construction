@@ -1,4 +1,4 @@
-package net.centertain.ceac.decal.client.render;
+package net.centertain.ceac.decal.client.render.compute;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;

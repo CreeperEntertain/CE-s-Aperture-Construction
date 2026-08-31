@@ -36,15 +36,6 @@ public final class DecalCuller {
         return result;
     }
 
-    public static Map<UUID, Decal> getOcclusionCulledMap(Map<UUID, Decal> decals) {
-        return decals;
-    }
-
-    public static List<Decal> getOcclusionCulledList(List<Decal> decals) {
-        return decals;
-    }
-
-
     private static boolean isInsideFrustum(
             Decal decal,
             Matrix4f projectionMatrix,
@@ -85,5 +76,70 @@ public final class DecalCuller {
                 top >= -position.w &&
                 near >= -position.w &&
                 far >= -position.w;
+    }
+
+
+    public static Map<UUID, Decal> getOcclusionCulledMap(
+            Map<UUID, Decal> decals,
+            Matrix4f viewProjection,
+            Vec3 cameraPosition
+    ) {
+        if (decals.isEmpty())
+            return decals;
+
+        List<Decal> decalList = new ArrayList<>(decals.values());
+
+        TranslucentKBuffer.uploadDecals(decalList);
+
+        boolean[] visible = DecalShaders.runDecalOcclusion(
+                decalList.size(),
+                viewProjection,
+                TranslucentKBuffer.getDecalBuffer(),
+                DecalRenderer.getOpaqueDepthTexture(),
+                1,
+                TranslucentKBuffer.getWidth(),
+                TranslucentKBuffer.getHeight(),
+                cameraPosition
+        );
+
+        Map<UUID, Decal> result = new HashMap<>();
+
+        for (int i = 0; i < decalList.size(); ++i) {
+            if (visible[i])
+                result.put(decalList.get(i).getId(), decalList.get(i));
+        }
+
+        return result;
+    }
+
+    public static List<Decal> getOcclusionCulledList(
+            List<Decal> decals,
+            Matrix4f viewProjection,
+            Vec3 cameraPosition
+    ) {
+        if (decals.isEmpty())
+            return decals;
+
+        TranslucentKBuffer.uploadDecals(decals);
+
+        boolean[] visible = DecalShaders.runDecalOcclusion(
+                decals.size(),
+                viewProjection,
+                TranslucentKBuffer.getDecalBuffer(),
+                DecalRenderer.getOpaqueDepthTexture(),
+                1,
+                TranslucentKBuffer.getWidth(),
+                TranslucentKBuffer.getHeight(),
+                cameraPosition
+        );
+
+        List<Decal> result = new ArrayList<>();
+
+        for (int i = 0; i < decals.size(); ++i) {
+            if (visible[i])
+                result.add(decals.get(i));
+        }
+
+        return result;
     }
 }
