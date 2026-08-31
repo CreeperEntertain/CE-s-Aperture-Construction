@@ -1,6 +1,7 @@
 package net.centertain.ceac;
 
 import com.mojang.logging.LogUtils;
+import net.centertain.ceac.item.ModCreativeModeTabs;
 import net.centertain.ceac.item.ModItems;
 import net.centertain.ceac.network.ModNetworking;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -28,6 +29,7 @@ public class CeacMod
     public CeacMod(FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
 
+        ModCreativeModeTabs.register(modEventBus);
         ModItems.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
@@ -42,8 +44,7 @@ public class CeacMod
 
     // Add the example block item to the building blocks tab
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.INGREDIENTS)
-            event.accept(ModItems.DECAL);
+
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
