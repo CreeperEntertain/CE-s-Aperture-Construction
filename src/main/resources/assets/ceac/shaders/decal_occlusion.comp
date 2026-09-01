@@ -56,6 +56,110 @@ void getDecalBasis(
     bitangent = rotatedBitangent;
 }
 
+float cross2(
+        vec2 a,
+        vec2 b
+) {
+    return a.x * b.y - a.y * b.x;
+}
+
+bool pointInRect(
+        vec2 p,
+        vec2 minP,
+        vec2 maxP
+) {
+    return
+        p.x >= minP.x &&
+        p.x <= maxP.x &&
+        p.y >= minP.y &&
+        p.y <= maxP.y;
+}
+
+bool pointInQuad(
+        vec2 p,
+        vec2 a,
+        vec2 b,
+        vec2 c,
+        vec2 d
+) {
+    float c1 = cross2(b - a, p - a);
+    float c2 = cross2(c - b, p - b);
+    float c3 = cross2(d - c, p - c);
+    float c4 = cross2(a - d, p - d);
+
+    return (
+        c1 >= 0.0 &&
+        c2 >= 0.0 &&
+        c3 >= 0.0 &&
+        c4 >= 0.0
+    ) || (
+        c1 <= 0.0 &&
+        c2 <= 0.0 &&
+        c3 <= 0.0 &&
+        c4 <= 0.0
+    );
+}
+
+bool segmentIntersectsSegment(
+        vec2 a1,
+        vec2 a2,
+        vec2 b1,
+        vec2 b2
+) {
+    float d1 = cross2(a2 - a1, b1 - a1);
+    float d2 = cross2(a2 - a1, b2 - a1);
+    float d3 = cross2(b2 - b1, a1 - b1);
+    float d4 = cross2(b2 - b1, a2 - b1);
+
+    return (d1 * d2 <= 0.0) && (d3 * d4 <= 0.0);
+}
+
+bool quadIntersectsRect(
+        vec2 a,
+        vec2 b,
+        vec2 c,
+        vec2 d,
+        vec2 rectMin,
+        vec2 rectMax
+) {
+    if (pointInRect(a, rectMin, rectMax) ||
+        pointInRect(b, rectMin, rectMax) ||
+        pointInRect(c, rectMin, rectMax) ||
+        pointInRect(d, rectMin, rectMax))
+        return true;
+
+    if (pointInQuad(rectMin, a, b, c, d) ||
+        pointInQuad(vec2(rectMax.x, rectMin.y), a, b, c, d) ||
+        pointInQuad(rectMax, a, b, c, d) ||
+        pointInQuad(vec2(rectMin.x, rectMax.y), a, b, c, d))
+        return true;
+
+    vec2 rectA = rectMin;
+    vec2 rectB = vec2(rectMax.x, rectMin.y);
+    vec2 rectC = rectMax;
+    vec2 rectD = vec2(rectMin.x, rectMax.y);
+
+    if (segmentIntersectsSegment(a, b, rectA, rectB) ||
+        segmentIntersectsSegment(a, b, rectB, rectC) ||
+        segmentIntersectsSegment(a, b, rectC, rectD) ||
+        segmentIntersectsSegment(a, b, rectD, rectA) ||
+        segmentIntersectsSegment(b, c, rectA, rectB) ||
+        segmentIntersectsSegment(b, c, rectB, rectC) ||
+        segmentIntersectsSegment(b, c, rectC, rectD) ||
+        segmentIntersectsSegment(b, c, rectD, rectA) ||
+        segmentIntersectsSegment(c, d, rectA, rectB) ||
+        segmentIntersectsSegment(c, d, rectB, rectC) ||
+        segmentIntersectsSegment(c, d, rectC, rectD) ||
+        segmentIntersectsSegment(c, d, rectD, rectA) ||
+        segmentIntersectsSegment(d, a, rectA, rectB) ||
+        segmentIntersectsSegment(d, a, rectB, rectC) ||
+        segmentIntersectsSegment(d, a, rectC, rectD) ||
+        segmentIntersectsSegment(d, a, rectD, rectA))
+        return true;
+
+    return false;
+}
+
 void main() {
     uint decalIndex = gl_GlobalInvocationID.x;
 
@@ -99,6 +203,18 @@ void main() {
         }
     }
 
+    vec3 surfaceCorners[4];
+
+    float halfWidth = decal.volumeAndRotation.x * 0.5;
+    float halfHeight = decal.volumeAndRotation.y * 0.5;
+
+    surfaceCorners[0] = decal.origin.xyz - tangent * halfWidth - bitangent * halfHeight;
+    surfaceCorners[1] = decal.origin.xyz - tangent * halfWidth + bitangent * halfHeight;
+    surfaceCorners[2] = decal.origin.xyz + tangent * halfWidth + bitangent * halfHeight;
+    surfaceCorners[3] = decal.origin.xyz + tangent * halfWidth - bitangent * halfHeight;
+
+    vec2 quadScreen[4];
+
     vec2 minScreen = vec2(1.0);
     vec2 maxScreen = vec2(0.0);
 
@@ -115,11 +231,20 @@ void main() {
         float depth = ndc.z * 0.5 + 0.5;
 
         minDepth = min(minDepth, depth);
+    }
 
-        vec2 screen = ndc.xy * 0.5 + 0.5;
+    for (int i = 0; i < 4; ++i) {
+        vec4 clip = ViewProjection * vec4(surfaceCorners[i] - CameraPosition, 1.0);
 
-        minScreen = min(minScreen, screen);
-        maxScreen = max(maxScreen, screen);
+        if (clip.w <= 0.0)
+            return;
+
+        vec3 ndc = clip.xyz / clip.w;
+
+        quadScreen[i] = ndc.xy * 0.5 + 0.5;
+
+        minScreen = min(minScreen, quadScreen[i]);
+        maxScreen = max(maxScreen, quadScreen[i]);
     }
 
     if (maxScreen.x <= 0.0 || maxScreen.y <= 0.0 || minScreen.x >= 1.0 || minScreen.y >= 1.0)
@@ -156,6 +281,19 @@ void main() {
 
         for (int y = minTexel.y; y <= maxTexel.y; ++y) {
             for (int x = minTexel.x; x <= maxTexel.x; ++x) {
+                vec2 texelMin = vec2(x, y) / vec2(pyramidSize);
+                vec2 texelMax = vec2(x + 1, y + 1) / vec2(pyramidSize);
+
+                if (!quadIntersectsRect(
+                        quadScreen[0],
+                        quadScreen[1],
+                        quadScreen[2],
+                        quadScreen[3],
+                        texelMin,
+                        texelMax
+                ))
+                    continue;
+
                 maxSceneDepth = max(maxSceneDepth, texelFetch(DepthPyramid, ivec2(x, y), testLevel).r);
             }
         }

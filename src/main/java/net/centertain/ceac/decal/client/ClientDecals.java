@@ -49,6 +49,7 @@ public final class ClientDecals {
                 viewProjection,
                 cameraPosition
         );
+        System.out.println(decals.size());
         long culledHash = 1125899906842597L;
         for (Decal decal : decals) {
             UUID id = decal.getId();
