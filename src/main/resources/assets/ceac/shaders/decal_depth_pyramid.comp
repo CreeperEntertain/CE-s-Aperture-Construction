@@ -1,0 +1,40 @@
+#version 430
+
+layout(local_size_x = 8, local_size_y = 8) in;
+
+layout(binding = 0) uniform sampler2D DepthSource;
+layout(binding = 1) uniform sampler2D PyramidSource;
+
+layout(r32f, binding = 0) writeonly uniform image2D PyramidDestination;
+
+uniform int SourceLevel;
+uniform int UseDepthSource;
+
+void main() {
+    ivec2 destination = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 destinationSize = imageSize(PyramidDestination);
+
+    if (destination.x >= destinationSize.x ||
+        destination.y >= destinationSize.y)
+        return;
+
+    float depth;
+
+    if (UseDepthSource != 0)
+        depth = texelFetch(DepthSource, destination, 0).r;
+    else {
+        ivec2 sourceSize = textureSize(PyramidSource, SourceLevel);
+        ivec2 source = destination * 2;
+
+        depth = 0.0;
+
+        for (int y = 0; y < 2; ++y) {
+            for (int x = 0; x < 2; ++x) {
+                ivec2 pixel = min(source + ivec2(x, y), sourceSize - 1);
+                depth = max(depth, texelFetch(PyramidSource, pixel, SourceLevel).r);
+            }
+        }
+    }
+
+    imageStore(PyramidDestination, destination, vec4(depth));
+}

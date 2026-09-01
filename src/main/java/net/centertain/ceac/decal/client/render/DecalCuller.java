@@ -79,39 +79,6 @@ public final class DecalCuller {
     }
 
 
-    public static Map<UUID, Decal> getOcclusionCulledMap(
-            Map<UUID, Decal> decals,
-            Matrix4f viewProjection,
-            Vec3 cameraPosition
-    ) {
-        if (decals.isEmpty())
-            return decals;
-
-        List<Decal> decalList = new ArrayList<>(decals.values());
-
-        TranslucentKBuffer.uploadDecals(decalList);
-
-        boolean[] visible = DecalShaders.runDecalOcclusion(
-                decalList.size(),
-                viewProjection,
-                TranslucentKBuffer.getDecalBuffer(),
-                DecalRenderer.getOpaqueDepthTexture(),
-                1,
-                TranslucentKBuffer.getWidth(),
-                TranslucentKBuffer.getHeight(),
-                cameraPosition
-        );
-
-        Map<UUID, Decal> result = new HashMap<>();
-
-        for (int i = 0; i < decalList.size(); ++i) {
-            if (visible[i])
-                result.put(decalList.get(i).getId(), decalList.get(i));
-        }
-
-        return result;
-    }
-
     public static List<Decal> getOcclusionCulledList(
             List<Decal> decals,
             Matrix4f viewProjection,
@@ -122,12 +89,18 @@ public final class DecalCuller {
 
         TranslucentKBuffer.uploadDecals(decals);
 
+        DecalDepthPyramid.build(
+                DecalRenderer.getOpaqueDepthTexture(),
+                TranslucentKBuffer.getWidth(),
+                TranslucentKBuffer.getHeight()
+        );
+
         boolean[] visible = DecalShaders.runDecalOcclusion(
                 decals.size(),
                 viewProjection,
                 TranslucentKBuffer.getDecalBuffer(),
-                DecalRenderer.getOpaqueDepthTexture(),
-                1,
+                DecalDepthPyramid.getTexture(),
+                DecalDepthPyramid.getLevels(),
                 TranslucentKBuffer.getWidth(),
                 TranslucentKBuffer.getHeight(),
                 cameraPosition

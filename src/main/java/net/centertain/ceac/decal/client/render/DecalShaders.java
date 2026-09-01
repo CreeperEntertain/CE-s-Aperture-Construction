@@ -1,6 +1,7 @@
 package net.centertain.ceac.decal.client.render;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.centertain.ceac.decal.client.render.compute.DecalDepthPyramidShader;
 import net.centertain.ceac.decal.client.render.compute.DecalOcclusionShader;
 import net.centertain.ceac.decal.client.render.compute.KBufferSortShader;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -30,6 +31,7 @@ public class DecalShaders {
 
     private static KBufferSortShader kBufferSort;
     private static DecalOcclusionShader decalOcclusion;
+    private static DecalDepthPyramidShader decalDepthPyramid;
 
     private DecalShaders() {}
 
@@ -95,6 +97,14 @@ public class DecalShaders {
                 event.getResourceProvider(),
                 ResourceLocation.fromNamespaceAndPath(MOD_ID, "shaders/decal_occlusion.comp")
         );
+        //decal_depth_pyramid
+        if (decalDepthPyramid != null)
+            decalDepthPyramid.destroy();
+        decalDepthPyramid = new DecalDepthPyramidShader();
+        decalDepthPyramid.compile(
+                event.getResourceProvider(),
+                ResourceLocation.fromNamespaceAndPath(MOD_ID, "shaders/decal_depth_pyramid.comp")
+        );
     }
 
     public static void sortKBuffer(int width, int height) {
@@ -102,7 +112,6 @@ public class DecalShaders {
             return;
         kBufferSort.dispatch(width, height);
     }
-
     public static boolean[] runDecalOcclusion(
             int decalCount,
             Matrix4f viewProjection,
@@ -126,6 +135,36 @@ public class DecalShaders {
                 cameraPosition
         );
         return decalOcclusion.readVisibility(decalCount);
+    }
+    public static void buildDepthPyramid(
+            int sourceDepthTexture,
+            int pyramidTexture,
+            int width,
+            int height,
+            int levels
+    ) {
+        if (decalDepthPyramid == null)
+            return;
+        decalDepthPyramid.dispatch(
+                sourceDepthTexture,
+                pyramidTexture,
+                0,
+                0,
+                width,
+                height,
+                true
+        );
+        for (int level = 1; level < levels; ++level) {
+            decalDepthPyramid.dispatch(
+                    sourceDepthTexture,
+                    pyramidTexture,
+                    level,
+                    level - 1,
+                    width,
+                    height,
+                    false
+            );
+        }
     }
 
     public static ShaderInstance getTranslucentCapture() {
