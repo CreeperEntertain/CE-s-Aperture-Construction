@@ -137,24 +137,31 @@ void main() {
 
     level = clamp(level, 0, int(PyramidLevels) - 1);
 
-    ivec2 pyramidSize = textureSize(DepthPyramid, level);
+    int testLevel = level;
 
-    vec2 scale = vec2(pyramidSize) / ScreenSize;
+    while (testLevel >= 0) {
+        ivec2 pyramidSize = textureSize(DepthPyramid, testLevel);
 
-    ivec2 minTexel = ivec2(floor(pixelMin * scale));
-    ivec2 maxTexel = ivec2(floor(pixelMax * scale));
+        vec2 scale = vec2(pyramidSize) / ScreenSize;
 
-    minTexel = clamp(minTexel, ivec2(0), pyramidSize - 1);
-    maxTexel = clamp(maxTexel, ivec2(0), pyramidSize - 1);
+        ivec2 minTexel = ivec2(floor(pixelMin * scale)) - ivec2(1);
+        ivec2 maxTexel = ivec2(ceil(pixelMax * scale)) + ivec2(1);
 
-    float maxSceneDepth = 0.0;
+        minTexel = clamp(minTexel, ivec2(0), pyramidSize - 1);
+        maxTexel = clamp(maxTexel, ivec2(0), pyramidSize - 1);
 
-    for (int y = minTexel.y; y <= maxTexel.y; ++y) {
-        for (int x = minTexel.x; x <= maxTexel.x; ++x) {
-            maxSceneDepth = max(maxSceneDepth, texelFetch(DepthPyramid, ivec2(x, y), level).r);
+        float maxSceneDepth = 0.0;
+
+        for (int y = minTexel.y; y <= maxTexel.y; ++y) {
+            for (int x = minTexel.x; x <= maxTexel.x; ++x) {
+                maxSceneDepth = max(maxSceneDepth, texelFetch(DepthPyramid, ivec2(x, y), testLevel).r);
+            }
         }
+
+        if (maxSceneDepth >= minDepth)
+            return;
+        --testLevel;
     }
 
-    if (maxSceneDepth < minDepth)
-        visible[decalIndex] = OCCLUDED;
+    visible[decalIndex] = OCCLUDED;
 }
