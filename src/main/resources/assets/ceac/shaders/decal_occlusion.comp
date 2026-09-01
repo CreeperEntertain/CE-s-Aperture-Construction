@@ -156,5 +156,5 @@ void main() {
     }
 
     if (maxSceneDepth < minDepth)
-    visible[decalIndex] = OCCLUDED;
+        visible[decalIndex] = OCCLUDED;
 }

@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ClientDecals {
     private static final Map<UUID, Decal> DECALS = new ConcurrentHashMap<>();
 
-    private static int lastCulledCount = -1;
+    private static long lastCulledHash;
 
     private ClientDecals() {}
 
@@ -28,7 +28,7 @@ public final class ClientDecals {
     public static void clear() {
         DECALS.clear();
         TranslucentKBuffer.markSpatialIndexDirty();
-        lastCulledCount = -1;
+        lastCulledHash = 0L;
     }
 
     public static Map<UUID, Decal> getAll() {
@@ -49,11 +49,17 @@ public final class ClientDecals {
                 viewProjection,
                 cameraPosition
         );
-        if (decals.size() != lastCulledCount) {
-            lastCulledCount = decals.size();
+        long culledHash = 1125899906842597L;
+        for (Decal decal : decals) {
+            UUID id = decal.getId();
+            culledHash = 31L * culledHash + id.getMostSignificantBits();
+            culledHash = 31L * culledHash + id.getLeastSignificantBits();
+        }
+        culledHash = 31L * culledHash + decals.size();
+        if (culledHash != lastCulledHash) {
+            lastCulledHash = culledHash;
             TranslucentKBuffer.markSpatialIndexDirty();
         }
-        System.out.println(decals.size());
         return decals;
     }
 }
