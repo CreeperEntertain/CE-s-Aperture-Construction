@@ -13,6 +13,7 @@ struct DecalData {
     vec4 origin;
     vec4 normal;
     vec4 volumeAndRotation;
+    vec4 textureBounds;
 };
 
 struct CellData {
@@ -214,7 +215,9 @@ void main() {
             if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
                 continue;
 
-            vec4 color = texture(Sampler0, vec2(u, v));
+            vec2 textureUV = mix(decal.textureBounds.xy, decal.textureBounds.zw, vec2(u, v));
+
+            vec4 color = texture(Sampler0, textureUV);
 
             if (color.a <= 0.01)
                 continue;

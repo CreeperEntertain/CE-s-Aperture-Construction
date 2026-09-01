@@ -4,6 +4,7 @@ import com.mojang.blaze3d.shaders.Uniform;
 import net.centertain.ceac.decal.Decal;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -82,6 +83,9 @@ public final class TranslucentKBuffer {
         int count = decalList.size();
         if (count == 0)
             return;
+
+        DecalTextureAtlas.ensure(decalList);
+
         if (decalBuffer == 0 || decalCapacity < count) {
             if (decalBuffer != 0)
                 GL15.glDeleteBuffers(decalBuffer);
@@ -92,7 +96,7 @@ public final class TranslucentKBuffer {
             GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, decalBuffer);
             GL15.glBufferData(
                     GL43.GL_SHADER_STORAGE_BUFFER,
-                    (long) decalCapacity * 12L * Float.BYTES,
+                    (long) decalCapacity * 16L * Float.BYTES,
                     GL15.GL_DYNAMIC_DRAW
             );
         } else {
@@ -100,7 +104,7 @@ public final class TranslucentKBuffer {
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            FloatBuffer data = stack.mallocFloat(count * 12);
+            FloatBuffer data = stack.mallocFloat(count * 16);
 
             for (Decal decal : decalList) {
                 Vec3 origin = decal.getOrigin();
@@ -127,6 +131,14 @@ public final class TranslucentKBuffer {
                 data.put((float) height);
                 data.put((float) depth);
                 data.put((float) (decal.getRotation() & 0xFF));
+
+                // Texture bounds
+                Vector4f textureBounds = DecalTextureAtlas.getUVs(decal.getTexture());
+
+                data.put(textureBounds.x());
+                data.put(textureBounds.y());
+                data.put(textureBounds.z());
+                data.put(textureBounds.w());
             }
             data.flip();
             GL15.glBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER, 0, data);

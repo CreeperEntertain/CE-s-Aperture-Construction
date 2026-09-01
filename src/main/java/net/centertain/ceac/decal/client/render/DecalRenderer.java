@@ -256,7 +256,6 @@ public final class DecalRenderer {
         ensureDecalCoverageTarget();
         uploadDecalInstances(decals, camera.getPosition(), event.getPoseStack().last().pose());
 
-        ResourceLocation decalTexture = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png");
         RenderTarget mainTarget = minecraft.getMainRenderTarget();
 
         Uniform coverageDecalPoseMat = coverageShader.getUniform("DecalPoseMat");
@@ -369,7 +368,7 @@ public final class DecalRenderer {
         mainTarget.bindWrite(false);
 
         RenderSystem.setShader(() -> resolveShader);
-        RenderSystem.setShaderTexture(0, decalTexture);
+        RenderSystem.setShaderTexture(0, DecalTextureAtlas.getTexture());
         RenderSystem.setShaderTexture(1, opaqueDepthTarget.getDepthTextureId());
         RenderSystem.setShaderTexture(2, decalCoverageTarget.getColorTextureId());
         RenderSystem.setShaderTexture(3, getOpaqueLightmapTexture());
@@ -628,7 +627,7 @@ public final class DecalRenderer {
 
         RenderSystem.setShader(() -> shader);
 
-        RenderSystem.setShaderTexture(0, ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/decal/test.png"));
+        RenderSystem.setShaderTexture(0, DecalTextureAtlas.getTexture());
         RenderSystem.setShaderTexture(1, DecalRenderer.getOpaqueDepthTexture());
         RenderSystem.setShaderTexture(3, lightmap.getId());
 
