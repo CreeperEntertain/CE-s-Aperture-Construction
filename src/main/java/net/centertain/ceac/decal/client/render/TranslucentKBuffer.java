@@ -11,6 +11,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.util.*;
 
 public final class TranslucentKBuffer {
@@ -35,6 +36,9 @@ public final class TranslucentKBuffer {
 
     private static int decalIndexBuffer;
     private static int decalIndexCapacity;
+
+    private static int textureHandleBuffer;
+    private static int textureHandleCapacity;
 
     private static volatile boolean spatialIndexDirty = true;
 
@@ -96,7 +100,7 @@ public final class TranslucentKBuffer {
             GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, decalBuffer);
             GL15.glBufferData(
                     GL43.GL_SHADER_STORAGE_BUFFER,
-                    (long) decalCapacity * 16L * Float.BYTES,
+                    (long) decalCapacity * 20L * Float.BYTES,
                     GL15.GL_DYNAMIC_DRAW
             );
         } else {
@@ -104,7 +108,7 @@ public final class TranslucentKBuffer {
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            FloatBuffer data = stack.mallocFloat(count * 16);
+            FloatBuffer data = stack.mallocFloat(count * 20);
 
             for (Decal decal : decalList) {
                 Vec3 origin = decal.getOrigin();
@@ -132,18 +136,25 @@ public final class TranslucentKBuffer {
                 data.put((float) depth);
                 data.put((float) (decal.getRotation() & 0xFF));
 
-                // Texture bounds
-                Vector4f textureBounds = DecalTextureAtlas.getUVs(decal.getTexture());
+                // Paged texture bounds
+                DecalTextureAtlas.TextureLocation textureLocation = DecalTextureAtlas.getLocation(decal.getTexture());
+                Vector4f textureBounds = textureLocation.bounds();
 
                 data.put(textureBounds.x());
                 data.put(textureBounds.y());
                 data.put(textureBounds.z());
                 data.put(textureBounds.w());
+
+                data.put((float) textureLocation.page());
+                data.put(0.0f);
+                data.put(0.0f);
+                data.put(0.0f);
             }
             data.flip();
             GL15.glBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER, 0, data);
         }
         GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 2, decalBuffer);
+        uploadTextureHandles(DecalTextureAtlas.getPageHandles());
         GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
         if (spatialIndexDirty)
             rebuildSpatialIndex(decalList);
@@ -304,6 +315,7 @@ public final class TranslucentKBuffer {
         GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 1, lockBuffer);
         GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 3, cellBuffer);
         GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 4, decalIndexBuffer);
+        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 5, textureHandleBuffer);
     }
 
     public static void setShaderUniforms(ShaderInstance shader) {
@@ -316,6 +328,34 @@ public final class TranslucentKBuffer {
         Uniform cellCountUniform = shader.getUniform("CellCount");
         if (cellCountUniform != null)
             cellCountUniform.set((float) cellCount);
+    }
+
+    public static void uploadTextureHandles(List<Long> handles) {
+        int count = handles.size();
+        if (count == 0)
+            return;
+
+        if (textureHandleBuffer == 0 || textureHandleCapacity < count) {
+            if (textureHandleBuffer != 0)
+                GL15.glDeleteBuffers(textureHandleBuffer);
+            textureHandleBuffer = GL15.glGenBuffers();
+            textureHandleCapacity = Math.max(count, 64);
+            GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, textureHandleBuffer);
+            GL15.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, (long) textureHandleCapacity * Long.BYTES, GL15.GL_STATIC_DRAW);
+        } else {
+            GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, textureHandleBuffer);
+        }
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            LongBuffer data = stack.mallocLong(count);
+            for (long handle : handles)
+                data.put(handle);
+            data.flip();
+            GL15.glBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER, 0, data);
+        }
+
+        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, 5, textureHandleBuffer);
+        GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
     }
 
     public static void barrier() {
@@ -333,6 +373,9 @@ public final class TranslucentKBuffer {
     }
     public static int getDecalBuffer() {
         return decalBuffer;
+    }
+    public static int getTextureHandleBuffer() {
+        return textureHandleBuffer;
     }
 
     public static void destroy() {
@@ -356,11 +399,16 @@ public final class TranslucentKBuffer {
             GL15.glDeleteBuffers(decalIndexBuffer);
             decalIndexBuffer = 0;
         }
+        if (textureHandleBuffer != 0) {
+            GL15.glDeleteBuffers(textureHandleBuffer);
+            textureHandleBuffer = 0;
+        }
 
         decalCapacity = 0;
         cellCapacity = 0;
         decalIndexCapacity = 0;
         cellCount = 0;
+        textureHandleCapacity = 0;
 
         spatialIndexDirty = true;
         initialized = false;

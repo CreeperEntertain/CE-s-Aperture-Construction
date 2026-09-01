@@ -1,5 +1,8 @@
 #version 430
 
+#extension GL_ARB_bindless_texture : require
+#extension GL_ARB_gpu_shader5 : require
+
 const float MAX_ANGLE = radians(45.0);
 const float FADE_ANGLE = radians(35.0);
 const float MIN_DOT = cos(MAX_ANGLE);
@@ -10,6 +13,7 @@ struct DecalData {
     vec4 normal;
     vec4 volumeAndRotation;
     vec4 textureBounds;
+    vec4 textureInfo;
 };
 
 struct CellData {
@@ -29,7 +33,10 @@ layout(std430, binding = 4) readonly buffer DecalIndexBuffer {
     uint decalIndices[];
 };
 
-uniform sampler2D Sampler0;
+layout(std430, binding = 5) readonly buffer TextureHandleBuffer {
+    uvec2 textureHandles[];
+};
+
 uniform sampler2D Sampler1;
 uniform sampler2D Coverage;
 uniform sampler2D LightmapCoords;
@@ -201,7 +208,9 @@ void main() {
 
         vec2 textureUV = mix(decal.textureBounds.xy, decal.textureBounds.zw, vec2(u, v));
 
-        vec4 color = texture(Sampler0, textureUV);
+        sampler2D decalSampler = sampler2D(textureHandles[uint(decal.textureInfo.x)]);
+
+        vec4 color = texture(decalSampler, textureUV);
 
         if (color.a <= 0.01)
             continue;

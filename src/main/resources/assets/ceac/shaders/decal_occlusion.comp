@@ -7,6 +7,7 @@ struct DecalData {
     vec4 normal;
     vec4 volumeAndRotation;
     vec4 textureBounds;
+    vec4 textureInfo;
 };
 
 layout(std430, binding = 0) readonly buffer DecalBuffer {

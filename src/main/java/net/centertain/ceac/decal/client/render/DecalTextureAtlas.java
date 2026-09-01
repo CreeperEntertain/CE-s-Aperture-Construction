@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.joml.Vector4f;
+import org.lwjgl.opengl.ARBBindlessTexture;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
@@ -17,15 +18,13 @@ import java.util.*;
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class DecalTextureAtlas {
-    private static final ResourceLocation ATLAS_ID =
-            ResourceLocation.fromNamespaceAndPath(MOD_ID, "dynamic/decal_atlas");
     private static final int PADDING = 1;
-    private static final Map<ResourceLocation, Vector4f> UVS = new HashMap<>();
+    private static final Map<ResourceLocation, TextureLocation> LOCATIONS = new HashMap<>();
 
-    private static DynamicTexture texture;
+    private static final List<DynamicTexture> pages = new ArrayList<>();
+    private static final List<Long> pageHandles = new ArrayList<>();
+
     private static Set<ResourceLocation> textures = Set.of();
-    private static int width;
-    private static int height;
 
     private DecalTextureAtlas() {}
 
@@ -39,17 +38,11 @@ public final class DecalTextureAtlas {
         rebuild(required);
     }
 
-    public static int getWidth() {
-        return width;
+    public static TextureLocation getLocation(ResourceLocation location) {
+        return LOCATIONS.get(location);
     }
-    public static int getHeight() {
-        return height;
-    }
-    public static Vector4f getUVs(ResourceLocation location) {
-        return UVS.getOrDefault(location, new Vector4f(0.0f, 0.0f, 1.0f, 1.0f));
-    }
-    public static ResourceLocation getTexture() {
-        return ATLAS_ID;
+    public static List<Long> getPageHandles() {
+        return pageHandles;
     }
 
     private static void rebuild(Set<ResourceLocation> required) {
@@ -75,109 +68,173 @@ public final class DecalTextureAtlas {
         }
 
         int maxTextureSize = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
-        int atlasWidth = 0;
-        int atlasHeight = 0;
 
-        for (TextureImage image : images)
-            atlasWidth = Math.max(atlasWidth, image.width() + PADDING * 2);
+        for (TextureImage image : images) {
+            if (image.width() + PADDING * 2 > maxTextureSize ||
+                    image.height() + PADDING * 2 > maxTextureSize)
+                throw new IllegalStateException(
+                        "Decal texture " + image.location() +
+                        " exceeds GL_MAX_TEXTURE_SIZE (" + maxTextureSize + ")."
+                );
+        }
 
-        int x = PADDING;
-        int y = PADDING;
-        int rowHeight = 0;
-        int estimatedWidth = Math.max(
-                atlasWidth,
-                (int) Math.ceil(Math.sqrt(images.stream().mapToLong(TextureImage::area).sum()))
-        );
-        estimatedWidth = Math.min(estimatedWidth, maxTextureSize);
+        int estimatedPageWidth = 0;
+        long totalArea = 0;
 
         for (TextureImage image : images) {
             int width = image.width() + PADDING * 2;
             int height = image.height() + PADDING * 2;
-            if (x + width > estimatedWidth) {
-                x = PADDING;
-                y += rowHeight;
-                rowHeight = 0;
-            }
-            if (y + height > atlasHeight)
-                atlasHeight = y + height;
-            x += width;
-            rowHeight = Math.max(rowHeight, height);
+
+            estimatedPageWidth = Math.max(estimatedPageWidth, width + PADDING);
+            totalArea += (long) width * height;
         }
 
-        atlasWidth = Math.max(atlasWidth, x + PADDING);
-        atlasHeight = Math.max(atlasHeight, y + rowHeight);
+        estimatedPageWidth = Math.max(estimatedPageWidth, (int) Math.ceil(Math.sqrt(totalArea)));
+        estimatedPageWidth = Math.min(estimatedPageWidth, maxTextureSize);
 
-        if (atlasWidth > maxTextureSize || atlasHeight > maxTextureSize)
-            throw new IllegalStateException("Decal texture atlas exceeds GL_MAX_TEXTURE_SIZE (" + maxTextureSize + ").");
-
-        NativeImage atlas = new NativeImage(atlasWidth, atlasHeight, true); // STFU, compiler! It's already accounted for!
-        Map<ResourceLocation, Vector4f> newUVs = new HashMap<>();
-        x = PADDING;
-        y = PADDING;
-        rowHeight = 0;
+        List<PageBuilder> builders = new ArrayList<>();
+        PageBuilder page = new PageBuilder(estimatedPageWidth);
 
         for (TextureImage image : images) {
-            int imageWidth = image.width();
-            int imageHeight = image.height();
-            if (x + imageWidth + PADDING > atlasWidth) {
-                x = PADDING;
-                y += rowHeight;
-                rowHeight = 0;
+            if (!page.tryAdd(image)) {
+                builders.add(page);
+                page = new PageBuilder(estimatedPageWidth);
+                if (!page.tryAdd(image))
+                    throw new IllegalStateException("Failed to place decal texture " + image.location() + ".");
             }
-            for (int py = 0; py < imageHeight; ++py)
-                for (int px = 0; px < imageWidth; ++px)
-                    atlas.setPixelRGBA(x + px, y + py, image.image().getPixelRGBA(px, py));
-            int right = x + imageWidth;
-            int bottom = y + imageHeight;
-            for (int px = 0; px < imageWidth; ++px) {
-                atlas.setPixelRGBA(x + px, y - PADDING, image.image().getPixelRGBA(px, 0));
-                atlas.setPixelRGBA(x + px, bottom, image.image().getPixelRGBA(px, imageHeight - 1));
-            }
-            for (int py = 0; py < imageHeight; ++py) {
-                atlas.setPixelRGBA(x - PADDING, y + py, image.image().getPixelRGBA(0, py));
-                atlas.setPixelRGBA(right, y + py, image.image().getPixelRGBA(imageWidth - 1, py));
-            }
-            atlas.setPixelRGBA(x - PADDING, y - PADDING, image.image().getPixelRGBA(0, 0));
-            atlas.setPixelRGBA(right, y - PADDING, image.image().getPixelRGBA(imageWidth - 1, 0));
-            atlas.setPixelRGBA(x - PADDING, bottom, image.image().getPixelRGBA(0, imageHeight - 1));
-            atlas.setPixelRGBA(right, bottom, image.image().getPixelRGBA(imageWidth - 1, imageHeight - 1));
-
-            newUVs.put(
-                    image.location(),
-                    new Vector4f(
-                            (float) x / atlasWidth,
-                            (float) y / atlasHeight,
-                            (float) right / atlasWidth,
-                            (float) bottom / atlasHeight
-                    )
-            );
-            x += imageWidth + PADDING * 2;
-            rowHeight = Math.max(rowHeight, imageHeight + PADDING * 2);
-            image.image().close();
         }
 
+        builders.add(page);
+
         destroy();
-        texture = new DynamicTexture(atlas);
-        texture.setFilter(false, false);
-        minecraft.getTextureManager().register(ATLAS_ID, texture);
-        UVS.clear();
-        UVS.putAll(newUVs);
+
+        for (int pageIndex = 0; pageIndex < builders.size(); ++pageIndex) {
+            PageBuilder builder = builders.get(pageIndex);
+            NativeImage atlas = builder.createImage();
+
+            for (PlacedTexture placed : builder.placements) {
+                TextureImage image = placed.image();
+
+                for (int py = 0; py < image.height(); ++py)
+                    for (int px = 0; px < image.width(); ++px)
+                        atlas.setPixelRGBA(placed.x() + px, placed.y() + py, image.image().getPixelRGBA(px, py));
+
+                int right = placed.x() + image.width();
+                int bottom = placed.y() + image.height();
+
+                for (int px = 0; px < image.width(); ++px) {
+                    atlas.setPixelRGBA(placed.x() + px, placed.y() - PADDING, image.image().getPixelRGBA(px, 0));
+                    atlas.setPixelRGBA(placed.x() + px, bottom, image.image().getPixelRGBA(px, image.height() - 1));
+                }
+                for (int py = 0; py < image.height(); ++py) {
+                    atlas.setPixelRGBA(placed.x() - PADDING, placed.y() + py, image.image().getPixelRGBA(0, py));
+                    atlas.setPixelRGBA(right, placed.y() + py, image.image().getPixelRGBA(image.width() - 1, py));
+                }
+                atlas.setPixelRGBA(placed.x() - PADDING, placed.y() - PADDING, image.image().getPixelRGBA(0, 0));
+                atlas.setPixelRGBA(right, placed.y() - PADDING, image.image().getPixelRGBA(image.width() - 1, 0));
+                atlas.setPixelRGBA(placed.x() - PADDING, bottom, image.image().getPixelRGBA(0, image.height() - 1));
+                atlas.setPixelRGBA(right, bottom, image.image().getPixelRGBA(image.width() - 1, image.height() - 1));
+
+                LOCATIONS.put(
+                        image.location(),
+                        new TextureLocation(
+                                pageIndex,
+                                new Vector4f(
+                                        (float) placed.x() / builder.width,
+                                        (float) placed.y() / builder.height,
+                                        (float) right / builder.width,
+                                        (float) bottom / builder.height
+                                )
+                        )
+                );
+
+                image.image().close();
+            }
+
+            DynamicTexture dynamicTexture = new DynamicTexture(atlas);
+            dynamicTexture.setFilter(false, false);
+
+            long handle = ARBBindlessTexture.glGetTextureHandleARB(dynamicTexture.getId());
+
+            ARBBindlessTexture.glMakeTextureHandleResidentARB(handle);
+
+            ResourceLocation pageId = ResourceLocation.fromNamespaceAndPath(MOD_ID, "dynamic/decal_atlas_" + pageIndex);
+
+            minecraft.getTextureManager().register(pageId, dynamicTexture);
+
+            pages.add(dynamicTexture);
+            pageHandles.add(handle);
+        }
         textures = Set.copyOf(required);
-        width = atlasWidth;
-        height = atlasHeight;
     }
 
     public static void destroy() {
-        UVS.clear();
-        if (texture != null) {
-            Minecraft.getInstance().getTextureManager().release(ATLAS_ID);
-            texture.close();
-            texture = null;
+        LOCATIONS.clear();
+        Minecraft minecraft = Minecraft.getInstance();
+        for (int i = 0; i < pages.size(); ++i) {
+            ResourceLocation pageId = ResourceLocation.fromNamespaceAndPath(MOD_ID, "dynamic/decal_atlas_" + i);
+            if (i < pageHandles.size())
+                ARBBindlessTexture.glMakeTextureHandleNonResidentARB(pageHandles.get(i));
+            minecraft.getTextureManager().release(pageId);
+            pages.get(i).close();
         }
+        pages.clear();
+        pageHandles.clear();
         textures = Set.of();
-        width = 0;
-        height = 0;
     }
+
+
+    private static final class PageBuilder {
+        private final int width;
+        private int height;
+
+        private int x = PADDING;
+        private int y = PADDING;
+        private int rowHeight;
+
+        private final List<PlacedTexture> placements = new ArrayList<>();
+
+        private PageBuilder(int width) {
+            this.width = width;
+        }
+
+        private boolean tryAdd(TextureImage image) {
+            int placedWidth = image.width() + PADDING * 2;
+            int placedHeight = image.height() + PADDING * 2;
+
+            if (x + placedWidth > width && x > PADDING) {
+                x = PADDING;
+                y += rowHeight;
+                rowHeight = 0;
+            }
+
+            if (x + placedWidth > width)
+                return false;
+
+            placements.add(new PlacedTexture(image, x, y));
+
+            x += placedWidth;
+            rowHeight = Math.max(rowHeight, placedHeight);
+            height = Math.max(height, y + placedHeight);
+
+            return true;
+        }
+
+        private NativeImage createImage() {
+            return new NativeImage(width, height, true);
+        }
+    }
+
+    private record PlacedTexture(
+            TextureImage image,
+            int x,
+            int y
+    ) {}
+
+    public record TextureLocation(
+            int page,
+            Vector4f bounds
+    ) {}
 
     private record TextureImage(
             ResourceLocation location,

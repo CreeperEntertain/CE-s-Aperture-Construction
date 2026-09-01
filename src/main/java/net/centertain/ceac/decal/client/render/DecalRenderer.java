@@ -368,13 +368,11 @@ public final class DecalRenderer {
         mainTarget.bindWrite(false);
 
         RenderSystem.setShader(() -> resolveShader);
-        RenderSystem.setShaderTexture(0, DecalTextureAtlas.getTexture());
         RenderSystem.setShaderTexture(1, opaqueDepthTarget.getDepthTextureId());
         RenderSystem.setShaderTexture(2, decalCoverageTarget.getColorTextureId());
         RenderSystem.setShaderTexture(3, getOpaqueLightmapTexture());
         RenderSystem.setShaderTexture(4, lightmap.getId());
 
-        resolveShader.setSampler("Sampler0", RenderSystem.getShaderTexture(0));
         resolveShader.setSampler("Sampler1", RenderSystem.getShaderTexture(1));
         resolveShader.setSampler("Coverage", RenderSystem.getShaderTexture(2));
         resolveShader.setSampler("LightmapCoords", RenderSystem.getShaderTexture(3));
@@ -627,11 +625,9 @@ public final class DecalRenderer {
 
         RenderSystem.setShader(() -> shader);
 
-        RenderSystem.setShaderTexture(0, DecalTextureAtlas.getTexture());
         RenderSystem.setShaderTexture(1, DecalRenderer.getOpaqueDepthTexture());
         RenderSystem.setShaderTexture(3, lightmap.getId());
 
-        shader.setSampler("Sampler0", RenderSystem.getShaderTexture(0));
         shader.setSampler("Sampler1", RenderSystem.getShaderTexture(1));
         shader.setSampler("Lightmap", RenderSystem.getShaderTexture(3));
 
