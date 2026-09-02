@@ -1,5 +1,6 @@
 package net.centertain.ceac.decal.client;
 
+import net.centertain.ceac.Profiler;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.client.render.DecalCuller;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
@@ -49,7 +50,7 @@ public final class ClientDecals {
                 viewProjection,
                 cameraPosition
         );
-        System.out.println(decals.size());
+        Profiler.set("Decal Count", decals.size());
         long culledHash = 1125899906842597L;
         for (Decal decal : decals) {
             UUID id = decal.getId();
