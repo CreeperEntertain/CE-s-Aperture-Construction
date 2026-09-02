@@ -21,8 +21,8 @@ public final class Profiler {
     private static volatile Duration repeatDuration = Duration.ofSeconds(1);
     private static volatile String keyToPrint;
 
-    private static int repeatTickDelay = 1;
-    private static int repeatTickCount = 0;
+    private static volatile int repeatTickDelay = 1;
+    private static volatile int repeatTickCount = 0;
 
     private static Thread profilerThread;
 
