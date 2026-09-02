@@ -38,7 +38,7 @@ public final class DecalCuller {
 
     private static boolean isInsideFrustum(
             Decal decal,
-            Matrix4f projectionMatrix,
+            Matrix4f viewProjection,
             Vec3 cameraPosition
     ) {
         Vec3 origin = decal.getOrigin();
@@ -47,35 +47,71 @@ public final class DecalCuller {
         double height = decal.getPixelHeight() / 16.0;
         double depth = decal.getBlockDepth();
 
-        double radius = 0.5 * Math.sqrt(width * width + height * height + depth * depth);
-
-        double x = origin.x - cameraPosition.x;
-        double y = origin.y - cameraPosition.y;
-        double z = origin.z - cameraPosition.z;
-
-        Vector4f position = new Vector4f(
-                (float) x,
-                (float) y,
-                (float) z,
-                1.0f
+        double radius = 0.5 * Math.sqrt(
+                width * width +
+                height * height +
+                depth * depth
         );
 
-        projectionMatrix.transform(position);
+        float x = (float) (origin.x - cameraPosition.x);
+        float y = (float) (origin.y - cameraPosition.y);
+        float z = (float) (origin.z - cameraPosition.z);
 
-        double left = position.x + radius;
-        double right = -position.x + radius;
-        double bottom = position.y + radius;
-        double top = -position.y + radius;
-        double near = position.z + radius;
-        double far = -position.z + radius;
+        float[][] planes = {
+                {
+                        viewProjection.m03() + viewProjection.m00(),
+                        viewProjection.m13() + viewProjection.m10(),
+                        viewProjection.m23() + viewProjection.m20(),
+                        viewProjection.m33() + viewProjection.m30()
+                },
+                {
+                        viewProjection.m03() - viewProjection.m00(),
+                        viewProjection.m13() - viewProjection.m10(),
+                        viewProjection.m23() - viewProjection.m20(),
+                        viewProjection.m33() - viewProjection.m30()
+                },
+                {
+                        viewProjection.m03() + viewProjection.m01(),
+                        viewProjection.m13() + viewProjection.m11(),
+                        viewProjection.m23() + viewProjection.m21(),
+                        viewProjection.m33() + viewProjection.m31()
+                },
+                {
+                        viewProjection.m03() - viewProjection.m01(),
+                        viewProjection.m13() - viewProjection.m11(),
+                        viewProjection.m23() - viewProjection.m21(),
+                        viewProjection.m33() - viewProjection.m31()
+                },
+                {
+                        viewProjection.m03() + viewProjection.m02(),
+                        viewProjection.m13() + viewProjection.m12(),
+                        viewProjection.m23() + viewProjection.m22(),
+                        viewProjection.m33() + viewProjection.m32()
+                },
+                {
+                        viewProjection.m03() - viewProjection.m02(),
+                        viewProjection.m13() - viewProjection.m12(),
+                        viewProjection.m23() - viewProjection.m22(),
+                        viewProjection.m33() - viewProjection.m32()
+                }
+        };
 
-        return
-                left >= -position.w &&
-                right >= -position.w &&
-                bottom >= -position.w &&
-                top >= -position.w &&
-                near >= -position.w &&
-                far >= -position.w;
+        for (float[] plane : planes) {
+            double normalLength = Math.sqrt(
+                    plane[0] * plane[0] +
+                    plane[1] * plane[1] +
+                    plane[2] * plane[2]
+            );
+            double distance =
+                    plane[0] * x +
+                    plane[1] * y +
+                    plane[2] * z +
+                    plane[3];
+            if (distance < -radius * normalLength)
+                return false;
+        }
+
+        return true;
     }
 
 
