@@ -6,8 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.ARBBindlessTexture;
 import org.lwjgl.opengl.GL11;
@@ -22,6 +22,7 @@ public final class DecalTextureAtlas {
     private static final int PADDING = 1;
     private static final Map<ResourceLocation, TextureLocation> LOCATIONS = new HashMap<>();
     private static final ResourceLocation MISSING_TEXTURE = MissingTextureAtlasSprite.getLocation();
+                                                         // ^ Why is this class name so unreasonably funny?
 
     private static final List<DynamicTexture> pages = new ArrayList<>();
     private static final List<Long> pageHandles = new ArrayList<>();
@@ -51,14 +52,32 @@ public final class DecalTextureAtlas {
         Minecraft minecraft = Minecraft.getInstance();
         ResourceManager resourceManager = minecraft.getResourceManager();
         List<TextureImage> images = new ArrayList<>();
+        Set<ResourceLocation> resolved = new HashSet<>();
 
         for (ResourceLocation location : required) {
-            Optional<Resource> resource = resourceManager.getResource(location);
-            if (resource.isEmpty())
+            ResourceLocation actualLocation = resourceManager.getResource(location).isPresent()
+                    ? location
+                    : MISSING_TEXTURE;
+            if (!resolved.add(actualLocation))
                 continue;
-            try (InputStream stream = resource.get().open()) {
-                NativeImage image = NativeImage.read(stream);
-                images.add(new TextureImage(location, image));
+            try {
+                NativeImage image;
+
+                if (actualLocation.equals(MISSING_TEXTURE)) {
+                    NativeImage missingImage = MissingTextureAtlasSprite.getTexture().getPixels();
+                    assert missingImage != null;
+
+                    image = new NativeImage(missingImage.getWidth(), missingImage.getHeight(), false);
+
+                    for (int y = 0; y < missingImage.getHeight(); ++y)
+                        for (int x = 0; x < missingImage.getWidth(); ++x)
+                            image.setPixelRGBA(x, y, missingImage.getPixelRGBA(x, y));
+                } else {
+                    try (InputStream stream = resourceManager.getResource(actualLocation).orElseThrow().open()) {
+                        image = NativeImage.read(stream);
+                    }
+                }
+                images.add(new TextureImage(actualLocation, image));
             } catch (IOException exception) {
                 throw new RuntimeException("Failed to load decal texture " + location, exception);
             }
@@ -70,77 +89,7 @@ public final class DecalTextureAtlas {
         }
 
         int maxTextureSize = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
-
-        for (TextureImage image : images) {
-            if (image.width() + PADDING * 2 > maxTextureSize ||
-                    image.height() + PADDING * 2 > maxTextureSize)
-                throw new IllegalStateException(
-                        "Decal texture " + image.location() +
-                        " exceeds GL_MAX_TEXTURE_SIZE (" + maxTextureSize + ")."
-                );
-        }
-
-        int estimatedPageWidth = 0;
-        long totalArea = 0;
-
-        for (TextureImage image : images) {
-            int width = image.width() + PADDING * 2;
-            int height = image.height() + PADDING * 2;
-
-            estimatedPageWidth = Math.max(estimatedPageWidth, width + PADDING);
-            totalArea += (long) width * height;
-        }
-
-        estimatedPageWidth = Math.max(estimatedPageWidth, (int) Math.ceil(Math.sqrt(totalArea)));
-        estimatedPageWidth = Math.min(estimatedPageWidth, maxTextureSize);
-
-        for (ResourceLocation location : required) {
-            ResourceLocation actualLocation;
-
-            Optional<Resource> resource = resourceManager.getResource(location);
-            if (resource.isEmpty())
-                actualLocation = MISSING_TEXTURE;
-            else
-                actualLocation = location;
-
-            if (images.stream().anyMatch(image -> image.location().equals(actualLocation)))
-                continue;
-
-            try {
-                NativeImage image;
-                if (actualLocation.equals(MISSING_TEXTURE)) {
-                    NativeImage missingImage = MissingTextureAtlasSprite.getTexture().getPixels();
-                    assert missingImage != null;
-                    image = new NativeImage(missingImage.getWidth(), missingImage.getHeight(), false);
-                    for (int y = 0; y < missingImage.getHeight(); ++y)
-                        for (int x = 0; x < missingImage.getWidth(); ++x)
-                            image.setPixelRGBA(x, y, missingImage.getPixelRGBA(x, y));
-                } else {
-                    try (InputStream stream = resource.get().open()) {
-                        image = NativeImage.read(stream);
-                    }
-                }
-
-                images.add(new TextureImage(actualLocation, image));
-            } catch (IOException exception) {
-                throw new RuntimeException("Failed to load decal texture " + location, exception);
-            }
-        }
-
-        List<PageBuilder> builders = new ArrayList<>();
-        PageBuilder page = new PageBuilder(estimatedPageWidth);
-
-        for (TextureImage image : images) {
-            if (!page.tryAdd(image)) {
-                builders.add(page);
-                page = new PageBuilder(estimatedPageWidth);
-                if (!page.tryAdd(image))
-                    throw new IllegalStateException("Failed to place decal texture " + image.location() + ".");
-            }
-        }
-
-        builders.add(page);
-
+        List<PageBuilder> builders = getBuilders(images, maxTextureSize);
         destroy();
 
         for (int pageIndex = 0; pageIndex < builders.size(); ++pageIndex) {
@@ -207,6 +156,53 @@ public final class DecalTextureAtlas {
         textures = Set.copyOf(required);
     }
 
+    private static @NotNull List<PageBuilder> getBuilders(List<TextureImage> images, int maxTextureSize) {
+        for (TextureImage image : images) {
+            if (image.width() + PADDING * 2 > maxTextureSize ||
+                    image.height() + PADDING * 2 > maxTextureSize)
+                throw new IllegalStateException(
+                        "Decal texture " + image.location() +
+                        " exceeds GL_MAX_TEXTURE_SIZE (" + maxTextureSize + ")."
+                );
+        }
+
+        int estimatedPageWidth = getEstimatedPageWidth(images, maxTextureSize);
+        return createBuilders(images, estimatedPageWidth);
+    }
+
+    private static @NotNull List<PageBuilder> createBuilders(List<TextureImage> images, int estimatedPageWidth) {
+        List<PageBuilder> builders = new ArrayList<>();
+        PageBuilder page = new PageBuilder(estimatedPageWidth);
+
+        for (TextureImage image : images) {
+            if (!page.tryAdd(image)) {
+                builders.add(page);
+                page = new PageBuilder(estimatedPageWidth);
+                if (!page.tryAdd(image))
+                    throw new IllegalStateException("Failed to place decal texture " + image.location() + ".");
+            }
+        }
+
+        builders.add(page);
+        return builders;
+    }
+
+    private static int getEstimatedPageWidth(List<TextureImage> images, int maxTextureSize) {
+        int estimatedPageWidth = 0;
+        long totalArea = 0;
+
+        for (TextureImage image : images) {
+            int width = image.width() + PADDING * 2;
+            int height = image.height() + PADDING * 2;
+            estimatedPageWidth = Math.max(estimatedPageWidth, width + PADDING);
+            totalArea += (long) width * height;
+        }
+
+        estimatedPageWidth = Math.max(estimatedPageWidth, (int) Math.ceil(Math.sqrt(totalArea)));
+        estimatedPageWidth = Math.min(estimatedPageWidth, maxTextureSize);
+        return estimatedPageWidth;
+    }
+
     public static void destroy() {
         LOCATIONS.clear();
         Minecraft minecraft = Minecraft.getInstance();
@@ -237,6 +233,7 @@ public final class DecalTextureAtlas {
             this.width = width;
         }
 
+        @SuppressWarnings("BooleanMethodIsAlwaysInverted") // Maaan... SHUT UP!
         private boolean tryAdd(TextureImage image) {
             int placedWidth = image.width() + PADDING * 2;
             int placedHeight = image.height() + PADDING * 2;
