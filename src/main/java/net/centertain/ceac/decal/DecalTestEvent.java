@@ -12,7 +12,7 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 public class DecalTestEvent {
     private DecalTestEvent() {}
 
-    @SubscribeEvent
+    //@SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (!(event.getLevel() instanceof ServerLevel serverLevel))
             return;
