@@ -281,6 +281,22 @@ void main() {
 
         for (int y = minTexel.y; y <= maxTexel.y; ++y) {
             for (int x = minTexel.x; x <= maxTexel.x; ++x) {
+                maxSceneDepth = max(maxSceneDepth, texelFetch(DepthPyramid, ivec2(x, y), testLevel).r);
+            }
+        }
+
+        if (maxSceneDepth < minDepth) {
+            visible[decalIndex] = OCCLUDED;
+            return;
+        }
+
+        if (testLevel == level)
+            return;
+
+        float exactMaxDepth = 0.0;
+
+        for (int y = minTexel.y; y <= maxTexel.y; ++y) {
+            for (int x = minTexel.x; x <= maxTexel.x; ++x) {
                 vec2 texelMin = vec2(x, y) / vec2(pyramidSize);
                 vec2 texelMax = vec2(x + 1, y + 1) / vec2(pyramidSize);
 
@@ -294,11 +310,11 @@ void main() {
                 ))
                     continue;
 
-                maxSceneDepth = max(maxSceneDepth, texelFetch(DepthPyramid, ivec2(x, y), testLevel).r);
+                exactMaxDepth = max(exactMaxDepth, texelFetch(DepthPyramid, ivec2(x, y), testLevel).r);
             }
         }
 
-        if (maxSceneDepth >= minDepth)
+        if (exactMaxDepth >= minDepth)
             return;
         --testLevel;
     }
