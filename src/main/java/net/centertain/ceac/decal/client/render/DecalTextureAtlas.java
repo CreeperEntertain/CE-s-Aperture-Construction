@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.centertain.ceac.decal.Decal;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -20,6 +21,7 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 public final class DecalTextureAtlas {
     private static final int PADDING = 1;
     private static final Map<ResourceLocation, TextureLocation> LOCATIONS = new HashMap<>();
+    private static final ResourceLocation MISSING_TEXTURE = MissingTextureAtlasSprite.getLocation();
 
     private static final List<DynamicTexture> pages = new ArrayList<>();
     private static final List<Long> pageHandles = new ArrayList<>();
@@ -92,6 +94,39 @@ public final class DecalTextureAtlas {
         estimatedPageWidth = Math.max(estimatedPageWidth, (int) Math.ceil(Math.sqrt(totalArea)));
         estimatedPageWidth = Math.min(estimatedPageWidth, maxTextureSize);
 
+        for (ResourceLocation location : required) {
+            ResourceLocation actualLocation;
+
+            Optional<Resource> resource = resourceManager.getResource(location);
+            if (resource.isEmpty())
+                actualLocation = MISSING_TEXTURE;
+            else
+                actualLocation = location;
+
+            if (images.stream().anyMatch(image -> image.location().equals(actualLocation)))
+                continue;
+
+            try {
+                NativeImage image;
+                if (actualLocation.equals(MISSING_TEXTURE)) {
+                    NativeImage missingImage = MissingTextureAtlasSprite.getTexture().getPixels();
+                    assert missingImage != null;
+                    image = new NativeImage(missingImage.getWidth(), missingImage.getHeight(), false);
+                    for (int y = 0; y < missingImage.getHeight(); ++y)
+                        for (int x = 0; x < missingImage.getWidth(); ++x)
+                            image.setPixelRGBA(x, y, missingImage.getPixelRGBA(x, y));
+                } else {
+                    try (InputStream stream = resource.get().open()) {
+                        image = NativeImage.read(stream);
+                    }
+                }
+
+                images.add(new TextureImage(actualLocation, image));
+            } catch (IOException exception) {
+                throw new RuntimeException("Failed to load decal texture " + location, exception);
+            }
+        }
+
         List<PageBuilder> builders = new ArrayList<>();
         PageBuilder page = new PageBuilder(estimatedPageWidth);
 
@@ -135,18 +170,22 @@ public final class DecalTextureAtlas {
                 atlas.setPixelRGBA(placed.x() - PADDING, bottom, image.image().getPixelRGBA(0, image.height() - 1));
                 atlas.setPixelRGBA(right, bottom, image.image().getPixelRGBA(image.width() - 1, image.height() - 1));
 
-                LOCATIONS.put(
-                        image.location(),
-                        new TextureLocation(
-                                pageIndex,
-                                new Vector4f(
-                                        (float) placed.x() / builder.width,
-                                        (float) placed.y() / builder.height,
-                                        (float) right / builder.width,
-                                        (float) bottom / builder.height
-                                )
+                TextureLocation textureLocation = new TextureLocation(
+                        pageIndex,
+                        new Vector4f(
+                                (float) placed.x() / builder.width,
+                                (float) placed.y() / builder.height,
+                                (float) right / builder.width,
+                                (float) bottom / builder.height
                         )
                 );
+                LOCATIONS.put(image.location(), textureLocation);
+                if (image.location().equals(MISSING_TEXTURE)) {
+                    for (ResourceLocation requiredTexture : required) {
+                        if (resourceManager.getResource(requiredTexture).isEmpty())
+                            LOCATIONS.put(requiredTexture, textureLocation);
+                    }
+                }
 
                 image.image().close();
             }
