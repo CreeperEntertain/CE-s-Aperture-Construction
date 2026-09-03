@@ -1,13 +1,15 @@
 package net.centertain.ceac.screen;
 
 import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.screen.elements.StackPanel;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
+import java.util.ArrayList;
 
 public class DecalItemScreen extends Screen {
     private final ItemStack stack;
@@ -31,7 +33,15 @@ public class DecalItemScreen extends Screen {
         int right = width - GuiConstants.SCREEN_PADDING;
         int bottom = height - GuiConstants.SCREEN_PADDING;
 
-        guiGraphics.fill(left, top, right, bottom, 0xC0000000);
+        guiGraphics.fill(left, top, right, bottom, GuiConstants.COLOR_TRANSLUCENT_BLACK_75);
+
+        addRenderableOnly(new StackPanel(
+                GuiConstants.SCREEN_PADDING,
+                GuiConstants.SCREEN_PADDING,
+                GuiConstants.STACK_PANEL_WIDTH,
+                new ArrayList<AbstractWidget>(),
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+        ));
 
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
