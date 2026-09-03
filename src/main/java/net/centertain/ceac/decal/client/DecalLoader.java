@@ -1,5 +1,6 @@
 package net.centertain.ceac.decal.client;
 
+import net.centertain.ceac.decal.DecalDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
@@ -39,6 +40,8 @@ public final class DecalLoader {
         decals.addAll(packs.values());
         for (DecalPack pack : decals)
             pack.sortDecals();
+
+        printDecals();
     }
     private static void extracted(ResourceLocation location, Map<String, DecalPack> packs) {
         if (!location.getPath().endsWith(".png"))
@@ -53,22 +56,22 @@ public final class DecalLoader {
 
         if (separator < 0) {
             DecalPack miscellaneous = packs.computeIfAbsent("miscellaneous", DecalPack::new);
-            miscellaneous.addDecal(location);
+            miscellaneous.addDecal(new DecalDefinition(location));
             return;
         }
 
         String packName = relativePath.substring(0, separator);
         DecalPack pack = packs.computeIfAbsent(packName, DecalPack::new);
 
-        pack.addDecal(location);
+        pack.addDecal(new DecalDefinition(location));
     }
 
     public static void printDecals() {
         System.out.println("INSTALLED DECALS INCLUDE...");
         for (DecalPack pack : decals) {
             System.out.println("\n" + pack.getName() + ": \n");
-            for (ResourceLocation decal : pack.getDecals())
-                System.out.println(decal.getPath());
+            for (DecalDefinition decal : pack.getDecals())
+                System.out.println(decal.getResourceLocation().getPath());
         }
     }
 }
