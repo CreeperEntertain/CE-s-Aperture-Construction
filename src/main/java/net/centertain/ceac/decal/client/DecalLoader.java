@@ -1,12 +1,20 @@
 package net.centertain.ceac.decal.client;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import net.centertain.ceac.decal.DecalDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +41,7 @@ public final class DecalLoader {
                     PackType.CLIENT_RESOURCES,
                     "ceac",
                     "textures/decal",
-                    (location, resource) -> extracted(location, packs)
+                    (location, resource) -> extracted(resourcePack, location, packs)
             );
         }
 
@@ -43,27 +51,69 @@ public final class DecalLoader {
 
         printDecals();
     }
-    private static void extracted(ResourceLocation location, Map<String, DecalPack> packs) {
+    private static void extracted(
+            PackResources resourcePack,
+            ResourceLocation location,
+            Map<String, DecalPack> packs
+    ) {
         if (!location.getPath().endsWith(".png"))
             return;
+
         String path = location.getPath();
         String prefix = "textures/decal/";
+
         if (!path.startsWith(prefix))
             return;
+
+        DecalDefinition definition = getDefinition(resourcePack, location);
 
         String relativePath = path.substring(prefix.length());
         int separator = relativePath.indexOf('/');
 
         if (separator < 0) {
             DecalPack miscellaneous = packs.computeIfAbsent("miscellaneous", DecalPack::new);
-            miscellaneous.addDecal(new DecalDefinition(location));
+            miscellaneous.addDecal(definition);
             return;
         }
 
         String packName = relativePath.substring(0, separator);
         DecalPack pack = packs.computeIfAbsent(packName, DecalPack::new);
+    }
 
-        pack.addDecal(new DecalDefinition(location));
+    private static DecalDefinition getDefinition(
+            PackResources resourcePack,
+            ResourceLocation location
+    ) {
+        String path = location.getPath();
+        String jsonPath = path.substring(0, path.length() - 4) + ".json";
+
+        ResourceLocation jsonLocation = ResourceLocation.fromNamespaceAndPath(location.getNamespace(), jsonPath);
+        IoSupplier<InputStream> json = resourcePack.getResource(PackType.CLIENT_RESOURCES, jsonLocation);
+
+        if (json == null)
+            return new DecalDefinition(location);
+
+        String name = path.substring(path.lastIndexOf('/') + 1, path.length() - 4);
+
+        int width = 16;
+        int height = 16;
+
+        try (InputStream stream = json.get()) {
+            JsonObject object = JsonParser
+                    .parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8))
+                    .getAsJsonObject();
+
+            if (object.has("name"))
+                name = object.get("name").getAsString();
+            if (object.has("width"))
+                width = object.get("width").getAsInt();
+            if (object.has("height"))
+                height = object.get("height").getAsInt();
+
+            return new DecalDefinition(name, width, height, location);
+        } catch (IOException | JsonParseException | ClassCastException exception) {
+            throw new RuntimeException("Failed to load decal definition " + jsonLocation, exception);
+        }
     }
 
     public static void printDecals() {
@@ -71,7 +121,12 @@ public final class DecalLoader {
         for (DecalPack pack : decals) {
             System.out.println("\n" + pack.getName() + ": \n");
             for (DecalDefinition decal : pack.getDecals())
-                System.out.println(decal.getResourceLocation().getPath());
+                System.out.println(
+                        decal.getResourceLocation().getPath() + ": \n" +
+                        "    name: " + decal.getName() + "\n" +
+                        "    width: " + decal.getWidth() + "\n" +
+                        "    height: " + decal.getHeight()
+                );
         }
     }
 }
