@@ -5,6 +5,7 @@ public final class GuiConstants {
     public static final int ELEMENT_PADDING = 5;
 
     public static final int STACK_PANEL_WIDTH = 100;
+    public static final int TAB_BUTTON_HEIGHT = 15;
 
     public static final int COLOR_SOLID_BLACK = 0xFF000000;
     public static final int COLOR_TRANSLUCENT_BLACK_25 = 0x40000000;
@@ -15,6 +16,13 @@ public final class GuiConstants {
     public static final int COLOR_TRANSLUCENT_WHITE_50 = 0x80FFFFFF;
     public static final int COLOR_TRANSLUCENT_WHITE_75 = 0xC0FFFFFF;
     public static final int COLOR_TRANSPARENT = 0x00000000;
+
+    public static final int COLOR_SOLID_RED = 0xFFFF0000;
+    public static final int COLOR_SOLID_GREEN = 0xFF00FF00;
+    public static final int COLOR_SOLID_BLUE = 0xFF0000FF;
+    public static final int COLOR_SOLID_YELLOW = 0xFFFFFF00;
+    public static final int COLOR_SOLID_CYAN = 0xFF00FFFF;
+    public static final int COLOR_SOLID_MAGENTA = 0xFFFF00FF;
 
     private GuiConstants() {}
 }
