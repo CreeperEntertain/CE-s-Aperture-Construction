@@ -3,6 +3,7 @@ package net.centertain.ceac.screen.elements;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.centertain.ceac.GuiConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
@@ -18,6 +19,7 @@ import java.io.InputStream;
 
 public class Button extends AbstractWidget {
     private final int textColor;
+    private final float textScale;
     private final int backgroundColor;
     private final int outlineColor;
     private final @Nullable ResourceLocation texture;
@@ -32,6 +34,7 @@ public class Button extends AbstractWidget {
             int height,
             Component text,
             int textColor,
+            float textScale,
             int backgroundColor,
             int outlineColor,
             @Nullable ResourceLocation texture,
@@ -40,6 +43,7 @@ public class Button extends AbstractWidget {
         super(x, y, width, height, text);
 
         this.textColor = textColor;
+        this.textScale = textScale;
         this.backgroundColor = backgroundColor;
         this.outlineColor = outlineColor;
         this.texture = texture;
@@ -84,15 +88,23 @@ public class Button extends AbstractWidget {
                 backgroundColor
         );
 
-        int textWidth = Minecraft.getInstance().font.width(getMessage());
+        Font font = Minecraft.getInstance().font;
+
+        int textWidth = font.width(getMessage());
         int textHeight = 8;
+
+        int scaledTextWidth = Math.round(textWidth * textScale);
+        int scaledTextHeight = Math.round(textHeight * textScale);
 
         int drawTextureWidth = 0;
         int drawTextureHeight = 0;
 
         if (texture != null) {
             int availableTextureWidth = getWidth();
-            int availableTextureHeight = getHeight() - textHeight - GuiConstants.ELEMENT_PADDING;
+            int availableTextureHeight =
+                    getHeight() -
+                            scaledTextHeight -
+                            GuiConstants.ELEMENT_PADDING;
 
             if (availableTextureWidth > 0 && availableTextureHeight > 0) {
                 float scale = Math.min(
@@ -113,7 +125,7 @@ public class Button extends AbstractWidget {
         if (drawTextureHeight > 0)
             contentHeight += GuiConstants.ELEMENT_PADDING;
 
-        contentHeight += textHeight;
+        contentHeight += scaledTextHeight;
 
         int contentTop = getY() + (getHeight() - contentHeight) / 2;
 
@@ -136,16 +148,22 @@ public class Button extends AbstractWidget {
             contentTop += drawTextureHeight + GuiConstants.ELEMENT_PADDING;
         }
 
-        int textX = getX() + (getWidth() - textWidth) / 2;
+        int textX = getX() + (getWidth() - scaledTextWidth) / 2;
+
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(textX, contentTop, 0.0);
+        guiGraphics.pose().scale(textScale, textScale, 1.0f);
 
         guiGraphics.drawString(
-                Minecraft.getInstance().font,
+                font,
                 getMessage(),
-                textX,
-                contentTop,
+                0,
+                0,
                 textColor,
                 false
         );
+
+        guiGraphics.pose().popPose();
 
         if (isHovered()) {
             guiGraphics.fill(
