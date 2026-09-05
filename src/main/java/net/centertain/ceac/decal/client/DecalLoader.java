@@ -15,10 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class DecalLoader {
     private static final List<DecalPack> decals = new ArrayList<>();
@@ -71,15 +69,22 @@ public final class DecalLoader {
         int separator = relativePath.indexOf('/');
 
         if (separator < 0) {
-            DecalPack miscellaneous = packs.computeIfAbsent("miscellaneous", DecalPack::new);
+            DecalPack miscellaneous = packs.computeIfAbsent("Miscellaneous", DecalPack::new);
             miscellaneous.addDecal(definition);
             return;
         }
 
-        String packName = relativePath.substring(0, separator);
+        String packName = formatPackName(relativePath.substring(0, separator));
         DecalPack pack = packs.computeIfAbsent(packName, DecalPack::new);
 
         pack.addDecal(definition);
+    }
+
+    private static String formatPackName(String name) {
+        return Arrays
+                .stream(name.replace('_', ' ').split(" "))
+                .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                .collect(Collectors.joining(" "));
     }
 
     private static DecalDefinition getDefinition(
