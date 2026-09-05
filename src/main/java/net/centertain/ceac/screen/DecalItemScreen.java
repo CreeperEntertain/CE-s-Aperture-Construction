@@ -4,14 +4,18 @@ import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.decal.DecalDefinition;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.DecalPack;
+import net.centertain.ceac.decal.network.SyncDecalItemPacket;
+import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.screen.elements.Button;
 import net.centertain.ceac.screen.elements.FlowPanel;
 import net.centertain.ceac.screen.elements.ScrollContainer;
 import net.centertain.ceac.screen.elements.StackPanel;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -28,11 +32,11 @@ public class DecalItemScreen extends Screen {
     private ScrollContainer tabScroll;
     private ScrollContainer decalScroll;
 
-    private final ItemStack stack;
+    private final InteractionHand hand;
 
-    public DecalItemScreen(ItemStack stack) {
-        super(Component.empty());
-        this.stack = stack;
+    public DecalItemScreen(InteractionHand hand) {
+        super(Component.empty());;
+        this.hand = hand;
     }
 
     @Override
@@ -97,7 +101,9 @@ public class DecalItemScreen extends Screen {
     }
 
     private void setDecal(DecalDefinition decal) {
-
+        ResourceLocation texture = decal.getResourceLocation();
+        ModNetworking.CHANNEL.sendToServer(new SyncDecalItemPacket(hand, texture));
+        Minecraft.getInstance().setScreen(null);
     }
 
     @Override

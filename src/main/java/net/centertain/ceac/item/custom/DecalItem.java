@@ -30,7 +30,7 @@ public class DecalItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
 
         if (level.isClientSide)
-            minecraft.setScreen(new DecalItemScreen(stack));
+            minecraft.setScreen(new DecalItemScreen(hand));
 
         return InteractionResultHolder.success(stack);
     }
