@@ -217,26 +217,7 @@ public class Button extends AbstractWidget {
                 elapsed = 0;
             }
 
-            float scrollOffset = 0.0f;
-
-            long duration = 2000;
-            long pause = 1000;
-            long cycle = duration + pause + duration + pause;
-            long time = elapsed % cycle;
-
-            int overflow = scaledTextWidth - textAreaWidth;
-
-            if (time <= duration) {
-                float progress = (float) time / duration;
-                scrollOffset = overflow * progress;
-            } else if (time <= duration + pause) {
-                scrollOffset = overflow;
-            } else if (time <= duration + pause + duration) {
-                float progress = (float) (time - (duration + pause)) / duration;
-                scrollOffset = overflow * (1.0f - progress);
-            } else {
-                scrollOffset = 0.0f;
-            }
+            float scrollOffset = getScrollOffset(elapsed, scaledTextWidth, textAreaWidth);
 
             guiGraphics.enableScissor(
                     textAreaLeft,
@@ -292,6 +273,30 @@ public class Button extends AbstractWidget {
                     outlineColor
             );
         }
+    }
+
+    private static float getScrollOffset(long elapsed, int scaledTextWidth, int textAreaWidth) {
+        float scrollOffset;
+
+        long duration = 2000;
+        long pause = 1000;
+        long cycle = duration + pause + duration + pause;
+        long time = elapsed % cycle;
+
+        int overflow = scaledTextWidth - textAreaWidth;
+
+        if (time <= duration) {
+            float progress = (float) time / duration;
+            scrollOffset = overflow * progress;
+        } else if (time <= duration + pause) {
+            scrollOffset = overflow;
+        } else if (time <= duration + pause + duration) {
+            float progress = (float) (time - (duration + pause)) / duration;
+            scrollOffset = overflow * (1.0f - progress);
+        } else {
+            scrollOffset = 0.0f;
+        }
+        return scrollOffset;
     }
 
     @Override
