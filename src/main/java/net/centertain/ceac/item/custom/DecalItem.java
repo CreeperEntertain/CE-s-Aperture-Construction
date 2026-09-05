@@ -1,20 +1,27 @@
 package net.centertain.ceac.item.custom;
 
+import net.centertain.ceac.decal.DecalDefinition;
+import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.screen.DecalItemScreen;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class DecalItem extends Item {
     public DecalItem (Properties properties) {
         super(properties);
     }
+
+    private @Nullable DecalDefinition decalDefinition = null;
 
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(
@@ -33,5 +40,33 @@ public class DecalItem extends Item {
             minecraft.setScreen(new DecalItemScreen(hand));
 
         return InteractionResultHolder.success(stack);
+    }
+
+    @Override
+    public void inventoryTick(
+            @NotNull ItemStack stack,
+            @NotNull Level level,
+            @NotNull Entity entity,
+            int slot,
+            boolean selected
+    ) {
+        super.inventoryTick(stack, level, entity, slot, selected);
+        if (!(level.isClientSide && entity instanceof Player player))
+            return;
+        if (!selected) {
+            decalDefinition = null;
+            return;
+        }
+        if (decalDefinition == null) {
+            String fullLocation = stack.getOrCreateTag().getString("SelectedTexture");
+            if (fullLocation.isEmpty())
+                return;
+            ResourceLocation textureLocation = DecalLoader.getResourceLocationFromFullString(fullLocation);
+            if (textureLocation == null)
+                return;
+            decalDefinition = DecalLoader.getDefinitionFromResourceLocation(textureLocation);
+        }
+
+        // TODO: Actual placement preview and such
     }
 }

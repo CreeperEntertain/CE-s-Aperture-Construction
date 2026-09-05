@@ -10,6 +10,7 @@ import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -135,5 +136,39 @@ public final class DecalLoader {
                         "    height: " + decal.getHeight()
                 );
         }
+    }
+
+    public static @Nullable DecalDefinition getDefinitionFromResourceLocation(ResourceLocation resourceLocation) {
+        if (!resourceLocation.getNamespace().equals("ceac"))
+            return null;
+        String path = resourceLocation.getPath();
+        String prefix = "textures/decal/";
+        if (!path.startsWith(prefix))
+            return null;
+        String relativePath = path.substring(prefix.length());
+        int separator = relativePath.indexOf('/');
+
+        String packName;
+
+        if (separator < 0)
+            packName = "Miscellaneous";
+        else
+            packName = formatPackName(relativePath.substring(0, separator));
+        for (DecalPack pack : decals) {
+            if (!pack.getName().equals(packName))
+                continue;
+            for (DecalDefinition decalDefinition : pack.getDecals())
+                if (decalDefinition.getResourceLocation().equals(resourceLocation))
+                    return decalDefinition;
+            return null;
+        }
+
+        return null;
+    }
+    public static @Nullable ResourceLocation getResourceLocationFromFullString(String fullLocation) {
+        String[] parts = fullLocation.split(":");
+        if (parts.length > 2 || parts.length == 0)
+            return null;
+        return ResourceLocation.fromNamespaceAndPath(parts[0], parts[1]);
     }
 }
