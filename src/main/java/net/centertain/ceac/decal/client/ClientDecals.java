@@ -5,6 +5,7 @@ import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.client.render.DecalCuller;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 import java.util.*;
@@ -14,6 +15,7 @@ public final class ClientDecals {
     private static final Map<UUID, Decal> DECALS = new ConcurrentHashMap<>();
 
     private static long lastCulledHash;
+    private static @Nullable Decal tempDecal;
 
     private ClientDecals() {}
 
@@ -31,6 +33,9 @@ public final class ClientDecals {
         TranslucentKBuffer.markSpatialIndexDirty();
         lastCulledHash = 0L;
     }
+    public static void setTempDecal(@Nullable Decal decal) {
+        tempDecal = decal;
+    }
 
     public static Map<UUID, Decal> getAll() {
         return DECALS;
@@ -42,11 +47,20 @@ public final class ClientDecals {
     }
 
     public static Map<UUID, Decal> getAllCulled(Matrix4f viewProjection, Vec3 cameraPosition) { // Should only be used for early rendering returns
-        return DecalCuller.getFrustumCulledMap(getAll(), viewProjection, cameraPosition);
+        if (tempDecal == null)
+            return DecalCuller.getFrustumCulledMap(getAll(), viewProjection, cameraPosition);
+        Map<UUID, Decal> decals = new HashMap<>(DECALS);
+        decals.put(tempDecal.getId(), tempDecal);
+        return DecalCuller.getFrustumCulledMap(decals, viewProjection, cameraPosition);
     }
     public static List<Decal> getByRenderOrderCulled(Matrix4f viewProjection, Vec3 cameraPosition) { // Should be used for actual rendering purposes
-        List<Decal> decals = DecalCuller.getOcclusionCulledList(
-                DecalCuller.getFrustumCulledList(getByRenderOrder(), viewProjection, cameraPosition),
+        List<Decal> decals = new ArrayList<>(DECALS.values());
+        if (tempDecal != null) {
+            decals.add(tempDecal);
+            decals.sort(Comparator.comparingInt(Decal::getRenderingOrder).reversed());
+        }
+        decals = DecalCuller.getOcclusionCulledList(
+                DecalCuller.getFrustumCulledList(decals, viewProjection, cameraPosition),
                 viewProjection,
                 cameraPosition
         );

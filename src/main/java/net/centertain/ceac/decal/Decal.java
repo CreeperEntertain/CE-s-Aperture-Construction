@@ -7,13 +7,17 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@SuppressWarnings("ClassCanBeRecord")
 public final class Decal {
     private final UUID id;
 
@@ -176,7 +180,6 @@ public final class Decal {
         double blockDepth = tag.getDouble("BlockDepth");
         if (blockDepth < 0 || blockDepth > 16)
             return null;
-        blockDepth = 1.1;
 
         byte rotation = tag.getByte("Rotation");
         if (rotation < 0 || rotation > 15)
@@ -207,5 +210,167 @@ public final class Decal {
                 texture,
                 attachedBlocks
         );
+    }
+
+
+
+    public static Set<BlockPos> getAttachedBlockSet(
+            Level level,
+            Vec3 origin,
+            Vec3 normal,
+            int pixelWidth,
+            int pixelHeight,
+            double blockDepth,
+            byte rotation
+    ) {
+        double halfWidth = pixelWidth / 32.0;
+        double halfHeight = pixelHeight / 32.0;
+        double halfDepth = blockDepth / 2.0;
+
+        Vec3 reference = Math.abs(normal.y) < 0.999
+                ? new Vec3(0, 1, 0)
+                : new Vec3(1, 0, 0);
+        Vec3 right = reference.cross(normal).normalize();
+        Vec3 up = normal.cross(right).normalize();
+
+        double angle = (Math.PI * 2.0 / 16.0) * rotation;
+
+        Vec3 rotatedRight = right.scale(Math.cos(angle))
+                .add(up.scale(Math.sin(angle)))
+                .normalize();
+        Vec3 rotatedUp = normal.cross(rotatedRight).normalize();
+
+        Vec3 widthVector = rotatedRight.scale(halfWidth);
+        Vec3 heightVector = rotatedUp.scale(halfHeight);
+        Vec3 depthVector = normal.scale(halfDepth);
+
+        Vec3[] corners = { // sigh...
+                origin.add(widthVector).add(heightVector).add(depthVector),
+                origin.add(widthVector).add(heightVector).subtract(depthVector),
+                origin.add(widthVector).subtract(heightVector).add(depthVector),
+                origin.add(widthVector).subtract(heightVector).subtract(depthVector),
+                origin.subtract(widthVector).add(heightVector).add(depthVector),
+                origin.subtract(widthVector).add(heightVector).subtract(depthVector),
+                origin.subtract(widthVector).subtract(heightVector).add(depthVector),
+                origin.subtract(widthVector).subtract(heightVector).subtract(depthVector)
+        };
+        AABB bounds = getBounds(corners);
+        Set<BlockPos> attachedBlocks = new HashSet<>();
+        BlockPos.betweenClosedStream(bounds).forEach(pos -> {
+            AABB blockBounds = new AABB(pos);
+             if (obbIntersectsAabb(
+                     origin,
+                     rotatedRight,
+                     rotatedUp,
+                     normal,
+                     halfWidth,
+                     halfHeight,
+                     halfDepth,
+                     blockBounds
+             ))
+                 attachedBlocks.add(pos.immutable());
+        });
+        return attachedBlocks;
+    }
+    private static @NotNull AABB getBounds(Vec3[] corners) {
+        double minX = corners[0].x;
+        double minY = corners[0].y;
+        double minZ = corners[0].z;
+        double maxX = corners[0].x;
+        double maxY = corners[0].y;
+        double maxZ = corners[0].z;
+        for (Vec3 corner : corners) {
+            minX = Math.min(minX, corner.x);
+            minY = Math.min(minY, corner.y);
+            minZ = Math.min(minZ, corner.z);
+            maxX = Math.max(maxX, corner.x);
+            maxY = Math.max(maxY, corner.y);
+            maxZ = Math.max(maxZ, corner.z);
+        }
+        return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+    private static boolean obbIntersectsAabb(
+            Vec3 center,
+            Vec3 axisX,
+            Vec3 axisY,
+            Vec3 axisZ,
+            double halfX,
+            double halfY,
+            double halfZ,
+            AABB box
+    ) {
+        Vec3 boxCenter = box.getCenter();
+        Vec3 boxHalf = new Vec3(
+                box.getXsize() / 2.0,
+                box.getYsize() / 2.0,
+                box.getZsize() / 2.0
+        );
+        Vec3 translation = boxCenter.subtract(center);
+        Vec3[] decalAxes = {axisX, axisY, axisZ};
+        Vec3[] worldAxes = {
+                new Vec3(1, 0, 0),
+                new Vec3(0, 1, 0),
+                new Vec3(0, 0, 1)
+        };
+        for (Vec3 axis : decalAxes)
+            if (!overlapsOnAxis(
+                    axis,
+                    translation,
+                    boxHalf,
+                    decalAxes,
+                    halfX,
+                    halfY,
+                    halfZ
+            ))
+                return false;
+        for (Vec3 axis : worldAxes)
+            if (!overlapsOnAxis(
+                    axis,
+                    translation,
+                    boxHalf,
+                    decalAxes,
+                    halfX,
+                    halfY,
+                    halfZ
+            ))
+                return false;
+        for (Vec3 decalAxis : decalAxes)
+            for (Vec3 worldAxis : worldAxes) {
+                Vec3 axis = decalAxis.cross(worldAxis);
+                if (axis.lengthSqr() < 1.0e-12)
+                    continue;
+                if (!overlapsOnAxis(
+                        axis.normalize(),
+                        translation,
+                        boxHalf,
+                        decalAxes,
+                        halfX,
+                        halfY,
+                        halfZ
+                ))
+                    return false;
+            }
+        return true;
+    }
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    private static boolean overlapsOnAxis(
+            Vec3 axis,
+            Vec3 translation,
+            Vec3 boxHalf,
+            Vec3[] decalAxes,
+            double halfX,
+            double halfY,
+            double halfZ
+    ) {
+        double distance = Math.abs(translation.dot(axis));
+        double decalRadius =
+                halfX * Math.abs(decalAxes[0].dot(axis)) +
+                halfY * Math.abs(decalAxes[1].dot(axis)) +
+                halfZ * Math.abs(decalAxes[2].dot(axis));
+        double boxRadius =
+                boxHalf.x * Math.abs(axis.x) +
+                boxHalf.y * Math.abs(axis.y) +
+                boxHalf.z * Math.abs(axis.z);
+        return distance <= decalRadius + boxRadius;
     }
 }
