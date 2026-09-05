@@ -6,8 +6,10 @@ public final class GuiConstants {
 
     public static final int STACK_PANEL_WIDTH = 100;
     public static final int TAB_BUTTON_HEIGHT = 15;
-
-    public static final int SCROLL_SPEED = 10;
+    public static final int IMAGE_BUTTON_WIDTH = 50;
+    public static final int IMAGE_BUTTON_HEIGHT = 60;
+    public static final int STACK_SCROLL_SPEED = 10;
+    public static final int FLOW_SCROLL_SPEED = 50;
     public static final int SCROLL_BAR_WIDTH = 1;
 
     public static final int COLOR_SOLID_BLACK = 0xFF000000;

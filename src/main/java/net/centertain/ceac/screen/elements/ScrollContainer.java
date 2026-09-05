@@ -14,6 +14,7 @@ public class ScrollContainer implements Renderable, GuiEventListener {
     private final int width;
     private final int height;
     private final int contentHeight;
+    private final int scrollSpeed;
 
     private double scrollOffset;
 
@@ -23,7 +24,8 @@ public class ScrollContainer implements Renderable, GuiEventListener {
             int width,
             int height,
             Renderable content,
-            int contentHeight
+            int contentHeight,
+            int scrollSpeed
     ) {
         this.x = x;
         this.y = y;
@@ -31,6 +33,7 @@ public class ScrollContainer implements Renderable, GuiEventListener {
         this.height = height;
         this.content = content;
         this.contentHeight = contentHeight;
+        this.scrollSpeed = scrollSpeed;
     }
 
     @Override
@@ -82,7 +85,7 @@ public class ScrollContainer implements Renderable, GuiEventListener {
         double maxScroll = Math.max(0, contentHeight - height);
 
         scrollOffset = Mth.clamp(
-                scrollOffset - scrollDelta * GuiConstants.SCROLL_SPEED,
+                scrollOffset - scrollDelta * scrollSpeed,
                 0.0,
                 maxScroll
         );

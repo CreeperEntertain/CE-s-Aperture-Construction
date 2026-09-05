@@ -1,6 +1,7 @@
 package net.centertain.ceac.screen;
 
 import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.decal.DecalDefinition;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.DecalPack;
 import net.centertain.ceac.screen.elements.Button;
@@ -17,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DecalItemScreen extends Screen {
+    private final List<Button> decalButtons = new ArrayList<>();
+
     private int left;
     private int top;
     private int right;
@@ -47,7 +50,57 @@ public class DecalItemScreen extends Screen {
 
     public void setPack(DecalPack pack) {
         selectedPack = pack;
-        System.out.println("Button clicked for pack " + pack.getName());
+
+        for (Button button : decalButtons)
+            removeWidget(button);
+
+        decalButtons.clear();
+
+        if (decalScroll != null)
+            removeWidget(decalScroll);
+
+        List<Button> decals = new ArrayList<>();
+        for (DecalDefinition decal : pack.getDecals()) {
+            Button button = new Button(
+                    0,
+                    0,
+                    GuiConstants.IMAGE_BUTTON_WIDTH,
+                    GuiConstants.IMAGE_BUTTON_HEIGHT,
+                    Component.literal(decal.getName()),
+                    GuiConstants.COLOR_SOLID_WHITE,
+                    0.5f,
+                    GuiConstants.COLOR_TRANSPARENT,
+                    GuiConstants.COLOR_SOLID_WHITE,
+                    decal.getResourceLocation(),
+                    () -> setDecal(decal)
+            );
+
+            decals.add(button);
+            decalButtons.add(button);
+            addWidget(button);
+        }
+        FlowPanel decalPanel = new FlowPanel(
+                left,
+                top,
+                right - left,
+                decals,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+        );
+        decalScroll = new ScrollContainer(
+                left,
+                top,
+                right - left,
+                bottom - top,
+                decalPanel,
+                decalPanel.getHeight(),
+                GuiConstants.FLOW_SCROLL_SPEED
+        );
+
+        addRenderableOnly(decalScroll);
+    }
+
+    private void setDecal(DecalDefinition decal) {
+
     }
 
     @Override
@@ -105,45 +158,11 @@ public class DecalItemScreen extends Screen {
                 GuiConstants.STACK_PANEL_WIDTH,
                 height - GuiConstants.SCREEN_PADDING * 2,
                 tabStack,
-                tabStack.getHeight()
+                tabStack.getHeight(),
+                GuiConstants.STACK_SCROLL_SPEED
         );
         addRenderableOnly(tabScroll);
 
-        List<Button> decals = new ArrayList<>();
-        for (int i = 0; i < 20; i++)
-            for (DecalPack decalPack : decalPacks) {
-                Button button = new Button(
-                        0,
-                        0,
-                        GuiConstants.STACK_PANEL_WIDTH,
-                        GuiConstants.TAB_BUTTON_HEIGHT,
-                        Component.literal(decalPack.getName()),
-                        GuiConstants.COLOR_SOLID_WHITE,
-                        0.5f,
-                        GuiConstants.COLOR_TRANSPARENT,
-                        GuiConstants.COLOR_SOLID_WHITE,
-                        null,
-                        () -> setPack(decalPack)
-                );
-
-                decals.add(button);
-                addWidget(button);
-            }
-        FlowPanel decalPanel = new FlowPanel(
-                left,
-                top,
-                right - left,
-                decals,
-                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
-        );
-        decalScroll = new ScrollContainer(
-                left,
-                top,
-                right - left,
-                bottom - top,
-                decalPanel,
-                decalPanel.getHeight()
-        );
-        addRenderableOnly(decalScroll);
+        setPack(DecalLoader.getPacks().get(0));
     }
 }
