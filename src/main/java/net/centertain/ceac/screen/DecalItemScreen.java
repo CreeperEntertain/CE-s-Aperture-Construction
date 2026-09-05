@@ -25,7 +25,6 @@ public class DecalItemScreen extends Screen {
     private int right;
     private int bottom;
 
-    private DecalPack selectedPack;
     private ScrollContainer tabScroll;
     private ScrollContainer decalScroll;
 
@@ -49,8 +48,6 @@ public class DecalItemScreen extends Screen {
     }
 
     public void setPack(DecalPack pack) {
-        selectedPack = pack;
-
         for (Button button : decalButtons)
             removeWidget(button);
 
