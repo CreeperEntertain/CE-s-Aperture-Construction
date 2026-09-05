@@ -16,12 +16,15 @@ import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public class DecalItem extends Item {
     public DecalItem (Properties properties) {
         super(properties);
     }
 
     private @Nullable DecalDefinition decalDefinition = null;
+    private @Nullable String decalResourceLocationPath = null;
 
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(
@@ -57,14 +60,19 @@ public class DecalItem extends Item {
             decalDefinition = null;
             return;
         }
-        if (decalDefinition == null) {
-            String fullLocation = stack.getOrCreateTag().getString("SelectedTexture");
+        String fullLocation = stack.getOrCreateTag().getString("SelectedTexture");
+        if (decalDefinition == null || !Objects.equals(decalResourceLocationPath, fullLocation)) {
+            decalResourceLocationPath = fullLocation;
             if (fullLocation.isEmpty())
                 return;
             ResourceLocation textureLocation = DecalLoader.getResourceLocationFromFullString(fullLocation);
             if (textureLocation == null)
                 return;
             decalDefinition = DecalLoader.getDefinitionFromResourceLocation(textureLocation);
+
+            assert decalDefinition != null;
+            System.out.println(decalDefinition.getName());
+            System.out.println(decalDefinition.getResourceLocation().getPath());
         }
 
         // TODO: Actual placement preview and such
