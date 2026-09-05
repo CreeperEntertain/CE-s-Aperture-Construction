@@ -78,6 +78,8 @@ public final class DecalLoader {
 
         String packName = relativePath.substring(0, separator);
         DecalPack pack = packs.computeIfAbsent(packName, DecalPack::new);
+
+        pack.addDecal(definition);
     }
 
     private static DecalDefinition getDefinition(
