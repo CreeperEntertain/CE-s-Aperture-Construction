@@ -1,6 +1,7 @@
 package net.centertain.ceac.screen.elements;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.centertain.ceac.GuiConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -148,6 +149,8 @@ public class Button extends AbstractWidget {
             float textureScale = (float) drawTextureWidth / textureWidth;
             int textureX = getX() + (getWidth() - drawTextureWidth) / 2;
 
+            RenderSystem.enableBlend();
+
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(textureX, contentTop, 0.0);
             guiGraphics.pose().scale(textureScale, textureScale, 1.0f);
@@ -163,6 +166,8 @@ public class Button extends AbstractWidget {
                     textureHeight
             );
             guiGraphics.pose().popPose();
+
+            RenderSystem.disableBlend();
 
             contentTop += drawTextureHeight + GuiConstants.ELEMENT_PADDING;
         }
