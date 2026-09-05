@@ -69,10 +69,8 @@ public class DecalItem extends Item {
             if (textureLocation == null)
                 return;
             decalDefinition = DecalLoader.getDefinitionFromResourceLocation(textureLocation);
-
-            assert decalDefinition != null;
-            System.out.println(decalDefinition.getName());
-            System.out.println(decalDefinition.getResourceLocation().getPath());
+            if (decalDefinition == null) // To make the compiler shut the hell ip
+                return;                  // It couldn't ever be null at this stage, but fuck me ig
         }
 
         // TODO: Actual placement preview and such
