@@ -4,6 +4,7 @@ import net.centertain.ceac.client.ClientForgeEvents;
 import net.centertain.ceac.decal.AbstractDecal;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.DecalDefinition;
+import net.centertain.ceac.decal.DecalPreviewer;
 import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.screen.DecalItemScreen;
@@ -153,9 +154,11 @@ public class DecalItem extends Item {
         );
         ClientDecals.setTempDecal(decal);
         ClientDecals.setTempAbstractDecal(AbstractDecal.getAbstractFromDeltaChanges(decal, abstraction));
+        ClientDecals.setDecalPreview(new DecalPreviewer(decal));
     }
 
     private void cleanup() {
         ClientDecals.setTempDecal(null);
+        ClientDecals.setDecalPreview(null);
     }
 }
