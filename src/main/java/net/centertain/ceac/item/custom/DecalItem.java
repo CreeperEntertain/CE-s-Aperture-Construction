@@ -66,9 +66,8 @@ public class DecalItem extends Item {
         if (!(level.isClientSide && entity instanceof Player player))
             return;
 
-        boolean mainHand = selected;
         boolean offHand = player.getOffhandItem() == stack;
-        if (!mainHand && !offHand)
+        if (!selected && !offHand)
             return;
         if (offHand && player.getMainHandItem().getItem() instanceof DecalItem)
             return;
@@ -95,7 +94,6 @@ public class DecalItem extends Item {
 
         double blockDepth = 1.0;
         byte rotation = 0;
-        Decal decal = null;
 
         BlockHitResult hitResult = Item.getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
         if (hitResult.getType() != HitResult.Type.BLOCK) {
@@ -125,7 +123,7 @@ public class DecalItem extends Item {
                 blockDepth,
                 rotation
         );
-        decal = new Decal(
+        Decal decal = new Decal(
                 UUID.randomUUID(),
                 snappedPosition,
                 surfaceNormal,
