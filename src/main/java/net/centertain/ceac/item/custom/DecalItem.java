@@ -124,7 +124,7 @@ public class DecalItem extends Item {
 
         AbstractDecal abstraction = ClientDecals.getTempAbstractDecal();
 
-        if (ClientDecals.getTempAbstractDecal() != null) {
+        if (abstraction != null) {
             blockDepth = abstraction.getBlockDepth();
             rotation = abstraction.getRotation();
         }
@@ -152,6 +152,7 @@ public class DecalItem extends Item {
                 attachedBlockSet
         );
         ClientDecals.setTempDecal(decal);
+        ClientDecals.setTempAbstractDecal(AbstractDecal.getAbstractFromDeltaChanges(decal, abstraction));
     }
 
     private void cleanup() {

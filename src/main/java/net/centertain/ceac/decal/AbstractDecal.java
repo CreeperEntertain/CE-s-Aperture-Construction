@@ -3,6 +3,7 @@ package net.centertain.ceac.decal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 import java.util.UUID;
@@ -127,6 +128,23 @@ public class AbstractDecal {
                 decal.getRotation(),
                 decal.getTexture(),
                 decal.getAttachedBlocks()
+        );
+    }
+    public static AbstractDecal getAbstractFromDeltaChanges(Decal decal, @Nullable AbstractDecal abstraction) {
+        if (abstraction == null)
+            return getFromDecal(decal);
+        return new AbstractDecal(
+                decal.getId().equals(abstraction.id) ? abstraction.id : decal.getId(),
+                decal.getOrigin().equals(abstraction.origin) ? abstraction.origin : decal.getOrigin(),
+                decal.getNormal().equals(abstraction.normal) ? abstraction.normal : decal.getNormal(),
+                decal.getRenderingOrder() == abstraction.renderingOrder ? abstraction.renderingOrder : decal.getRenderingOrder(),
+                decal.getGlowing() == abstraction.glowing ? abstraction.glowing : decal.getGlowing(),
+                decal.getPixelWidth() == abstraction.pixelWidth ? abstraction.pixelWidth : decal.getPixelWidth(),
+                decal.getPixelHeight() == abstraction.pixelHeight ? abstraction.pixelHeight : decal.getPixelHeight(),
+                decal.getBlockDepth() == abstraction.blockDepth ? abstraction.blockDepth : decal.getBlockDepth(),
+                decal.getRotation() == abstraction.rotation ? abstraction.rotation : decal.getRotation(),
+                decal.getTexture().equals(abstraction.texture) ? abstraction.texture : decal.getTexture(),
+                decal.getAttachedBlocks().equals(abstraction.attachedBlocks) ? Set.copyOf(abstraction.attachedBlocks) : Set.copyOf(decal.getAttachedBlocks())
         );
     }
     public static Decal getFromAbstract(AbstractDecal abstraction) {
