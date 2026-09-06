@@ -9,6 +9,7 @@ import net.centertain.ceac.screen.DecalItemScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -65,6 +67,11 @@ public class DecalItem extends Item {
         super.inventoryTick(stack, level, entity, slot, selected);
         if (!(level.isClientSide && entity instanceof Player player))
             return;
+        assert Minecraft.getInstance().gameMode != null;
+        if (Minecraft.getInstance().gameMode.getPlayerMode() == GameType.SPECTATOR) {
+            cleanup();
+            return;
+        }
 
         boolean offHand = player.getOffhandItem() == stack;
         if (!selected && !offHand)
@@ -127,7 +134,7 @@ public class DecalItem extends Item {
                 UUID.randomUUID(),
                 snappedPosition,
                 surfaceNormal,
-                Integer.MAX_VALUE,
+                ClientDecals.getHighestRenderingOrder() + 1,
                 false,
                 decalDefinition.getWidth(),
                 decalDefinition.getHeight(),

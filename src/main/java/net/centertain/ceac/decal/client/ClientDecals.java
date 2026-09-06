@@ -78,4 +78,12 @@ public final class ClientDecals {
         }
         return decals;
     }
+
+    public static int getHighestRenderingOrder() {
+        int highestRenderingOrder = 0;
+        for (Decal decal : DECALS.values())
+            if (highestRenderingOrder < decal.getRenderingOrder())
+                highestRenderingOrder = decal.getRenderingOrder();
+        return highestRenderingOrder;
+    }
 }
