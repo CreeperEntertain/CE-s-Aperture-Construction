@@ -1,6 +1,7 @@
 package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.client.ClientForgeEvents;
+import net.centertain.ceac.decal.AbstractDecal;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.DecalDefinition;
 import net.centertain.ceac.decal.client.ClientDecals;
@@ -99,9 +100,6 @@ public class DecalItem extends Item {
             }
         }
 
-        double blockDepth = 1.0;
-        byte rotation = 0;
-
         BlockHitResult hitResult = Item.getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
         if (hitResult.getType() != HitResult.Type.BLOCK) {
             cleanup();
@@ -120,6 +118,16 @@ public class DecalItem extends Item {
                 Math.round(placementPosition.y / grid) * grid,
                 Math.round(placementPosition.z / grid) * grid
         );
+
+        double blockDepth = 1.0;
+        byte rotation = 0;
+
+        AbstractDecal abstraction = ClientDecals.getTempAbstractDecal();
+
+        if (ClientDecals.getTempAbstractDecal() != null) {
+            blockDepth = abstraction.getBlockDepth();
+            rotation = abstraction.getRotation();
+        }
 
         Set<BlockPos> attachedBlockSet = Decal.getAttachedBlockSet(
                 level,

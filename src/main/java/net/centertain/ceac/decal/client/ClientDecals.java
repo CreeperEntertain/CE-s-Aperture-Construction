@@ -1,7 +1,9 @@
 package net.centertain.ceac.decal.client;
 
 import net.centertain.ceac.Profiler;
+import net.centertain.ceac.decal.AbstractDecal;
 import net.centertain.ceac.decal.Decal;
+import net.centertain.ceac.decal.DecalDefinition;
 import net.centertain.ceac.decal.client.render.DecalCuller;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.world.phys.Vec3;
@@ -16,6 +18,7 @@ public final class ClientDecals {
 
     private static long lastCulledHash;
     private static @Nullable Decal tempDecal;
+    private static @Nullable AbstractDecal tempAbstractDecal;
 
     private ClientDecals() {}
 
@@ -35,6 +38,12 @@ public final class ClientDecals {
     }
     public static void setTempDecal(@Nullable Decal decal) {
         tempDecal = decal;
+    }
+    public static void setTempAbstractDecal(@Nullable AbstractDecal abstraction) {
+        tempAbstractDecal = abstraction;
+    }
+    public static @Nullable AbstractDecal getTempAbstractDecal() {
+        return tempAbstractDecal;
     }
 
     public static Map<UUID, Decal> getAll() {
