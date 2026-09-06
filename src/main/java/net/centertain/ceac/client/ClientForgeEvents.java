@@ -41,13 +41,18 @@ public class ClientForgeEvents {
         if (player == null) {
             decalItemPresent = false;
             decalItemSeenThisTick = false;
-            ClientDecals.setTempDecal(null);
+            cleanup();
             return;
         }
         if (decalItemPresent && !decalItemSeenThisTick)
-            ClientDecals.setTempDecal(null);
+            cleanup();
         decalItemPresent = decalItemSeenThisTick;
         decalItemSeenThisTick = false;
+    }
+
+    private static void cleanup() {
+        ClientDecals.setTempDecal(null);
+        ClientDecals.setDecalPreview(null);
     }
 
     @SubscribeEvent

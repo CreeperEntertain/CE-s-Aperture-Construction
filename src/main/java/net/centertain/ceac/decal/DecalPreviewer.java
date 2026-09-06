@@ -107,20 +107,72 @@ public final class DecalPreviewer {
 
         Vec3[] corners = getCorners();
 
-        drawLine(vertexConsumer, pose, normalMatrix, corners[0], corners[1]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[0], corners[2]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[0], corners[4]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[1], corners[3]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[1], corners[5]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[2], corners[3]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[2], corners[6]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[3], corners[7]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[4], corners[5]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[4], corners[6]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[5], corners[7]);
-        drawLine(vertexConsumer, pose, normalMatrix, corners[6], corners[7]); // Heh...
+        drawBox(vertexConsumer, pose, normalMatrix, corners);
+        drawArrow(vertexConsumer, pose, normalMatrix);
 
         poseStack.popPose();
+    }
+
+    private void drawBox(
+            VertexConsumer vertexConsumer,
+            Matrix4f pose,
+            Matrix3f normalMatrix,
+            Vec3[] corners
+    ) {
+        if (corners.length != 8)
+            return;
+        int color = GuiConstants.COLOR_SOLID_WHITE;
+        int colorX = GuiConstants.COLOR_SOLID_RED;
+        int colorY = GuiConstants.COLOR_SOLID_GREEN;
+        int colorZ = GuiConstants.COLOR_SOLID_BLUE;
+
+        drawLine(vertexConsumer, pose, normalMatrix, corners[0], corners[1], colorZ); // Z base
+        drawLine(vertexConsumer, pose, normalMatrix, corners[0], corners[2], colorY); // Y base
+        drawLine(vertexConsumer, pose, normalMatrix, corners[0], corners[4], colorX); // X base
+        drawLine(vertexConsumer, pose, normalMatrix, corners[1], corners[3], color);
+        drawLine(vertexConsumer, pose, normalMatrix, corners[1], corners[5], color);
+        drawLine(vertexConsumer, pose, normalMatrix, corners[2], corners[3], color);
+        drawLine(vertexConsumer, pose, normalMatrix, corners[2], corners[6], color);
+        drawLine(vertexConsumer, pose, normalMatrix, corners[3], corners[7], color);
+        drawLine(vertexConsumer, pose, normalMatrix, corners[4], corners[5], color);
+        drawLine(vertexConsumer, pose, normalMatrix, corners[4], corners[6], color);
+        drawLine(vertexConsumer, pose, normalMatrix, corners[5], corners[7], color);
+        drawLine(vertexConsumer, pose, normalMatrix, corners[6], corners[7], color); // Heh...
+    }
+
+    private void drawArrow(
+            VertexConsumer vertexConsumer,
+            Matrix4f pose,
+            Matrix3f normalMatrix
+    ) {
+        Vec3 faceCenter = origin.add(normal.scale(halfDepth));
+        double distance = faceCenter.distanceTo(origin);
+        int color = GuiConstants.COLOR_SOLID_YELLOW;
+
+        // Arrow shaft
+        drawLine(vertexConsumer, pose, normalMatrix, faceCenter, origin, color);
+
+        // Arrow head base calculations
+        Vec3 squareCenter = faceCenter.lerp(origin, 2.0 / 3.0);
+        double halfSide = distance / 12.0;
+        Vec3 squareAxisA = right.add(up).normalize().scale(halfSide);
+        Vec3 squareAxisB = up.subtract(right).normalize().scale(halfSide);
+        Vec3[] vertices = {
+                squareCenter.add(squareAxisA).add(squareAxisB),
+                squareCenter.add(squareAxisA).subtract(squareAxisB),
+                squareCenter.subtract(squareAxisA).subtract(squareAxisB),
+                squareCenter.subtract(squareAxisA).add(squareAxisB)
+        };
+
+        // Arrow head base
+        drawLine(vertexConsumer, pose, normalMatrix, vertices[0], vertices[1], color);
+        drawLine(vertexConsumer, pose, normalMatrix, vertices[1], vertices[2], color);
+        drawLine(vertexConsumer, pose, normalMatrix, vertices[2], vertices[3], color);
+        drawLine(vertexConsumer, pose, normalMatrix, vertices[3], vertices[0], color);
+
+        // Arrow head connectors
+        for (Vec3 vertex : vertices)
+            drawLine(vertexConsumer, pose, normalMatrix, vertex, origin, color);
     }
 
     private void drawLine(
@@ -128,7 +180,8 @@ public final class DecalPreviewer {
             Matrix4f pose,
             Matrix3f normalMatrix,
             Vec3 start,
-            Vec3 end
+            Vec3 end,
+            int colorARGB
     ) {
         Vec3 direction = end.subtract(start);
         float length = (float) direction.length();
@@ -142,12 +195,12 @@ public final class DecalPreviewer {
 
         vertexConsumer
                 .vertex(pose, (float) start.x, (float) start.y, (float) start.z)
-                .color(1.0f, 1.0f, 1.0f, 1.0f)
+                .color(colorARGB)
                 .normal(normalMatrix, x, y, z)
                 .endVertex();
         vertexConsumer
                 .vertex(pose, (float) end.x, (float) end.y, (float) end.z)
-                .color(1.0f, 1.0f, 1.0f, 1.0f)
+                .color(colorARGB)
                 .normal(normalMatrix, x, y, z)
                 .endVertex();
     }
