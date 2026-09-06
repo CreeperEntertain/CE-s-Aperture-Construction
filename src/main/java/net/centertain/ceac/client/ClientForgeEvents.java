@@ -1,11 +1,13 @@
 package net.centertain.ceac.client;
 
 import net.centertain.ceac.decal.client.ClientDecals;
+import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -19,15 +21,11 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
         value = Dist.CLIENT
 )
 public class ClientForgeEvents {
-    private static boolean decalItemPresent;
-    private static boolean decalItemSeenThisTick;
-
-    public static void markDecalItemPresent() {
-        decalItemSeenThisTick = true;
-    }
-
     @SubscribeEvent
     public static void onClientTick(final TickEvent.ClientTickEvent event) {
+        if (DecalPlacement.getPrecisePlacement())
+            DecalPlacement.suppressPrecisePlacementKeys();
+
         // Translucent target resizing
         if (event.phase != TickEvent.Phase.END)
             return;
@@ -39,30 +37,34 @@ public class ClientForgeEvents {
         // Decal preview clearing
         Player player = minecraft.player;
         if (player == null) {
-            decalItemPresent = false;
-            decalItemSeenThisTick = false;
-            cleanup();
+            DecalPlacement.decalItemPresent = false;
+            DecalPlacement.decalItemSeenThisTick = false;
+            DecalPlacement.cleanup();
             return;
         }
-        if (decalItemPresent && !decalItemSeenThisTick)
-            cleanup();
-        decalItemPresent = decalItemSeenThisTick;
-        decalItemSeenThisTick = false;
-    }
-
-    private static void cleanup() {
-        ClientDecals.setTempDecal(null);
-        ClientDecals.setDecalPreview(null);
+        if (DecalPlacement.decalItemPresent && !DecalPlacement.decalItemSeenThisTick)
+            DecalPlacement.cleanup();
+        DecalPlacement.decalItemPresent = DecalPlacement.decalItemSeenThisTick;
+        DecalPlacement.decalItemSeenThisTick = false;
     }
 
     @SubscribeEvent
-    public static void onGameShuttingDown(GameShuttingDownEvent event)
-    {
+    public static void onGameShuttingDown(GameShuttingDownEvent event) {
         TranslucentRenderTargets.destroy();
     }
 
     @SubscribeEvent
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientDecals.clear();
+    }
+
+    @SubscribeEvent
+    public static void onMouseButton(InputEvent.MouseButton.Pre event) {
+        DecalPlacement.swapPrecisePlacement(event);
+    }
+
+    @SubscribeEvent
+    public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
+        DecalPlacement.rotateAbstraction(event);
     }
 }

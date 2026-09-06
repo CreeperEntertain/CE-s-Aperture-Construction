@@ -30,7 +30,7 @@ public final class DecalRenderEvents {
             MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
             Vec3 cameraPosition = event.getCamera().getPosition();
 
-            DecalPreviewer preview = ClientDecals.getDecalPreview();
+            DecalPreviewer preview = DecalPlacement.getDecalPreview();
             if (preview != null) {
                 preview.render(poseStack, bufferSource, cameraPosition);
                 bufferSource.endBatch(RenderType.lines());

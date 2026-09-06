@@ -1,14 +1,10 @@
 package net.centertain.ceac.decal.client;
 
 import net.centertain.ceac.Profiler;
-import net.centertain.ceac.decal.AbstractDecal;
 import net.centertain.ceac.decal.Decal;
-import net.centertain.ceac.decal.DecalDefinition;
-import net.centertain.ceac.decal.DecalPreviewer;
 import net.centertain.ceac.decal.client.render.DecalCuller;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 import java.util.*;
@@ -18,9 +14,6 @@ public final class ClientDecals {
     private static final Map<UUID, Decal> DECALS = new ConcurrentHashMap<>();
 
     private static long lastCulledHash;
-    private static @Nullable Decal tempDecal;
-    private static @Nullable AbstractDecal tempAbstractDecal;
-    private static @Nullable DecalPreviewer decalPreview;
 
     private ClientDecals() {}
 
@@ -39,26 +32,6 @@ public final class ClientDecals {
         lastCulledHash = 0L;
     }
 
-    public static void setTempDecal(@Nullable Decal decal) {
-        tempDecal = decal;
-    }
-    public static void setTempAbstractDecal(@Nullable AbstractDecal abstraction) {
-        tempAbstractDecal = abstraction;
-    }
-    public static void setDecalPreview(@Nullable DecalPreviewer preview) {
-        decalPreview = preview;
-    }
-
-    public static @Nullable Decal getTempDecal() {
-        return tempDecal;
-    }
-    public static @Nullable AbstractDecal getTempAbstractDecal() {
-        return tempAbstractDecal;
-    }
-    public static @Nullable DecalPreviewer getDecalPreview() {
-        return decalPreview;
-    }
-
     public static Map<UUID, Decal> getAll() {
         return DECALS;
     }
@@ -69,16 +42,16 @@ public final class ClientDecals {
     }
 
     public static Map<UUID, Decal> getAllCulled(Matrix4f viewProjection, Vec3 cameraPosition) { // Should only be used for early rendering returns
-        if (tempDecal == null)
+        if (DecalPlacement.tempDecal == null)
             return DecalCuller.getFrustumCulledMap(getAll(), viewProjection, cameraPosition);
         Map<UUID, Decal> decals = new HashMap<>(DECALS);
-        decals.put(tempDecal.getId(), tempDecal);
+        decals.put(DecalPlacement.tempDecal.getId(), DecalPlacement.tempDecal);
         return DecalCuller.getFrustumCulledMap(decals, viewProjection, cameraPosition);
     }
     public static List<Decal> getByRenderOrderCulled(Matrix4f viewProjection, Vec3 cameraPosition) { // Should be used for actual rendering purposes
         List<Decal> decals = new ArrayList<>(DECALS.values());
-        if (tempDecal != null) {
-            decals.add(tempDecal);
+        if (DecalPlacement.tempDecal != null) {
+            decals.add(DecalPlacement.tempDecal);
             decals.sort(Comparator.comparingInt(Decal::getRenderingOrder).reversed());
         }
         decals = DecalCuller.getOcclusionCulledList(

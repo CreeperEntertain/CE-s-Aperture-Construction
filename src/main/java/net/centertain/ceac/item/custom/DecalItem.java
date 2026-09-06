@@ -1,17 +1,16 @@
 package net.centertain.ceac.item.custom;
 
-import net.centertain.ceac.client.ClientForgeEvents;
 import net.centertain.ceac.decal.AbstractDecal;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.DecalDefinition;
 import net.centertain.ceac.decal.DecalPreviewer;
 import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalLoader;
+import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.screen.DecalItemScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -80,7 +79,7 @@ public class DecalItem extends Item {
             return;
         if (offHand && player.getMainHandItem().getItem() instanceof DecalItem)
             return;
-        ClientForgeEvents.markDecalItemPresent();
+        DecalPlacement.markDecalItemPresent();
 
         String fullLocation = stack.getOrCreateTag().getString("SelectedTexture");
         if (decalDefinition == null || !Objects.equals(decalResourceLocationPath, fullLocation)) {
@@ -123,7 +122,7 @@ public class DecalItem extends Item {
         double blockDepth = 1.0;
         byte rotation = 0;
 
-        AbstractDecal abstraction = ClientDecals.getTempAbstractDecal();
+        AbstractDecal abstraction = DecalPlacement.getTempAbstractDecal();
 
         if (abstraction != null) {
             blockDepth = abstraction.getBlockDepth();
@@ -152,13 +151,13 @@ public class DecalItem extends Item {
                 decalDefinition.getResourceLocation(),
                 attachedBlockSet
         );
-        ClientDecals.setTempDecal(decal);
-        ClientDecals.setTempAbstractDecal(AbstractDecal.getAbstractFromDeltaChanges(decal, abstraction));
-        ClientDecals.setDecalPreview(new DecalPreviewer(decal));
+        DecalPlacement.setTempDecal(decal);
+        DecalPlacement.setTempAbstractDecal(AbstractDecal.getAbstractFromDeltaChanges(decal, abstraction));
+        DecalPlacement.setDecalPreview(new DecalPreviewer(decal));
     }
 
     private void cleanup() {
-        ClientDecals.setTempDecal(null);
-        ClientDecals.setDecalPreview(null);
+        DecalPlacement.setTempDecal(null);
+        DecalPlacement.setDecalPreview(null);
     }
 }
