@@ -18,15 +18,31 @@ public final class DecalPlacement {
     private static @Nullable DecalPreviewer decalPreview;
     private static boolean precisePlacement = false;
 
-    private static double gridSize = 1.0 / 16.0;
-    private static Vec3 gridRotation = new Vec3(0.0, 0.0, 0.0);
+    private static final double[] GRID_SIZES = {
+            0.0,        // 0: FREEFORM PLACEMENT!
+            1.0 / 64.0, // 1
+            1.0 / 32.0, // 2
+            1.0 / 16.0, // 3: DEFAULT!
+            1.0 / 8.0,  // 4
+            1.0 / 4.0,  // 5
+            1.0 / 2.0,  // 6
+            1.0,        // 7
+            2.0,        // 8
+            4.0,        // 9
+            8.0         // 10
+    };
+    private static int gridSizeIndex = 3;
+    private static double gridSize = GRID_SIZES[gridSizeIndex];
     private static Vec3 gridOffset = new Vec3(0.0, 0.0, 0.0);
 
     public static boolean decalItemPresent;
     public static boolean decalItemSeenThisTick;
 
-    private static int movementDelay = 0;
     private static int stretchDelay = 0;
+
+    private static @Nullable Vec3 tiltBaseNormal;
+    private static double verticalTilt = 0.0;
+    private static double horizontalTilt = 0.0;
 
     private DecalPlacement() {}
 
@@ -75,18 +91,12 @@ public final class DecalPlacement {
     public static double getGridSize() {
         return gridSize;
     }
-    public static Vec3 getGridRotation() {
-        return gridRotation;
-    }
     public static Vec3 getGridOffset() {
         return gridOffset;
     }
 
     public static void setGridSize(double newSize) {
         gridSize = newSize;
-    }
-    public static void setGridRotation(Vec3 newRotation) {
-        gridRotation = newRotation;
     }
     public static void setGridOffset(Vec3 newOffset) {
         gridOffset = newOffset;
@@ -103,6 +113,16 @@ public final class DecalPlacement {
     private enum Stretch {
         STRETCH,
         SQUASH
+    }
+    private enum Tilt {
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT
+    }
+    private enum GridResize {
+        BIGGER,
+        SMALLER
     }
 
     public static void swapPrecisePlacement(InputEvent.MouseButton.Pre event) {
@@ -142,19 +162,10 @@ public final class DecalPlacement {
         if (!DecalPlacement.getPrecisePlacement())
             return;
         int key = event.getKey();
-        boolean movementKeyPressed =
-                key == GLFW.GLFW_KEY_W ||
-                key == GLFW.GLFW_KEY_A ||
-                key == GLFW.GLFW_KEY_S ||
-                key == GLFW.GLFW_KEY_D ||
-                key == GLFW.GLFW_KEY_Q ||
-                key == GLFW.GLFW_KEY_E;
         boolean stretchKeyPressed =
                 key == GLFW.GLFW_KEY_R ||
                 key == GLFW.GLFW_KEY_F;
         if (event.getAction() == GLFW.GLFW_RELEASE) {
-            if (movementKeyPressed)
-                movementDelay = 0;
             if (stretchKeyPressed)
                 stretchDelay = 0;
             return;
@@ -172,21 +183,48 @@ public final class DecalPlacement {
             case GLFW.GLFW_KEY_A -> moveAbstraction(Direction.LEFT);
             case GLFW.GLFW_KEY_S -> moveAbstraction(Direction.DOWN);
             case GLFW.GLFW_KEY_D -> moveAbstraction(Direction.RIGHT);
-            case GLFW.GLFW_KEY_Q -> moveAbstraction(Direction.IN);
-            case GLFW.GLFW_KEY_E -> moveAbstraction(Direction.OUT);
+            case GLFW.GLFW_KEY_Q -> moveAbstraction(Direction.OUT);
+            case GLFW.GLFW_KEY_E -> moveAbstraction(Direction.IN);
+
             case GLFW.GLFW_KEY_R -> adjustAbstractionDepth(Stretch.STRETCH);
             case GLFW.GLFW_KEY_F -> adjustAbstractionDepth(Stretch.SQUASH);
+
+            case GLFW.GLFW_KEY_UP -> tiltAbstraction(Tilt.UP);
+            case GLFW.GLFW_KEY_DOWN -> tiltAbstraction(Tilt.DOWN);
+            case GLFW.GLFW_KEY_LEFT -> tiltAbstraction(Tilt.LEFT);
+            case GLFW.GLFW_KEY_RIGHT -> tiltAbstraction(Tilt.RIGHT);
+
+            case GLFW.GLFW_KEY_PAGE_UP -> resizeGrid(GridResize.BIGGER);
+            case GLFW.GLFW_KEY_PAGE_DOWN -> resizeGrid(GridResize.SMALLER);
         }
     }
     private static void moveAbstraction(Direction direction) {
         AbstractDecal abstraction = tempAbstractDecal;
         if (abstraction == null)
             return;
-        if (movementDelay == 0 || movementDelay > 10) {
-            // TODO: Abstraction movement
-            tempAbstractDecal = abstraction;
-        }
-        movementDelay++;
+        double step = gridSizeIndex == 0 ? 0.02 : gridSize;
+        Vec3 normal = abstraction.getNormal().normalize();
+        Vec3 reference = Math.abs(normal.y) < 0.999
+                ? new Vec3(0, 1, 0)
+                : new Vec3(1, 0, 0);
+        Vec3 right = reference.cross(normal).normalize();
+        Vec3 up = normal.cross(right).normalize();
+        double rotation = (Math.PI * 2.0 / 16.0) * abstraction.getRotation();
+        right = right
+                .scale(Math.cos(rotation))
+                .add(up.scale(Math.sin(rotation)))
+                .normalize();
+        up = normal.cross(right).normalize();
+        Vec3 movement = switch (direction) {
+            case UP -> up.scale(step);
+            case DOWN -> up.scale(-step);
+            case LEFT -> right.scale(-step);
+            case RIGHT -> right.scale(step);
+            case IN -> normal.scale(-step);
+            case OUT -> normal.scale(step);
+        };
+        abstraction.setOrigin(abstraction.getOrigin().add(movement));
+        tempAbstractDecal = abstraction;
     }
     private static void adjustAbstractionDepth(Stretch stretch) {
         AbstractDecal abstraction = tempAbstractDecal;
@@ -204,5 +242,54 @@ public final class DecalPlacement {
         abstraction.setBlockDepth(blockDepth);
         tempAbstractDecal = abstraction;
         stretchDelay++;
+    }
+    private static void tiltAbstraction(Tilt tilt) {
+        AbstractDecal abstraction = tempAbstractDecal;
+        if (abstraction == null)
+            return;
+        Vec3 normal = abstraction.getNormal();
+        Vec3 reference = Math.abs(normal.y) < 0.999
+                ? new Vec3(0, 1, 0)
+                : new Vec3(1, 0, 0);
+        Vec3 right = reference.cross(normal).normalize();
+        Vec3 up = normal.cross(right).normalize();
+        double rotation = (Math.PI * 2.0 / 16.0) * abstraction.getRotation();
+        right = right
+                .scale(Math.cos(rotation))
+                .add(up.scale(Math.sin(rotation)))
+                .normalize();
+        up = normal.cross(right).normalize();
+
+        double tiltAngle = Math.toRadians(5.0);
+        Vec3 tiltedNormal = switch (tilt) {
+            case UP -> rotateVector(normal, right, -tiltAngle);
+            case DOWN -> rotateVector(normal, right, tiltAngle);
+            case LEFT -> rotateVector(normal, up, -tiltAngle);
+            case RIGHT -> rotateVector(normal, up, tiltAngle);
+        };
+
+        if (Math.abs(tiltedNormal.y) >= 0.999)
+            return;
+
+        abstraction.setNormal(tiltedNormal);
+        tempAbstractDecal = abstraction;
+    }
+    private static void resizeGrid(GridResize gridResize) {
+        int min = 0;
+        int max = GRID_SIZES.length - 1;
+        switch (gridResize) {
+            case BIGGER -> gridSizeIndex = Math.min(max, gridSizeIndex + 1);
+            case SMALLER -> gridSizeIndex = Math.max(min, gridSizeIndex - 1);
+        }
+        gridSize = GRID_SIZES[gridSizeIndex];
+    }
+
+    // Rodrigues' rotation formula
+    // No, IntelliJ, this is not a typo!
+    private static Vec3 rotateVector(Vec3 vector, Vec3 axis, double angle) {
+        return vector
+                .scale(Math.cos(angle))
+                .add(axis.cross(vector).scale(Math.sin(angle)))
+                .add(axis.scale(axis.dot(vector) * (1.0 - Math.cos(angle))));
     }
 }

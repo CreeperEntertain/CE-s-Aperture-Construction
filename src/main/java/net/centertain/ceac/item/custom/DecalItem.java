@@ -112,11 +112,11 @@ public class DecalItem extends Item {
                 hitResult.getDirection().getStepZ()
         );
         Vec3 placementPosition = surfacePosition.add(normal.scale(0.001));
-        double grid = 1.0 / 16.0;
+        double gridSize =  1.0 / 16.0;
         Vec3 origin = new Vec3(
-                Math.round(placementPosition.x / grid) * grid,
-                Math.round(placementPosition.y / grid) * grid,
-                Math.round(placementPosition.z / grid) * grid
+                Math.round(placementPosition.x / gridSize) * gridSize,
+                Math.round(placementPosition.y / gridSize) * gridSize,
+                Math.round(placementPosition.z / gridSize) * gridSize
         );
 
         double blockDepth = 1.0;
