@@ -70,7 +70,7 @@ public class DecalItem extends Item {
             return;
         assert Minecraft.getInstance().gameMode != null;
         if (Minecraft.getInstance().gameMode.getPlayerMode() == GameType.SPECTATOR) {
-            cleanup();
+            DecalPlacement.forceCleanup();
             return;
         }
 
@@ -85,35 +85,35 @@ public class DecalItem extends Item {
         if (decalDefinition == null || !Objects.equals(decalResourceLocationPath, fullLocation)) {
             decalResourceLocationPath = fullLocation;
             if (fullLocation.isEmpty()) {
-                cleanup();
+                DecalPlacement.cleanup();
                 return;
             }
             ResourceLocation textureLocation = DecalLoader.getResourceLocationFromFullString(fullLocation);
             if (textureLocation == null) {
-                cleanup();
+                DecalPlacement.cleanup();
                 return;
             }
             decalDefinition = DecalLoader.getDefinitionFromResourceLocation(textureLocation);
             if (decalDefinition == null) { // To make the compiler shut the hell ip
-                cleanup();                 // It couldn't ever be null at this stage, but fuck me ig
+                DecalPlacement.cleanup();  // It couldn't ever be null at this stage, but fuck me ig
                 return;
             }
         }
 
         BlockHitResult hitResult = Item.getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
         if (hitResult.getType() != HitResult.Type.BLOCK) {
-            cleanup();
+            DecalPlacement.cleanup();
             return;
         }
         Vec3 surfacePosition = hitResult.getLocation();
-        Vec3 surfaceNormal = new Vec3(
+        Vec3 normal = new Vec3(
                 hitResult.getDirection().getStepX(),
                 hitResult.getDirection().getStepY(),
                 hitResult.getDirection().getStepZ()
         );
-        Vec3 placementPosition = surfacePosition.add(surfaceNormal.scale(0.001));
+        Vec3 placementPosition = surfacePosition.add(normal.scale(0.001));
         double grid = 1.0 / 16.0;
-        Vec3 snappedPosition = new Vec3(
+        Vec3 origin = new Vec3(
                 Math.round(placementPosition.x / grid) * grid,
                 Math.round(placementPosition.y / grid) * grid,
                 Math.round(placementPosition.z / grid) * grid
@@ -125,14 +125,18 @@ public class DecalItem extends Item {
         AbstractDecal abstraction = DecalPlacement.getTempAbstractDecal();
 
         if (abstraction != null) {
+            if (DecalPlacement.getPrecisePlacement()) {
+                origin = abstraction.getOrigin();
+                normal = abstraction.getNormal();
+            }
             blockDepth = abstraction.getBlockDepth();
             rotation = abstraction.getRotation();
         }
 
         Set<BlockPos> attachedBlockSet = Decal.getAttachedBlockSet(
                 level,
-                snappedPosition,
-                surfaceNormal,
+                origin,
+                normal,
                 decalDefinition.getWidth(),
                 decalDefinition.getHeight(),
                 blockDepth,
@@ -140,8 +144,8 @@ public class DecalItem extends Item {
         );
         Decal decal = new Decal(
                 UUID.randomUUID(),
-                snappedPosition,
-                surfaceNormal,
+                origin,
+                normal,
                 ClientDecals.getHighestRenderingOrder() + 1,
                 false,
                 decalDefinition.getWidth(),
@@ -154,10 +158,5 @@ public class DecalItem extends Item {
         DecalPlacement.setTempDecal(decal);
         DecalPlacement.setTempAbstractDecal(AbstractDecal.getAbstractFromDeltaChanges(decal, abstraction));
         DecalPlacement.setDecalPreview(new DecalPreviewer(decal));
-    }
-
-    private void cleanup() {
-        DecalPlacement.setTempDecal(null);
-        DecalPlacement.setDecalPreview(null);
     }
 }

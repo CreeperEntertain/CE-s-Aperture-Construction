@@ -3,6 +3,7 @@ package net.centertain.ceac.client;
 import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -12,6 +13,7 @@ import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.lwjgl.glfw.GLFW;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
@@ -23,9 +25,6 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 public class ClientForgeEvents {
     @SubscribeEvent
     public static void onClientTick(final TickEvent.ClientTickEvent event) {
-        if (DecalPlacement.getPrecisePlacement())
-            DecalPlacement.suppressPrecisePlacementKeys();
-
         // Translucent target resizing
         if (event.phase != TickEvent.Phase.END)
             return;
@@ -39,11 +38,11 @@ public class ClientForgeEvents {
         if (player == null) {
             DecalPlacement.decalItemPresent = false;
             DecalPlacement.decalItemSeenThisTick = false;
-            DecalPlacement.cleanup();
+            DecalPlacement.forceCleanup();
             return;
         }
         if (DecalPlacement.decalItemPresent && !DecalPlacement.decalItemSeenThisTick)
-            DecalPlacement.cleanup();
+            DecalPlacement.forceCleanup();
         DecalPlacement.decalItemPresent = DecalPlacement.decalItemSeenThisTick;
         DecalPlacement.decalItemSeenThisTick = false;
     }
@@ -66,5 +65,10 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {
         DecalPlacement.rotateAbstraction(event);
+    }
+
+    @SubscribeEvent
+    public static void onKeyInput(InputEvent.Key event) {
+        DecalPlacement.suppressPrecisePlacementKeys(event);
     }
 }
