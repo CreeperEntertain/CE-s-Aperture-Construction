@@ -221,6 +221,26 @@ public final class DecalPreviewer {
                     .add(normal.scale(GRID_OFFSET));
             drawLine(vertexConsumer, pose, normalMatrix, start, end, color);
         }
+
+        Vec3 faceCenter = origin.add(normal.scale(halfDepth));
+        Vec3 negativeStart = origin.subtract(normal.scale(GRID_RADIUS));
+        drawLine(vertexConsumer, pose, normalMatrix, negativeStart, origin, color);
+        Vec3 positiveEnd = origin.add(normal.scale(GRID_RADIUS));
+        drawLine(vertexConsumer, pose, normalMatrix, faceCenter, positiveEnd, color);
+        double crossHalfSize = 1.0 / 16.0;
+
+        for (int i = -lineCount; i <= lineCount; i++) {
+            double offset = i * gridSize;
+            Vec3 center = origin.add(normal.scale(offset));
+
+            Vec3 rightStart = center.subtract(right.scale(crossHalfSize));
+            Vec3 rightEnd = center.add(right.scale(crossHalfSize));
+            Vec3 upStart = center.subtract(up.scale(crossHalfSize));
+            Vec3 upEnd = center.add(up.scale(crossHalfSize));
+
+            drawLine(vertexConsumer, pose, normalMatrix, rightStart, rightEnd, color);
+            drawLine(vertexConsumer, pose, normalMatrix, upStart, upEnd, color);
+        }
     }
 
     private void drawLine(
