@@ -38,8 +38,13 @@ public final class DecalPreviewer {
 
         double rotation = (Math.PI * 2.0 / 16.0) * decal.getRotation();
 
-        this.right = right.scale(Math.cos(rotation)).add(up.scale(Math.sin(rotation))).normalize();
-        this.up = normal.cross(right).normalize();
+        right = right.scale(Math.cos(rotation))
+                .add(up.scale(Math.sin(rotation)))
+                .normalize();
+        up = normal.cross(right).normalize();
+
+        this.right = right;
+        this.up = up;
 
         this.halfWidth = decal.getPixelWidth() / 32.0 + EXTRUSION;
         this.halfHeight = decal.getPixelHeight() / 32.0 + EXTRUSION;
