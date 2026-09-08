@@ -31,7 +31,7 @@ public final class DecalRenderEvents {
             Vec3 cameraPosition = event.getCamera().getPosition();
 
             DecalPreviewer preview = DecalPlacement.getDecalPreview();
-            if (preview != null) {
+            if (preview != null && DecalPlacement.getPrecisePlacement()) {
                 preview.render(poseStack, bufferSource, cameraPosition);
                 bufferSource.endBatch(RenderType.lines());
             }
