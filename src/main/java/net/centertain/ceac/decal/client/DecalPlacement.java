@@ -20,29 +20,21 @@ public final class DecalPlacement {
 
     private static final double[] GRID_SIZES = {
             0.0,        // 0: FREEFORM PLACEMENT!
-            1.0 / 64.0, // 1
-            1.0 / 32.0, // 2
-            1.0 / 16.0, // 3: DEFAULT!
-            1.0 / 8.0,  // 4
-            1.0 / 4.0,  // 5
-            1.0 / 2.0,  // 6
-            1.0,        // 7
-            2.0,        // 8
-            4.0,        // 9
-            8.0         // 10
+            1.0 / 16.0, // 1
+            1.0 / 8.0,  // 2
+            1.0 / 4.0,  // 3: DEFAULT!
+            1.0 / 2.0,  // 4
+            1.0,        // 5
+            2.0,        // 6
+            4.0         // 7
     };
     private static int gridSizeIndex = 3;
     private static double gridSize = GRID_SIZES[gridSizeIndex];
-    private static Vec3 gridOffset = new Vec3(0.0, 0.0, 0.0);
 
     public static boolean decalItemPresent;
     public static boolean decalItemSeenThisTick;
 
     private static int stretchDelay = 0;
-
-    private static @Nullable Vec3 tiltBaseNormal;
-    private static double verticalTilt = 0.0;
-    private static double horizontalTilt = 0.0;
 
     private DecalPlacement() {}
 
@@ -91,15 +83,15 @@ public final class DecalPlacement {
     public static double getGridSize() {
         return gridSize;
     }
-    public static Vec3 getGridOffset() {
-        return gridOffset;
+    public static int getGridSizeIndex() {
+        return gridSizeIndex;
     }
 
     public static void setGridSize(double newSize) {
         gridSize = newSize;
     }
-    public static void setGridOffset(Vec3 newOffset) {
-        gridOffset = newOffset;
+    public static void setGridSizeIndex(int newIndex) {
+        gridSizeIndex = newIndex;
     }
 
     private enum Direction {

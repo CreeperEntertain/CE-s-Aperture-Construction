@@ -3,6 +3,7 @@ package net.centertain.ceac.decal;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.decal.client.DecalPlacement;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
@@ -11,6 +12,9 @@ import org.joml.Matrix4f;
 
 public final class DecalPreviewer {
     private static final double EXTRUSION = 0.002;
+
+    private static final double GRID_RADIUS = 4.0;
+    private static final double GRID_OFFSET = 0.003;
 
     private final Decal decal;
 
@@ -112,6 +116,7 @@ public final class DecalPreviewer {
 
         Vec3[] corners = getCorners();
 
+        drawGrid(vertexConsumer, pose, normalMatrix);
         drawBox(vertexConsumer, pose, normalMatrix, corners);
         drawArrow(vertexConsumer, pose, normalMatrix);
 
@@ -178,6 +183,44 @@ public final class DecalPreviewer {
         // Arrow head connectors
         for (Vec3 vertex : vertices)
             drawLine(vertexConsumer, pose, normalMatrix, vertex, origin, color);
+    }
+
+    private void drawGrid(
+            VertexConsumer vertexConsumer,
+            Matrix4f pose,
+            Matrix3f normalMatrix
+    ) {
+        double gridSize = DecalPlacement.getGridSize();
+        int gridSizeIndex = DecalPlacement.getGridSizeIndex();
+        if (gridSizeIndex == 0)
+            return;
+        int color = GuiConstants.COLOR_TRANSLUCENT_WHITE_25;
+        int lineCount = (int) Math.floor(GRID_RADIUS / gridSize);
+
+        for (int i = -lineCount; i <= lineCount; i++) {
+            double offset = i * gridSize;
+            Vec3 start = origin
+                    .add(right.scale(offset))
+                    .add(up.scale(-GRID_RADIUS))
+                    .add(normal.scale(GRID_OFFSET));
+            Vec3 end = origin
+                    .add(right.scale(offset))
+                    .add(up.scale(GRID_RADIUS))
+                    .add(normal.scale(GRID_OFFSET));
+            drawLine(vertexConsumer, pose, normalMatrix, start, end, color);
+        }
+        for (int i = -lineCount; i <= lineCount; i++) {
+            double offset = i * gridSize;
+            Vec3 start = origin
+                    .add(right.scale(-GRID_RADIUS))
+                    .add(up.scale(offset))
+                    .add(normal.scale(GRID_OFFSET));
+            Vec3 end = origin
+                    .add(right.scale(GRID_RADIUS))
+                    .add(up.scale(offset))
+                    .add(normal.scale(GRID_OFFSET));
+            drawLine(vertexConsumer, pose, normalMatrix, start, end, color);
+        }
     }
 
     private void drawLine(

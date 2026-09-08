@@ -23,9 +23,9 @@ public final class GuiConstants {
     public static final int COLOR_TRANSLUCENT_DARK_GRAY_75 = 0xC0404040;
 
     public static final int COLOR_SOLID_GRAY = 0xFF808080;
-    public static final int COLOR_SOLID_GRAY_25 = 0x40808080;
-    public static final int COLOR_SOLID_GRAY_50 = 0x80808080;
-    public static final int COLOR_SOLID_GRAY_75 = 0xC0808080;
+    public static final int COLOR_TRANSLUCENT_GRAY_25 = 0x40808080;
+    public static final int COLOR_TRANSLUCENT_GRAY_50 = 0x80808080;
+    public static final int COLOR_TRANSLUCENT_GRAY_75 = 0xC0808080;
 
     public static final int COLOR_SOLID_LIGHT_GRAY = 0xFFC0C0C0;
     public static final int COLOR_TRANSLUCENT_LIGHT_GRAY_25 = 0x40C0C0C0;
