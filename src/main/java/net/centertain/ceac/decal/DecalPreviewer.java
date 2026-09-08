@@ -86,14 +86,14 @@ public final class DecalPreviewer {
         Vec3 depth = normal.scale(halfDepth);
 
         return new Vec3[] {
-                origin.add(width).add(height).add(depth),
-                origin.add(width).add(height).subtract(depth),
-                origin.add(width).subtract(height).add(depth),
-                origin.add(width).subtract(height).subtract(depth),
+                origin.subtract(width).subtract(height).add(depth),
+                origin.subtract(width).subtract(height).subtract(depth),
                 origin.subtract(width).add(height).add(depth),
                 origin.subtract(width).add(height).subtract(depth),
-                origin.subtract(width).subtract(height).add(depth),
-                origin.subtract(width).subtract(height).subtract(depth)
+                origin.add(width).subtract(height).add(depth),
+                origin.add(width).subtract(height).subtract(depth),
+                origin.add(width).add(height).add(depth),
+                origin.add(width).add(height).subtract(depth)
         };
     }
 
