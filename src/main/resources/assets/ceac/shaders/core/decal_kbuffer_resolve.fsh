@@ -7,8 +7,8 @@
 
 const uint LAYERS = 4u;
 
-const float MAX_ANGLE = radians(45.0);
-const float FADE_ANGLE = radians(35.0);
+const float MAX_ANGLE = radians(60.0);
+const float FADE_ANGLE = radians(50.0);
 const float MIN_DOT = cos(MAX_ANGLE);
 const float FADE_DOT = cos(FADE_ANGLE);
 
