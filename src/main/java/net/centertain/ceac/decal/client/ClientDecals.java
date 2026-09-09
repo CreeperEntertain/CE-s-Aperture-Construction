@@ -50,10 +50,9 @@ public final class ClientDecals {
     }
     public static List<Decal> getByRenderOrderCulled(Matrix4f viewProjection, Vec3 cameraPosition) { // Should be used for actual rendering purposes
         List<Decal> decals = new ArrayList<>(DECALS.values());
-        if (DecalPlacement.tempDecal != null) {
+        if (DecalPlacement.tempDecal != null)
             decals.add(DecalPlacement.tempDecal);
-            decals.sort(Comparator.comparingInt(Decal::getRenderingOrder).reversed());
-        }
+        decals.sort(Comparator.comparingInt(Decal::getRenderingOrder).reversed());
         decals = DecalCuller.getOcclusionCulledList(
                 DecalCuller.getFrustumCulledList(decals, viewProjection, cameraPosition),
                 viewProjection,
