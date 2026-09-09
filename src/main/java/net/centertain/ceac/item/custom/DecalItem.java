@@ -44,16 +44,41 @@ public class DecalItem extends Item {
             @NotNull Player player,
             @NotNull InteractionHand hand
     ) {
+        if (DecalPlacement.getPrecisePlacement())
+            return placeDecal(player, hand);
+        return openTextureSelector(level, player, hand);
+    }
+
+    private @NotNull InteractionResultHolder<ItemStack> openTextureSelector(
+            @NotNull Level level,
+            @NotNull Player player,
+            @NotNull InteractionHand hand
+    ) {
         Minecraft minecraft = Minecraft.getInstance();
         HitResult hitResult = minecraft.hitResult;
         assert hitResult != null;
-        if (hitResult.getType() != HitResult.Type.MISS)
-            return InteractionResultHolder.pass(player.getItemInHand(hand));
         ItemStack stack = player.getItemInHand(hand);
-
+        if (hitResult.getType() != HitResult.Type.MISS)
+            return InteractionResultHolder.pass(stack);
         if (level.isClientSide)
             minecraft.setScreen(new DecalItemScreen(hand));
+        return InteractionResultHolder.success(stack);
+    }
 
+    private @NotNull InteractionResultHolder<ItemStack> placeDecal(
+            @NotNull Player player,
+            @NotNull InteractionHand hand
+    ) {
+        Minecraft minecraft = Minecraft.getInstance();
+        HitResult hitResult = minecraft.hitResult;
+        assert hitResult != null;
+        ItemStack stack = player.getItemInHand(hand);
+        if (
+                !DecalPlacement.getPrecisePlacement() &&
+                hitResult.getType() != HitResult.Type.BLOCK
+        )
+            return InteractionResultHolder.pass(stack);
+        // TODO: Placement call.
         return InteractionResultHolder.success(stack);
     }
 
