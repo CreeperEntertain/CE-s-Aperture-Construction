@@ -101,7 +101,7 @@ public class DecalItem extends Item {
         }
 
         BlockHitResult hitResult = Item.getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
-        if (hitResult.getType() != HitResult.Type.BLOCK) {
+        if (hitResult.getType() != HitResult.Type.BLOCK && !DecalPlacement.getPrecisePlacement()) {
             DecalPlacement.cleanup();
             return;
         }
