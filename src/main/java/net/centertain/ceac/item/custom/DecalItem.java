@@ -7,6 +7,8 @@ import net.centertain.ceac.decal.DecalPreviewer;
 import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.DecalPlacement;
+import net.centertain.ceac.decal.network.SyncDecalPacket;
+import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.screen.DecalItemScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -44,12 +46,18 @@ public class DecalItem extends Item {
             @NotNull Player player,
             @NotNull InteractionHand hand
     ) {
-        if (DecalPlacement.getPrecisePlacement())
-            return placeDecal(player, hand);
-        return openTextureSelector(level, player, hand);
+        ItemStack stack = player.getItemInHand(hand);
+        boolean handled = false;
+        if (openTextureSelector(level, player, hand))
+            handled = true;
+        if (placeDecal(level, player, hand))
+            handled = true;
+        return handled
+                ? InteractionResultHolder.success(stack)
+                : InteractionResultHolder.pass(stack);
     }
 
-    private @NotNull InteractionResultHolder<ItemStack> openTextureSelector(
+    private boolean openTextureSelector(
             @NotNull Level level,
             @NotNull Player player,
             @NotNull InteractionHand hand
@@ -57,29 +65,34 @@ public class DecalItem extends Item {
         Minecraft minecraft = Minecraft.getInstance();
         HitResult hitResult = minecraft.hitResult;
         assert hitResult != null;
-        ItemStack stack = player.getItemInHand(hand);
         if (hitResult.getType() != HitResult.Type.MISS)
-            return InteractionResultHolder.pass(stack);
+            return false;
         if (level.isClientSide)
             minecraft.setScreen(new DecalItemScreen(hand));
-        return InteractionResultHolder.success(stack);
+        return true;
     }
 
-    private @NotNull InteractionResultHolder<ItemStack> placeDecal(
+    private boolean placeDecal(
+            @NotNull Level level,
             @NotNull Player player,
             @NotNull InteractionHand hand
     ) {
         Minecraft minecraft = Minecraft.getInstance();
         HitResult hitResult = minecraft.hitResult;
         assert hitResult != null;
-        ItemStack stack = player.getItemInHand(hand);
         if (
                 !DecalPlacement.getPrecisePlacement() &&
                 hitResult.getType() != HitResult.Type.BLOCK
         )
-            return InteractionResultHolder.pass(stack);
-        // TODO: Placement call.
-        return InteractionResultHolder.success(stack);
+            return false;
+        Decal tempDecal = DecalPlacement.getTempDecal();
+        if (tempDecal == null)
+            return false;
+        if (!level.isClientSide)
+            return false;
+        SyncDecalPacket syncPacket = new SyncDecalPacket(tempDecal);
+        ModNetworking.CHANNEL.sendToServer(syncPacket);
+        return true;
     }
 
     @Override
