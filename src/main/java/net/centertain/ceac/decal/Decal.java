@@ -7,7 +7,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -215,7 +214,6 @@ public final class Decal {
 
 
     public static Set<BlockPos> getAttachedBlockSet(
-            Level level,
             Vec3 origin,
             Vec3 normal,
             int pixelWidth,

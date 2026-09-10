@@ -172,7 +172,6 @@ public class DecalItem extends Item {
         }
 
         Set<BlockPos> attachedBlockSet = Decal.getAttachedBlockSet(
-                level,
                 origin,
                 normal,
                 decalDefinition.getWidth(),
