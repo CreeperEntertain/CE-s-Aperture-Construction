@@ -1,7 +1,6 @@
 package net.centertain.ceac.decal.client;
 
 import net.centertain.ceac.decal.DecalDefinition;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.Comparator;
