@@ -1,4 +1,4 @@
-#version 430
+#version 450
 
 #moj_import <light.glsl>
 #moj_import <fog.glsl>

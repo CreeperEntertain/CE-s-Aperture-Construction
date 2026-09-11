@@ -1,4 +1,4 @@
-#version 430
+#version 450
 
 #extension GL_ARB_fragment_shader_interlock : require
 
