@@ -21,6 +21,7 @@ public class ModCreativeModeTabs {
                     .title(Component.translatable("creativetab.ceac_tab"))
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.DECAL.get());
+                        pOutput.accept(ModItems.SCRAPER.get());
                     })
                     .build()
     );

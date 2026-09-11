@@ -15,6 +15,8 @@ public class ModItems {
 
     public static final RegistryObject<Item> DECAL = ITEMS.register("decal",
             () -> new DecalItem(new Item.Properties()));
+    public static final RegistryObject<Item> SCRAPER = ITEMS.register("scraper",
+            () -> new ScraperItem(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
