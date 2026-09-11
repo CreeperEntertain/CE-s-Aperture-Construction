@@ -93,6 +93,9 @@ public final class Profiler {
     public static Object get(String key) {
         return values.get(key);
     }
+    public static String[] getKeys() {
+        return values.keySet().toArray(new String[0]);
+    }
 
     public static void print(@Nullable String key) {
         System.out.println(values.get(key));
