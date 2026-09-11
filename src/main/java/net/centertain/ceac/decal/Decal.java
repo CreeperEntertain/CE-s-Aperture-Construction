@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -228,7 +229,7 @@ public final class Decal {
             Decal decal,
             Level level,
             ServerPlayer player,
-            ItemStack stack
+            @Nullable ItemStack stack
     ) {
         Vec3i iOrigin = new Vec3i(
                 (int) Math.floor(decal.getOrigin().x),
@@ -245,7 +246,38 @@ public final class Decal {
         );
         GameType gameMode = player.gameMode.getGameModeForPlayer();
         if (gameMode == GameType.SURVIVAL || gameMode == GameType.ADVENTURE)
-            stack.shrink(1);
+            if (stack != null)
+                stack.shrink(1);
+    }
+    public static Set<UUID> getDecalIdsOnBlockPos(
+        BlockPos pos,
+        Level level
+    ) {
+        LevelChunk chunk = level.getChunkAt(pos);
+        DecalManager manager = DecalCapabilities.get(chunk);
+        return manager.getDecalsAt(pos);
+    }
+    public static Map<UUID, Decal> getDecalsInChunk(
+        BlockPos pos,
+        Level level
+    ) {
+        LevelChunk chunk = level.getChunkAt(pos);
+        DecalManager manager = DecalCapabilities.get(chunk);
+        return manager.getDecals();
+    }
+    public static void removeFromWorld(
+            UUID id,
+            BlockPos pos,
+            Level level,
+            ServerPlayer player
+    ) {
+        LevelChunk chunk = level.getChunkAt(pos);
+        DecalManager manager = DecalCapabilities.get(chunk);
+        manager.removeDecal(id);
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new SyncDecalPacket(id)
+        );
     }
 
     public static Set<BlockPos> getAttachedBlockSet(
