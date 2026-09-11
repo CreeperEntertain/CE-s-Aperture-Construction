@@ -1,14 +1,25 @@
 package net.centertain.ceac.decal;
 
+import net.centertain.ceac.decal.network.SyncDecalPacket;
+import net.centertain.ceac.decal.server.DecalCapabilities;
+import net.centertain.ceac.decal.server.DecalManager;
+import net.centertain.ceac.network.ModNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -212,6 +223,30 @@ public final class Decal {
     }
 
 
+
+    public static void placeInWorld(
+            Decal decal,
+            Level level,
+            ServerPlayer player,
+            ItemStack stack
+    ) {
+        Vec3i iOrigin = new Vec3i(
+                (int) Math.floor(decal.getOrigin().x),
+                (int) Math.floor(decal.getOrigin().y),
+                (int) Math.floor(decal.getOrigin().z)
+        );
+        BlockPos pos = new BlockPos(iOrigin);
+        LevelChunk chunk = level.getChunkAt(pos);
+        DecalManager manager = DecalCapabilities.get(chunk);
+        manager.addDecal(decal); // Server side placement & Saving
+        ModNetworking.CHANNEL.send( // Client side syncing
+                PacketDistributor.PLAYER.with(() -> player),
+                new SyncDecalPacket(decal)
+        );
+        GameType gameMode = player.gameMode.getGameModeForPlayer();
+        if (gameMode == GameType.SURVIVAL || gameMode == GameType.ADVENTURE)
+            stack.shrink(1);
+    }
 
     public static Set<BlockPos> getAttachedBlockSet(
             Vec3 origin,

@@ -13,10 +13,12 @@ import net.centertain.ceac.decal.server.DecalManager;
 import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.screen.DecalItemScreen;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.telemetry.TelemetryProperty;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayerGameMode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -54,9 +56,9 @@ public class DecalItem extends Item {
     ) {
         ItemStack stack = player.getItemInHand(hand);
         boolean handled = false;
-        if (openTextureSelector(level, player, hand))
+        if (openTextureSelector(level, hand))
             handled = true;
-        if (placeDecal(level, player))
+        if (placeDecal(level, player, stack))
             handled = true;
         return handled
                 ? InteractionResultHolder.success(stack)
@@ -65,7 +67,6 @@ public class DecalItem extends Item {
 
     private boolean openTextureSelector(
             @NotNull Level level,
-            @NotNull Player player,
             @NotNull InteractionHand hand
     ) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -80,7 +81,8 @@ public class DecalItem extends Item {
 
     private boolean placeDecal(
             @NotNull Level level,
-            @NotNull Player player
+            @NotNull Player player,
+            @NotNull ItemStack stack
     ) {
         Minecraft minecraft = Minecraft.getInstance();
         HitResult hitResult = minecraft.hitResult;
@@ -95,21 +97,9 @@ public class DecalItem extends Item {
             return false;
         if (level.isClientSide)
             return false;
-        Vec3i iOrigin = new Vec3i(
-                (int) Math.floor(tempDecal.getOrigin().x),
-                (int) Math.floor(tempDecal.getOrigin().y),
-                (int) Math.floor(tempDecal.getOrigin().z)
-        );
-        BlockPos pos = new BlockPos(iOrigin);
-        LevelChunk chunk = level.getChunkAt(pos);
-        DecalManager manager = DecalCapabilities.get(chunk);
-        manager.addDecal(tempDecal);
         if (!(player instanceof ServerPlayer serverPlayer))
             return false;
-        ModNetworking.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> serverPlayer),
-                new SyncDecalPacket(tempDecal)
-        );
+        Decal.placeInWorld(tempDecal, level, serverPlayer, stack);
         return true;
     }
 
