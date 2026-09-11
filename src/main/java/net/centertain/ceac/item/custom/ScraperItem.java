@@ -8,6 +8,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -51,8 +52,13 @@ public class ScraperItem extends Item {
                 if (decal.getAttachedBlocks().contains(pos))
                     decalList.add(decal);
             }
-        decalList.sort(Comparator.comparing(Decal::getRenderingOrder).reversed()); // Highest to lowest
-        Decal.removeFromWorld(decalList.get(0), level, serverPlayer);
+        if (serverPlayer.getPose() == Pose.CROUCHING)
+            for (Decal decal : decalList)
+                Decal.removeFromWorld(decal, level, serverPlayer);
+        else {
+            decalList.sort(Comparator.comparing(Decal::getRenderingOrder).reversed()); // Highest to lowest
+            Decal.removeFromWorld(decalList.get(0), level, serverPlayer);
+        }
 
         return InteractionResultHolder.success(stack);
     }
