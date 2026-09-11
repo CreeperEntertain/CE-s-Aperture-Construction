@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import net.centertain.ceac.item.ModCreativeModeTabs;
 import net.centertain.ceac.item.ModItems;
 import net.centertain.ceac.network.ModNetworking;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
