@@ -231,12 +231,7 @@ public final class Decal {
             ServerPlayer player,
             @Nullable ItemStack stack
     ) {
-        Vec3i iOrigin = new Vec3i(
-                (int) Math.floor(decal.getOrigin().x),
-                (int) Math.floor(decal.getOrigin().y),
-                (int) Math.floor(decal.getOrigin().z)
-        );
-        BlockPos pos = new BlockPos(iOrigin);
+        BlockPos pos = BlockPos.containing(decal.getOrigin());
         LevelChunk chunk = level.getChunkAt(pos);
         DecalManager manager = DecalCapabilities.get(chunk);
         manager.addDecal(decal); // Server side placement & Saving
