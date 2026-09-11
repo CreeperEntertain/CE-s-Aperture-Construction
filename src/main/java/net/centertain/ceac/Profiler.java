@@ -41,6 +41,7 @@ public final class Profiler {
     }
 
 
+    @SuppressWarnings("BusyWait")
     public static void init() {
         profilerThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
