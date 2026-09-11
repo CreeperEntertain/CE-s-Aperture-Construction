@@ -274,6 +274,21 @@ public final class Decal {
                 new SyncDecalPacket(id)
         );
     }
+    public static void removeFromWorld(
+            Decal decal,
+            Level level,
+            ServerPlayer player
+    ) {
+        BlockPos pos = BlockPos.containing(decal.getOrigin());
+        LevelChunk chunk = level.getChunkAt(pos);
+        DecalManager manager = DecalCapabilities.get(chunk);
+        UUID id = decal.getId();
+        manager.removeDecal(id);
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new SyncDecalPacket(id)
+        );
+    }
 
     public static Set<BlockPos> getAttachedBlockSet(
             Vec3 origin,

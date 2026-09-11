@@ -1,6 +1,7 @@
 package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.decal.Decal;
+import net.centertain.ceac.decal.client.ClientDecals;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -42,13 +43,16 @@ public class ScraperItem extends Item {
         Set<UUID> decalIds = Decal.getDecalIdsOnBlockPos(pos, level);
         if (decalIds.isEmpty())
             return InteractionResultHolder.pass(stack);
-        Map<UUID, Decal> decalMap = Decal.getDecalsInChunk(pos, level);
+        Map<UUID, Decal> decalMap = ClientDecals.getAll();
         List<Decal> decalList = new ArrayList<>();
         for (UUID id : decalIds)
-            if (decalMap.containsKey(id))
-                decalList.add(decalMap.get(id));
+            if (decalMap.containsKey(id)) {
+                Decal decal = decalMap.get(id);
+                if (decal.getAttachedBlocks().contains(pos))
+                    decalList.add(decal);
+            }
         decalList.sort(Comparator.comparing(Decal::getRenderingOrder).reversed()); // Highest to lowest
-        Decal.removeFromWorld(decalList.get(0).getId(), pos, level, serverPlayer);
+        Decal.removeFromWorld(decalList.get(0), level, serverPlayer);
 
         return InteractionResultHolder.success(stack);
     }
