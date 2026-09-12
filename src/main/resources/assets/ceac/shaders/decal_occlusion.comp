@@ -29,6 +29,10 @@ uniform vec3 CameraPosition;
 const uint VISIBLE = 1u;
 const uint OCCLUDED = 0u;
 
+const int MAX_POLY = 10;
+const int MAX_STACK = 512;
+const float DEPTH_EPSILON = 0.00025;
+
 void getDecalBasis(
         vec3 normal,
         float rotation,
@@ -56,108 +60,144 @@ void getDecalBasis(
     bitangent = rotatedBitangent;
 }
 
-float cross2(
-        vec2 a,
-        vec2 b
-) {
-    return a.x * b.y - a.y * b.x;
+bool insidePlane(vec4 p, float d) {
+    return p.z + p.w >= d;
 }
 
-bool pointInRect(
-        vec2 p,
-        vec2 minP,
-        vec2 maxP
+int clipNearPlane(
+        in vec4 src[MAX_POLY],
+        int count,
+        out vec4 dst[MAX_POLY]
 ) {
-    return
-        p.x >= minP.x &&
-        p.x <= maxP.x &&
-        p.y >= minP.y &&
-        p.y <= maxP.y;
+    if (count == 0)
+        return 0;
+
+    int outCount = 0;
+
+    for (int i = 0; i < count; ++i) {
+        vec4 a = src[i];
+        vec4 b = src[(i + 1) % count];
+
+        float da = a.z + a.w;
+        float db = b.z + b.w;
+
+        bool insideA = da >= 0.0;
+        bool insideB = db >= 0.0;
+
+        if (insideA && insideB)
+            if (outCount < MAX_POLY)
+                dst[outCount++] = b;
+        else if (insideA && !insideB) {
+            float t = da / (da - db);
+            if (outCount < MAX_POLY)
+                dst[outCount++] = mix(a, b, t);
+        }
+        else if (!insideA && insideB) {
+            float t = da / (da - db);
+            if (outCount < MAX_POLY)
+                dst[outCount++] = mix(a, b, t);
+            if (outCount < MAX_POLY)
+                dst[outCount++] = b;
+        }
+    }
+
+    return outCount;
 }
 
-bool pointInQuad(
-        vec2 p,
-        vec2 a,
-        vec2 b,
-        vec2 c,
-        vec2 d
-) {
-    float c1 = cross2(b - a, p - a);
-    float c2 = cross2(c - b, p - b);
-    float c3 = cross2(d - c, p - c);
-    float c4 = cross2(a - d, p - d);
-
-    return (
-        c1 >= 0.0 &&
-        c2 >= 0.0 &&
-        c3 >= 0.0 &&
-        c4 >= 0.0
-    ) || (
-        c1 <= 0.0 &&
-        c2 <= 0.0 &&
-        c3 <= 0.0 &&
-        c4 <= 0.0
-    );
+float getAxis(vec3 p, int axis) {
+    return axis == 0 ? p.x : p.y;
 }
 
-bool segmentIntersectsSegment(
-        vec2 a1,
-        vec2 a2,
-        vec2 b1,
-        vec2 b2
-) {
-    float d1 = cross2(a2 - a1, b1 - a1);
-    float d2 = cross2(a2 - a1, b2 - a1);
-    float d3 = cross2(b2 - b1, a1 - b1);
-    float d4 = cross2(b2 - b1, a2 - b1);
-
-    return (d1 * d2 <= 0.0) && (d3 * d4 <= 0.0);
+bool insideRect(vec3 p, int axis, float bound, bool greater) {
+    float v = getAxis(p, axis);
+    return greater ? v >= bound : v <= bound;
 }
 
-bool quadIntersectsRect(
-        vec2 a,
-        vec2 b,
-        vec2 c,
-        vec2 d,
+vec3 intersectRect(
+        vec3 a,
+        vec3 b,
+        int axis,
+        float bound
+) {
+    float av = getAxis(a, axis);
+    float bv = getAxis(b, axis);
+    float t = (bound - av) / (bv - av);
+    return mix(a, b, t);
+}
+
+int clipRect(
+        in vec3 src[MAX_POLY],
+        int count,
+        out vec3 dst[MAX_POLY],
+        int axis,
+        float bound,
+        bool greater
+) {
+    if (count == 0)
+        return 0;
+
+    int outCount = 0;
+
+    for (int i = 0; i < count; ++i) {
+        vec3 a = src[i];
+        vec3 b = src[(i + 1) % count];
+
+        bool insideA = insideRect(a, axis, bound, greater);
+        bool insideB = insideRect(b, axis, bound, greater);
+
+        if (insideA && insideB)
+            if (outCount < MAX_POLY)
+                dst[outCount++] = b;
+        else if (insideA && !insideB)
+            if (outCount < MAX_POLY)
+                dst[outCount++] = intersectRect(a, b, axis, bound);
+        else if (!insideA && insideB) {
+            if (outCount < MAX_POLY)
+                dst[outCount++] = intersectRect(a, b, axis, bound);
+            if (outCount < MAX_POLY)
+                dst[outCount++] = b;
+        }
+    }
+
+    return outCount;
+}
+
+int clipScreenRect(
+        in vec3 src[MAX_POLY],
+        int count,
+        out vec3 dst[MAX_POLY],
         vec2 rectMin,
         vec2 rectMax
 ) {
-    if (pointInRect(a, rectMin, rectMax) ||
-        pointInRect(b, rectMin, rectMax) ||
-        pointInRect(c, rectMin, rectMax) ||
-        pointInRect(d, rectMin, rectMax))
-        return true;
+    vec3 a[MAX_POLY];
+    vec3 b[MAX_POLY];
 
-    if (pointInQuad(rectMin, a, b, c, d) ||
-        pointInQuad(vec2(rectMax.x, rectMin.y), a, b, c, d) ||
-        pointInQuad(rectMax, a, b, c, d) ||
-        pointInQuad(vec2(rectMin.x, rectMax.y), a, b, c, d))
-        return true;
+    int n = count;
 
-    vec2 rectA = rectMin;
-    vec2 rectB = vec2(rectMax.x, rectMin.y);
-    vec2 rectC = rectMax;
-    vec2 rectD = vec2(rectMin.x, rectMax.y);
+    for (int i = 0; i < count; ++i)
+        a[i] = src[i];
 
-    if (segmentIntersectsSegment(a, b, rectA, rectB) ||
-        segmentIntersectsSegment(a, b, rectB, rectC) ||
-        segmentIntersectsSegment(a, b, rectC, rectD) ||
-        segmentIntersectsSegment(a, b, rectD, rectA) ||
-        segmentIntersectsSegment(b, c, rectA, rectB) ||
-        segmentIntersectsSegment(b, c, rectB, rectC) ||
-        segmentIntersectsSegment(b, c, rectC, rectD) ||
-        segmentIntersectsSegment(b, c, rectD, rectA) ||
-        segmentIntersectsSegment(c, d, rectA, rectB) ||
-        segmentIntersectsSegment(c, d, rectB, rectC) ||
-        segmentIntersectsSegment(c, d, rectC, rectD) ||
-        segmentIntersectsSegment(c, d, rectD, rectA) ||
-        segmentIntersectsSegment(d, a, rectA, rectB) ||
-        segmentIntersectsSegment(d, a, rectB, rectC) ||
-        segmentIntersectsSegment(d, a, rectC, rectD) ||
-        segmentIntersectsSegment(d, a, rectD, rectA))
-        return true;
+    n = clipRect(a, n, b, 0, rectMin.x, true);
+    n = clipRect(b, n, a, 0, rectMax.x, false);
+    n = clipRect(a, n, b, 1, rectMin.y, true);
+    n = clipRect(b, n, a, 1, rectMax.y, false);
 
-    return false;
+    for (int i = 0; i < n; ++i)
+        dst[i] = a[i];
+
+    return n;
+}
+
+float polygonMinDepth(
+        in vec3 poly[MAX_POLY],
+        int count
+) {
+    float result = 1.0;
+
+    for (int i = 0; i < count; ++i)
+        result = min(result, poly[i].z);
+
+    return result;
 }
 
 void main() {
@@ -182,141 +222,166 @@ void main() {
             bitangent
     );
 
-    vec3 halfVolume = decal.volumeAndRotation.xyz * 0.5;
-
-    vec3 corners[8];
-
-    for (int x = -1; x <= 1; x += 2) {
-        for (int y = -1; y <= 1; y += 2) {
-            for (int z = -1; z <= 1; z += 2) {
-                int index =
-                (x > 0 ? 4 : 0) +
-                (y > 0 ? 2 : 0) +
-                (z > 0 ? 1 : 0);
-
-                corners[index] =
-                    decal.origin.xyz +
-                    tangent * halfVolume.x * float(x) +
-                    bitangent * halfVolume.y * float(y) +
-                    normal * halfVolume.z * float(z);
-            }
-        }
-    }
-
-    vec3 surfaceCorners[4];
-
     float halfWidth = decal.volumeAndRotation.x * 0.5;
     float halfHeight = decal.volumeAndRotation.y * 0.5;
+
+    vec3 surfaceCorners[4];
 
     surfaceCorners[0] = decal.origin.xyz - tangent * halfWidth - bitangent * halfHeight;
     surfaceCorners[1] = decal.origin.xyz - tangent * halfWidth + bitangent * halfHeight;
     surfaceCorners[2] = decal.origin.xyz + tangent * halfWidth + bitangent * halfHeight;
     surfaceCorners[3] = decal.origin.xyz + tangent * halfWidth - bitangent * halfHeight;
 
-    vec2 quadScreen[4];
+    vec4 clipInput[MAX_POLY];
+    vec4 clipOutput[MAX_POLY];
 
-    vec2 minScreen = vec2(1.0);
-    vec2 maxScreen = vec2(0.0);
+    for (int i = 0; i < 4; ++i)
+        clipInput[i] = ViewProjection * vec4(surfaceCorners[i] - CameraPosition, 1.0);
 
-    float minDepth = 1.0;
+    int clipCount = clipNearPlane(clipInput, 4, clipOutput);
 
-    for (int i = 0; i < 8; ++i) {
-        vec4 clip = ViewProjection * vec4(corners[i] - CameraPosition, 1.0);
-
-        if (clip.w <= 0.0)
-            return;
-
-        vec3 ndc = clip.xyz / clip.w;
-
-        float depth = ndc.z * 0.5 + 0.5;
-
-        minDepth = min(minDepth, depth);
-    }
-
-    for (int i = 0; i < 4; ++i) {
-        vec4 clip = ViewProjection * vec4(surfaceCorners[i] - CameraPosition, 1.0);
-
-        if (clip.w <= 0.0)
-            return;
-
-        vec3 ndc = clip.xyz / clip.w;
-
-        quadScreen[i] = ndc.xy * 0.5 + 0.5;
-
-        minScreen = min(minScreen, quadScreen[i]);
-        maxScreen = max(maxScreen, quadScreen[i]);
-    }
-
-    if (maxScreen.x <= 0.0 || maxScreen.y <= 0.0 || minScreen.x >= 1.0 || minScreen.y >= 1.0)
+    if (clipCount < 3) {
+        visible[decalIndex] = OCCLUDED;
         return;
+    }
 
-    minScreen = clamp(minScreen, vec2(0.0), vec2(1.0));
-    maxScreen = clamp(maxScreen, vec2(0.0), vec2(1.0));
+    vec3 screenPoly[MAX_POLY];
 
-    vec2 pixelMin = minScreen * ScreenSize;
-    vec2 pixelMax = maxScreen * ScreenSize;
+    for (int i = 0; i < clipCount; ++i) {
+        if (clipOutput[i].w <= 0.000001)
+            return;
+
+        vec3 ndc = clipOutput[i].xyz / clipOutput[i].w;
+
+        screenPoly[i] = vec3(
+                ndc.xy * 0.5 + 0.5,
+                ndc.z * 0.5 + 0.5
+        );
+    }
+
+    vec3 screenClipped[MAX_POLY];
+
+    int screenCount = clipScreenRect(
+            screenPoly,
+            clipCount,
+            screenClipped,
+            vec2(0.0),
+            vec2(1.0)
+    );
+
+    if (screenCount < 3) {
+        visible[decalIndex] = OCCLUDED;
+        return;
+    }
+
+    vec2 screenMin = vec2(1.0);
+    vec2 screenMax = vec2(0.0);
+
+    for (int i = 0; i < screenCount; ++i) {
+        screenMin = min(screenMin, screenClipped[i].xy);
+        screenMax = max(screenMax, screenClipped[i].xy);
+    }
+
+    vec2 pixelMin = screenMin * ScreenSize;
+    vec2 pixelMax = screenMax * ScreenSize;
 
     vec2 extent = max(pixelMax - pixelMin, vec2(1.0));
 
     float largestExtent = max(extent.x, extent.y);
 
-    int level = int(ceil(log2(largestExtent)));
+    float mipMetric = log2(largestExtent);
+    int startLevel = int(floor(mipMetric - 0.25));
 
-    level = clamp(level, 0, int(PyramidLevels) - 1);
+    startLevel = clamp(startLevel, 0, PyramidLevels - 1);
 
-    int testLevel = level;
+    while (startLevel > 0) {
+        ivec2 testSize = textureSize(DepthPyramid, startLevel);
 
-    while (testLevel >= 0) {
-        ivec2 pyramidSize = textureSize(DepthPyramid, testLevel);
+        vec2 testScale = vec2(testSize) / ScreenSize;
 
-        vec2 scale = vec2(pyramidSize) / ScreenSize;
+        vec2 testMin = pixelMin * testScale;
+        vec2 testMax = pixelMax * testScale;
 
-        ivec2 minTexel = ivec2(floor(pixelMin * scale)) - ivec2(1);
-        ivec2 maxTexel = ivec2(ceil(pixelMax * scale)) + ivec2(1);
+        vec2 footprint = testMax - testMin;
 
-        minTexel = clamp(minTexel, ivec2(0), pyramidSize - 1);
-        maxTexel = clamp(maxTexel, ivec2(0), pyramidSize - 1);
+        if (footprint.x >= 1.0 && footprint.y >= 1.0)
+            break;
 
-        float maxSceneDepth = 0.0;
+        --startLevel;
+    }
 
-        for (int y = minTexel.y; y <= maxTexel.y; ++y) {
-            for (int x = minTexel.x; x <= maxTexel.x; ++x) {
-                maxSceneDepth = max(maxSceneDepth, texelFetch(DepthPyramid, ivec2(x, y), testLevel).r);
-            }
+    ivec2 startSize = textureSize(
+            DepthPyramid,
+            startLevel
+    );
+
+    vec2 startScale = vec2(startSize) / ScreenSize;
+    ivec2 firstTile = ivec2(floor(pixelMin * startScale));
+    ivec2 lastTile = ivec2(ceil(pixelMax * startScale)) - ivec2(1);
+
+    firstTile = clamp(firstTile, ivec2(0), startSize - 1);
+    lastTile = clamp(lastTile, ivec2(0), startSize - 1);
+
+    ivec3 stack[MAX_STACK];
+    int stackSize = 0;
+
+    for (int y = firstTile.y; y <= lastTile.y; ++y) {
+        for (int x = firstTile.x; x <= lastTile.x; ++x) {
+            if (stackSize >= MAX_STACK)
+                break;
+
+            stack[stackSize++] = ivec3(x, y, startLevel);
         }
+    }
 
-        if (maxSceneDepth < minDepth) {
-            visible[decalIndex] = OCCLUDED;
+    while (stackSize > 0) {
+        ivec3 node = stack[--stackSize];
+        int level = node.z;
+        ivec2 pyramidSize = textureSize(DepthPyramid, level);
+        vec2 texelMin = vec2(node.xy) / vec2(pyramidSize);
+        vec2 texelMax = vec2(node.xy + ivec2(1)) / vec2(pyramidSize);
+        vec3 clippedPoly[MAX_POLY];
+
+        int clippedCount = clipScreenRect(
+                screenClipped,
+                screenCount,
+                clippedPoly,
+                texelMin,
+                texelMax
+        );
+
+        if (clippedCount < 3)
+            continue;
+
+        float nearestDecalDepth = polygonMinDepth(clippedPoly, clippedCount);
+        float maxSceneDepth = texelFetch(DepthPyramid, node.xy, level).r;
+
+        if (maxSceneDepth + DEPTH_EPSILON < nearestDecalDepth)
+            continue;
+        if (level == 0)
             return;
-        }
 
-        if (testLevel == level)
-            return;
+        int childLevel = level - 1;
 
-        float exactMaxDepth = 0.0;
+        ivec2 childBase = node.xy * 2;
 
-        for (int y = minTexel.y; y <= maxTexel.y; ++y) {
-            for (int x = minTexel.x; x <= maxTexel.x; ++x) {
-                vec2 texelMin = vec2(x, y) / vec2(pyramidSize);
-                vec2 texelMax = vec2(x + 1, y + 1) / vec2(pyramidSize);
+        ivec2 childSize = textureSize(DepthPyramid, childLevel);
 
-                if (!quadIntersectsRect(
-                        quadScreen[0],
-                        quadScreen[1],
-                        quadScreen[2],
-                        quadScreen[3],
-                        texelMin,
-                        texelMax
-                ))
+        for (int oy = 0; oy < 2; ++oy) {
+            for (int ox = 0; ox < 2; ++ox) {
+                ivec2 child = childBase + ivec2(ox, oy);
+
+                if (child.x < 0 ||
+                    child.y < 0 ||
+                    child.x >= childSize.x ||
+                    child.y >= childSize.y)
                     continue;
+                if (stackSize >= MAX_STACK)
+                    return;
 
-                exactMaxDepth = max(exactMaxDepth, texelFetch(DepthPyramid, ivec2(x, y), testLevel).r);
+                stack[stackSize++] = ivec3(child, childLevel);
             }
         }
-
-        if (exactMaxDepth >= minDepth)
-            return;
-        --testLevel;
     }
 
     visible[decalIndex] = OCCLUDED;
