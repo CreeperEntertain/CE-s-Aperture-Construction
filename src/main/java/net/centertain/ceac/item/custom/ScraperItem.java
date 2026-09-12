@@ -20,7 +20,9 @@ import java.util.*;
 
 public class ScraperItem extends Item {
     public ScraperItem(Properties properties) {
-        super(properties);
+        super(properties
+                .durability(250)
+        );
     }
 
     @Override
@@ -52,12 +54,16 @@ public class ScraperItem extends Item {
                 if (decal.getAttachedBlocks().contains(pos))
                     decalList.add(decal);
             }
-        if (serverPlayer.getPose() == Pose.CROUCHING)
+        if (serverPlayer.getPose() == Pose.CROUCHING) {
             for (Decal decal : decalList)
-                Decal.removeFromWorld(decal, level, serverPlayer);
-        else {
+                if (stack.getDamageValue() < stack.getMaxDamage()) {
+                    Decal.removeFromWorld(decal, level, serverPlayer);
+                    stack.hurtAndBreak(1, serverPlayer, p -> p.broadcastBreakEvent(hand));
+                }
+        } else {
             decalList.sort(Comparator.comparing(Decal::getRenderingOrder).reversed()); // Highest to lowest
             Decal.removeFromWorld(decalList.get(0), level, serverPlayer);
+            stack.hurtAndBreak(1, serverPlayer, p -> p.broadcastBreakEvent(hand));
         }
 
         return InteractionResultHolder.success(stack);
