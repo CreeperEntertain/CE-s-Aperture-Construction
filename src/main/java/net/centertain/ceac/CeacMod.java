@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import net.centertain.ceac.item.ModCreativeModeTabs;
 import net.centertain.ceac.item.ModItems;
 import net.centertain.ceac.network.ModNetworking;
+import net.centertain.ceac.sound.ModSounds;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -30,6 +31,7 @@ public class CeacMod
 
         ModCreativeModeTabs.register(modEventBus);
         ModItems.register(modEventBus);
+        ModSounds.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);

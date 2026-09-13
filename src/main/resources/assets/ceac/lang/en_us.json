@@ -1,5 +1,7 @@
 {
-  "creativetab.ceac_tab":  "CE's Aperture Construction",
+  "creativetab.ceac_tab": "CE's Aperture Construction",
   "item.ceac.decal": "Decal",
-  "item.ceac.scraper": "Scraper"
+  "item.ceac.scraper": "Scraper",
+  "sound.ceac.decal.placement": "Decal placed",
+  "sound.ceac.decal.deletion": "Decal removed"
 }

@@ -1,0 +1,26 @@
+{
+  "decal_placement": {
+    "subtitle": "sound.ceac.decal.placement",
+    "sounds": [
+      {
+        "name": "ceac:decal/placement",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  },
+  "decal_deletion": {
+    "subtitle": "sound.ceac.decal.deletion",
+    "sounds": [
+      {
+        "name": "ceac:decal/deletion",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  }
+}

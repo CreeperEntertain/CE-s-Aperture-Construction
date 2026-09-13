@@ -23,10 +23,7 @@ import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @SuppressWarnings("ClassCanBeRecord")
 public final class Decal {
@@ -288,6 +285,24 @@ public final class Decal {
                 PacketDistributor.PLAYER.with(() -> player),
                 new SyncDecalPacket(id)
         );
+    }
+    public static void removeMultipleFromWorld(
+            UUID[] ids,
+            List<Decal> decals,
+            Level level,
+            ServerPlayer player,
+            BlockPos hitPos
+    ) {
+        LevelChunk hitChunk = level.getChunkAt(hitPos);
+        DecalManager hitManager = DecalCapabilities.get(hitChunk);
+        hitManager.removeDecals(ids, hitPos);
+        for (Decal decal : decals) {
+            UUID id = decal.getId();
+            ModNetworking.CHANNEL.send(
+                    PacketDistributor.PLAYER.with(() -> player),
+                    new SyncDecalPacket(id)
+            );
+        }
     }
 
     public static Set<BlockPos> getAttachedBlockSet(

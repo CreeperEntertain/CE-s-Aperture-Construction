@@ -55,11 +55,16 @@ public class ScraperItem extends Item {
                     decalList.add(decal);
             }
         if (serverPlayer.getPose() == Pose.CROUCHING) {
+            List<Decal> decals = new ArrayList<>();
             for (Decal decal : decalList)
                 if (stack.getDamageValue() < stack.getMaxDamage()) {
-                    Decal.removeFromWorld(decal, level, serverPlayer);
+                    decals.add(decal);
                     stack.hurtAndBreak(1, serverPlayer, p -> p.broadcastBreakEvent(hand));
                 }
+            UUID[] ids = new UUID[decals.size()];
+            for (int i = 0; i < decals.size(); i++)
+                ids[i] = decals.get(i).getId();
+            Decal.removeMultipleFromWorld(ids, decals, level, serverPlayer, pos);
         } else {
             decalList.sort(Comparator.comparing(Decal::getRenderingOrder).reversed()); // Highest to lowest
             Decal.removeFromWorld(decalList.get(0), level, serverPlayer);
