@@ -118,11 +118,13 @@ public final class DecalPlacement {
     }
 
     public static void swapPrecisePlacement(InputEvent.MouseButton.Pre event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.screen != null)
+            return;
         if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
             return;
         if (event.getAction() != GLFW.GLFW_PRESS)
             return;
-        Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
         if (player == null)
             return;
