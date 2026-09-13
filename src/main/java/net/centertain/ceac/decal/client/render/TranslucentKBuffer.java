@@ -22,6 +22,8 @@ public final class TranslucentKBuffer {
     private static final float CELL_SIZE = 1.1f;
     private static final float HALF_VOLUME = 1.1f / 2.0f;
 
+    private static long lastCulledHash;
+
     private static int width;
     private static int height;
 
@@ -85,6 +87,17 @@ public final class TranslucentKBuffer {
     public static void uploadDecals(Collection<Decal> decals) {
         List<Decal> decalList = new ArrayList<>(decals);
         int count = decalList.size();
+        long culledHash = 1125899906842597L;
+        for (Decal decal : decalList) {
+            UUID id = decal.getId();
+            culledHash = 31L * culledHash + id.getMostSignificantBits();
+            culledHash = 31L * culledHash + id.getLeastSignificantBits();
+        }
+        culledHash = 31L * culledHash + decalList.size();
+        if (culledHash != lastCulledHash) {
+            lastCulledHash = culledHash;
+            spatialIndexDirty = true;
+        }
         if (count == 0)
             return;
 
