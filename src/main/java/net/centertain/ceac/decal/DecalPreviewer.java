@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public final class DecalPreviewer {
@@ -140,6 +141,8 @@ public final class DecalPreviewer {
 
         poseStack.pushPose();
 
+        poseStack.mulPose(camera.rotation().conjugate(new Quaternionf()));
+
         Vec3 cameraPosition = camera.getPosition();
 
         poseStack.translate(
@@ -155,8 +158,16 @@ public final class DecalPreviewer {
         Vector3f look = camera.getLookVector();
 
         Vec3 center = cameraPosition
-                .add(look.x() * 2.0, look.y() * 2.0, look.z() * 2.0)
-                .add(right.x() * 1.5, right.y() * 1.5, right.z() * 1.5);
+                .add(
+                        look.x() * 2.0,
+                        look.y() * 2.0,
+                        look.z() * 2.0
+                )
+                .add(
+                        right.x() * 1.5,
+                        right.y() * 1.5,
+                        right.z() * 1.5
+                );
 
         double halfWidth = 1.5 / 2.0;
         double halfHeight = 1.0 / 2.0;
@@ -164,7 +175,8 @@ public final class DecalPreviewer {
         Vec3 horizontal = new Vec3(
                 right.x() * halfWidth,
                 right.y() * halfWidth,
-                right.z() * halfWidth);
+                right.z() * halfWidth
+        );
         Vec3 vertical = new Vec3(
                 up.x() * halfHeight,
                 up.y() * halfHeight,
@@ -183,14 +195,17 @@ public final class DecalPreviewer {
                 .vertex(pose, (float) topLeft.x, (float) topLeft.y, (float) topLeft.z)
                 .color(color)
                 .endVertex();
+
         vertexConsumer
                 .vertex(pose, (float) topRight.x, (float) topRight.y, (float) topRight.z)
                 .color(color)
                 .endVertex();
+
         vertexConsumer
                 .vertex(pose, (float) bottomRight.x, (float) bottomRight.y, (float) bottomRight.z)
                 .color(color)
                 .endVertex();
+
         vertexConsumer
                 .vertex(pose, (float) bottomLeft.x, (float) bottomLeft.y, (float) bottomLeft.z)
                 .color(color)
