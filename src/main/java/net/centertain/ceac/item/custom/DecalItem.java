@@ -8,6 +8,8 @@ import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.screen.DecalItemScreen;
+import net.centertain.ceac.sound.ModSounds;
+import net.centertain.ceac.utility.Soundworks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -92,6 +94,14 @@ public class DecalItem extends Item {
             return false;
         if (!(player instanceof ServerPlayer serverPlayer))
             return false;
+        if (!tempDecal.isAttachedToGeometry()){
+            Soundworks.playLocalSound(
+                    tempDecal.getOrigin(),
+                    ModSounds.DECAL_PLACEMENT_ERROR.get(),
+                    1.0f
+            );
+            return false;
+        }
         Decal.placeInWorld(tempDecal, level, serverPlayer, stack);
         return true;
     }
