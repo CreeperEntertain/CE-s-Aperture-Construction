@@ -4,18 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.decal.client.DecalPlacement;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-
-import java.util.Set;
 
 public final class DecalPreviewer {
     private static final double EXTRUSION = 0.002;
@@ -123,15 +116,7 @@ public final class DecalPreviewer {
 
         Vec3[] corners = getCorners();
 
-        ClientLevel level = Minecraft.getInstance().level;
-        assert level != null;
-        Set<BlockPos> attachedBlocks = decal.getAttachedBlocks();
-        boolean invalidPlacement = true;
-        for (BlockPos pos : attachedBlocks)
-            if (!level.getBlockState(pos).getShape(level, pos).isEmpty()) {
-                invalidPlacement = false;
-                break;
-            }
+        boolean invalidPlacement = !decal.isAttachedToGeometry();
 
         drawGrid(vertexConsumer, pose, normalMatrix);
         drawBox(vertexConsumer, pose, normalMatrix, corners, invalidPlacement);

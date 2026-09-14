@@ -4,6 +4,8 @@ import net.centertain.ceac.decal.network.SyncDecalPacket;
 import net.centertain.ceac.decal.server.DecalCapabilities;
 import net.centertain.ceac.decal.server.DecalManager;
 import net.centertain.ceac.network.ModNetworking;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -102,6 +104,19 @@ public final class Decal {
     }
     public Set<BlockPos> getAttachedBlocks() {
         return attachedBlocks;
+    }
+
+    public boolean isAttachedToGeometry() {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null)
+            return false;
+        for (BlockPos pos : attachedBlocks)
+            if (!level.getBlockState(pos).getShape(level, pos).isEmpty())
+                return true;
+        return false;
+    }
+    public boolean isAttachedToPos(BlockPos pos) {
+        return attachedBlocks.contains(pos);
     }
 
     public CompoundTag serializeNBT() {
