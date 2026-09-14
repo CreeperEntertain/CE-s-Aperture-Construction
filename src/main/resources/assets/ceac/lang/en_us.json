@@ -3,5 +3,13 @@
   "item.ceac.decal": "Decal",
   "item.ceac.scraper": "Scraper",
   "sound.ceac.decal.placement": "Decal placed",
-  "sound.ceac.decal.deletion": "Decal removed"
+  "sound.ceac.decal.deletion": "Decal removed",
+  "sound.ceac.decal.change_grid_size": "Grid size changed",
+  "sound.ceac.decal.depth_decrease": "Projection depth decreased",
+  "sound.ceac.decal.depth_increase": "Projection depth increased",
+  "sound.ceac.decal.move_planar": "Decal moved",
+  "sound.ceac.decal.move_normal": "Decal moved",
+  "sound.ceac.decal.placement_error": "Decal can't be placed here",
+  "sound.ceac.decal.rotate": "Decal rotated",
+  "sound.ceac.decal.tilt": "Decal tilted"
 }

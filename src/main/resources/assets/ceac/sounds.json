@@ -22,5 +22,101 @@
         "stream": false
       }
     ]
+  },
+  "decal_change_grid_size": {
+    "subtitle": "sound.ceac.decal.change_grid_size",
+    "sounds": [
+      {
+        "name": "ceac:decal/change_grid_size",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  },
+  "decal_depth_decrease": {
+    "subtitle": "sound.ceac.decal.depth_decrease",
+    "sounds": [
+      {
+        "name": "ceac:decal/depth_decrease",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  },
+  "decal_depth_increase": {
+    "subtitle": "sound.ceac.decal.depth_increase",
+    "sounds": [
+      {
+        "name": "ceac:decal/depth_increase",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  },
+  "decal_move_normal": {
+    "subtitle": "sound.ceac.decal.move_normal",
+    "sounds": [
+      {
+        "name": "ceac:decal/move_normal",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  },
+  "decal_move_planar": {
+    "subtitle": "sound.ceac.decal.move_planar",
+    "sounds": [
+      {
+        "name": "ceac:decal/move_planar",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  },
+  "decal_placement_error": {
+    "subtitle": "sound.ceac.decal.placement_error",
+    "sounds": [
+      {
+        "name": "ceac:decal/placement_error",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  },
+  "decal_rotate": {
+    "subtitle": "sound.ceac.decal.rotate",
+    "sounds": [
+      {
+        "name": "ceac:decal/rotate",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  },
+  "decal_tilt": {
+    "subtitle": "sound.ceac.decal.tilt",
+    "sounds": [
+      {
+        "name": "ceac:decal/tilt",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
   }
 }
