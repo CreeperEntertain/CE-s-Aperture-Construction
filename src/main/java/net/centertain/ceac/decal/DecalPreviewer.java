@@ -127,12 +127,9 @@ public final class DecalPreviewer {
         drawArrow(vertexConsumer, pose, normalMatrix, invalidPlacement);
 
         poseStack.popPose();
-
-        if (DecalPlacement.getHelpShown())
-            drawHelpScreen(poseStack, bufferSource);
     }
 
-    private void drawHelpScreen(
+    public void renderHelpScreen(
             PoseStack poseStack,
             MultiBufferSource bufferSource
     ) {

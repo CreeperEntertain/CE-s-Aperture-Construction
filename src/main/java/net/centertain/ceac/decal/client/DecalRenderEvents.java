@@ -25,22 +25,32 @@ public final class DecalRenderEvents {
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+        PoseStack poseStack = event.getPoseStack();
+        MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 
-            PoseStack poseStack = event.getPoseStack();
-            MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             Vec3 cameraPosition = event.getCamera().getPosition();
 
             DecalPreviewer preview = DecalPlacement.getDecalPreview();
             if (preview != null && DecalPlacement.getPrecisePlacement()) {
                 preview.render(poseStack, bufferSource, cameraPosition);
                 bufferSource.endBatch(RenderType.lines());
-                if (DecalPlacement.getHelpShown())
-                    bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
             }
 
             DecalRenderer.captureOpaqueDepth();
             DecalRenderer.render(event);
+        }
+
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
+            DecalPreviewer preview = DecalPlacement.getDecalPreview();
+
+            if (
+                    preview != null &&
+                    DecalPlacement.getPrecisePlacement() &&
+                    DecalPlacement.getHelpShown()
+            ) {
+                preview.renderHelpScreen(poseStack, bufferSource);
+            }
         }
     }
 }
