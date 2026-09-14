@@ -2,6 +2,7 @@ package net.centertain.ceac.decal.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.decal.DecalPreviewer;
+import net.centertain.ceac.decal.client.render.CeacRenderTypes;
 import net.centertain.ceac.decal.client.render.DecalRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -34,6 +35,8 @@ public final class DecalRenderEvents {
             if (preview != null && DecalPlacement.getPrecisePlacement()) {
                 preview.render(poseStack, bufferSource, cameraPosition);
                 bufferSource.endBatch(RenderType.lines());
+                if (DecalPlacement.getHelpShown())
+                    bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
             }
 
             DecalRenderer.captureOpaqueDepth();

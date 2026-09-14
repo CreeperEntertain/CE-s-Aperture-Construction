@@ -4,11 +4,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.decal.client.DecalPlacement;
+import net.centertain.ceac.decal.client.render.CeacRenderTypes;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 public final class DecalPreviewer {
     private static final double EXTRUSION = 0.002;
@@ -121,6 +125,79 @@ public final class DecalPreviewer {
         drawGrid(vertexConsumer, pose, normalMatrix);
         drawBox(vertexConsumer, pose, normalMatrix, corners, invalidPlacement);
         drawArrow(vertexConsumer, pose, normalMatrix, invalidPlacement);
+
+        poseStack.popPose();
+
+        if (DecalPlacement.getHelpShown())
+            drawHelpScreen(poseStack, bufferSource);
+    }
+
+    private void drawHelpScreen(
+            PoseStack poseStack,
+            MultiBufferSource bufferSource
+    ) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Camera camera = minecraft.gameRenderer.getMainCamera();
+
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(CeacRenderTypes.IN_WORLD_UI);
+
+        poseStack.pushPose();
+
+        Vec3 cameraPosition = camera.getPosition();
+
+        poseStack.translate(
+                -cameraPosition.x,
+                -cameraPosition.y,
+                -cameraPosition.z
+        );
+
+        Vector3f right = camera.getLeftVector();
+        right.mul(-1.0f);
+
+        Vector3f up = camera.getUpVector();
+        Vector3f look = camera.getLookVector();
+
+        Vec3 center = cameraPosition
+                .add(look.x() * 2.0, look.y() * 2.0, look.z() * 2.0)
+                .add(right.x() * 1.5, right.y() * 1.5, right.z() * 1.5);
+
+        double halfWidth = 1.5 / 2.0;
+        double halfHeight = 1.0 / 2.0;
+
+        Vec3 horizontal = new Vec3(
+                right.x() * halfWidth,
+                right.y() * halfWidth,
+                right.z() * halfWidth);
+        Vec3 vertical = new Vec3(
+                up.x() * halfHeight,
+                up.y() * halfHeight,
+                up.z() * halfHeight
+        );
+
+        Vec3 topLeft = center.subtract(horizontal).add(vertical);
+        Vec3 topRight = center.add(horizontal).add(vertical);
+        Vec3 bottomRight = center.add(horizontal).subtract(vertical);
+        Vec3 bottomLeft = center.subtract(horizontal).subtract(vertical);
+
+        Matrix4f pose = poseStack.last().pose();
+        int color = GuiConstants.COLOR_TRANSLUCENT_BLACK_75;
+
+        vertexConsumer
+                .vertex(pose, (float) topLeft.x, (float) topLeft.y, (float) topLeft.z)
+                .color(color)
+                .endVertex();
+        vertexConsumer
+                .vertex(pose, (float) topRight.x, (float) topRight.y, (float) topRight.z)
+                .color(color)
+                .endVertex();
+        vertexConsumer
+                .vertex(pose, (float) bottomRight.x, (float) bottomRight.y, (float) bottomRight.z)
+                .color(color)
+                .endVertex();
+        vertexConsumer
+                .vertex(pose, (float) bottomLeft.x, (float) bottomLeft.y, (float) bottomLeft.z)
+                .color(color)
+                .endVertex();
 
         poseStack.popPose();
     }

@@ -20,6 +20,7 @@ public final class DecalPlacement {
     private static @Nullable AbstractDecal tempAbstractDecal;
     private static @Nullable DecalPreviewer decalPreview;
     private static boolean precisePlacement = false;
+    private static boolean helpShown = true;
 
     private static final double[] GRID_SIZES = {
             0.0,        // 0: FREEFORM PLACEMENT!
@@ -69,6 +70,9 @@ public final class DecalPlacement {
     public static void setPrecisePlacement(boolean state) {
          precisePlacement = state;
     }
+    public static void setHelpShown(boolean state) {
+        helpShown = state;
+    }
 
     public static @Nullable Decal getTempDecal() {
         return tempDecal;
@@ -81,6 +85,9 @@ public final class DecalPlacement {
     }
     public static boolean getPrecisePlacement() {
         return precisePlacement;
+    }
+    public static boolean getHelpShown() {
+        return helpShown;
     }
 
     public static double getGridSize() {
@@ -162,7 +169,7 @@ public final class DecalPlacement {
     }
 
     public static void suppressPrecisePlacementKeys(InputEvent.Key event) {
-        if (!DecalPlacement.getPrecisePlacement())
+        if (!precisePlacement)
             return;
         int key = event.getKey();
         boolean stretchKeyPressed =
@@ -182,6 +189,8 @@ public final class DecalPlacement {
             while (mapping.consumeClick()) {}
         }
         switch (key) {
+            case GLFW.GLFW_KEY_ENTER -> toggleHelp();
+
             case GLFW.GLFW_KEY_W -> moveAbstraction(Direction.UP);
             case GLFW.GLFW_KEY_A -> moveAbstraction(Direction.LEFT);
             case GLFW.GLFW_KEY_S -> moveAbstraction(Direction.DOWN);
@@ -200,6 +209,9 @@ public final class DecalPlacement {
             case GLFW.GLFW_KEY_PAGE_UP -> resizeGrid(GridResize.BIGGER);
             case GLFW.GLFW_KEY_PAGE_DOWN -> resizeGrid(GridResize.SMALLER);
         }
+    }
+    private static void toggleHelp() {
+        helpShown = !helpShown;
     }
     private static void moveAbstraction(Direction direction) {
         AbstractDecal abstraction = tempAbstractDecal;
