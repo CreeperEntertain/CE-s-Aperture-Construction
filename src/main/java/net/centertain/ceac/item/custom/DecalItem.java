@@ -96,7 +96,7 @@ public class DecalItem extends Item {
         if (!(player instanceof ServerPlayer serverPlayer))
             return false;
         if (!tempDecal.isAttachedToGeometry() || tempDecal.isSuffocating()){
-            Soundworks.playLocalStereoSound(
+            Soundworks.enqueueLocalStereoSound(
                     tempDecal.getOrigin(),
                     ModSounds.DECAL_PLACEMENT_ERROR.get(),
                     1.0f

@@ -4,6 +4,7 @@ import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.centertain.ceac.decal.server.DecalBreakage;
+import net.centertain.ceac.utility.Soundworks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,6 +26,8 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 public class ClientForgeEvents {
     @SubscribeEvent
     public static void onClientTick(final TickEvent.ClientTickEvent event) {
+        Soundworks.playLocalStereoSounds(event);
+
         // Translucent target resizing
         if (event.phase != TickEvent.Phase.END)
             return;
