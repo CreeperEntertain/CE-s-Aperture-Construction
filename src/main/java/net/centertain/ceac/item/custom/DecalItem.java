@@ -49,6 +49,7 @@ public class DecalItem extends Item {
     ) {
         ItemStack stack = player.getItemInHand(hand);
         boolean handled = false;
+        //noinspection RedundantIfStatement
         if (openTextureSelector(level, hand))
             handled = true;
         if (placeDecal(level, player, stack))
