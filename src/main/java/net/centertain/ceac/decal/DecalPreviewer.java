@@ -132,7 +132,8 @@ public final class DecalPreviewer {
 
     public void renderHelpScreen(
             PoseStack poseStack,
-            MultiBufferSource bufferSource
+            MultiBufferSource bufferSource,
+            Matrix4f projectionMatrix
     ) {
         Minecraft minecraft = Minecraft.getInstance();
         Camera camera = minecraft.gameRenderer.getMainCamera();
@@ -141,6 +142,12 @@ public final class DecalPreviewer {
 
         poseStack.pushPose();
 
+        Vector3f projectionScale = projectionMatrix.getScale(new Vector3f());
+        poseStack.scale(
+                1.0f / projectionScale.x(),
+                1.0f / projectionScale.y(),
+                1.0f
+        );
         poseStack.mulPose(camera.rotation().conjugate(new Quaternionf()));
 
         Vec3 cameraPosition = camera.getPosition();
