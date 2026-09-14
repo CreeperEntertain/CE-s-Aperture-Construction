@@ -154,7 +154,7 @@ public final class DecalPlacement {
         abstraction.setRotation(rotation);
         tempAbstractDecal = abstraction;
 
-        Soundworks.playLocalSound(
+        Soundworks.playLocalStereoSound(
                 abstraction.getOrigin(),
                 ModSounds.DECAL_ROTATE.get(),
                 1.0f
@@ -232,7 +232,7 @@ public final class DecalPlacement {
         SoundEvent sound = direction == Direction.IN || direction == Direction.OUT
                 ? ModSounds.DECAL_MOVE_NORMAL.get()
                 : ModSounds.DECAL_MOVE_PLANAR.get();
-        Soundworks.playLocalSound(
+        Soundworks.playLocalStereoSound(
                 abstraction.getOrigin(),
                 sound,
                 1.0f
@@ -258,7 +258,7 @@ public final class DecalPlacement {
         SoundEvent sound = stretch == Stretch.STRETCH
                 ? ModSounds.DECAL_DEPTH_INCREASE.get()
                 : ModSounds.DECAL_DEPTH_DECREASE.get();
-        Soundworks.playLocalSound(
+        Soundworks.playLocalStereoSound(
                 abstraction.getOrigin(),
                 sound,
                 1.0f
@@ -295,7 +295,7 @@ public final class DecalPlacement {
         abstraction.setNormal(tiltedNormal);
         tempAbstractDecal = abstraction;
 
-        Soundworks.playLocalSound(
+        Soundworks.playLocalStereoSound(
                 abstraction.getOrigin(),
                 ModSounds.DECAL_TILT.get(),
                 1.0f
@@ -313,7 +313,7 @@ public final class DecalPlacement {
         AbstractDecal abstraction = tempAbstractDecal;
         if (abstraction == null)
             return;
-        Soundworks.playLocalSound(
+        Soundworks.playLocalStereoSound(
                 abstraction.getOrigin(),
                 ModSounds.DECAL_CHANGE_GRID_SIZE.get(),
                 1.0f

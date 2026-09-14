@@ -8,8 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 public final class Soundworks {
-    /// For local stereo sound only!
-    public static void playLocalSound(Vec3 position, SoundEvent sound, float distanceMultiplier) {
+    public static void playLocalStereoSound(Vec3 position, SoundEvent sound, float distanceMultiplier) {
         Minecraft minecraft = Minecraft.getInstance();
         ClientLevel level = minecraft.level;
         if (level == null)
