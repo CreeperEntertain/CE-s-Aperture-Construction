@@ -1,6 +1,7 @@
 package net.centertain.ceac.decal;
 
 import net.centertain.ceac.decal.network.SyncDecalPacket;
+import net.centertain.ceac.decal.server.DecalBreakage;
 import net.centertain.ceac.decal.server.DecalCapabilities;
 import net.centertain.ceac.decal.server.DecalManager;
 import net.centertain.ceac.network.ModNetworking;
@@ -248,7 +249,7 @@ public final class Decal {
         DecalManager manager = DecalCapabilities.get(chunk);
         manager.addDecal(decal); // Server side placement & Saving
         ModNetworking.CHANNEL.send( // Client side syncing
-                PacketDistributor.PLAYER.with(() -> player),
+                PacketDistributor.ALL.noArg(),
                 new SyncDecalPacket(decal)
         );
         GameType gameMode = player.gameMode.getGameModeForPlayer();
@@ -275,21 +276,21 @@ public final class Decal {
     public static void removeFromWorld(
             UUID id,
             BlockPos pos,
-            Level level,
-            ServerPlayer player
+            Level level
     ) {
         LevelChunk chunk = level.getChunkAt(pos);
         DecalManager manager = DecalCapabilities.get(chunk);
+        Vec3 origin = manager.getDecal(id).getOrigin();
         manager.removeDecal(id);
         ModNetworking.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> player),
+                PacketDistributor.ALL.noArg(),
                 new SyncDecalPacket(id)
         );
+        DecalBreakage.dropItem(level, origin);
     }
     public static void removeFromWorld(
             Decal decal,
-            Level level,
-            ServerPlayer player
+            Level level
     ) {
         BlockPos pos = BlockPos.containing(decal.getOrigin());
         LevelChunk chunk = level.getChunkAt(pos);
@@ -297,15 +298,15 @@ public final class Decal {
         UUID id = decal.getId();
         manager.removeDecal(id);
         ModNetworking.CHANNEL.send(
-                PacketDistributor.PLAYER.with(() -> player),
+                PacketDistributor.ALL.noArg(),
                 new SyncDecalPacket(id)
         );
+        DecalBreakage.dropItem(level, decal.getOrigin());
     }
     public static void removeMultipleFromWorld(
             UUID[] ids,
             List<Decal> decals,
             Level level,
-            ServerPlayer player,
             BlockPos hitPos
     ) {
         LevelChunk hitChunk = level.getChunkAt(hitPos);
@@ -314,9 +315,10 @@ public final class Decal {
         for (Decal decal : decals) {
             UUID id = decal.getId();
             ModNetworking.CHANNEL.send(
-                    PacketDistributor.PLAYER.with(() -> player),
+                    PacketDistributor.ALL.noArg(),
                     new SyncDecalPacket(id)
             );
+            DecalBreakage.dropItem(level, decal.getOrigin());
         }
     }
 
