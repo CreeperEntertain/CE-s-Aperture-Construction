@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -107,6 +108,7 @@ public final class Decal {
         return attachedBlocks;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isAttachedToGeometry() {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null)
@@ -118,6 +120,15 @@ public final class Decal {
     }
     public boolean isAttachedToPos(BlockPos pos) {
         return attachedBlocks.contains(pos);
+    }
+    public boolean isSuffocating() {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null)
+            return true;
+        for (BlockPos pos : attachedBlocks)
+            if (!Block.isShapeFullBlock(level.getBlockState(pos).getShape(level, pos)))
+                return false;
+        return true;
     }
 
     public CompoundTag serializeNBT() {

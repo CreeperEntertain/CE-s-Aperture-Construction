@@ -116,7 +116,7 @@ public final class DecalPreviewer {
 
         Vec3[] corners = getCorners();
 
-        boolean invalidPlacement = !decal.isAttachedToGeometry();
+        boolean invalidPlacement = !decal.isAttachedToGeometry() || decal.isSuffocating();
 
         drawGrid(vertexConsumer, pose, normalMatrix);
         drawBox(vertexConsumer, pose, normalMatrix, corners, invalidPlacement);
