@@ -4,6 +4,7 @@ import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.item.ModItems;
 import net.centertain.ceac.utility.Mathworks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
@@ -16,26 +17,14 @@ import net.minecraftforge.event.level.BlockEvent;
 import java.util.*;
 
 public final class DecalBreakage {
-    public static void breakDecalsInRange(BlockEvent.BreakEvent event) {
+    public static void breakFloatingDecalsInRange(BlockEvent.BreakEvent event) {
         LevelAccessor accessor = event.getLevel();
         if (!(accessor instanceof Level level) || level.isClientSide)
             return;
         BlockPos pos = event.getPos();
         if (pos == null)
             return;
-        LevelChunk[] chunks = {
-                level.getChunkAt(new BlockPos(pos.getX() - 16, pos.getY(), pos.getZ() - 16)),
-                level.getChunkAt(new BlockPos(pos.getX() - 16, pos.getY(), pos.getZ())),
-                level.getChunkAt(new BlockPos(pos.getX() - 16, pos.getY(), pos.getZ() + 16)),
-
-                level.getChunkAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 16)),
-                level.getChunkAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ())),
-                level.getChunkAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 16)),
-
-                level.getChunkAt(new BlockPos(pos.getX() + 16, pos.getY(), pos.getZ() - 16)),
-                level.getChunkAt(new BlockPos(pos.getX() + 16, pos.getY(), pos.getZ())),
-                level.getChunkAt(new BlockPos(pos.getX() + 16, pos.getY(), pos.getZ() + 16))
-        };
+        LevelChunk[] chunks = getChunksInRange(level, pos);
         DecalManager[] managers = new DecalManager[chunks.length];
         for (int i = 0; i < chunks.length; i++)
             managers[i] = DecalCapabilities.get(chunks[i]);
@@ -56,6 +45,54 @@ public final class DecalBreakage {
         for (Decal decal : decals) // Fiiiiiinally do dropping. Geez.
             if (!decal.isAttachedToGeometry())
                 Decal.removeFromWorld(decal, level);
+    }
+    public static void breakSuffocatingDecalsInRange(BlockEvent.EntityPlaceEvent event) {
+        LevelAccessor accessor = event.getLevel();
+        if (!(accessor instanceof Level level) || level.isClientSide)
+            return;
+        BlockPos pos = event.getPos();
+        if (pos == null)
+            return;
+        LevelChunk[] chunks = getChunksInRange(level, pos);
+        DecalManager[] managers = new DecalManager[chunks.length];
+        for (int i = 0; i < chunks.length; i++)
+            managers[i] = DecalCapabilities.get(chunks[i]);
+
+        List<Decal> potentialDecals = new ArrayList<>();
+        for (DecalManager manager : managers)
+            potentialDecals.addAll(manager.getDecals().values());
+        if (potentialDecals.isEmpty())
+            return;
+
+        List<Decal> decals = new ArrayList<>();
+        for (Decal decal : potentialDecals)
+            if (decal.isAttachedToPos(pos))
+                decals.add(decal);
+        if (decals.isEmpty())
+            return;
+
+        for (Decal decal : decals)
+            if (decal.isSuffocating())
+                Decal.removeFromWorld(decal, level);
+    }
+
+    private static LevelChunk[] getChunksInRange(
+            Level level,
+            Vec3i pos
+    ) {
+        return new LevelChunk[] {
+                level.getChunkAt(new BlockPos(pos.getX() - 16, pos.getY(), pos.getZ() - 16)),
+                level.getChunkAt(new BlockPos(pos.getX() - 16, pos.getY(), pos.getZ())),
+                level.getChunkAt(new BlockPos(pos.getX() - 16, pos.getY(), pos.getZ() + 16)),
+
+                level.getChunkAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ() - 16)),
+                level.getChunkAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ())),
+                level.getChunkAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ() + 16)),
+
+                level.getChunkAt(new BlockPos(pos.getX() + 16, pos.getY(), pos.getZ() - 16)),
+                level.getChunkAt(new BlockPos(pos.getX() + 16, pos.getY(), pos.getZ())),
+                level.getChunkAt(new BlockPos(pos.getX() + 16, pos.getY(), pos.getZ() + 16))
+        };
     }
 
     public static void dropItem(

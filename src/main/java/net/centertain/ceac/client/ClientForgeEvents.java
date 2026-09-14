@@ -49,7 +49,12 @@ public class ClientForgeEvents {
 
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
-        DecalBreakage.breakDecalsInRange(event);
+        DecalBreakage.breakFloatingDecalsInRange(event);
+    }
+
+    @SubscribeEvent
+    public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+        DecalBreakage.breakSuffocatingDecalsInRange(event);
     }
 
     @SubscribeEvent
