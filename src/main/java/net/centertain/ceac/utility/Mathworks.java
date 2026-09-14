@@ -1,5 +1,6 @@
 package net.centertain.ceac.utility;
 
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public final class Mathworks {
@@ -12,5 +13,13 @@ public final class Mathworks {
     public static float volumeByDistance(Vec3 playerPos, Vec3 soundPos, float distanceMultiplier) {
         float distance = (float) playerPos.distanceTo(soundPos) * distanceMultiplier;
         return Math.max(0.0f, 1.0f - distance / 16.0f);
+    }
+
+    public static Vec3 getItemDropVelocity(Level level) {
+        return new Vec3(
+                level.random.triangle(0.0D, 0.1148500017118454D),
+                level.random.triangle(0.2D, 0.1148500017118454D),
+                level.random.triangle(0.0D, 0.1148500017118454D)
+        );
     }
 }
