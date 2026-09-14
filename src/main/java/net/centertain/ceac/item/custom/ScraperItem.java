@@ -64,10 +64,10 @@ public class ScraperItem extends Item {
             UUID[] ids = new UUID[decals.size()];
             for (int i = 0; i < decals.size(); i++)
                 ids[i] = decals.get(i).getId();
-            Decal.removeMultipleFromWorld(ids, decals, level, serverPlayer, pos);
+            Decal.removeMultipleFromWorld(ids, decals, level, pos);
         } else {
             decalList.sort(Comparator.comparing(Decal::getRenderingOrder).reversed()); // Highest to lowest
-            Decal.removeFromWorld(decalList.get(0), level, serverPlayer);
+            Decal.removeFromWorld(decalList.get(0), level);
             stack.hurtAndBreak(1, serverPlayer, p -> p.broadcastBreakEvent(hand));
         }
 
