@@ -152,8 +152,6 @@ public final class DecalPreviewer {
         );
 
         Vector3f right = camera.getLeftVector();
-        right.mul(-1.0f);
-
         Vector3f up = camera.getUpVector();
         Vector3f look = camera.getLookVector();
 
@@ -195,17 +193,14 @@ public final class DecalPreviewer {
                 .vertex(pose, (float) topLeft.x, (float) topLeft.y, (float) topLeft.z)
                 .color(color)
                 .endVertex();
-
         vertexConsumer
                 .vertex(pose, (float) topRight.x, (float) topRight.y, (float) topRight.z)
                 .color(color)
                 .endVertex();
-
         vertexConsumer
                 .vertex(pose, (float) bottomRight.x, (float) bottomRight.y, (float) bottomRight.z)
                 .color(color)
                 .endVertex();
-
         vertexConsumer
                 .vertex(pose, (float) bottomLeft.x, (float) bottomLeft.y, (float) bottomLeft.z)
                 .color(color)
