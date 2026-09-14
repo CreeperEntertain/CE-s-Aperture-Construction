@@ -4,8 +4,11 @@ import net.centertain.ceac.decal.AbstractDecal;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.DecalPreviewer;
 import net.centertain.ceac.item.custom.DecalItem;
+import net.centertain.ceac.sound.ModSounds;
+import net.centertain.ceac.utility.Soundworks;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.InputEvent;
@@ -150,6 +153,12 @@ public final class DecalPlacement {
         rotation = (byte) Math.floorMod(rotation + rotationDelta, 16);
         abstraction.setRotation(rotation);
         tempAbstractDecal = abstraction;
+
+        Soundworks.playLocalSound(
+                abstraction.getOrigin(),
+                ModSounds.DECAL_ROTATE.get(),
+                1.0f
+        );
     }
 
     public static void suppressPrecisePlacementKeys(InputEvent.Key event) {
@@ -219,6 +228,15 @@ public final class DecalPlacement {
         };
         abstraction.setOrigin(abstraction.getOrigin().add(movement));
         tempAbstractDecal = abstraction;
+
+        SoundEvent sound = direction == Direction.IN || direction == Direction.OUT
+                ? ModSounds.DECAL_MOVE_NORMAL.get()
+                : ModSounds.DECAL_MOVE_PLANAR.get();
+        Soundworks.playLocalSound(
+                abstraction.getOrigin(),
+                sound,
+                1.0f
+        );
     }
     private static void adjustAbstractionDepth(Stretch stretch) {
         AbstractDecal abstraction = tempAbstractDecal;
@@ -236,6 +254,15 @@ public final class DecalPlacement {
         abstraction.setBlockDepth(blockDepth);
         tempAbstractDecal = abstraction;
         stretchDelay++;
+
+        SoundEvent sound = stretch == Stretch.STRETCH
+                ? ModSounds.DECAL_DEPTH_INCREASE.get()
+                : ModSounds.DECAL_DEPTH_DECREASE.get();
+        Soundworks.playLocalSound(
+                abstraction.getOrigin(),
+                sound,
+                1.0f
+        );
     }
     private static void tiltAbstraction(Tilt tilt) {
         AbstractDecal abstraction = tempAbstractDecal;
@@ -267,6 +294,12 @@ public final class DecalPlacement {
 
         abstraction.setNormal(tiltedNormal);
         tempAbstractDecal = abstraction;
+
+        Soundworks.playLocalSound(
+                abstraction.getOrigin(),
+                ModSounds.DECAL_TILT.get(),
+                1.0f
+        );
     }
     private static void resizeGrid(GridResize gridResize) {
         int min = 0;
@@ -276,6 +309,15 @@ public final class DecalPlacement {
             case SMALLER -> gridSizeIndex = Math.max(min, gridSizeIndex - 1);
         }
         gridSize = GRID_SIZES[gridSizeIndex];
+
+        AbstractDecal abstraction = tempAbstractDecal;
+        if (abstraction == null)
+            return;
+        Soundworks.playLocalSound(
+                abstraction.getOrigin(),
+                ModSounds.DECAL_CHANGE_GRID_SIZE.get(),
+                1.0f
+        );
     }
 
     // Rodrigues' rotation formula
