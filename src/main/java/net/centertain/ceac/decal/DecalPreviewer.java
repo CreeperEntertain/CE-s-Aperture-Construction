@@ -4,11 +4,18 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.decal.client.DecalPlacement;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+
+import java.util.Set;
 
 public final class DecalPreviewer {
     private static final double EXTRUSION = 0.002;
@@ -116,9 +123,19 @@ public final class DecalPreviewer {
 
         Vec3[] corners = getCorners();
 
+        ClientLevel level = Minecraft.getInstance().level;
+        assert level != null;
+        Set<BlockPos> attachedBlocks = decal.getAttachedBlocks();
+        boolean invalidPlacement = true;
+        for (BlockPos pos : attachedBlocks)
+            if (!level.getBlockState(pos).getShape(level, pos).isEmpty()) {
+                invalidPlacement = false;
+                break;
+            }
+
         drawGrid(vertexConsumer, pose, normalMatrix);
-        drawBox(vertexConsumer, pose, normalMatrix, corners);
-        drawArrow(vertexConsumer, pose, normalMatrix);
+        drawBox(vertexConsumer, pose, normalMatrix, corners, invalidPlacement);
+        drawArrow(vertexConsumer, pose, normalMatrix, invalidPlacement);
 
         poseStack.popPose();
     }
@@ -127,14 +144,15 @@ public final class DecalPreviewer {
             VertexConsumer vertexConsumer,
             Matrix4f pose,
             Matrix3f normalMatrix,
-            Vec3[] corners
+            Vec3[] corners,
+            boolean invalidPlacement
     ) {
         if (corners.length != 8)
             return;
-        int color = GuiConstants.COLOR_SOLID_WHITE;
+        int color = invalidPlacement ? GuiConstants.COLOR_SOLID_RED : GuiConstants.COLOR_SOLID_WHITE;
         int colorX = GuiConstants.COLOR_SOLID_RED;
-        int colorY = GuiConstants.COLOR_SOLID_GREEN;
-        int colorZ = GuiConstants.COLOR_SOLID_BLUE;
+        int colorY = invalidPlacement ? GuiConstants.COLOR_SOLID_RED : GuiConstants.COLOR_SOLID_GREEN;
+        int colorZ = invalidPlacement ? GuiConstants.COLOR_SOLID_RED : GuiConstants.COLOR_SOLID_BLUE;
 
         drawLine(vertexConsumer, pose, normalMatrix, corners[0], corners[1], colorZ); // Z base
         drawLine(vertexConsumer, pose, normalMatrix, corners[0], corners[2], colorY); // Y base
@@ -153,11 +171,12 @@ public final class DecalPreviewer {
     private void drawArrow(
             VertexConsumer vertexConsumer,
             Matrix4f pose,
-            Matrix3f normalMatrix
+            Matrix3f normalMatrix,
+            boolean invalidPlacement
     ) {
         Vec3 faceCenter = origin.add(normal.scale(halfDepth));
         double distance = faceCenter.distanceTo(origin);
-        int color = GuiConstants.COLOR_SOLID_YELLOW;
+        int color = invalidPlacement ? GuiConstants.COLOR_SOLID_RED : GuiConstants.COLOR_SOLID_YELLOW;
 
         // Arrow shaft
         drawLine(vertexConsumer, pose, normalMatrix, faceCenter, origin, color);
