@@ -60,6 +60,8 @@ public class DecalItem extends Item {
             @NotNull Level level,
             @NotNull InteractionHand hand
     ) {
+        if (DecalPlacement.getPrecisePlacement())
+            return false;
         Minecraft minecraft = Minecraft.getInstance();
         HitResult hitResult = minecraft.hitResult;
         assert hitResult != null;
