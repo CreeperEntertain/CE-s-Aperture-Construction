@@ -19,17 +19,17 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class Button extends AbstractWidget {
-    private final int textColor;
-    private final float textScale;
-    private final int backgroundColor;
-    private final int outlineColor;
-    private final @Nullable ResourceLocation texture;
-    private final int textureWidth;
-    private final int textureHeight;
-    private final Runnable onPress;
+    protected final int textColor;
+    protected final float textScale;
+    protected final int backgroundColor;
+    protected final int outlineColor;
+    protected final @Nullable ResourceLocation texture;
+    protected final int textureWidth;
+    protected final int textureHeight;
+    protected final Runnable onPress;
 
-    private long marqueeStartTime;
-    private boolean marqueeActive;
+    protected long marqueeStartTime;
+    protected boolean marqueeActive;
 
     public Button(
             int x,

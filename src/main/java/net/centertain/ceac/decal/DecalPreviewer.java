@@ -5,8 +5,10 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.CeacRenderTypes;
+import net.centertain.ceac.phys_screen.PreviewerHelpScreen;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
@@ -31,6 +33,8 @@ public final class DecalPreviewer {
     private final double halfWidth;
     private final double halfHeight;
     private final double halfDepth;
+
+    private final PreviewerHelpScreen helpScreen;
 
     public DecalPreviewer(Decal decal) {
         this.decal = decal;
@@ -58,6 +62,13 @@ public final class DecalPreviewer {
         this.halfWidth = decal.getPixelWidth() / 32.0 + EXTRUSION;
         this.halfHeight = decal.getPixelHeight() / 32.0 + EXTRUSION;
         this.halfDepth = decal.getBlockDepth() / 2.0 + EXTRUSION;
+
+        this.helpScreen = new PreviewerHelpScreen();
+        this.helpScreen.init(
+                Minecraft.getInstance(),
+                PreviewerHelpScreen.WIDTH,
+                PreviewerHelpScreen.HEIGHT
+        );
     }
 
     public Decal getDecal() {
