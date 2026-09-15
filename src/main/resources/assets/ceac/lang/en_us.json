@@ -1,7 +1,12 @@
 {
   "creativetab.ceac_tab": "CE's Aperture Construction",
+
+  "tooltip.ceac.decal.desc": "Press middle mouse to toggle precise mode",
+  "tooltip.ceac.scraper.desc": "Press middle mouse to toggle x-ray mode",
+
   "item.ceac.decal": "Decal",
   "item.ceac.scraper": "Scraper",
+
   "sound.ceac.decal.placement": "Decal placed",
   "sound.ceac.decal.deletion": "Decal removed",
   "sound.ceac.decal.change_grid_size": "Grid size changed",
