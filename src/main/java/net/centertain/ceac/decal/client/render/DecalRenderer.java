@@ -687,5 +687,8 @@ public final class DecalRenderer {
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
+
+        minecraft.getMainRenderTarget().bindWrite(false);
+        lightTexture.turnOffLightLayer();
     }
 }
