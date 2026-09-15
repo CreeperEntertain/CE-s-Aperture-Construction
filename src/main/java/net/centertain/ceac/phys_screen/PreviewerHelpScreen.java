@@ -27,7 +27,7 @@ public class PreviewerHelpScreen extends PhysScreen {
                 Component.literal("Hello!"),
                 GuiConstants.COLOR_SOLID_WHITE,
                 1.0f,
-                GuiConstants.COLOR_TRANSPARENT,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
                 GuiConstants.COLOR_SOLID_WHITE,
                 null,
                 this::example

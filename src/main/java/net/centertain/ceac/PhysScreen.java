@@ -26,6 +26,14 @@ public class PhysScreen extends Screen {
             int mouseY,
             float partialTick
     ) {
+        guiGraphics.fill(
+                0,
+                0,
+                getScreenWidth(),
+                getScreenHeight(),
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+        );
+
         for (GuiEventListener child : children()) {
             if (child instanceof PhysButton button)
                 button.renderPhysical(

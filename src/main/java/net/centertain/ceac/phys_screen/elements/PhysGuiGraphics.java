@@ -1,17 +1,20 @@
 package net.centertain.ceac.phys_screen.elements;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.centertain.ceac.decal.client.render.CeacRenderTypes;
+import net.centertain.ceac.client.render.CeacRenderTypes;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
 public class PhysGuiGraphics {
     private final PoseStack poseStack;
-    private final MultiBufferSource bufferSource;
     private final VertexConsumer vertexConsumer;
+    private final MultiBufferSource bufferSource;
 
     public PhysGuiGraphics(
             PoseStack poseStack,
@@ -26,7 +29,11 @@ public class PhysGuiGraphics {
         return poseStack;
     }
     public MultiBufferSource bufferSource() {
-        return  bufferSource;
+        return bufferSource;
+    }
+
+    public VertexConsumer vertexConsumer() {
+        return vertexConsumer;
     }
 
     public void fill(
@@ -76,5 +83,40 @@ public class PhysGuiGraphics {
                 0,
                 15728880
         );
+    }
+
+    public void blit(
+            ResourceLocation texture,
+            int x,
+            int y,
+            int width,
+            int height
+    ) {
+        RenderSystem.setShaderTexture(0, texture);
+
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.text(texture));
+
+        Matrix4f pose = poseStack.last().pose();
+
+        vertexConsumer
+                .vertex(pose, x, y, 0.0f)
+                .color(255, 255, 255, 255)
+                .uv(0.0f, 0.0f)
+                .endVertex();
+        vertexConsumer
+                .vertex(pose, x, y + height, 0.0f)
+                .color(255, 255, 255, 255)
+                .uv(0.0f, 1.0f)
+                .endVertex();
+        vertexConsumer
+                .vertex(pose, x + width, y + height, 0.0f)
+                .color(255, 255, 255, 255)
+                .uv(1.0f, 1.0f)
+                .endVertex();
+        vertexConsumer
+                .vertex(pose, x + width, y, 0.0f)
+                .color(255, 255, 255, 255)
+                .uv(1.0f, 0.0f)
+                .endVertex();
     }
 }

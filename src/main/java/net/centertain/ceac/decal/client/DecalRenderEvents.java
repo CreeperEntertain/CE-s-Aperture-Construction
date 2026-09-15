@@ -2,7 +2,6 @@ package net.centertain.ceac.decal.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.decal.DecalPreviewer;
-import net.centertain.ceac.decal.client.render.CeacRenderTypes;
 import net.centertain.ceac.decal.client.render.DecalRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -12,7 +11,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.joml.Vector3f;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 

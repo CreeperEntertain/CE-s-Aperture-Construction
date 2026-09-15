@@ -1,4 +1,4 @@
-package net.centertain.ceac.decal.client.render;
+package net.centertain.ceac.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -38,4 +38,39 @@ public final class CeacRenderTypes {
                     ))
                     .createCompositeState(false)
     );
+
+//    public static final RenderType IN_WORLD_UI_TEXTURED = RenderType.create(
+//            "in_world_ui_textured",
+//            DefaultVertexFormat.POSITION_COLOR_TEX,
+//            VertexFormat.Mode.QUADS,
+//            256,
+//            false,
+//            true,
+//            RenderType.CompositeState.builder()
+//                    .setShaderState(new RenderStateShard.ShaderStateShard(
+//                            GameRenderer::getPositionColorTexShader
+//                    ))
+//                    .setTextureState(new RenderStateShard.TextureStateShard(
+//                            null,
+//                            false,
+//                            false
+//                    ))
+//                    .setTransparencyState(new RenderStateShard.TransparencyStateShard(
+//                            "translucent",
+//                            () -> {
+//                                RenderSystem.enableBlend();
+//                                RenderSystem.defaultBlendFunc();
+//                            },
+//                            RenderSystem::disableBlend
+//                    ))
+//                    .setDepthTestState(new RenderStateShard.DepthTestStateShard(
+//                            "always",
+//                            GL11.GL_ALWAYS
+//                    ))
+//                    .setCullState(new RenderStateShard.CullStateShard(false))
+//                    .setWriteMaskState(new RenderStateShard.WriteMaskStateShard(
+//                            true, false
+//                    ))
+//                    .createCompositeState(false)
+//    );
 }
