@@ -95,6 +95,7 @@ public abstract class LevelRendererMixin {
             OpaqueLightmapCaptureState.end();
     }
 
+    @SuppressWarnings("DiscouragedShift") // Acknowledged, but it works, so fuck it.
     @Inject(
             method = "renderChunkLayer",
             at = @At(

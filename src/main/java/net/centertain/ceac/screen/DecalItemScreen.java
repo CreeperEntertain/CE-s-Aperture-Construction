@@ -35,7 +35,7 @@ public class DecalItemScreen extends Screen {
     private final InteractionHand hand;
 
     public DecalItemScreen(InteractionHand hand) {
-        super(Component.empty());;
+        super(Component.empty());
         this.hand = hand;
     }
 

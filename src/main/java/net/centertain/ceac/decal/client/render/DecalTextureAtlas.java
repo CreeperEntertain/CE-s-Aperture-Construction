@@ -282,8 +282,5 @@ public final class DecalTextureAtlas {
         int height() {
             return image.getHeight();
         }
-        long area() {
-            return (long) width() * height();
-        }
     }
 }

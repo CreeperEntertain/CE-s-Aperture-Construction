@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
+@SuppressWarnings("JavaPrintToLogpoint")
 public final class Profiler {
     private static final Map<String, Object> values = new ConcurrentHashMap<>();
 
@@ -72,6 +73,7 @@ public final class Profiler {
         public static void onClientTick(final TickEvent.ClientTickEvent event) {
             if (repeatType != RepeatTypes.TICK)
                 return;
+            //noinspection NonAtomicOperationOnVolatileField
             repeatTickCount++;
             if (repeatTickCount < repeatTickDelay)
                 return;

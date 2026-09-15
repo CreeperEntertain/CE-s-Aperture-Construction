@@ -24,10 +24,8 @@ public class DecalCapabilityProvider implements ICapabilitySerializable<Compound
             @NotNull Capability<T> capability,
             @Nullable Direction side
     ) {
-        if (capability == ModCapabilities.DECALS) {
+        if (capability == ModCapabilities.DECALS)
             return optional.cast();
-        }
-
         return LazyOptional.empty();
     }
 

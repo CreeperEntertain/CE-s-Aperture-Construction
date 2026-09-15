@@ -3,7 +3,6 @@ package net.centertain.ceac.decal.client.render;
 import net.centertain.ceac.decal.Decal;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
 
 import java.util.*;
 

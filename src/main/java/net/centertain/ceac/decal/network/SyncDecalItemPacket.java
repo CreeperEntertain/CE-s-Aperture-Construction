@@ -10,6 +10,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
+@SuppressWarnings("ClassCanBeRecord")
 public class SyncDecalItemPacket {
     public final InteractionHand hand;
     public final ResourceLocation texture;

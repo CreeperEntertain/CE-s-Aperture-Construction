@@ -19,6 +19,7 @@ public final class ClientDecals {
         DECALS.put(decal.getId(), decal);
         TranslucentKBuffer.markSpatialIndexDirty();
     }
+    @SuppressWarnings("UnusedReturnValue")
     public static boolean remove(UUID id) {
         boolean status = DECALS.remove(id) != null;
         TranslucentKBuffer.markSpatialIndexDirty();

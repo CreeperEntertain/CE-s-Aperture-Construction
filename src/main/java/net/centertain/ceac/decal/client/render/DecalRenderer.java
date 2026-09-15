@@ -18,7 +18,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix3f;
@@ -33,8 +32,6 @@ import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.List;
 
-import static net.centertain.ceac.CeacMod.MOD_ID;
-
 public final class DecalRenderer {
     private static RenderTarget opaqueDepthTarget;
     private static RenderTarget decalCoverageTarget;
@@ -42,7 +39,9 @@ public final class DecalRenderer {
     private static RenderTarget opaqueLightmapTarget;
 
     private static int decalVolumeVao;
+    @SuppressWarnings("FieldCanBeLocal")
     private static int decalVolumeVbo;
+    @SuppressWarnings("FieldCanBeLocal")
     private static int decalVolumeEbo;
 
     private static int opaqueLightmapDepthTexture;
@@ -285,6 +284,7 @@ public final class DecalRenderer {
 
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
         lightTexture.turnOnLightLayer();
+        @SuppressWarnings("resource")
         DynamicTexture lightmap = ((LightTextureAccessor) lightTexture).ceac$getLightTexture();
 
         RenderTarget translucentDepthTarget = TranslucentRenderTargets.getTranslucentDepth();
@@ -621,6 +621,7 @@ public final class DecalRenderer {
         LightTexture lightTexture = minecraft.gameRenderer.lightTexture();
         lightTexture.turnOnLightLayer();
 
+        @SuppressWarnings("resource")
         DynamicTexture lightmap = ((LightTextureAccessor) lightTexture).ceac$getLightTexture();
 
         RenderSystem.setShader(() -> shader);

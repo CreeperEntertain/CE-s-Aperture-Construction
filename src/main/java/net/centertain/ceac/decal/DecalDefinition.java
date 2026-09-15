@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("ClassCanBeRecord")
 public final class DecalDefinition {
     private final String name;
     private final int width;

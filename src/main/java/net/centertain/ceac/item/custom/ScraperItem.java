@@ -4,7 +4,6 @@ import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.client.ClientDecals;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
