@@ -4,11 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.decal.client.DecalPlacement;
-import net.centertain.ceac.decal.client.render.CeacRenderTypes;
 import net.centertain.ceac.phys_screen.PreviewerHelpScreen;
+import net.centertain.ceac.phys_screen.elements.PhysGuiGraphics;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
@@ -148,8 +147,6 @@ public final class DecalPreviewer {
         Minecraft minecraft = Minecraft.getInstance();
         Camera camera = minecraft.gameRenderer.getMainCamera();
 
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(CeacRenderTypes.IN_WORLD_UI);
-
         poseStack.pushPose();
 
         Vector3f projectionScale = projectionMatrix.getScale(new Vector3f());
@@ -188,49 +185,37 @@ public final class DecalPreviewer {
 
         cameraX += 1.5;
 
-        double halfWidth = 1.5 / 2.0;
-        double halfHeight = 1.0 / 2.0;
+        double physicalWidth = helpScreen.getPhysicalWidth();
+        double physicalHeight = helpScreen.getPhysicalHeight();
 
-        Vec3 topLeft = new Vec3(
-                cameraX - halfWidth,
-                cameraY + halfHeight,
-                cameraZ
-        );
-        Vec3 topRight = new Vec3(
-                cameraX + halfWidth,
-                cameraY + halfHeight,
-                cameraZ
-        );
-        Vec3 bottomRight = new Vec3(
-                cameraX + halfWidth,
-                cameraY - halfHeight,
-                cameraZ
-        );
-        Vec3 bottomLeft = new Vec3(
-                cameraX - halfWidth,
-                cameraY - halfHeight,
-                cameraZ
-        );
+        double halfWidth = physicalWidth / 2.0;
+        double halfHeight = physicalHeight / 2.0;
 
-        Matrix4f pose = poseStack.last().pose();
-        int color = GuiConstants.COLOR_TRANSLUCENT_BLACK_75;
+        double worldPerPixel = physicalWidth / helpScreen.getScreenWidth();
 
-        vertexConsumer
-                .vertex(pose, (float) topLeft.x, (float) topLeft.y, (float) topLeft.z)
-                .color(color)
-                .endVertex();
-        vertexConsumer
-                .vertex(pose, (float) topRight.x, (float) topRight.y, (float) topRight.z)
-                .color(color)
-                .endVertex();
-        vertexConsumer
-                .vertex(pose, (float) bottomRight.x, (float) bottomRight.y, (float) bottomRight.z)
-                .color(color)
-                .endVertex();
-        vertexConsumer
-                .vertex(pose, (float) bottomLeft.x, (float) bottomLeft.y, (float) bottomLeft.z)
-                .color(color)
-                .endVertex();
+        double left = cameraX - halfWidth;
+        double top = cameraY + halfHeight;
+
+        poseStack.translate(
+                left,
+                top,
+                cameraZ
+        );
+        poseStack.scale(
+                (float) worldPerPixel,
+                (float) -worldPerPixel,
+                1.0f
+        );
+        PhysGuiGraphics guiGraphics = new PhysGuiGraphics(
+                poseStack,
+                bufferSource
+        );
+        helpScreen.renderPhysical(
+                guiGraphics,
+                0,
+                0,
+                minecraft.getFrameTime()
+        );
 
         poseStack.popPose();
     }

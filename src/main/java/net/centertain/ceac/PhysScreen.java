@@ -1,5 +1,7 @@
 package net.centertain.ceac;
 
+import net.centertain.ceac.phys_screen.elements.PhysButton;
+import net.centertain.ceac.phys_screen.elements.PhysGuiGraphics;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -19,14 +21,19 @@ public class PhysScreen extends Screen {
     }
 
     public void renderPhysical(
-            GuiGraphics guiGraphics,
+            PhysGuiGraphics guiGraphics,
             int mouseX,
             int mouseY,
             float partialTick
     ) {
         for (GuiEventListener child : children()) {
-            if (child instanceof Renderable renderable)
-                renderable.render(guiGraphics, mouseX, mouseY, partialTick);
+            if (child instanceof PhysButton button)
+                button.renderPhysical(
+                        guiGraphics,
+                        mouseX,
+                        mouseY,
+                        partialTick
+                );
         }
     }
 
