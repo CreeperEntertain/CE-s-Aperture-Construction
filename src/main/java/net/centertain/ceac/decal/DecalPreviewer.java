@@ -1,5 +1,6 @@
 package net.centertain.ceac.decal;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
@@ -14,6 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 public final class DecalPreviewer {
     private static final double EXTRUSION = 0.002;
@@ -206,6 +208,11 @@ public final class DecalPreviewer {
                 (float) -worldPerPixel,
                 1.0f
         );
+
+        int previousDepthFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
+
+        RenderSystem.depthFunc(GL11.GL_ALWAYS);
+
         PhysGuiGraphics guiGraphics = new PhysGuiGraphics(
                 poseStack,
                 bufferSource
@@ -216,6 +223,8 @@ public final class DecalPreviewer {
                 0,
                 minecraft.getFrameTime()
         );
+
+        RenderSystem.depthFunc(previousDepthFunc);
 
         poseStack.popPose();
     }
