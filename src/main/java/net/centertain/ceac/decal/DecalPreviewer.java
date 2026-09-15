@@ -151,8 +151,7 @@ public final class DecalPreviewer {
 
         Vec3 cameraPosition = camera.getPosition();
 
-        Vec3 anchor = decal.getOrigin().add(this.right.scale(1.5));
-        Vec3 relative = anchor.subtract(cameraPosition);
+        Vec3 relative = decal.getOrigin().subtract(cameraPosition);
 
         Vector3f cameraLeft = camera.getLeftVector();
         Vector3f cameraUp = camera.getUpVector();
@@ -176,6 +175,8 @@ public final class DecalPreviewer {
                 relative.x * cameraLook.x()
                 + relative.y * cameraLook.y()
                 + relative.z * cameraLook.z();
+
+        cameraX += 1.5;
 
         double halfWidth = 1.5 / 2.0;
         double halfHeight = 1.0 / 2.0;
