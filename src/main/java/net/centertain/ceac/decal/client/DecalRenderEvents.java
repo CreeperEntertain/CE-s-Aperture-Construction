@@ -1,6 +1,7 @@
 package net.centertain.ceac.decal.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.centertain.ceac.client.render.CeacRenderTypes;
 import net.centertain.ceac.decal.DecalPreviewer;
 import net.centertain.ceac.decal.client.render.DecalRenderer;
 import net.minecraft.client.Minecraft;
@@ -47,8 +48,10 @@ public final class DecalRenderEvents {
                     preview != null &&
                     DecalPlacement.getPrecisePlacement() &&
                     DecalPlacement.getHelpShown()
-            )
+            ) {
                 preview.renderHelpScreen(poseStack, bufferSource, event.getProjectionMatrix());
+                bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
+            }
         }
     }
 }
