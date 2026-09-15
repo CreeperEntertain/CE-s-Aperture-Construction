@@ -148,50 +148,58 @@ public final class DecalPreviewer {
                 1.0f / projectionScale.y(),
                 1.0f
         );
-        poseStack.mulPose(camera.rotation().conjugate(new Quaternionf()));
 
         Vec3 cameraPosition = camera.getPosition();
 
-        poseStack.translate(
-                -cameraPosition.x,
-                -cameraPosition.y,
-                -cameraPosition.z
+        Vec3 anchor = decal.getOrigin().add(this.right.scale(1.5));
+        Vec3 relative = anchor.subtract(cameraPosition);
+
+        Vector3f cameraLeft = camera.getLeftVector();
+        Vector3f cameraUp = camera.getUpVector();
+        Vector3f cameraLook = camera.getLookVector();
+
+        Vector3f cameraRight = new Vector3f(
+                -cameraLeft.x(),
+                -cameraLeft.y(),
+                -cameraLeft.z()
         );
 
-        Vector3f right = camera.getLeftVector();
-        Vector3f up = camera.getUpVector();
-        Vector3f look = camera.getLookVector();
-
-        Vec3 center = cameraPosition
-                .add(
-                        look.x() * 2.0,
-                        look.y() * 2.0,
-                        look.z() * 2.0
-                )
-                .add(
-                        right.x() * 1.5,
-                        right.y() * 1.5,
-                        right.z() * 1.5
-                );
+        double cameraX =
+                relative.x * cameraRight.x()
+                + relative.y * cameraRight.y()
+                + relative.z * cameraRight.z();
+        double cameraY =
+                relative.x * cameraUp.x()
+                + relative.y * cameraUp.y()
+                + relative.z * cameraUp.z();
+        double cameraZ =
+                relative.x * cameraLook.x()
+                + relative.y * cameraLook.y()
+                + relative.z * cameraLook.z();
 
         double halfWidth = 1.5 / 2.0;
         double halfHeight = 1.0 / 2.0;
 
-        Vec3 horizontal = new Vec3(
-                right.x() * halfWidth,
-                right.y() * halfWidth,
-                right.z() * halfWidth
+        Vec3 topLeft = new Vec3(
+                cameraX - halfWidth,
+                cameraY + halfHeight,
+                cameraZ
         );
-        Vec3 vertical = new Vec3(
-                up.x() * halfHeight,
-                up.y() * halfHeight,
-                up.z() * halfHeight
+        Vec3 topRight = new Vec3(
+                cameraX + halfWidth,
+                cameraY + halfHeight,
+                cameraZ
         );
-
-        Vec3 topLeft = center.subtract(horizontal).add(vertical);
-        Vec3 topRight = center.add(horizontal).add(vertical);
-        Vec3 bottomRight = center.add(horizontal).subtract(vertical);
-        Vec3 bottomLeft = center.subtract(horizontal).subtract(vertical);
+        Vec3 bottomRight = new Vec3(
+                cameraX + halfWidth,
+                cameraY - halfHeight,
+                cameraZ
+        );
+        Vec3 bottomLeft = new Vec3(
+                cameraX - halfWidth,
+                cameraY - halfHeight,
+                cameraZ
+        );
 
         Matrix4f pose = poseStack.last().pose();
         int color = GuiConstants.COLOR_TRANSLUCENT_BLACK_75;
