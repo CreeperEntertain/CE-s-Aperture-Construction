@@ -198,6 +198,10 @@ public final class DecalPreviewer {
         double left = cameraX - halfWidth;
         double top = cameraY + halfHeight;
 
+        double mouseX = -left / worldPerPixel;
+        double mouseY = top / worldPerPixel;
+        boolean mouseOver = helpScreen.updateMouse(mouseX, mouseY);
+
         poseStack.translate(
                 left,
                 top,
