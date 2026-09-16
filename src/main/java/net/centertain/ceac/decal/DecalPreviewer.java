@@ -23,20 +23,32 @@ public final class DecalPreviewer {
     private static final double GRID_RADIUS = 4.0;
     private static final double GRID_OFFSET = 0.003;
 
-    private final Decal decal;
+    private Decal decal;
 
-    private final Vec3 origin;
-    private final Vec3 normal;
-    private final Vec3 right;
-    private final Vec3 up;
+    private Vec3 origin;
+    private Vec3 normal;
+    private Vec3 right;
+    private Vec3 up;
 
-    private final double halfWidth;
-    private final double halfHeight;
-    private final double halfDepth;
+    private double halfWidth;
+    private double halfHeight;
+    private double halfDepth;
 
     private final PreviewerHelpScreen helpScreen;
 
     public DecalPreviewer(Decal decal) {
+        this.helpScreen = new PreviewerHelpScreen();
+
+        update(decal);
+
+        this.helpScreen.init(
+                Minecraft.getInstance(),
+                PreviewerHelpScreen.WIDTH,
+                PreviewerHelpScreen.HEIGHT
+        );
+    }
+
+    public void update(Decal decal) {
         this.decal = decal;
 
         this.origin = decal.getOrigin();
@@ -51,7 +63,8 @@ public final class DecalPreviewer {
 
         double rotation = (Math.PI * 2.0 / 16.0) * decal.getRotation();
 
-        right = right.scale(Math.cos(rotation))
+        right = right
+                .scale(Math.cos(rotation))
                 .add(up.scale(Math.sin(rotation)))
                 .normalize();
         up = normal.cross(right).normalize();
@@ -62,13 +75,6 @@ public final class DecalPreviewer {
         this.halfWidth = decal.getPixelWidth() / 32.0 + EXTRUSION;
         this.halfHeight = decal.getPixelHeight() / 32.0 + EXTRUSION;
         this.halfDepth = decal.getBlockDepth() / 2.0 + EXTRUSION;
-
-        this.helpScreen = new PreviewerHelpScreen();
-        this.helpScreen.init(
-                Minecraft.getInstance(),
-                PreviewerHelpScreen.WIDTH,
-                PreviewerHelpScreen.HEIGHT
-        );
     }
 
     public Decal getDecal() {

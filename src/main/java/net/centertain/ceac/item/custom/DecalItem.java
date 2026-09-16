@@ -220,6 +220,9 @@ public class DecalItem extends Item {
         );
         DecalPlacement.setTempDecal(decal);
         DecalPlacement.setTempAbstractDecal(AbstractDecal.getAbstractFromDeltaChanges(decal, abstraction));
-        DecalPlacement.setDecalPreview(new DecalPreviewer(decal));
+        if (DecalPlacement.getDecalPreview() == null)
+            DecalPlacement.setDecalPreview(new DecalPreviewer(decal));
+        else
+            DecalPlacement.getDecalPreview().update(decal);
     }
 }
