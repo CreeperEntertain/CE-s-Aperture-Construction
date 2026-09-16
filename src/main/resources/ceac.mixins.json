@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "ceac.refmap.json",
   "client": [
+    "FontAccessor",
     "LevelRendererAccessor",
     "LevelRendererMixin",
     "LightTextureAccessor",
