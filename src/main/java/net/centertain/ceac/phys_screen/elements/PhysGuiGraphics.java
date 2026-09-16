@@ -13,7 +13,6 @@ import org.joml.Matrix4f;
 
 public class PhysGuiGraphics {
     private final PoseStack poseStack;
-    private final VertexConsumer vertexConsumer;
     private final MultiBufferSource bufferSource;
     private final double cameraZ;
 
@@ -24,7 +23,6 @@ public class PhysGuiGraphics {
     ) {
         this.poseStack = poseStack;
         this.bufferSource = bufferSource;
-        this.vertexConsumer = bufferSource.getBuffer(CeacRenderTypes.IN_WORLD_UI);
         this.cameraZ = cameraZ;
     }
 
@@ -36,7 +34,7 @@ public class PhysGuiGraphics {
     }
 
     public VertexConsumer vertexConsumer() {
-        return vertexConsumer;
+        return bufferSource.getBuffer(CeacRenderTypes.IN_WORLD_UI);
     }
 
     public void fill(
@@ -46,6 +44,8 @@ public class PhysGuiGraphics {
             int bottom,
             int color
     ) {
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(CeacRenderTypes.IN_WORLD_UI);
+
         Matrix4f pose = poseStack.last().pose();
 
         vertexConsumer
@@ -76,7 +76,7 @@ public class PhysGuiGraphics {
     ) {
         Matrix4f pose = new Matrix4f(poseStack.last().pose());
         float correction = (float) (
-                0.1 * cameraZ
+                0.141421356237 * cameraZ
         );
         pose.translate(
                 0.0f,

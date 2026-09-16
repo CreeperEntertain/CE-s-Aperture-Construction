@@ -24,7 +24,35 @@ public class PreviewerHelpScreen extends PhysScreen {
                 25,
                 100,
                 10,
+                Component.literal("A"),
+                GuiConstants.COLOR_SOLID_WHITE,
+                1.0f,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
+                GuiConstants.COLOR_SOLID_WHITE,
+                null,
+                this::example
+        ));
+
+        addWidget(new PhysButton(
+                25,
+                50,
+                100,
+                10,
                 Component.literal("Hello!"),
+                GuiConstants.COLOR_SOLID_WHITE,
+                1.0f,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
+                GuiConstants.COLOR_SOLID_WHITE,
+                null,
+                this::example
+        ));
+
+        addWidget(new PhysButton(
+                25,
+                75,
+                100,
+                10,
+                Component.literal("A very long sentence that nearly fills the button"),
                 GuiConstants.COLOR_SOLID_WHITE,
                 1.0f,
                 GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
