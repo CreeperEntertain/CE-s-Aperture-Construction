@@ -15,14 +15,17 @@ public class PhysGuiGraphics {
     private final PoseStack poseStack;
     private final VertexConsumer vertexConsumer;
     private final MultiBufferSource bufferSource;
+    private final double cameraZ;
 
     public PhysGuiGraphics(
             PoseStack poseStack,
-            MultiBufferSource bufferSource
+            MultiBufferSource bufferSource,
+            double cameraZ
     ) {
         this.poseStack = poseStack;
         this.bufferSource = bufferSource;
         this.vertexConsumer = bufferSource.getBuffer(CeacRenderTypes.IN_WORLD_UI);
+        this.cameraZ = cameraZ;
     }
 
     public PoseStack pose() {
@@ -71,13 +74,22 @@ public class PhysGuiGraphics {
             int color,
             boolean shadow
     ) {
+        Matrix4f pose = new Matrix4f(poseStack.last().pose());
+        float correction = (float) (
+                0.1 * cameraZ
+        );
+        pose.translate(
+                0.0f,
+                0.0f,
+                correction
+        );
         font.drawInBatch(
                 text.getVisualOrderText(),
                 x,
                 y,
                 color,
                 shadow,
-                poseStack.last().pose(),
+                pose,
                 bufferSource,
                 Font.DisplayMode.NORMAL,
                 0,

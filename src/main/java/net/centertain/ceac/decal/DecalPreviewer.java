@@ -215,7 +215,8 @@ public final class DecalPreviewer {
 
         PhysGuiGraphics guiGraphics = new PhysGuiGraphics(
                 poseStack,
-                bufferSource
+                bufferSource,
+                cameraZ
         );
         helpScreen.renderPhysical(
                 guiGraphics,
