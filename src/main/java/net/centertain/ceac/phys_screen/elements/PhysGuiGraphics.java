@@ -11,10 +11,26 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PhysGuiGraphics {
     private final PoseStack poseStack;
     private final MultiBufferSource bufferSource;
     private final double cameraZ;
+
+    private final List<TextDraw> queuedText = new ArrayList<>();
+
+    private record TextDraw(
+            Font font,
+            Component text,
+            Matrix4f pose,
+            int x,
+            int y,
+            int color,
+            boolean shadow
+    ) {}
+
 
     public PhysGuiGraphics(
             PoseStack poseStack,
@@ -25,6 +41,7 @@ public class PhysGuiGraphics {
         this.bufferSource = bufferSource;
         this.cameraZ = cameraZ;
     }
+
 
     public PoseStack pose() {
         return poseStack;
@@ -74,27 +91,41 @@ public class PhysGuiGraphics {
             int color,
             boolean shadow
     ) {
-        Matrix4f pose = new Matrix4f(poseStack.last().pose());
-        float correction = (float) (
-                0.141421356237 * cameraZ
-        );
-        pose.translate(
-                0.0f,
-                0.0f,
-                correction
-        );
-        font.drawInBatch(
-                text.getVisualOrderText(),
+        queuedText.add(new TextDraw(
+                font,
+                text,
+                new Matrix4f(poseStack.last().pose()),
                 x,
                 y,
                 color,
-                shadow,
-                pose,
-                bufferSource,
-                Font.DisplayMode.NORMAL,
-                0,
-                15728880
-        );
+                shadow
+        ));
+    }
+
+    public void renderQueuedText() {
+        for (TextDraw textDraw : queuedText) {
+            Matrix4f pose = new Matrix4f(textDraw.pose);
+            float correction = (float) (
+                    0.141421356237 * cameraZ
+            );
+            pose.translate(
+                    0.0f,
+                    0.0f,
+                    correction
+            );
+            textDraw.font.drawInBatch(
+                    textDraw.text.getVisualOrderText(),
+                    textDraw.x,
+                    textDraw.y,
+                    textDraw.color,
+                    textDraw.shadow,
+                    pose,
+                    bufferSource,
+                    Font.DisplayMode.NORMAL,
+                    0,
+                    15728880
+            );
+        }
     }
 
     public void blit(

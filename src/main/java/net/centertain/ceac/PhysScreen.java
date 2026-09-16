@@ -43,6 +43,8 @@ public class PhysScreen extends Screen {
                         partialTick
                 );
         }
+
+        guiGraphics.renderQueuedText();
     }
 
     public int getScreenWidth() {
