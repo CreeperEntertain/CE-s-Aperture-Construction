@@ -15,7 +15,7 @@ public final class CeacRenderTypes {
             VertexFormat.Mode.QUADS,
             256,
             false,
-            true,
+            false,
             RenderType.CompositeState.builder()
                     .setShaderState(new RenderStateShard.ShaderStateShard(
                             GameRenderer::getPositionColorShader

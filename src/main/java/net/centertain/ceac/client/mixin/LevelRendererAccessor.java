@@ -1,4 +1,4 @@
-package net.centertain.ceac.decal.client.mixin;
+package net.centertain.ceac.client.mixin;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.renderer.LevelRenderer;

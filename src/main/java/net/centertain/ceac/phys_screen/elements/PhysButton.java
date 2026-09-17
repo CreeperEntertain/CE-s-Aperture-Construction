@@ -11,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PhysButton extends Button {
+    private boolean isHovered;
+
     public PhysButton(
             int x,
             int y,
@@ -47,6 +49,19 @@ public class PhysButton extends Button {
             float partialTick
     ) {
     }
+
+
+    public void updatePhysicalHover(
+            double mouseX,
+            double mouseY
+    ) {
+        isHovered =
+                mouseX >= getX() &&
+                mouseY >= getY() &&
+                mouseX < getX() + getWidth() &&
+                mouseY < getY() + getHeight();
+    }
+
 
     public void renderPhysical(
             PhysGuiGraphics guiGraphics,
@@ -142,7 +157,7 @@ public class PhysButton extends Button {
             );
 
             guiGraphics.pose().popPose();
-        } else if (!isHovered()) {
+        } else if (!isHovered) {
             String truncatedText = getTruncatedText(font, textAreaWidth);
 
             int truncatedTextWidth = Math.round(font.width(truncatedText) * textScale);
@@ -170,7 +185,7 @@ public class PhysButton extends Button {
             );
 
             guiGraphics.pose().popPose();
-        } else {
+        } else { // Marquee
             long elapsed = System.currentTimeMillis() - marqueeStartTime;
 
             if (!marqueeActive) {
@@ -199,19 +214,21 @@ public class PhysButton extends Button {
                     textScale,
                     1.0f
             );
-            guiGraphics.drawString(
+            guiGraphics.drawStringClipped(
                     font,
                     getMessage(),
                     0,
                     0,
                     textColor,
-                    false
+                    false,
+                    scrollOffset / textScale,
+                    (scrollOffset + textAreaWidth) / textScale
             );
 
             guiGraphics.pose().popPose();
         }
 
-         if (!isHovered())
+         if (!isHovered)
              marqueeActive = false;
          else {
              guiGraphics.fill(
