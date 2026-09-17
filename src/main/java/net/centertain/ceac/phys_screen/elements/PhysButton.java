@@ -63,12 +63,7 @@ public class PhysButton extends Button {
     }
 
 
-    public void renderPhysical(
-            PhysGuiGraphics guiGraphics,
-            int mouseX,
-            int mouseY,
-            float partialTick
-    ) {
+    public void renderPhysical(PhysGuiGraphics guiGraphics) {
         guiGraphics.fill(
                 getX(),
                 getY(),
