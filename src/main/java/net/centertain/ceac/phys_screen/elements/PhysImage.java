@@ -5,11 +5,11 @@ import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 
 public class PhysImage implements PhysElement {
-    private final int x;
-    private final int y;
-    private final int width;
-    private final int height;
-    private final ResourceLocation texture;
+    private int x;
+    private int y;
+    private int width;
+    private int height;
+    private ResourceLocation texture;
 
     public PhysImage(
             int x,
@@ -24,6 +24,40 @@ public class PhysImage implements PhysElement {
         this.height = height;
         this.texture = texture;
     }
+
+
+    public int getX() {
+        return x;
+    }
+    public int getY() {
+        return y;
+    }
+    public int getWidth() {
+        return width;
+    }
+    public int getHeight() {
+        return height;
+    }
+    public ResourceLocation getTexture() {
+        return texture;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+    public void setY(int y) {
+        this.y = y;
+    }
+    public void setWidth(int width) {
+        this.width = width;
+    }
+    public void setHeight(int height) {
+        this.height = height;
+    }
+    public void setTexture(ResourceLocation texture) {
+        this.texture = texture;
+    }
+
 
     public void renderPhysical(PhysGuiGraphics guiGraphics) {
         guiGraphics.blit(
