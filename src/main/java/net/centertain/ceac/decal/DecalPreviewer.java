@@ -1,21 +1,17 @@
 package net.centertain.ceac.decal;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.phys_screen.PreviewerHelpScreen;
-import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
-import net.minecraft.client.Camera;
+import net.centertain.ceac.phys_screen.utility.PhysRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
 
 public final class DecalPreviewer {
     private static final double EXTRUSION = 0.002;
@@ -152,87 +148,14 @@ public final class DecalPreviewer {
             MultiBufferSource bufferSource,
             Matrix4f projectionMatrix
     ) {
-        Minecraft minecraft = Minecraft.getInstance();
-        Camera camera = minecraft.gameRenderer.getMainCamera();
-
-        poseStack.pushPose();
-
-        Vector3f projectionScale = projectionMatrix.getScale(new Vector3f());
-        poseStack.scale(
-                1.0f / projectionScale.x(),
-                1.0f / projectionScale.y(),
-                1.0f
-        );
-
-        Vec3 cameraPosition = camera.getPosition();
-
-        Vec3 relative = decal.getOrigin().subtract(cameraPosition);
-
-        Vector3f cameraLeft = camera.getLeftVector();
-        Vector3f cameraUp = camera.getUpVector();
-        Vector3f cameraLook = camera.getLookVector();
-
-        Vector3f cameraRight = new Vector3f(
-                -cameraLeft.x(),
-                -cameraLeft.y(),
-                -cameraLeft.z()
-        );
-
-        double cameraX =
-                relative.x * cameraRight.x()
-                + relative.y * cameraRight.y()
-                + relative.z * cameraRight.z();
-        double cameraY =
-                relative.x * cameraUp.x()
-                + relative.y * cameraUp.y()
-                + relative.z * cameraUp.z();
-        double cameraZ =
-                relative.x * cameraLook.x()
-                + relative.y * cameraLook.y()
-                + relative.z * cameraLook.z();
-
-        cameraX += 1.5;
-
-        double physicalWidth = helpScreen.getPhysicalWidth();
-        double physicalHeight = helpScreen.getPhysicalHeight();
-
-        double halfWidth = physicalWidth / 2.0;
-        double halfHeight = physicalHeight / 2.0;
-
-        double worldPerPixel = physicalWidth / helpScreen.getScreenWidth();
-
-        double left = cameraX - halfWidth;
-        double top = cameraY + halfHeight;
-
-        double mouseX = -left / worldPerPixel;
-        double mouseY = top / worldPerPixel;
-        boolean mouseOver = helpScreen.updateMouse(mouseX, mouseY);
-
-        poseStack.translate(
-                left,
-                top,
-                cameraZ
-        );
-        poseStack.scale(
-                (float) worldPerPixel,
-                (float) -worldPerPixel,
-                1.0f
-        );
-
-        int previousDepthFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
-
-        RenderSystem.depthFunc(GL11.GL_ALWAYS);
-
-        PhysGuiGraphics guiGraphics = new PhysGuiGraphics(
+        boolean isHovered = PhysRenderer.billboardAfterLevel(
+                helpScreen,
+                decal.getOrigin(),
+                new Vec3(1.5, 0, 0),
                 poseStack,
                 bufferSource,
-                cameraZ
+                projectionMatrix
         );
-        helpScreen.renderPhysical(guiGraphics);
-
-        RenderSystem.depthFunc(previousDepthFunc);
-
-        poseStack.popPose();
     }
 
     private void drawBox(
