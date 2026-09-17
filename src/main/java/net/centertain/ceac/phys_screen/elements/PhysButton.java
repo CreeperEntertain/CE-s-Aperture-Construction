@@ -225,38 +225,38 @@ public class PhysButton extends Button implements PhysElement {
             guiGraphics.pose().popPose();
         }
 
-         if (!isHovered)
-             marqueeActive = false;
-         else {
-             guiGraphics.fill(
-                     getX(),
-                     getY(),
-                     getX() + getWidth(),
-                     getY() + 1,
-                     outlineColor
-             );
-             guiGraphics.fill(
-                     getX(),
-                     getY() + getHeight() - 1,
-                     getX() + getWidth(),
-                     getY() + getHeight(),
-                     outlineColor
-             );
-             guiGraphics.fill(
-                     getX(),
-                     getY(),
-                     getX() + 1,
-                     getY() + getHeight(),
-                     outlineColor
-             );
-             guiGraphics.fill(
-                     getX() + getWidth() - 1,
-                     getY(),
-                     getX() + getWidth(),
-                     getY() + getHeight(),
-                     outlineColor
-             );
-         }
+        if (!isHovered)
+            marqueeActive = false;
+        else {
+            guiGraphics.fill(
+                    getX(),
+                    getY(),
+                    getX() + getWidth(),
+                    getY() + 1,
+                    outlineColor
+            );
+            guiGraphics.fill(
+                    getX(),
+                    getY() + getHeight() - 1,
+                    getX() + getWidth(),
+                    getY() + getHeight(),
+                    outlineColor
+            );
+            guiGraphics.fill(
+                    getX(),
+                    getY(),
+                    getX() + 1,
+                    getY() + getHeight(),
+                    outlineColor
+            );
+            guiGraphics.fill(
+                    getX() + getWidth() - 1,
+                    getY(),
+                    getX() + getWidth(),
+                    getY() + getHeight(),
+                    outlineColor
+            );
+        }
     }
 
     private String getTruncatedText(
