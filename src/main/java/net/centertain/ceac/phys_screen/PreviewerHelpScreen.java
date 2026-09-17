@@ -1,13 +1,10 @@
 package net.centertain.ceac.phys_screen;
 
 import net.centertain.ceac.GuiConstants;
-import net.centertain.ceac.PhysScreen;
-import net.centertain.ceac.decal.client.DecalLoader;
+import net.centertain.ceac.phys_screen.elements.PhysGuiGraphics;
+import net.centertain.ceac.phys_screen.framework.PhysScreen;
 import net.centertain.ceac.phys_screen.elements.PhysButton;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-
-import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public class PreviewerHelpScreen extends PhysScreen {
     public static final int WIDTH = 150;
@@ -23,7 +20,7 @@ public class PreviewerHelpScreen extends PhysScreen {
     protected void init() {
         super.init();
 
-        addWidget(new PhysButton(
+        addPhysElement(new PhysButton(
                 25,
                 25,
                 100,

@@ -1,6 +1,7 @@
 package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.screen.elements.Button;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -10,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class PhysButton extends Button {
+public class PhysButton extends Button implements PhysElement {
     private boolean isHovered;
 
     public PhysButton(

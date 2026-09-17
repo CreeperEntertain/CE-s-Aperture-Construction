@@ -1,19 +1,32 @@
-package net.centertain.ceac;
+package net.centertain.ceac.phys_screen.framework;
 
 import net.centertain.ceac.phys_screen.elements.PhysButton;
 import net.centertain.ceac.phys_screen.elements.PhysGuiGraphics;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PhysScreen extends Screen {
+    private final List<PhysElement> physElements = new ArrayList<>();
+
     protected PhysScreen(Component title) {
         super(title);
     }
 
     protected void build() {}
+
+    protected <T extends PhysElement> T addPhysElement(T element) {
+        physElements.add(element);
+
+        if (element instanceof GuiEventListener && element instanceof NarratableEntry)
+            addWidget((GuiEventListener & NarratableEntry) element);
+
+        return element;
+    }
 
     @Override
     protected void init() {
@@ -21,17 +34,8 @@ public class PhysScreen extends Screen {
     }
 
     public void renderPhysical(PhysGuiGraphics guiGraphics) {
-        guiGraphics.fill(
-                0,
-                0,
-                getScreenWidth(),
-                getScreenHeight(),
-                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
-        );
-
-        for (GuiEventListener child : children())
-            if (child instanceof PhysButton button)
-                button.renderPhysical(guiGraphics);
+        for (PhysElement element : physElements)
+            element.renderPhysical(guiGraphics);
 
         guiGraphics.renderQueuedText();
     }
