@@ -185,7 +185,7 @@ public class PhysButton extends Button {
             );
 
             guiGraphics.pose().popPose();
-        } else {
+        } else { // Marquee
             long elapsed = System.currentTimeMillis() - marqueeStartTime;
 
             if (!marqueeActive) {
@@ -214,13 +214,15 @@ public class PhysButton extends Button {
                     textScale,
                     1.0f
             );
-            guiGraphics.drawString(
+            guiGraphics.drawStringClipped(
                     font,
                     getMessage(),
                     0,
                     0,
                     textColor,
-                    false
+                    false,
+                    scrollOffset / textScale,
+                    (scrollOffset + textAreaWidth) / textScale
             );
 
             guiGraphics.pose().popPose();
