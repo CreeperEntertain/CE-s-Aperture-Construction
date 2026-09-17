@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,12 +150,12 @@ public class PhysGuiGraphics {
 
         Matrix4f textProjectionMatrix = gameRenderer.getProjectionMatrix(textFov);
 
-        double projectionCorrection = textProjectionMatrix.m11() / projectionMatrix.m11() - 1.0;
-
         for (TextDraw textDraw : queuedText) {
             Matrix4f pose = new Matrix4f(textDraw.pose);
-            float correction = (float) (
-                    projectionCorrection * cameraZ
+            float correction = (float) getTextProjectionCorrection(
+                    textDraw.pose,
+                    projectionMatrix,
+                    textProjectionMatrix
             );
             pose.translate(
                     0.0f,
@@ -193,6 +194,53 @@ public class PhysGuiGraphics {
         }
 
         queuedText.clear();
+    }
+
+    private double getTextProjectionCorrection(
+            Matrix4f pose,
+            Matrix4f worldProjection,
+            Matrix4f textProjection
+    ) {
+        Vector4f viewPosition = new Vector4f(
+                0.0f,
+                0.0f,
+                0.0f,
+                1.0f
+        );
+        pose.transform(viewPosition);
+
+        Vector4f viewZ = new Vector4f(
+                0.0f,
+                0.0f,
+                1.0f,
+                0.0f
+        );
+        pose.transform(viewZ);
+
+        Vector4f worldClip = new Vector4f(viewPosition);
+        worldProjection.transform(worldClip);
+
+        double targetX = worldClip.x() / worldClip.w();
+        double targetY = worldClip.y() / worldClip.w();
+
+        Vector4f textClip = new Vector4f(viewPosition);
+        textProjection.transform(textClip);
+
+        Vector4f textZClip = new Vector4f(viewZ);
+        textProjection.transform(textZClip);
+
+        double bx = textClip.x() - targetX * textClip.w();
+        double by = textClip.y() - targetY * textClip.w();
+
+        double ax = textZClip.x() - targetX * textZClip.w();
+        double ay = textZClip.y() - targetY * textZClip.w();
+
+        double denominator = ax * ax + ay * ay;
+
+        if (denominator < 1.0e-12)
+            return 0.0;
+
+        return -(ax * bx + ay * by) / denominator;
     }
 
     private MultiBufferSource renderClippedTextSource(
