@@ -111,19 +111,20 @@ public final class PhysRenderer {
                 + relative.y * cameraLook.y()
                 + relative.z * cameraLook.z();
 
-        cameraX += viewSpaceOffset.x;
-        cameraY += viewSpaceOffset.y;
         cameraZ += viewSpaceOffset.z;
-
-        double physicalWidth = physScreen.getPhysicalWidth();
-        double physicalHeight = physScreen.getPhysicalHeight();
-
-        double worldPerPixel = physicalWidth / physScreen.getScreenWidth();
 
         double sizeScale = 1.0;
 
         if (stayConstantSize)
             sizeScale = cameraZ / constantSizeScale;
+
+        cameraX += viewSpaceOffset.x * sizeScale;
+        cameraY += viewSpaceOffset.y * sizeScale;
+
+        double physicalWidth = physScreen.getPhysicalWidth();
+        double physicalHeight = physScreen.getPhysicalHeight();
+
+        double worldPerPixel = physicalWidth / physScreen.getScreenWidth();
 
         physicalWidth *= sizeScale;
         physicalHeight *= sizeScale;
