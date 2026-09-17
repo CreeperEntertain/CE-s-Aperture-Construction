@@ -1,6 +1,8 @@
 package net.centertain.ceac.phys_screen;
 
 import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.decal.client.DecalLoader;
+import net.centertain.ceac.phys_screen.elements.PhysImage;
 import net.centertain.ceac.phys_screen.elements.PhysRect;
 import net.centertain.ceac.phys_screen.framework.PhysScreen;
 import net.centertain.ceac.phys_screen.elements.PhysButton;
@@ -25,21 +27,9 @@ public class PreviewerHelpScreen extends PhysScreen {
                 0,
                 WIDTH,
                 HEIGHT,
-                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
-        ));
-
-        addPhysElement(new PhysButton(
-                25,
-                25,
-                100,
-                10,
-                Component.literal("Example"),
-                GuiConstants.COLOR_SOLID_WHITE,
-                1.0f,
                 GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
                 GuiConstants.COLOR_SOLID_WHITE,
-                null,
-                this::example
+                1
         ));
     }
 }
