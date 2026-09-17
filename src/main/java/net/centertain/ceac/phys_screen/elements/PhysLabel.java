@@ -32,6 +32,12 @@ public class PhysLabel implements PhysElement {
     public int getY() {
         return y;
     }
+    public int getWidth() {
+        return Minecraft.getInstance().font.width(text);
+    }
+    public int getHeight() {
+        return Minecraft.getInstance().font.lineHeight;
+    }
     public int getColor() {
         return color;
     }
