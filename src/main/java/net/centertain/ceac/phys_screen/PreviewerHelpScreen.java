@@ -1,7 +1,7 @@
 package net.centertain.ceac.phys_screen;
 
 import net.centertain.ceac.GuiConstants;
-import net.centertain.ceac.phys_screen.elements.PhysGuiGraphics;
+import net.centertain.ceac.phys_screen.elements.PhysRect;
 import net.centertain.ceac.phys_screen.framework.PhysScreen;
 import net.centertain.ceac.phys_screen.elements.PhysButton;
 import net.minecraft.network.chat.Component;
@@ -19,6 +19,14 @@ public class PreviewerHelpScreen extends PhysScreen {
     @Override
     protected void init() {
         super.init();
+
+        addPhysElement(new PhysRect(
+                0,
+                0,
+                WIDTH,
+                HEIGHT,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+        ));
 
         addPhysElement(new PhysButton(
                 25,

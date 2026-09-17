@@ -1,13 +1,11 @@
-package net.centertain.ceac.phys_screen.elements;
+package net.centertain.ceac.phys_screen.framework;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.client.render.CeacRenderTypes;
 import net.centertain.ceac.client.render.ClippingVertexConsumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;

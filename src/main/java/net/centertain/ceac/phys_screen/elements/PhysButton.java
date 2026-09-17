@@ -2,6 +2,7 @@ package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.phys_screen.framework.PhysElement;
+import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import net.centertain.ceac.screen.elements.Button;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

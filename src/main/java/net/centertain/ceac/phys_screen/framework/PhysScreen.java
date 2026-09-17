@@ -1,7 +1,6 @@
 package net.centertain.ceac.phys_screen.framework;
 
 import net.centertain.ceac.phys_screen.elements.PhysButton;
-import net.centertain.ceac.phys_screen.elements.PhysGuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;

@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.phys_screen.PreviewerHelpScreen;
-import net.centertain.ceac.phys_screen.elements.PhysGuiGraphics;
+import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
