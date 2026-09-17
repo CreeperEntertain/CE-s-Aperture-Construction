@@ -154,7 +154,8 @@ public final class DecalPreviewer {
                 new Vec3(1.5, 0, 0),
                 poseStack,
                 bufferSource,
-                projectionMatrix
+                projectionMatrix,
+                true
         );
     }
 

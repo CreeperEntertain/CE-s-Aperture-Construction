@@ -25,6 +25,55 @@ public final class PhysRenderer {
             MultiBufferSource bufferSource,
             @NotNull Matrix4f projectionMatrix
     ) {
+        return billboardAfterLevel(
+                physScreen,
+                inWorldAnchor,
+                viewSpaceOffset,
+                poseStack,
+                bufferSource,
+                projectionMatrix,
+                false,
+                3.0
+        );
+    }
+
+    /// It's important to only ever execute this within the <code>AFTER_LEVEL</code> render stage as the transforms will
+    /// otherwise be utterly fucked.
+    /// @return <code>true</code> if your crosshair is over the <code>PhysScreen</code> provided.
+    public static boolean billboardAfterLevel(
+            @NotNull PhysScreen physScreen,
+            @NotNull Vec3 inWorldAnchor,
+            @NotNull Vec3 viewSpaceOffset,
+            @NotNull PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            @NotNull Matrix4f projectionMatrix,
+            boolean stayConstantSize
+    ) {
+        return billboardAfterLevel(
+                physScreen,
+                inWorldAnchor,
+                viewSpaceOffset,
+                poseStack,
+                bufferSource,
+                projectionMatrix,
+                stayConstantSize,
+                3.0
+        );
+    }
+
+    /// It's important to only ever execute this within the <code>AFTER_LEVEL</code> render stage as the transforms will
+    /// otherwise be utterly fucked.
+    /// @return <code>true</code> if your crosshair is over the <code>PhysScreen</code> provided.
+    public static boolean billboardAfterLevel(
+            @NotNull PhysScreen physScreen,
+            @NotNull Vec3 inWorldAnchor,
+            @NotNull Vec3 viewSpaceOffset,
+            @NotNull PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            @NotNull Matrix4f projectionMatrix,
+            boolean stayConstantSize,
+            double constantSizeScale
+    ) {
         Minecraft minecraft = Minecraft.getInstance();
         Camera camera = minecraft.gameRenderer.getMainCamera();
 
@@ -69,10 +118,19 @@ public final class PhysRenderer {
         double physicalWidth = physScreen.getPhysicalWidth();
         double physicalHeight = physScreen.getPhysicalHeight();
 
+        double worldPerPixel = physicalWidth / physScreen.getScreenWidth();
+
+        double sizeScale = 1.0;
+
+        if (stayConstantSize)
+            sizeScale = cameraZ / constantSizeScale;
+
+        physicalWidth *= sizeScale;
+        physicalHeight *= sizeScale;
+        worldPerPixel *= sizeScale;
+
         double halfWidth = physicalWidth / 2.0;
         double halfHeight = physicalHeight / 2.0;
-
-        double worldPerPixel = physicalWidth / physScreen.getScreenWidth();
 
         double left = cameraX - halfWidth;
         double top = cameraY + halfHeight;
