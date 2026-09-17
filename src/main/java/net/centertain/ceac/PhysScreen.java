@@ -18,12 +18,7 @@ public class PhysScreen extends Screen {
         build();
     }
 
-    public void renderPhysical(
-            PhysGuiGraphics guiGraphics,
-            int mouseX,
-            int mouseY,
-            float partialTick
-    ) {
+    public void renderPhysical(PhysGuiGraphics guiGraphics) {
         guiGraphics.fill(
                 0,
                 0,
@@ -32,15 +27,9 @@ public class PhysScreen extends Screen {
                 GuiConstants.COLOR_TRANSLUCENT_BLACK_75
         );
 
-        for (GuiEventListener child : children()) {
+        for (GuiEventListener child : children())
             if (child instanceof PhysButton button)
-                button.renderPhysical(
-                        guiGraphics,
-                        mouseX,
-                        mouseY,
-                        partialTick
-                );
-        }
+                button.renderPhysical(guiGraphics);
 
         guiGraphics.renderQueuedText();
     }

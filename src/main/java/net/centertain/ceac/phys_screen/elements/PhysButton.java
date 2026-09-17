@@ -63,12 +63,7 @@ public class PhysButton extends Button {
     }
 
 
-    public void renderPhysical(
-            PhysGuiGraphics guiGraphics,
-            int mouseX,
-            int mouseY,
-            float partialTick
-    ) {
+    public void renderPhysical(PhysGuiGraphics guiGraphics) {
         guiGraphics.fill(
                 getX(),
                 getY(),
@@ -115,7 +110,7 @@ public class PhysButton extends Button {
         int contentTop = getY() + (getHeight() - contentHeight) / 2;
 
         if (drawTextureHeight > 0) {
-            int textureX = getX() + (getHeight() - contentHeight) / 2;
+            int textureX = getX() + (getWidth() - drawTextureWidth) / 2;
 
             guiGraphics.blit(
                     texture,

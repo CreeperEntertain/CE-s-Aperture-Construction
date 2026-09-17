@@ -228,12 +228,7 @@ public final class DecalPreviewer {
                 bufferSource,
                 cameraZ
         );
-        helpScreen.renderPhysical(
-                guiGraphics,
-                0,
-                0,
-                minecraft.getFrameTime()
-        );
+        helpScreen.renderPhysical(guiGraphics);
 
         RenderSystem.depthFunc(previousDepthFunc);
 
