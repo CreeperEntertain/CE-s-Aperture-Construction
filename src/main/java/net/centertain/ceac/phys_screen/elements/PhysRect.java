@@ -3,6 +3,7 @@ package net.centertain.ceac.phys_screen.elements;
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 
+@SuppressWarnings("ClassCanBeRecord")
 public class PhysRect implements PhysElement {
     private final int x;
     private final int y;
@@ -45,6 +46,29 @@ public class PhysRect implements PhysElement {
         this.fillColor = fillColor;
         this.outlineColor = 0x00000000;
         this.outlineWidth = 0;
+    }
+
+
+    public int getX() {
+        return x;
+    }
+    public int getY() {
+        return y;
+    }
+    public int getWidth() {
+        return width;
+    }
+    public int getHeight() {
+        return height;
+    }
+    public int getFillColor() {
+        return fillColor;
+    }
+    public int getOutlineColor() {
+        return outlineColor;
+    }
+    public int getOutlineWidth() {
+        return outlineWidth;
     }
 
 
