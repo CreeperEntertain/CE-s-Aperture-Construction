@@ -215,5 +215,7 @@ public class PhysGuiGraphics {
                 .color(255, 255, 255, 255)
                 .uv(1.0f, 0.0f)
                 .endVertex();
+
+        bufferSource.getBuffer(CeacRenderTypes.IN_WORLD_UI);
     }
 }
