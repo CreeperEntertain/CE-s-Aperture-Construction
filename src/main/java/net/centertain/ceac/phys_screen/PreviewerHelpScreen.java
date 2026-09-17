@@ -2,8 +2,12 @@ package net.centertain.ceac.phys_screen;
 
 import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.PhysScreen;
+import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.phys_screen.elements.PhysButton;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+
+import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public class PreviewerHelpScreen extends PhysScreen {
     public static final int WIDTH = 150;
@@ -24,35 +28,7 @@ public class PreviewerHelpScreen extends PhysScreen {
                 25,
                 100,
                 10,
-                Component.literal("A"),
-                GuiConstants.COLOR_SOLID_WHITE,
-                1.0f,
-                GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
-                GuiConstants.COLOR_SOLID_WHITE,
-                null,
-                this::example
-        ));
-
-        addWidget(new PhysButton(
-                25,
-                50,
-                100,
-                10,
-                Component.literal("Hello!"),
-                GuiConstants.COLOR_SOLID_WHITE,
-                1.0f,
-                GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
-                GuiConstants.COLOR_SOLID_WHITE,
-                null,
-                this::example
-        ));
-
-        addWidget(new PhysButton(
-                25,
-                75,
-                100,
-                10,
-                Component.literal("A very long sentence that nearly fills the button"),
+                Component.literal("Example"),
                 GuiConstants.COLOR_SOLID_WHITE,
                 1.0f,
                 GuiConstants.COLOR_TRANSLUCENT_BLACK_75,

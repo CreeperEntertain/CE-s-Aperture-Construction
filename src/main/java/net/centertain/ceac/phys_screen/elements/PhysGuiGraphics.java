@@ -193,9 +193,7 @@ public class PhysGuiGraphics {
             int width,
             int height
     ) {
-        RenderSystem.setShaderTexture(0, texture);
-
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.text(texture));
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(CeacRenderTypes.inWorldUiTextured(texture));
 
         Matrix4f pose = poseStack.last().pose();
 
