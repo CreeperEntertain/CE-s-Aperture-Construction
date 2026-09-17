@@ -1,6 +1,8 @@
 package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.phys_screen.framework.PhysElement;
+import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import net.centertain.ceac.screen.elements.Button;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -10,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class PhysButton extends Button {
+public class PhysButton extends Button implements PhysElement {
     private boolean isHovered;
 
     public PhysButton(
@@ -223,38 +225,38 @@ public class PhysButton extends Button {
             guiGraphics.pose().popPose();
         }
 
-         if (!isHovered)
-             marqueeActive = false;
-         else {
-             guiGraphics.fill(
-                     getX(),
-                     getY(),
-                     getX() + getWidth(),
-                     getY() + 1,
-                     outlineColor
-             );
-             guiGraphics.fill(
-                     getX(),
-                     getY() + getHeight() - 1,
-                     getX() + getWidth(),
-                     getY() + getHeight(),
-                     outlineColor
-             );
-             guiGraphics.fill(
-                     getX(),
-                     getY(),
-                     getX() + 1,
-                     getY() + getHeight(),
-                     outlineColor
-             );
-             guiGraphics.fill(
-                     getX() + getWidth() - 1,
-                     getY(),
-                     getX() + getWidth(),
-                     getY() + getHeight(),
-                     outlineColor
-             );
-         }
+        if (!isHovered)
+            marqueeActive = false;
+        else {
+            guiGraphics.fill(
+                    getX(),
+                    getY(),
+                    getX() + getWidth(),
+                    getY() + 1,
+                    outlineColor
+            );
+            guiGraphics.fill(
+                    getX(),
+                    getY() + getHeight() - 1,
+                    getX() + getWidth(),
+                    getY() + getHeight(),
+                    outlineColor
+            );
+            guiGraphics.fill(
+                    getX(),
+                    getY(),
+                    getX() + 1,
+                    getY() + getHeight(),
+                    outlineColor
+            );
+            guiGraphics.fill(
+                    getX() + getWidth() - 1,
+                    getY(),
+                    getX() + getWidth(),
+                    getY() + getHeight(),
+                    outlineColor
+            );
+        }
     }
 
     private String getTruncatedText(
