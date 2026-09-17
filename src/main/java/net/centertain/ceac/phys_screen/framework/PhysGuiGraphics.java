@@ -2,9 +2,13 @@ package net.centertain.ceac.phys_screen.framework;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.centertain.ceac.client.mixin.GameRendererAccessor;
 import net.centertain.ceac.client.render.CeacRenderTypes;
 import net.centertain.ceac.client.render.ClippingVertexConsumer;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -17,6 +21,7 @@ public class PhysGuiGraphics {
     private final PoseStack poseStack;
     private final MultiBufferSource bufferSource;
     private final double cameraZ;
+    private final Matrix4f projectionMatrix;
 
     private final List<TextDraw> queuedText = new ArrayList<>();
 
@@ -36,11 +41,13 @@ public class PhysGuiGraphics {
     public PhysGuiGraphics(
             PoseStack poseStack,
             MultiBufferSource bufferSource,
-            double cameraZ
+            double cameraZ,
+            Matrix4f projectionMatrix
     ) {
         this.poseStack = poseStack;
         this.bufferSource = bufferSource;
         this.cameraZ = cameraZ;
+        this.projectionMatrix = projectionMatrix;
     }
 
 
@@ -129,10 +136,25 @@ public class PhysGuiGraphics {
     }
 
     public void renderQueuedText() {
+        Minecraft minecraft = Minecraft.getInstance();
+
+        GameRenderer gameRenderer = minecraft.gameRenderer;
+        Camera camera = gameRenderer.getMainCamera();
+
+        double textFov = ((GameRendererAccessor) gameRenderer).ceac$getFov(
+                camera,
+                minecraft.getFrameTime(),
+                false
+        );
+
+        Matrix4f textProjectionMatrix = gameRenderer.getProjectionMatrix(textFov);
+
+        double projectionCorrection = textProjectionMatrix.m11() / projectionMatrix.m11() - 1.0;
+
         for (TextDraw textDraw : queuedText) {
             Matrix4f pose = new Matrix4f(textDraw.pose);
             float correction = (float) (
-                    0.141421356237 * cameraZ
+                    projectionCorrection * cameraZ
             );
             pose.translate(
                     0.0f,

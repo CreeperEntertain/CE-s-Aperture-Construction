@@ -34,22 +34,36 @@ public class PreviewerHelpScreen extends PhysScreen {
                 1
         ));
 
-        List<PhysElement> labels = new ArrayList<>();
-        for (int i = 0; i < 10; i++)
-            labels.add(new PhysLabel(
-                    0,
-                    0,
-                    GuiConstants.COLOR_SOLID_WHITE,
-                    Component.literal("HAII!!!"),
-                    false
-            ));
-        addPhysElement(new PhysStackPanel(
-                15,
-                15,
-                PhysStackPanel.Alignment.VERTICAL,
-                120,
-                GuiConstants.ELEMENT_PADDING,
-                labels
+        addPhysElement(new PhysButton(
+                25,
+                25,
+                100,
+                10,
+                Component.literal("Example"),
+                GuiConstants.COLOR_SOLID_WHITE,
+                1.0f,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
+                GuiConstants.COLOR_SOLID_WHITE,
+                null,
+                this::example
         ));
+
+//        List<PhysElement> labels = new ArrayList<>();
+//        for (int i = 0; i < 10; i++)
+//            labels.add(new PhysLabel(
+//                    0,
+//                    0,
+//                    GuiConstants.COLOR_SOLID_WHITE,
+//                    Component.literal("HAII!!!"),
+//                    false
+//            ));
+//        addPhysElement(new PhysStackPanel(
+//                15,
+//                15,
+//                PhysStackPanel.Alignment.VERTICAL,
+//                120,
+//                GuiConstants.ELEMENT_PADDING,
+//                labels
+//        ));
     }
 }
