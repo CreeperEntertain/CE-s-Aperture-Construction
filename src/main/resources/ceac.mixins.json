@@ -5,6 +5,7 @@
   "refmap": "ceac.refmap.json",
   "client": [
     "GameRendererAccessor",
+    "GameRendererMixin",
     "LevelRendererAccessor",
     "LevelRendererMixin",
     "LightTextureAccessor",

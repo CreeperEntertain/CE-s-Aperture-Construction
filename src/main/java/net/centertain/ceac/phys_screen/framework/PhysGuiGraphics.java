@@ -142,6 +142,14 @@ public class PhysGuiGraphics {
         GameRenderer gameRenderer = minecraft.gameRenderer;
         Camera camera = gameRenderer.getMainCamera();
 
+        double worldFov = ((GameRendererAccessor) gameRenderer).ceac$getFov(
+                camera,
+                minecraft.getFrameTime(),
+                true
+        );
+
+        Matrix4f worldBaseProjection = gameRenderer.getProjectionMatrix(worldFov);
+
         double textFov = ((GameRendererAccessor) gameRenderer).ceac$getFov(
                 camera,
                 minecraft.getFrameTime(),
@@ -152,9 +160,8 @@ public class PhysGuiGraphics {
 
         for (TextDraw textDraw : queuedText) {
             Matrix4f pose = new Matrix4f(textDraw.pose);
-            float correction = (float) getTextProjectionCorrection(
+            float correction = (float) getTextZCorrection(
                     textDraw.pose,
-                    projectionMatrix,
                     textProjectionMatrix
             );
             pose.translate(
@@ -196,11 +203,21 @@ public class PhysGuiGraphics {
         queuedText.clear();
     }
 
-    private double getTextProjectionCorrection(
+    private double getTextZCorrection(
             Matrix4f pose,
-            Matrix4f worldProjection,
             Matrix4f textProjection
     ) {
+        GameRendererViewOffsetAccessor renderer = (GameRendererViewOffsetAccessor) Minecraft.getInstance().gameRenderer;
+        Matrix4f baseWorldProjection = renderer.ceac$getProjectionBeforeViewOffset();
+
+        if (baseWorldProjection == null)
+            return 0.0;
+
+        double worldScale = baseWorldProjection.m11();
+        double textScale = textProjection.m11();
+
+        double scaleRatio = textScale / worldScale;
+
         Vector4f viewPosition = new Vector4f(
                 0.0f,
                 0.0f,
@@ -217,30 +234,15 @@ public class PhysGuiGraphics {
         );
         pose.transform(viewZ);
 
-        Vector4f worldClip = new Vector4f(viewPosition);
-        worldProjection.transform(worldClip);
+        double depth = viewPosition.z();
+        double axisDepth = viewZ.z();
 
-        double targetX = worldClip.x() / worldClip.w();
-        double targetY = worldClip.y() / worldClip.w();
-
-        Vector4f textClip = new Vector4f(viewPosition);
-        textProjection.transform(textClip);
-
-        Vector4f textZClip = new Vector4f(viewZ);
-        textProjection.transform(textZClip);
-
-        double bx = textClip.x() - targetX * textClip.w();
-        double by = textClip.y() - targetY * textClip.w();
-
-        double ax = textZClip.x() - targetX * textZClip.w();
-        double ay = textZClip.y() - targetY * textZClip.w();
-
-        double denominator = ax * ax + ay * ay;
-
-        if (denominator < 1.0e-12)
+        if (Math.abs(axisDepth) < 1.0e-8)
             return 0.0;
 
-        return -(ax * bx + ay * by) / denominator;
+        double desiredDepth = depth * scaleRatio;
+
+        return (desiredDepth - depth) / axisDepth;
     }
 
     private MultiBufferSource renderClippedTextSource(
