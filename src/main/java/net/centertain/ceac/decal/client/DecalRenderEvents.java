@@ -14,6 +14,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
@@ -31,43 +32,62 @@ public final class DecalRenderEvents {
         PoseStack poseStack = event.getPoseStack();
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
-            Vec3 cameraPosition = event.getCamera().getPosition();
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS)
+            decalRendering(event, poseStack, bufferSource);
 
-            DecalPreviewer preview = DecalPlacement.getDecalPreview();
-            if (preview != null && DecalPlacement.getPrecisePlacement()) {
-                preview.render(poseStack, bufferSource, cameraPosition);
-                bufferSource.endBatch(RenderType.lines());
-            }
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL)
+            physScreenRendering(bufferSource);
+    }
 
-            DecalRenderer.captureOpaqueDepth();
-            DecalRenderer.render(event);
+
+    private static void decalRendering(
+            @NotNull RenderLevelStageEvent event,
+            PoseStack poseStack,
+            MultiBufferSource.BufferSource bufferSource
+    ) {
+        Vec3 cameraPosition = event.getCamera().getPosition();
+
+        DecalPreviewer preview = DecalPlacement.getDecalPreview();
+        if (preview != null && DecalPlacement.getPrecisePlacement()) {
+            preview.render(poseStack, bufferSource, cameraPosition);
+            bufferSource.endBatch(RenderType.lines());
         }
 
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
-            DecalPreviewer preview = DecalPlacement.getDecalPreview();
+        DecalRenderer.captureOpaqueDepth();
+        DecalRenderer.render(event);
+    }
 
-            if (
-                    preview != null &&
-                    DecalPlacement.getPrecisePlacement() &&
-                    DecalPlacement.getHelpShown()
-            ) {
-                Matrix4f projectionMatrix = getCleanAfterLevelMatrix();
 
-                RenderSystem.backupProjectionMatrix();
-                RenderSystem.setProjectionMatrix(projectionMatrix, RenderSystem.getVertexSorting());
+    private static void physScreenRendering(MultiBufferSource.BufferSource bufferSource) {
+        DecalPreviewer preview = DecalPlacement.getDecalPreview();
 
-                preview.renderHelpScreen(
-                        poseStack,
-                        bufferSource,
-                        projectionMatrix
-                );
+        if (!(
+                preview != null &&
+                DecalPlacement.getPrecisePlacement() &&
+                DecalPlacement.getHelpShown()
+        ))
+            return;
 
-                bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
+        Matrix4f projectionMatrix = getCleanAfterLevelMatrix();
 
-                RenderSystem.restoreProjectionMatrix();
-            }
-        }
+        PoseStack cleanPoseStack = new PoseStack();
+        cleanPoseStack.last().pose().set(projectionMatrix);
+
+        RenderSystem.backupProjectionMatrix();
+        RenderSystem.setProjectionMatrix(
+                projectionMatrix,
+                RenderSystem.getVertexSorting()
+        );
+
+        preview.renderHelpScreen(
+                cleanPoseStack,
+                bufferSource,
+                projectionMatrix
+        );
+
+        bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
+
+        RenderSystem.restoreProjectionMatrix();
     }
 
     private static Matrix4f getCleanAfterLevelMatrix() {
