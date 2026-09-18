@@ -27,6 +27,7 @@ public class PhysStackPanel implements PhysElement {
             Alignment alignment,
             int wideness,
             int spacing,
+            int backgroundColor,
             List<PhysElement> elements
     ) {
         this.x = x;
@@ -34,6 +35,7 @@ public class PhysStackPanel implements PhysElement {
         this.alignment = alignment;
         this.wideness = wideness;
         this.spacing = spacing;
+        this.backgroundColor = backgroundColor;
         this.elements = elements;
     }
 
@@ -78,6 +80,9 @@ public class PhysStackPanel implements PhysElement {
     public void setSpacing(int spacing) {
         this.spacing = spacing;
     }
+    public void setBackgroundColor(int backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
     public void setElements(List<PhysElement> elements) {
         this.elements = elements;
     }
@@ -111,6 +116,14 @@ public class PhysStackPanel implements PhysElement {
                 : getStackHeight();
 
         int currentPosition = 0;
+
+        guiGraphics.fill(
+                x,
+                y,
+                x + width,
+                y + wideness,
+                backgroundColor
+        );
 
         for (PhysElement element : elements) {
             int add;
