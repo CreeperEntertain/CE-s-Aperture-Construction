@@ -7,10 +7,12 @@ import net.centertain.ceac.phys_screen.framework.GameRendererViewOffsetAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL11;
 
 public final class PhysRenderHelper {
     private static Matrix4f projectionMatrix = new Matrix4f();
     private static PoseStack cleanPoseStack = new PoseStack();
+    private static int previousDepthFunc;
 
     public static Matrix4f getProjectionMatrix() {
         return projectionMatrix;
@@ -28,11 +30,15 @@ public final class PhysRenderHelper {
         PoseStack newCleanPoseStack = new PoseStack();
         newCleanPoseStack.last().pose().set(newProjectionMatrix);
 
+        previousDepthFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
+
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(
                 newProjectionMatrix,
                 RenderSystem.getVertexSorting()
         );
+
+        RenderSystem.depthFunc(GL11.GL_ALWAYS);
 
         projectionMatrix = newProjectionMatrix;
         cleanPoseStack = newCleanPoseStack;
@@ -42,8 +48,12 @@ public final class PhysRenderHelper {
         return renderer.ceac$getProjectionBeforeViewOffset();
     }
 
-    public static void finishAfterLevelRender(MultiBufferSource.BufferSource bufferSource) {
+    public static void finishAfterLevelRender(
+            MultiBufferSource.BufferSource bufferSource
+    ) {
         bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
+
+        RenderSystem.depthFunc(previousDepthFunc);
         RenderSystem.restoreProjectionMatrix();
     }
 }
