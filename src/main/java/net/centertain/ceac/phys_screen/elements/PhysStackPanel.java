@@ -38,6 +38,21 @@ public class PhysStackPanel implements PhysElement {
         this.backgroundColor = backgroundColor;
         this.elements = elements;
     }
+    public PhysStackPanel(
+            Alignment alignment,
+            int wideness,
+            int spacing,
+            int backgroundColor,
+            List<PhysElement> elements
+    ) {
+        this.x = 0;
+        this.y = 0;
+        this.alignment = alignment;
+        this.wideness = wideness;
+        this.spacing = spacing;
+        this.backgroundColor = backgroundColor;
+        this.elements = elements;
+    }
 
 
     public int getX() {

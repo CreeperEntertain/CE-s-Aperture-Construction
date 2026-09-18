@@ -16,6 +16,31 @@ public class PhysButton extends Button implements PhysElement {
     private boolean isHovered;
 
     public PhysButton(
+            int width,
+            int height,
+            Component text,
+            int textColor,
+            float textScale,
+            int backgroundColor,
+            int outlineColor,
+            @Nullable ResourceLocation texture,
+            Runnable onPress
+    ) {
+        super (
+                0,
+                0,
+                width,
+                height,
+                text,
+                textColor,
+                textScale,
+                backgroundColor,
+                outlineColor,
+                texture,
+                onPress
+        );
+    }
+    public PhysButton(
             int x,
             int y,
             int width,

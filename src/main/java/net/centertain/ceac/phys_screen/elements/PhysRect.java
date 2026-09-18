@@ -14,6 +14,34 @@ public class PhysRect implements PhysElement {
     private int outlineWidth;
 
     public PhysRect(
+            int width,
+            int height,
+            int fillColor
+    ) {
+        this.x = 0;
+        this.y = 0;
+        this.width = width;
+        this.height = height;
+        this.fillColor = fillColor;
+        this.outlineColor = 0x00000000;
+        this.outlineWidth = 0;
+    }
+    public PhysRect(
+            int x,
+            int y,
+            int width,
+            int height,
+            int fillColor
+    ) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.fillColor = fillColor;
+        this.outlineColor = 0x00000000;
+        this.outlineWidth = 0;
+    }
+    public PhysRect(
             int x,
             int y,
             int width,
@@ -29,22 +57,6 @@ public class PhysRect implements PhysElement {
         this.fillColor = fillColor;
         this.outlineColor = outlineColor;
         this.outlineWidth = outlineWidth;
-    }
-
-    public PhysRect(
-            int x,
-            int y,
-            int width,
-            int height,
-            int fillColor
-    ) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.fillColor = fillColor;
-        this.outlineColor = 0x00000000;
-        this.outlineWidth = 0;
     }
 
 

@@ -13,6 +13,17 @@ public class PhysLabel implements PhysElement {
     private boolean shadow;
 
     public PhysLabel(
+            int color,
+            Component text,
+            boolean shadow
+    ) {
+        this.x = 0;
+        this.y = 0;
+        this.color = color;
+        this.text = text;
+        this.shadow = shadow;
+    }
+    public PhysLabel(
             int x,
             int y,
             int color,

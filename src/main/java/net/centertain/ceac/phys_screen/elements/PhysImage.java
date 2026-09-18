@@ -12,6 +12,17 @@ public class PhysImage implements PhysElement {
     private ResourceLocation texture;
 
     public PhysImage(
+            int width,
+            int height,
+            ResourceLocation texture
+    ) {
+        this.x = 0;
+        this.y = 0;
+        this.width = width;
+        this.height = height;
+        this.texture = texture;
+    }
+    public PhysImage(
             int x,
             int y,
             int width,
