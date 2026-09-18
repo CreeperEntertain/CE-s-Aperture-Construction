@@ -6,6 +6,7 @@ import net.centertain.ceac.client.render.CeacRenderTypes;
 import net.centertain.ceac.decal.DecalPreviewer;
 import net.centertain.ceac.decal.client.render.DecalRenderer;
 import net.centertain.ceac.phys_screen.framework.GameRendererViewOffsetAccessor;
+import net.centertain.ceac.phys_screen.utility.PhysRenderHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -59,35 +60,29 @@ public final class DecalRenderEvents {
 
 
     private static void physScreenRendering(MultiBufferSource.BufferSource bufferSource) {
-        DecalPreviewer preview = DecalPlacement.getDecalPreview();
+        PhysRenderHelper.prepareAfterLevelRender();
+        try { // Place all billboard PhysScreen render entries in here.
 
+            helpScreenRendering(bufferSource);
+
+        } finally { // Always revert state, regardless of whether a renderer throws.
+            PhysRenderHelper.finishAfterLevelRender(bufferSource);
+        }
+    }
+
+    private static void helpScreenRendering(MultiBufferSource.BufferSource bufferSource) {
+        DecalPreviewer preview = DecalPlacement.getDecalPreview();
         if (!(
                 preview != null &&
                 DecalPlacement.getPrecisePlacement() &&
                 DecalPlacement.getHelpShown()
         ))
             return;
-
-        Matrix4f projectionMatrix = getCleanAfterLevelMatrix();
-
-        PoseStack cleanPoseStack = new PoseStack();
-        cleanPoseStack.last().pose().set(projectionMatrix);
-
-        RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(
-                projectionMatrix,
-                RenderSystem.getVertexSorting()
-        );
-
         preview.renderHelpScreen(
-                cleanPoseStack,
+                PhysRenderHelper.getCleanPoseStack(),
                 bufferSource,
-                projectionMatrix
+                PhysRenderHelper.getProjectionMatrix()
         );
-
-        bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
-
-        RenderSystem.restoreProjectionMatrix();
     }
 
     private static Matrix4f getCleanAfterLevelMatrix() {
