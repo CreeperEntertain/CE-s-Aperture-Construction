@@ -124,6 +124,7 @@ public class PhysStackPanel implements PhysElement {
                 element.setY(y);
             }
             currentPosition += add;
+            element.renderPhysical(guiGraphics);
         }
     }
 
