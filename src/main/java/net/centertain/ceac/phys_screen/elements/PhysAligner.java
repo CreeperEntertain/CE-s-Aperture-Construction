@@ -159,22 +159,22 @@ public class PhysAligner implements PhysElement {
     }
     private void alignLeft(PhysElement element) {
         element.setX(x);
-        element.setY((y + height - element.getHeight()) / 2);
+        element.setY(y + (height - element.getHeight()) / 2);
     }
     private void alignRight(PhysElement element) {
         element.setX(x + width - element.getWidth());
-        element.setY((y + height - element.getHeight()) / 2);
+        element.setY(y + (height - element.getHeight()) / 2);
     }
     private void alignTop(PhysElement element) {
-        element.setX((x + width - element.getWidth()) / 2);
+        element.setX(x + (width - element.getWidth()) / 2);
         element.setY(y);
     }
     private void alignBottom(PhysElement element) {
-        element.setX((x + width - element.getWidth()) / 2);
+        element.setX(x + (width - element.getWidth()) / 2);
         element.setY(y + height - element.getHeight());
     }
     private void alignCenter(PhysElement element) {
-        element.setX((x + width - element.getWidth()) / 2);
-        element.setY((y + height - element.getHeight()) / 2);
+        element.setX(x + (width - element.getWidth()) / 2);
+        element.setY(y + (height - element.getHeight()) / 2);
     }
 }
