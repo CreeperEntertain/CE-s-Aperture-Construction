@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
@@ -155,6 +156,17 @@ public class PhysGuiGraphics {
                     0.0f,
                     correction
             );
+            Vector2f xyCorrection = getTextXYCorrection(
+                    textDraw.pose,
+                    correction,
+                    textDraw.x,
+                    textDraw.y
+            );
+            pose.translate(
+                    xyCorrection.x,
+                    xyCorrection.y,
+                    0.0f
+            );
 
             if (Float.isInfinite(textDraw.clipLeft)) {
                 textDraw.font.drawInBatch(
@@ -187,6 +199,88 @@ public class PhysGuiGraphics {
         }
 
         queuedText.clear();
+    }
+
+    private Vector2f getTextXYCorrection(
+            Matrix4f pose,
+            float zCorrection,
+            float textX,
+            float textY
+    ) {
+        GameRendererViewOffsetAccessor renderer = (GameRendererViewOffsetAccessor) Minecraft.getInstance().gameRenderer;
+
+        Matrix4f projection = renderer.ceac$getProjectionBeforeViewOffset();
+
+        if (projection == null)
+            return new Vector2f();
+
+        Matrix4f originalMatrix = new Matrix4f(projection).mul(pose);
+
+        Matrix4f correctedPose = new Matrix4f(pose);
+        correctedPose.translate(
+                0.0f,
+                0.0f,
+                zCorrection
+        );
+
+        Matrix4f correctedMatrix = new Matrix4f(projection).mul(correctedPose);
+
+        Vector4f originalPosition = new Vector4f(
+                textX,
+                textY,
+                0.0f,
+                1.0f
+        );
+        originalMatrix.transform(originalPosition);
+
+        if (Math.abs(originalPosition.w()) < 1.0e-8)
+            return new Vector2f();
+
+        double targetX = originalPosition.x() / originalPosition.w();
+        double targetY = originalPosition.y() / originalPosition.w();
+
+        Vector4f correctedPosition = new Vector4f(
+                textX,
+                textY,
+                0.0f,
+                1.0f
+        );
+        correctedMatrix.transform(correctedPosition);
+
+        Vector4f localX = new Vector4f(
+                1.0f,
+                0.0f,
+                0.0f,
+                0.0f
+        );
+        correctedMatrix.transform(localX);
+
+        Vector4f localY = new Vector4f(
+                0.0f,
+                1.0f,
+                0.0f,
+                0.0f
+        );
+        correctedMatrix.transform(localY);
+
+        double ax = localX.x() - targetX * localX.w();
+        double bx = localY.x() - targetX * localY.w();
+
+        double ay = localX.y() - targetY * localX.w();
+        double by = localY.y() - targetY * localY.w();
+
+        double rhsX = targetX * correctedPosition.w() - correctedPosition.x();
+        double rhsY = targetY * correctedPosition.w() - correctedPosition.y();
+
+        double determinant = ax * by - bx * ay;
+
+        if (Math.abs(determinant) < 1.0e-12)
+            return new Vector2f();
+
+        float x = (float) ((rhsX * by - bx * rhsY) / determinant);
+        float y = (float) ((ax * rhsY - rhsX * ay) / determinant);
+
+        return new Vector2f(x, y);
     }
 
     private double getTextZCorrection(
