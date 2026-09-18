@@ -147,26 +147,21 @@ public class PhysGuiGraphics {
 
         for (TextDraw textDraw : queuedText) {
             Matrix4f pose = new Matrix4f(textDraw.pose);
-            float correction = (float) getTextZCorrection(
+            float zCorrection = (float) killDepth(
                     textDraw.pose,
                     textProjectionMatrix
             );
-            pose.translate(
-                    0.0f,
-                    0.0f,
-                    correction
-            );
-            Vector2f xyCorrection = getTextXYCorrection(
+            Vector2f xyCorrection = killBob(
                     textDraw.pose,
                     textProjectionMatrix,
-                    correction,
+                    zCorrection,
                     textDraw.x,
                     textDraw.y
             );
             pose.translate(
                     xyCorrection.x,
                     xyCorrection.y,
-                    0.0f
+                    zCorrection
             );
 
             if (Float.isInfinite(textDraw.clipLeft)) {
@@ -202,7 +197,7 @@ public class PhysGuiGraphics {
         queuedText.clear();
     }
 
-    private Vector2f getTextXYCorrection(
+    private Vector2f killBob( // Sorry, Bob :(
             Matrix4f pose,
             Matrix4f textProjection,
             float zCorrection,
@@ -287,7 +282,7 @@ public class PhysGuiGraphics {
         return new Vector2f(x, y);
     }
 
-    private double getTextZCorrection(
+    private double killDepth(
             Matrix4f pose,
             Matrix4f textProjection
     ) {

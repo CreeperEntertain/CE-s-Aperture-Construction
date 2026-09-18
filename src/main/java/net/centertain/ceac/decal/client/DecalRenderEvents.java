@@ -52,25 +52,26 @@ public final class DecalRenderEvents {
                     DecalPlacement.getPrecisePlacement() &&
                     DecalPlacement.getHelpShown()
             ) {
-                GameRendererViewOffsetAccessor renderer = (GameRendererViewOffsetAccessor) Minecraft.getInstance().gameRenderer;
+                Matrix4f projectionMatrix = getCleanAfterLevelMatrix();
 
-                Matrix4f projectionMatrix = renderer.ceac$getProjectionBeforeViewOffset();
+                RenderSystem.backupProjectionMatrix();
+                RenderSystem.setProjectionMatrix(projectionMatrix, RenderSystem.getVertexSorting());
 
-                if (projectionMatrix != null) {
-                    RenderSystem.backupProjectionMatrix();
-                    RenderSystem.setProjectionMatrix(projectionMatrix, RenderSystem.getVertexSorting());
+                preview.renderHelpScreen(
+                        poseStack,
+                        bufferSource,
+                        projectionMatrix
+                );
 
-                    preview.renderHelpScreen(
-                            poseStack,
-                            bufferSource,
-                            projectionMatrix
-                    );
+                bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
 
-                    bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
-
-                    RenderSystem.restoreProjectionMatrix();
-                }
+                RenderSystem.restoreProjectionMatrix();
             }
         }
+    }
+
+    private static Matrix4f getCleanAfterLevelMatrix() {
+        GameRendererViewOffsetAccessor renderer = (GameRendererViewOffsetAccessor) Minecraft.getInstance().gameRenderer;
+        return renderer.ceac$getProjectionBeforeViewOffset();
     }
 }
