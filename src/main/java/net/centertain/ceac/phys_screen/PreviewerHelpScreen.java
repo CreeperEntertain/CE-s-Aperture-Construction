@@ -15,7 +15,7 @@ public class PreviewerHelpScreen extends PhysScreen {
     public static final int HEIGHT = 100;
 
     public PreviewerHelpScreen() {
-        super(Component.literal("Example"));
+        super(Component.literal("Precise Placement Help Screen"));
     }
 
     private void example() {}
