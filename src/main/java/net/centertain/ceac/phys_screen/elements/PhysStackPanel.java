@@ -86,6 +86,8 @@ public class PhysStackPanel implements PhysElement {
     public void setY(int y) {
         this.y = y;
     }
+    public void setWidth(int width) {}
+    public void setHeight(int height) {}
     public void setAlignment(Alignment alignment) {
         this.alignment = alignment;
     }

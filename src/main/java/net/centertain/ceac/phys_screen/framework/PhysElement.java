@@ -10,4 +10,6 @@ public interface PhysElement {
 
     void setX(int x);
     void setY(int y);
+    void setWidth(int width);
+    void setHeight(int height);
 }

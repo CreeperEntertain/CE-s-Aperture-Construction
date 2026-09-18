@@ -65,6 +65,8 @@ public class PhysLabel implements PhysElement {
     public void setY(int y) {
         this.y = y;
     }
+    public void setWidth(int width) {}
+    public void setHeight(int height) {}
     public void setColor(int color) {
         this.color = color;
     }
