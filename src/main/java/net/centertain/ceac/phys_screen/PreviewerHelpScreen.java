@@ -33,19 +33,5 @@ public class PreviewerHelpScreen extends PhysScreen {
                 GuiConstants.COLOR_SOLID_WHITE,
                 1
         ));
-
-        addPhysElement(new PhysButton(
-                25,
-                25,
-                100,
-                10,
-                Component.literal("Example"),
-                GuiConstants.COLOR_SOLID_WHITE,
-                1.0f,
-                GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
-                GuiConstants.COLOR_SOLID_WHITE,
-                null,
-                this::example
-        ));
     }
 }
