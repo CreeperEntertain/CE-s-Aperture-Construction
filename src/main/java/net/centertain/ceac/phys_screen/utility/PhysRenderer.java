@@ -156,9 +156,7 @@ public final class PhysRenderer {
 
         PhysGuiGraphics guiGraphics = new PhysGuiGraphics(
                 poseStack,
-                bufferSource,
-                cameraZ,
-                projectionMatrix
+                bufferSource
         );
         physScreen.renderPhysical(guiGraphics);
 

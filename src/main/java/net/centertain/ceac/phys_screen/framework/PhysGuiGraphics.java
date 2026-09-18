@@ -21,8 +21,6 @@ import java.util.List;
 public class PhysGuiGraphics {
     private final PoseStack poseStack;
     private final MultiBufferSource bufferSource;
-    private final double cameraZ;
-    private final Matrix4f projectionMatrix;
 
     private final List<TextDraw> queuedText = new ArrayList<>();
 
@@ -41,14 +39,10 @@ public class PhysGuiGraphics {
 
     public PhysGuiGraphics(
             PoseStack poseStack,
-            MultiBufferSource bufferSource,
-            double cameraZ,
-            Matrix4f projectionMatrix
+            MultiBufferSource bufferSource
     ) {
         this.poseStack = poseStack;
         this.bufferSource = bufferSource;
-        this.cameraZ = cameraZ;
-        this.projectionMatrix = projectionMatrix;
     }
 
 
@@ -141,14 +135,6 @@ public class PhysGuiGraphics {
 
         GameRenderer gameRenderer = minecraft.gameRenderer;
         Camera camera = gameRenderer.getMainCamera();
-
-        double worldFov = ((GameRendererAccessor) gameRenderer).ceac$getFov(
-                camera,
-                minecraft.getFrameTime(),
-                true
-        );
-
-        Matrix4f worldBaseProjection = gameRenderer.getProjectionMatrix(worldFov);
 
         double textFov = ((GameRendererAccessor) gameRenderer).ceac$getFov(
                 camera,
