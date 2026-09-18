@@ -1,9 +1,11 @@
 package net.centertain.ceac.decal.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.client.render.CeacRenderTypes;
 import net.centertain.ceac.decal.DecalPreviewer;
 import net.centertain.ceac.decal.client.render.DecalRenderer;
+import net.centertain.ceac.phys_screen.framework.GameRendererViewOffsetAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -12,6 +14,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.joml.Matrix4f;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
@@ -49,8 +52,24 @@ public final class DecalRenderEvents {
                     DecalPlacement.getPrecisePlacement() &&
                     DecalPlacement.getHelpShown()
             ) {
-                preview.renderHelpScreen(poseStack, bufferSource, event.getProjectionMatrix());
-                bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
+                GameRendererViewOffsetAccessor renderer = (GameRendererViewOffsetAccessor) Minecraft.getInstance().gameRenderer;
+
+                Matrix4f projectionMatrix = renderer.ceac$getProjectionBeforeViewOffset();
+
+                if (projectionMatrix != null) {
+                    RenderSystem.backupProjectionMatrix();
+                    RenderSystem.setProjectionMatrix(projectionMatrix, RenderSystem.getVertexSorting());
+
+                    preview.renderHelpScreen(
+                            poseStack,
+                            bufferSource,
+                            projectionMatrix
+                    );
+
+                    bufferSource.endBatch(CeacRenderTypes.IN_WORLD_UI);
+
+                    RenderSystem.restoreProjectionMatrix();
+                }
             }
         }
     }
