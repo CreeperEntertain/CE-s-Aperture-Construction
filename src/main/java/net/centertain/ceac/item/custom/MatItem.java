@@ -5,11 +5,13 @@ import net.centertain.ceac.material.Material;
 import net.centertain.ceac.material.MaterialShapeBlockEntity;
 import net.centertain.ceac.material.MaterialShapeFace;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -106,6 +108,38 @@ public abstract class MatItem extends Item {
                 state,
                 state,
                 Block.UPDATE_CLIENTS
+        );
+
+        Vec3 center = faceCenter(face, pos);
+        SoundType soundType = material.get().getSoundType();
+
+        level.playSound(
+                null,
+                center.x,
+                center.y,
+                center.z,
+                soundType.getPlaceSound(),
+                SoundSource.BLOCKS,
+                soundType.getVolume(),
+                soundType.getPitch()
+        );
+    }
+
+    private Vec3 faceCenter(
+            MaterialShapeFace face,
+            BlockPos pos
+    ) {
+        Vec3 center = Vec3.ZERO;
+
+        for (Vec3 vertex : face.getVertices())
+            center = center.add(vertex);
+
+        center = center.scale(1.0 / face.getVertices().size());
+
+        return center.add(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ()
         );
     }
 
