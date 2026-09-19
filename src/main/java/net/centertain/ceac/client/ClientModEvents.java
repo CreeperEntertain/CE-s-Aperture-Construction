@@ -1,16 +1,20 @@
 package net.centertain.ceac.client;
 
+import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
@@ -55,5 +59,12 @@ public class ClientModEvents
                         .thenRunAsync(DecalLoader::gatherResourceLocations, gameExecutor);
             }
         });
+    }
+
+    @SubscribeEvent
+    public static void onBakingCompleted(ModelEvent.BakingCompleted event) {
+        for (Block block : ForgeRegistries.BLOCKS.getValues())
+            if (block instanceof MaterialShape materialShape)
+                materialShape.createFaces();
     }
 }

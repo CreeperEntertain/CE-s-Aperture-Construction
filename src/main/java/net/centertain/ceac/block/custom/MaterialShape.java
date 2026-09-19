@@ -1,13 +1,18 @@
 package net.centertain.ceac.block.custom;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.material.MaterialShapeFace;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
+import net.minecraftforge.client.extensions.IForgeBakedModel;
+import net.minecraftforge.client.model.data.ModelData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,75 +20,63 @@ import java.util.List;
 public abstract class MaterialShape extends Block {
     private final List<MaterialShapeFace> faces;
 
-    protected MaterialShape(Properties properties, VoxelShape shape) {
+    protected MaterialShape(Properties properties) {
         super(properties);
-        this.faces = createFaces(shape);
-    }
-
-    private static List<MaterialShapeFace> createFaces(@Nullable VoxelShape shape) {
-        List<MaterialShapeFace> faces = new ArrayList<>();
-
-        if (shape == null)
-            return faces;
-
-        for (AABB box : shape.toAabbs()) {
-            Vec3 min = new Vec3(box.minX, box.minY, box.minZ);
-            Vec3 max = new Vec3(box.maxX, box.maxY, box.maxZ);
-
-            // Down
-            faces.add(new MaterialShapeFace(null, List.of(
-                    new Vec3(min.x, min.y, min.z),
-                    new Vec3(max.x, min.y, min.z),
-                    new Vec3(max.x, min.y, max.z),
-                    new Vec3(min.x, min.y, max.z)
-            )));
-
-            // Up
-            faces.add(new MaterialShapeFace(null, List.of(
-                    new Vec3(min.x, max.y, min.z),
-                    new Vec3(min.x, max.y, max.z),
-                    new Vec3(max.x, max.y, max.z),
-                    new Vec3(max.x, max.y, min.z)
-            )));
-
-            // North
-            faces.add(new MaterialShapeFace(null, List.of(
-                    new Vec3(min.x, min.y, min.z),
-                    new Vec3(min.x, max.y, min.z),
-                    new Vec3(max.x, max.y, min.z),
-                    new Vec3(max.x, min.y, min.z)
-            )));
-
-            // South
-            faces.add(new MaterialShapeFace(null, List.of(
-                    new Vec3(min.x, min.y, max.z),
-                    new Vec3(max.x, min.y, max.z),
-                    new Vec3(max.x, max.y, max.z),
-                    new Vec3(min.x, max.y, max.z)
-            )));
-
-            // West
-            faces.add(new MaterialShapeFace(null, List.of(
-                    new Vec3(min.x, min.y, min.z),
-                    new Vec3(min.x, min.y, max.z),
-                    new Vec3(min.x, max.y, max.z),
-                    new Vec3(min.x, max.y, min.z)
-            )));
-
-            // East
-            faces.add(new MaterialShapeFace(null, List.of(
-                    new Vec3(max.x, min.y, min.z),
-                    new Vec3(max.x, max.y, min.z),
-                    new Vec3(max.x, max.y, max.z),
-                    new Vec3(max.x, min.y, max.z)
-            )));
-        }
-
-        return faces;
+        this.faces = new ArrayList<>();
     }
 
     public final List<MaterialShapeFace> faces() {
         return faces;
+    }
+
+    public void createFaces() {
+        faces.clear();
+
+        BlockState state = defaultBlockState();
+
+        IForgeBakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+
+        RandomSource random = RandomSource.create();
+
+        for (BakedQuad quad : model.getQuads(
+                state,
+                null,
+                random,
+                ModelData.EMPTY,
+                null
+        ))
+            faces.add(createFace(quad));
+
+        for (Direction side : Direction.values())
+            for (BakedQuad quad : model.getQuads(
+                    state,
+                    side,
+                    random,
+                    ModelData.EMPTY,
+                    null
+            ))
+                faces.add(createFace(quad));
+    }
+
+    private MaterialShapeFace createFace(BakedQuad quad) {
+        int [] vertices = quad.getVertices();
+        VertexFormat format = DefaultVertexFormat.BLOCK;
+
+        int stride = format.getIntegerSize();
+        int positionOffset = format.getOffset(0) / Integer.BYTES;
+
+        List<Vec3> points = new ArrayList<>(4);
+
+        for (int i = 0; i < 4; i++) {
+            int offset = i * stride + positionOffset;
+            points.add(new Vec3(
+                    Float.intBitsToFloat(vertices[offset]),
+                    Float.intBitsToFloat(vertices[offset + 1]),
+                    Float.intBitsToFloat(vertices[offset + 2])
+            ));
+        }
+
+        return new MaterialShapeFace(null, points);
     }
 
     public boolean canApplyMaterial(
@@ -93,13 +86,11 @@ public abstract class MaterialShape extends Block {
     ) {
         return true;
     }
-
     public void applyMaterial(
             BlockState state,
             MaterialShapeFace face,
             ItemStack stack
     ) {}
-
     public void removeMaterial(
             BlockState state,
             MaterialShapeFace face
