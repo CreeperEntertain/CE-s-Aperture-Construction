@@ -105,6 +105,7 @@ public final class DecalLoader {
 
         int width = 16;
         int height = 16;
+        boolean glowing = false;
 
         try (InputStream stream = json.get()) {
             JsonObject object = JsonParser
@@ -117,8 +118,10 @@ public final class DecalLoader {
                 width = object.get("width").getAsInt();
             if (object.has("height"))
                 height = object.get("height").getAsInt();
+            if (object.has("glowing"))
+                glowing = object.get("glowing").getAsBoolean();
 
-            return new DecalDefinition(name, width, height, location);
+            return new DecalDefinition(name, width, height, location, glowing);
         } catch (IOException | JsonParseException | ClassCastException exception) {
             throw new RuntimeException("Failed to load decal definition " + jsonLocation, exception);
         }
@@ -133,7 +136,8 @@ public final class DecalLoader {
                         decal.getResourceLocation().getPath() + ": \n" +
                         "    name: " + decal.getName() + "\n" +
                         "    width: " + decal.getWidth() + "\n" +
-                        "    height: " + decal.getHeight()
+                        "    height: " + decal.getHeight() + "\n" +
+                        "    glowing: " + decal.getGlowing()
                 );
         }
     }
