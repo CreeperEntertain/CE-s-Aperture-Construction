@@ -97,7 +97,7 @@ public class PhysButton extends Button implements PhysElement {
         );
     }
     public PhysButton(
-            @NotNull PhysElement dimensionSupplier,
+            @NotNull PhysElement positionSupplier,
             int width,
             int height,
             Component text,
@@ -109,8 +109,8 @@ public class PhysButton extends Button implements PhysElement {
             Runnable onPress
     ) {
         super (
-                dimensionSupplier.getX(),
-                dimensionSupplier.getY(),
+                positionSupplier.getX(),
+                positionSupplier.getY(),
                 width,
                 height,
                 text,
