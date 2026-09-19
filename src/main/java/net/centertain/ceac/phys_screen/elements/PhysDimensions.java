@@ -2,6 +2,7 @@ package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
+import org.jetbrains.annotations.NotNull;
 
 public class PhysDimensions implements PhysElement {
     private int x;
@@ -42,6 +43,9 @@ public class PhysDimensions implements PhysElement {
     public int getHeight() {
         return height;
     }
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(x, y, width, height);
+    }
 
     public void setX(int x) {
         this.x = x;
@@ -54,6 +58,12 @@ public class PhysDimensions implements PhysElement {
     }
     public void setHeight(int height) {
         this.height = height;
+    }
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+        this.width = dimensionSupplier.getWidth();
+        this.height = dimensionSupplier.getHeight();
     }
 
 

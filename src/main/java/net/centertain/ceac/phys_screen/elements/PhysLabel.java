@@ -62,6 +62,9 @@ public class PhysLabel implements PhysElement {
     public int getHeight() {
         return Minecraft.getInstance().font.lineHeight;
     }
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(x, y, getWidth(), getHeight());
+    }
     public int getColor() {
         return color;
     }
@@ -80,6 +83,10 @@ public class PhysLabel implements PhysElement {
     }
     public void setWidth(int width) {}
     public void setHeight(int height) {}
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+    }
     public void setColor(int color) {
         this.color = color;
     }

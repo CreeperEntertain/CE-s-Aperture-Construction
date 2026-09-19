@@ -72,6 +72,9 @@ public class PhysImage implements PhysElement {
     public int getHeight() {
         return height;
     }
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(x, y, width, height);
+    }
     public ResourceLocation getTexture() {
         return texture;
     }
@@ -87,6 +90,12 @@ public class PhysImage implements PhysElement {
     }
     public void setHeight(int height) {
         this.height = height;
+    }
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+        this.width = dimensionSupplier.getWidth();
+        this.height = dimensionSupplier.getHeight();
     }
     public void setTexture(ResourceLocation texture) {
         this.texture = texture;

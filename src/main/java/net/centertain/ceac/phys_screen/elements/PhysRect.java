@@ -115,6 +115,9 @@ public class PhysRect implements PhysElement {
     public int getHeight() {
         return height;
     }
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(x, y, width, height);
+    }
     public int getFillColor() {
         return fillColor;
     }
@@ -136,6 +139,12 @@ public class PhysRect implements PhysElement {
     }
     public void setHeight(int height) {
         this.height = height;
+    }
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+        this.width = dimensionSupplier.getWidth();
+        this.height = dimensionSupplier.getHeight();
     }
     public void setFillColor(int fillColor) {
         this.fillColor = fillColor;

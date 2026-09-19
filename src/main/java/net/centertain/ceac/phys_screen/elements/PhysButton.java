@@ -123,6 +123,17 @@ public class PhysButton extends Button implements PhysElement {
         );
     }
 
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(getX(), getY(), getWidth(), getHeight());
+    }
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        setX(dimensionSupplier.getX());
+        setY(dimensionSupplier.getY());
+        setWidth(dimensionSupplier.getWidth());
+        setHeight(dimensionSupplier.getHeight());
+    }
+
+
     @Override
     protected void renderWidget(
             @NotNull GuiGraphics guiGraphics,

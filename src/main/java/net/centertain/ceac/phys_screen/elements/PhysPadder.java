@@ -93,6 +93,12 @@ public class PhysPadder implements PhysElement {
     public int getRealHeight() {
         return height;
     }
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(getX(), getY(), getWidth(), getHeight());
+    }
+    public @NotNull PhysDimensions getRealDimensions() {
+        return new PhysDimensions(x, y, width, height);
+    }
     public int getPadding() {
         return padding;
     }
@@ -111,6 +117,12 @@ public class PhysPadder implements PhysElement {
     }
     public void setHeight(int height) {
         this.height = height;
+    }
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+        this.width = dimensionSupplier.getWidth();
+        this.height = dimensionSupplier.getHeight();
     }
     public void setPadding(int padding) {
         this.padding = padding;
