@@ -126,6 +126,7 @@ public final class TranslucentKBuffer {
             for (Decal decal : decalList) {
                 Vec3 origin = decal.getOrigin();
                 Vec3 normal = decal.getNormal();
+                boolean glowing = decal.getGlowing();
 
                 double width = decal.getPixelWidth() / 16.0;
                 double height = decal.getPixelHeight() / 16.0;
@@ -141,7 +142,7 @@ public final class TranslucentKBuffer {
                 data.put((float) normal.x);
                 data.put((float) normal.y);
                 data.put((float) normal.z);
-                data.put(decal.getGlowing() ? 1.0f : 0.0f);
+                data.put(glowing ? 1.0f : 0.0f);
 
                 // Volume + rotation
                 data.put((float) width);
