@@ -10,7 +10,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
-public class ModBlockEntities {
+public final class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MOD_ID);
 
@@ -19,9 +19,11 @@ public class ModBlockEntities {
             MATERIAL_SHAPE = BLOCK_ENTITIES.register(
                     "material_shape",
                     () -> BlockEntityType.Builder.of(MaterialShapeBlockEntity::new,
-                            ModBlocks.MATERIAL_SHAPE_BlOCK.get()
+                            ModBlocks.MODEL_SHAPE_BlOCK.get()
                     ).build(null)
             );
+
+    private ModBlockEntities() {}
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

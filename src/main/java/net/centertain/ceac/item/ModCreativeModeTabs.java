@@ -11,7 +11,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
-public class ModCreativeModeTabs {
+public final class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
 
@@ -24,12 +24,14 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.DECAL.get());
                         pOutput.accept(ModItems.SCRAPER.get());
 
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_BlOCK.get());
+                        pOutput.accept(ModBlocks.MODEL_SHAPE_BlOCK.get());
 
                         pOutput.accept(ModItems.EXAMPLE.get());
                     })
                     .build()
     );
+
+    private ModCreativeModeTabs() {}
 
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);

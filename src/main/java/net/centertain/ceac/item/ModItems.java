@@ -10,9 +10,10 @@ import net.minecraftforge.registries.RegistryObject;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
-public class ModItems {
+public final class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
+
 
     public static final RegistryObject<Item> DECAL = ITEMS.register("decal",
             () -> new DecalItem(new Item.Properties()));
@@ -21,6 +22,9 @@ public class ModItems {
 
     public static final RegistryObject<Item> EXAMPLE = ITEMS.register("example",
             () -> new ExampleMatItem(new Item.Properties()));
+
+
+    private ModItems() {}
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

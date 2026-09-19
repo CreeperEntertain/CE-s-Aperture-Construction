@@ -14,10 +14,7 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class ModMaterials {
     public static final DeferredRegister<Material> MATERIALS =
-            DeferredRegister.create(
-                    ResourceLocation.fromNamespaceAndPath(MOD_ID, "materials"),
-                    MOD_ID
-            );
+            DeferredRegister.create(ResourceLocation.fromNamespaceAndPath(MOD_ID, "materials"), MOD_ID);
 
     public static final Supplier<IForgeRegistry<Material>> REGISTRY =
             MATERIALS.makeRegistry(RegistryBuilder::new);

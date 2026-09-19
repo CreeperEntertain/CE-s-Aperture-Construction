@@ -16,11 +16,13 @@ import java.util.function.Supplier;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
-public class ModBlocks {
+public final class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("model_shape_block",
+
+    public static final RegistryObject<Block> MODEL_SHAPE_BlOCK = registerBlock("model_shape_block",
             () -> new MaterialShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+
 
     private static <T extends Block> RegistryObject<T> registerBlock(
             String name,
@@ -36,6 +38,8 @@ public class ModBlocks {
     ) {
         return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
     }
+
+    private ModBlocks() {}
 
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
