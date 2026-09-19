@@ -4,6 +4,7 @@ import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.NotNull;
 
 public class PhysLabel implements PhysElement {
     private int x;
@@ -36,6 +37,18 @@ public class PhysLabel implements PhysElement {
         this.text = text;
         this.shadow = shadow;
     }
+    public PhysLabel(
+            @NotNull PhysElement positionSupplier,
+            int color,
+            Component text,
+            boolean shadow
+    ) {
+        this.x = positionSupplier.getY();
+        this.y = positionSupplier.getY();
+        this.color = color;
+        this.text = text;
+        this.shadow = shadow;
+    }
 
     public int getX() {
         return x;
@@ -48,6 +61,9 @@ public class PhysLabel implements PhysElement {
     }
     public int getHeight() {
         return Minecraft.getInstance().font.lineHeight;
+    }
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(x, y, getWidth(), getHeight());
     }
     public int getColor() {
         return color;
@@ -67,6 +83,10 @@ public class PhysLabel implements PhysElement {
     }
     public void setWidth(int width) {}
     public void setHeight(int height) {}
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+    }
     public void setColor(int color) {
         this.color = color;
     }

@@ -90,6 +90,9 @@ public class PhysStackPanel implements PhysElement {
     public int getHeight() {
         return height;
     }
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(x, y, width, height);
+    }
     public int getBackgroundColor() {
         return backgroundColor;
     }
@@ -105,6 +108,10 @@ public class PhysStackPanel implements PhysElement {
     }
     public void setWidth(int width) {}
     public void setHeight(int height) {}
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+    }
     public void setAlignment(Alignment alignment) {
         this.alignment = alignment;
     }

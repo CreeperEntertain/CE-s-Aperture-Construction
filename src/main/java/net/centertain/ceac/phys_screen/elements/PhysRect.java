@@ -2,6 +2,7 @@ package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
+import org.jetbrains.annotations.NotNull;
 
 public class PhysRect implements PhysElement {
     private int x;
@@ -58,6 +59,48 @@ public class PhysRect implements PhysElement {
         this.outlineColor = outlineColor;
         this.outlineWidth = outlineWidth;
     }
+    public PhysRect(
+            @NotNull PhysElement dimensionSupplier,
+            int fillColor
+    ) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+        this.width = dimensionSupplier.getWidth();
+        this.height = dimensionSupplier.getHeight();
+        this.fillColor = fillColor;
+        this.outlineColor = 0x00000000;
+        this.outlineWidth = 0;
+    }
+    public PhysRect(
+            @NotNull PhysElement positionSupplier,
+            int width,
+            int height,
+            int fillColor
+    ) {
+        this.x = positionSupplier.getX();
+        this.y = positionSupplier.getY();
+        this.width = width;
+        this.height = height;
+        this.fillColor = fillColor;
+        this.outlineColor = 0x00000000;
+        this.outlineWidth = 0;
+    }
+    public PhysRect(
+            @NotNull PhysElement positionSupplier,
+            int width,
+            int height,
+            int fillColor,
+            int outlineColor,
+            int outlineWidth
+    ) {
+        this.x = positionSupplier.getX();
+        this.y = positionSupplier.getY();
+        this.width = width;
+        this.height = height;
+        this.fillColor = fillColor;
+        this.outlineColor = outlineColor;
+        this.outlineWidth = outlineWidth;
+    }
 
 
     public int getX() {
@@ -71,6 +114,9 @@ public class PhysRect implements PhysElement {
     }
     public int getHeight() {
         return height;
+    }
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(x, y, width, height);
     }
     public int getFillColor() {
         return fillColor;
@@ -93,6 +139,12 @@ public class PhysRect implements PhysElement {
     }
     public void setHeight(int height) {
         this.height = height;
+    }
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+        this.width = dimensionSupplier.getWidth();
+        this.height = dimensionSupplier.getHeight();
     }
     public void setFillColor(int fillColor) {
         this.fillColor = fillColor;

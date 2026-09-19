@@ -15,6 +15,11 @@ import org.jetbrains.annotations.Nullable;
 public class PhysButton extends Button implements PhysElement {
     private boolean isHovered;
 
+    private record TextureDimensions(
+            int width,
+            int height
+    ) {}
+
     public PhysButton(
             int width,
             int height,
@@ -67,6 +72,67 @@ public class PhysButton extends Button implements PhysElement {
                 onPress
         );
     }
+    public PhysButton(
+            @NotNull PhysElement dimensionSupplier,
+            Component text,
+            int textColor,
+            float textScale,
+            int backgroundColor,
+            int outlineColor,
+            @Nullable ResourceLocation texture,
+            Runnable onPress
+    ) {
+        super (
+                dimensionSupplier.getX(),
+                dimensionSupplier.getY(),
+                dimensionSupplier.getWidth(),
+                dimensionSupplier.getHeight(),
+                text,
+                textColor,
+                textScale,
+                backgroundColor,
+                outlineColor,
+                texture,
+                onPress
+        );
+    }
+    public PhysButton(
+            @NotNull PhysElement positionSupplier,
+            int width,
+            int height,
+            Component text,
+            int textColor,
+            float textScale,
+            int backgroundColor,
+            int outlineColor,
+            @Nullable ResourceLocation texture,
+            Runnable onPress
+    ) {
+        super (
+                positionSupplier.getX(),
+                positionSupplier.getY(),
+                width,
+                height,
+                text,
+                textColor,
+                textScale,
+                backgroundColor,
+                outlineColor,
+                texture,
+                onPress
+        );
+    }
+
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(getX(), getY(), getWidth(), getHeight());
+    }
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        setX(dimensionSupplier.getX());
+        setY(dimensionSupplier.getY());
+        setWidth(dimensionSupplier.getWidth());
+        setHeight(dimensionSupplier.getHeight());
+    }
+
 
     @Override
     protected void renderWidget(
@@ -91,13 +157,7 @@ public class PhysButton extends Button implements PhysElement {
 
 
     public void renderPhysical(PhysGuiGraphics guiGraphics) {
-        guiGraphics.fill(
-                getX(),
-                getY(),
-                getX() + getWidth(),
-                getY() + getHeight(),
-                backgroundColor
-        );
+        renderBackground(guiGraphics);
 
         Font font = Minecraft.getInstance().font;
 
@@ -107,26 +167,63 @@ public class PhysButton extends Button implements PhysElement {
         int scaledTextWidth = Math.round(textWidth * textScale);
         int scaledTextHeight = Math.round(textHeight * textScale);
 
-        int drawTextureWidth = 0;
-        int drawTextureHeight = 0;
+        TextureDimensions textureDimensions = getTextureDimensions(scaledTextHeight);
 
-        if (texture != null) {
-            int availableTextureWidth = getWidth();
-            int availableTextureHeight = getHeight()
-                    - scaledTextHeight
-                    - GuiConstants.ELEMENT_PADDING;
+        int contentHeight = getContentHeight(textureDimensions.height(), scaledTextHeight);
 
-            if (availableTextureWidth > 0 && availableTextureHeight > 0) {
-                float scale = Math.min(
-                        (float) availableTextureWidth / textureWidth,
-                        (float) availableTextureHeight / textureHeight
-                );
+        int contentTop = getY() + (getHeight() - contentHeight) / 2;
 
-                drawTextureWidth = Math.max(1, Math.round(textureWidth * scale));
-                drawTextureHeight = Math.max(1, Math.round(textureHeight * scale));
-            }
-        }
+        contentTop = renderTexture(
+                guiGraphics,
+                textureDimensions,
+                contentTop
+        );
 
+        renderText(
+                guiGraphics,
+                font,
+                scaledTextWidth,
+                contentTop
+        );
+
+        renderHoverOutline(guiGraphics);
+    }
+
+    private void renderBackground(PhysGuiGraphics guiGraphics) {
+        guiGraphics.fill(
+                getX(),
+                getY(),
+                getX() + getWidth(),
+                getY() + getHeight(),
+                backgroundColor
+        );
+    }
+
+    private TextureDimensions getTextureDimensions(int scaledTextHeight) {
+        if (texture == null)
+            return new TextureDimensions(0, 0);
+
+        int availableTextureWidth = getWidth();
+        int availableTextureHeight = getHeight() - scaledTextHeight - GuiConstants.ELEMENT_PADDING;
+
+        if (availableTextureWidth <= 0 || availableTextureHeight <= 0)
+            return new TextureDimensions(0, 0);
+
+        float scale = Math.min(
+                (float) availableTextureWidth / textureWidth,
+                (float) availableTextureHeight / textureHeight
+        );
+
+        int drawTextureWidth = Math.max(1, Math.round(textureWidth * scale));
+        int drawTextureHeight = Math.max(1, Math.round(textureHeight * scale));
+
+        return new TextureDimensions(drawTextureWidth, drawTextureHeight);
+    }
+
+    private int getContentHeight(
+            int drawTextureHeight,
+            int scaledTextHeight
+    ) {
         int contentHeight = drawTextureHeight;
 
         if (drawTextureHeight > 0)
@@ -134,154 +231,221 @@ public class PhysButton extends Button implements PhysElement {
 
         contentHeight += scaledTextHeight;
 
-        int contentTop = getY() + (getHeight() - contentHeight) / 2;
+        return contentHeight;
+    }
 
-        if (drawTextureHeight > 0) {
-            int textureX = getX() + (getWidth() - drawTextureWidth) / 2;
+    private int renderTexture(
+            PhysGuiGraphics guiGraphics,
+            TextureDimensions textureDimensions,
+            int contentTop
+    ) {
+        if (textureDimensions.height() <= 0)
+            return contentTop;
 
-            guiGraphics.blit(
-                    texture,
-                    textureX,
-                    contentTop,
-                    drawTextureWidth,
-                    drawTextureHeight
-            );
+        int textureX = getX() + (getWidth() - textureDimensions.width()) / 2;
 
-            contentTop += drawTextureHeight + GuiConstants.ELEMENT_PADDING;
-        }
+        guiGraphics.blit(
+                texture,
+                textureX,
+                contentTop,
+                textureDimensions.width(),
+                textureDimensions.height()
+        );
 
+        return contentTop + textureDimensions.height() + GuiConstants.ELEMENT_PADDING;
+    }
+
+    private void renderText(
+            PhysGuiGraphics guiGraphics,
+            Font font,
+            int scaledTextWidth,
+            int contentTop
+    ) {
         int textAreaLeft = getX() + GuiConstants.ELEMENT_PADDING;
         int textAreaRight = getX() + getWidth() - GuiConstants.ELEMENT_PADDING;
         int textAreaWidth = textAreaRight - textAreaLeft;
 
-        if (scaledTextWidth <= textAreaWidth) {
-            int textX = textAreaLeft + (textAreaWidth - scaledTextWidth) / 2;
-
-            guiGraphics.pose().pushPose();
-
-            guiGraphics.pose().translate(
-                    textX,
-                    contentTop,
-                    0.0
-            );
-            guiGraphics.pose().scale(
-                    textScale,
-                    textScale,
-                    1.0f
-            );
-            guiGraphics.drawString(
+        if (scaledTextWidth <= textAreaWidth)
+            renderNormalText(
+                    guiGraphics,
                     font,
-                    getMessage(),
-                    0,
-                    0,
-                    textColor,
-                    false
-            );
-
-            guiGraphics.pose().popPose();
-        } else if (!isHovered) {
-            String truncatedText = getTruncatedText(font, textAreaWidth);
-
-            int truncatedTextWidth = Math.round(font.width(truncatedText) * textScale);
-            int textX = textAreaLeft + (textAreaWidth - truncatedTextWidth) / 2;
-
-            guiGraphics.pose().pushPose();
-
-            guiGraphics.pose().translate(
-                    textX,
                     contentTop,
-                    0.0
-            );
-            guiGraphics.pose().scale(
-                    textScale,
-                    textScale,
-                    1.0f
-            );
-            guiGraphics.drawString(
-                    font,
-                    Component.literal(truncatedText),
-                    0,
-                    0,
-                    textColor,
-                    false
-            );
-
-            guiGraphics.pose().popPose();
-        } else { // Marquee
-            long elapsed = System.currentTimeMillis() - marqueeStartTime;
-
-            if (!marqueeActive) {
-                marqueeActive = true;
-                marqueeStartTime = System.currentTimeMillis();
-                elapsed = 0;
-            }
-
-            float scrollOffset = getScrollOffset(
-                    elapsed,
-                    scaledTextWidth,
+                    textAreaLeft,
                     textAreaWidth
             );
-
-            // Physical screen is billboarded
-
-            guiGraphics.pose().pushPose();
-
-            guiGraphics.pose().translate(
-                    textAreaLeft - scrollOffset,
-                    contentTop,
-                    0.0
-            );
-            guiGraphics.pose().scale(
-                    textScale,
-                    textScale,
-                    1.0f
-            );
-            guiGraphics.drawStringClipped(
+        else if (!isHovered)
+            renderTruncatedText(
+                    guiGraphics,
                     font,
-                    getMessage(),
-                    0,
-                    0,
-                    textColor,
-                    false,
-                    scrollOffset / textScale,
-                    (scrollOffset + textAreaWidth) / textScale
+                    contentTop,
+                    textAreaLeft,
+                    textAreaWidth
             );
-
-            guiGraphics.pose().popPose();
-        }
+        else
+            renderMarquee(
+                    guiGraphics,
+                    font,
+                    contentTop,
+                    textAreaLeft,
+                    textAreaWidth,
+                    scaledTextWidth
+            );
 
         if (!isHovered)
             marqueeActive = false;
-        else {
-            guiGraphics.fill(
-                    getX(),
-                    getY(),
-                    getX() + getWidth(),
-                    getY() + 1,
-                    outlineColor
-            );
-            guiGraphics.fill(
-                    getX(),
-                    getY() + getHeight() - 1,
-                    getX() + getWidth(),
-                    getY() + getHeight(),
-                    outlineColor
-            );
-            guiGraphics.fill(
-                    getX(),
-                    getY(),
-                    getX() + 1,
-                    getY() + getHeight(),
-                    outlineColor
-            );
-            guiGraphics.fill(
-                    getX() + getWidth() - 1,
-                    getY(),
-                    getX() + getWidth(),
-                    getY() + getHeight(),
-                    outlineColor
-            );
+    }
+
+    private void renderNormalText(
+            PhysGuiGraphics guiGraphics,
+            Font font,
+            int contentTop,
+            int textAreaLeft,
+            int textAreaWidth
+    ) {
+        int scaledTextWidth = Math.round(font.width(getMessage()) * textScale);
+        int textX = textAreaLeft + (textAreaWidth - scaledTextWidth) / 2;
+
+        drawScaledText(
+                guiGraphics,
+                font,
+                getMessage(),
+                textX,
+                contentTop
+        );
+    }
+
+    private void renderTruncatedText(
+            PhysGuiGraphics guiGraphics,
+            Font font,
+            int contentTop,
+            int textAreaLeft,
+            int textAreaWidth
+    ) {
+        String truncatedText = getTruncatedText(font, textAreaWidth);
+
+        int truncatedTextWidth = Math.round(font.width(truncatedText) * textScale);
+        int textX = textAreaLeft + (textAreaWidth - truncatedTextWidth) / 2;
+
+        drawScaledText(
+                guiGraphics,
+                font,
+                Component.literal(truncatedText),
+                textX,
+                contentTop
+        );
+    }
+
+    private void renderMarquee(
+            PhysGuiGraphics guiGraphics,
+            Font font,
+            int contentTop,
+            int textAreaLeft,
+            int textAreaWidth,
+            int scaledTextWidth
+    ) {
+        long elapsed = System.currentTimeMillis() - marqueeStartTime;
+
+        if (!marqueeActive) {
+            marqueeActive = true;
+            marqueeStartTime = System.currentTimeMillis();
+            elapsed = 0;
         }
+
+        float scrollOffset = getScrollOffset(
+                elapsed,
+                scaledTextWidth,
+                textAreaWidth
+        );
+
+        guiGraphics.pose().pushPose();
+
+        guiGraphics.pose().translate(
+                textAreaLeft - scrollOffset,
+                contentTop,
+                0.0
+        );
+        guiGraphics.pose().scale(
+                textScale,
+                textScale,
+                1.0f
+        );
+        guiGraphics.drawStringClipped(
+                font,
+                getMessage(),
+                0,
+                0,
+                textColor,
+                false,
+                scrollOffset / textScale,
+                (scrollOffset + textAreaWidth) / textScale
+        );
+
+        guiGraphics.pose().popPose();
+    }
+
+    private void drawScaledText(
+            PhysGuiGraphics guiGraphics,
+            Font font,
+            Component text,
+            int textX,
+            int textY
+    ) {
+        guiGraphics.pose().pushPose();
+
+        guiGraphics.pose().translate(
+                textX,
+                textY,
+                0.0
+        );
+        guiGraphics.pose().scale(
+                textScale,
+                textScale,
+                1.0f
+        );
+        guiGraphics.drawString(
+                font,
+                text,
+                0,
+                0,
+                textColor,
+                false
+        );
+
+        guiGraphics.pose().popPose();
+    }
+
+    private void renderHoverOutline(PhysGuiGraphics guiGraphics) {
+        if (!isHovered)
+            return;
+
+        guiGraphics.fill(
+                getX(),
+                getY(),
+                getX() + getWidth(),
+                getY() + 1,
+                outlineColor
+        );
+        guiGraphics.fill(
+                getX(),
+                getY() + getHeight() - 1,
+                getX() + getWidth(),
+                getY() + getHeight(),
+                outlineColor
+        );
+        guiGraphics.fill(
+                getX(),
+                getY(),
+                getX() + 1,
+                getY() + getHeight(),
+                outlineColor
+        );
+        guiGraphics.fill(
+                getX() + getWidth() - 1,
+                getY(),
+                getX() + getWidth(),
+                getY() + getHeight(),
+                outlineColor
+        );
     }
 
     private String getTruncatedText(

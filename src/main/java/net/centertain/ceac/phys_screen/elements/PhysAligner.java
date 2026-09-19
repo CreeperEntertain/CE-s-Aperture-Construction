@@ -103,6 +103,9 @@ public class PhysAligner implements PhysElement {
     public int getHeight() {
         return height;
     }
+    public @NotNull PhysDimensions getDimensions(){
+        return new PhysDimensions(x, y, width, height);
+    };
     public Alignment getAlignment() {
         return alignment;
     }
@@ -122,11 +125,11 @@ public class PhysAligner implements PhysElement {
     public void setHeight(int height) {
         this.height = height;
     }
-    public void setDimensions(@NotNull PhysElement element) {
-        this.x = element.getX();
-        this.y = element.getY();
-        this.width = element.getWidth();
-        this.height = element.getHeight();
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+        this.width = dimensionSupplier.getWidth();
+        this.height = dimensionSupplier.getHeight();
     }
     public void setAlignment(Alignment alignment) {
         this.alignment = alignment;

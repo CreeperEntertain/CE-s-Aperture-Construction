@@ -3,6 +3,7 @@ package net.centertain.ceac.phys_screen.elements;
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class PhysImage implements PhysElement {
     private int x;
@@ -35,6 +36,28 @@ public class PhysImage implements PhysElement {
         this.height = height;
         this.texture = texture;
     }
+    public PhysImage(
+            @NotNull PhysElement dimensionSupplier,
+            ResourceLocation texture
+    ) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+        this.width = dimensionSupplier.getWidth();
+        this.height = dimensionSupplier.getHeight();
+        this.texture = texture;
+    }
+    public PhysImage(
+            @NotNull PhysElement positionSupplier,
+            int width,
+            int height,
+            ResourceLocation texture
+    ) {
+        this.x = positionSupplier.getX();
+        this.y = positionSupplier.getY();
+        this.width = width;
+        this.height = height;
+        this.texture = texture;
+    }
 
 
     public int getX() {
@@ -48,6 +71,9 @@ public class PhysImage implements PhysElement {
     }
     public int getHeight() {
         return height;
+    }
+    public @NotNull PhysDimensions getDimensions() {
+        return new PhysDimensions(x, y, width, height);
     }
     public ResourceLocation getTexture() {
         return texture;
@@ -64,6 +90,12 @@ public class PhysImage implements PhysElement {
     }
     public void setHeight(int height) {
         this.height = height;
+    }
+    public void setDimensions(@NotNull PhysElement dimensionSupplier) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+        this.width = dimensionSupplier.getWidth();
+        this.height = dimensionSupplier.getHeight();
     }
     public void setTexture(ResourceLocation texture) {
         this.texture = texture;
