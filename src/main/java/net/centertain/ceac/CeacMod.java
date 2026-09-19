@@ -1,6 +1,8 @@
 package net.centertain.ceac;
 
 import com.mojang.logging.LogUtils;
+import net.centertain.ceac.block.ModBlocks;
+import net.centertain.ceac.block_entity.ModBlockEntities;
 import net.centertain.ceac.item.ModCreativeModeTabs;
 import net.centertain.ceac.item.ModItems;
 import net.centertain.ceac.network.ModNetworking;
@@ -32,6 +34,8 @@ public class CeacMod
         ModCreativeModeTabs.register(modEventBus);
         ModItems.register(modEventBus);
         ModSounds.register(modEventBus);
+        ModBlocks.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);

@@ -1,5 +1,6 @@
 package net.centertain.ceac.item;
 
+import net.centertain.ceac.block.ModBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -22,6 +23,7 @@ public class ModCreativeModeTabs {
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.DECAL.get());
                         pOutput.accept(ModItems.SCRAPER.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_BlOCK.get());
                     })
                     .build()
     );

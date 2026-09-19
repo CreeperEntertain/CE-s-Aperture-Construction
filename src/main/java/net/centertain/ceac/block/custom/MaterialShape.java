@@ -2,22 +2,30 @@ package net.centertain.ceac.block.custom;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.centertain.ceac.material.Material;
+import net.centertain.ceac.material.MaterialShapeBlockEntity;
 import net.centertain.ceac.material.MaterialShapeFace;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.client.model.data.ModelData;
+import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2i;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class MaterialShape extends Block {
+public abstract class MaterialShape extends Block implements EntityBlock {
     private final List<MaterialShapeFace> faces;
 
     protected MaterialShape(Properties properties) {
@@ -27,6 +35,14 @@ public abstract class MaterialShape extends Block {
 
     public final List<MaterialShapeFace> faces() {
         return faces;
+    }
+
+    @Override
+    public BlockEntity newBlockEntity(
+            @NotNull BlockPos pos,
+            @NotNull BlockState state
+    ) {
+        return new MaterialShapeBlockEntity(pos, state);
     }
 
     public void createFaces() {
@@ -77,6 +93,24 @@ public abstract class MaterialShape extends Block {
         }
 
         return new MaterialShapeFace(null, points);
+    }
+
+    public final boolean applyMaterial(
+            Level level,
+            BlockPos pos,
+            MaterialShapeFace face,
+            Material material,
+            Vector2i materialCoordinate
+    ) {
+        int index = faces.indexOf(face);
+
+        if (index< 0)
+            return false;
+        if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
+            return false;
+
+        blockEntity.setMaterial(index, material, materialCoordinate);
+        return true;
     }
 
     public boolean canApplyMaterial(
