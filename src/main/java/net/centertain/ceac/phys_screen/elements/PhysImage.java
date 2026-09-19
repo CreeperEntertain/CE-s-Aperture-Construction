@@ -3,6 +3,7 @@ package net.centertain.ceac.phys_screen.elements;
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class PhysImage implements PhysElement {
     private int x;
@@ -31,6 +32,28 @@ public class PhysImage implements PhysElement {
     ) {
         this.x = x;
         this.y = y;
+        this.width = width;
+        this.height = height;
+        this.texture = texture;
+    }
+    public PhysImage(
+            @NotNull PhysElement dimensionSupplier,
+            ResourceLocation texture
+    ) {
+        this.x = dimensionSupplier.getX();
+        this.y = dimensionSupplier.getY();
+        this.width = dimensionSupplier.getWidth();
+        this.height = dimensionSupplier.getHeight();
+        this.texture = texture;
+    }
+    public PhysImage(
+            @NotNull PhysElement positionSupplier,
+            int width,
+            int height,
+            ResourceLocation texture
+    ) {
+        this.x = positionSupplier.getX();
+        this.y = positionSupplier.getY();
         this.width = width;
         this.height = height;
         this.texture = texture;
