@@ -3,14 +3,20 @@ package net.centertain.ceac.client;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
+import net.centertain.ceac.material.MaterialShapeBakedModel;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.BlockModelShaper;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -62,9 +68,25 @@ public class ClientModEvents
     }
 
     @SubscribeEvent
-    public static void onBakingCompleted(ModelEvent.BakingCompleted event) {
-        for (Block block : ForgeRegistries.BLOCKS.getValues())
-            if (block instanceof MaterialShape materialShape)
-                materialShape.createFaces();
+    public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
+        for (Block block : ForgeRegistries.BLOCKS.getValues()) {
+            if (!(block instanceof MaterialShape materialShape))
+                continue;
+
+            BlockState state = block.defaultBlockState();
+
+            ModelResourceLocation modelLocation = BlockModelShaper.stateToModelLocation(state);
+
+            BakedModel original = event.getModels().get(modelLocation);
+            if (original == null)
+                continue;
+
+            materialShape.createFaces(original);
+
+            event.getModels().put(
+                    modelLocation,
+                    new MaterialShapeBakedModel(original, materialShape)
+            );
+        }
     }
 }

@@ -7,6 +7,7 @@ import net.centertain.ceac.material.MaterialShapeBlockEntity;
 import net.centertain.ceac.material.MaterialShapeFace;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -45,12 +46,10 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         return new MaterialShapeBlockEntity(pos, state);
     }
 
-    public void createFaces() {
+    public void createFaces(BakedModel model) {
         faces.clear();
 
         BlockState state = defaultBlockState();
-
-        IForgeBakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
 
         RandomSource random = RandomSource.create();
 

@@ -17,14 +17,15 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public abstract class MatItem extends Item {
-    private final Material material;
+    private final Supplier<Material> material;
     private Vector2i materialCoordinate;
 
     protected MatItem(
             Properties properties,
-            Material material
+            Supplier<Material> material
     ) {
         super(properties);
         this.material = material;
@@ -32,14 +33,14 @@ public abstract class MatItem extends Item {
     }
 
     public Material getMaterial() {
-        return material;
+        return material.get();
     }
     public Vector2i getMaterialCoordinate() {
         return materialCoordinate;
     }
 
     public boolean setMaterialCoordinate(Vector2i materialCoordinate) {
-        if (!material.containsCoordinate(materialCoordinate))
+        if (!material.get().containsCoordinate(materialCoordinate))
             return false;
         this.materialCoordinate = materialCoordinate;
         return true;
@@ -93,7 +94,7 @@ public abstract class MatItem extends Item {
 
         blockEntity.setMaterial(
                 faceIndex,
-                material,
+                material.get(),
                 materialCoordinate
         );
 

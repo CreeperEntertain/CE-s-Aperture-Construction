@@ -2,6 +2,11 @@ package net.centertain.ceac.material;
 
 import net.centertain.ceac.block_entity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -68,6 +73,98 @@ public class MaterialShapeBlockEntity extends BlockEntity {
                     getBlockState(),
                     Block.UPDATE_CLIENTS
             );
+    }
+
+    @Override
+    protected void saveAdditional(@NotNull CompoundTag tag) {
+        super.saveAdditional(tag);
+
+        CompoundTag materialsTag = new CompoundTag();
+
+        for (Map.Entry<Integer, MaterialAssignment> entry : materials.entrySet()) {
+            MaterialAssignment assignment = entry.getValue();
+
+            CompoundTag materialTag = new CompoundTag();
+            materialTag.putString("Name", assignment.material.getName());
+            materialTag.putInt("X", assignment.x);
+            materialTag.putInt("Y", assignment.y);
+
+            materialsTag.put(String.valueOf(entry.getKey()), materialTag);
+        }
+
+        tag.put("Materials", materialsTag);
+    }
+
+    @Override
+    public void load(@NotNull CompoundTag tag) {
+        super.load(tag);
+
+        Map<Integer, MaterialAssignment> loaded = new HashMap<>();
+
+        CompoundTag materialsTag = tag.getCompound("Materials");
+
+        for (String key: materialsTag.getAllKeys()) {
+            CompoundTag materialTag = materialsTag.getCompound(key);
+
+            Material material = ModMaterials.EXAMPLE.get();
+
+            loaded.put(Integer.parseInt(key), new MaterialAssignment(
+                    material,
+                    materialTag.getInt("X"),
+                    materialTag.getInt("Y")
+            ));
+        }
+
+        materials = Map.copyOf(loaded);
+    }
+
+    @Override
+    public @NotNull CompoundTag getUpdateTag() {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag);
+        return tag;
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(
+            Connection connection,
+            ClientboundBlockEntityDataPacket packet
+    ) {
+        super.onDataPacket(connection, packet);
+        requestModelDataUpdate();
+
+        if (level == null)
+            return;
+
+        BlockState state = getBlockState();
+        level.sendBlockUpdated(
+                worldPosition,
+                state,
+                state,
+                Block.UPDATE_CLIENTS
+        );
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        super.handleUpdateTag(tag);
+        requestModelDataUpdate();
+
+        if (level == null)
+            return;
+
+        BlockState state = getBlockState();
+        level.sendBlockUpdated(
+                worldPosition,
+                state,
+                state,
+                Block.UPDATE_CLIENTS
+        );
     }
 
     @Override

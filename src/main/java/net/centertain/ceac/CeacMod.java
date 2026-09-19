@@ -5,6 +5,7 @@ import net.centertain.ceac.block.ModBlocks;
 import net.centertain.ceac.block_entity.ModBlockEntities;
 import net.centertain.ceac.item.ModCreativeModeTabs;
 import net.centertain.ceac.item.ModItems;
+import net.centertain.ceac.material.ModMaterials;
 import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.sound.ModSounds;
 import net.minecraftforge.api.distmarker.Dist;
@@ -36,6 +37,7 @@ public class CeacMod
         ModSounds.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
+        ModMaterials.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);
