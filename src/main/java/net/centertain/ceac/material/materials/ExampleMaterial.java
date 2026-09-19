@@ -2,6 +2,7 @@ package net.centertain.ceac.material.materials;
 
 import net.centertain.ceac.material.Material;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.SoundType;
 import org.joml.Vector2i;
 
 import java.util.Map;
@@ -12,6 +13,7 @@ public class ExampleMaterial extends Material {
     public ExampleMaterial() {
         super(
                 "Example",
+                SoundType.METAL,
                 Map.ofEntries(
                         Map.entry(new Vector2i(0,0), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/example"))
                 )
