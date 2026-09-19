@@ -31,7 +31,7 @@ public final class PhysRenderer {
                 bufferSource,
                 projectionMatrix,
                 false,
-                3.0
+                1.0
         );
     }
 
@@ -55,7 +55,7 @@ public final class PhysRenderer {
                 bufferSource,
                 projectionMatrix,
                 stayConstantSize,
-                3.0
+                1.0
         );
     }
 
@@ -114,7 +114,7 @@ public final class PhysRenderer {
         double sizeScale = 1.0;
 
         if (stayConstantSize)
-            sizeScale = cameraZ / constantSizeScale;
+            sizeScale = cameraZ * (constantSizeScale / 2.0);
 
         cameraX += viewSpaceOffset.x * sizeScale;
         cameraY += viewSpaceOffset.y * sizeScale;
