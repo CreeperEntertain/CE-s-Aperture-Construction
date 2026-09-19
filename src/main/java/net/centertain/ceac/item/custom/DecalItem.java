@@ -210,7 +210,7 @@ public class DecalItem extends Item {
                 origin,
                 normal,
                 ClientDecals.getHighestRenderingOrder() + 1,
-                false,
+                decalDefinition.getGlowing(),
                 decalDefinition.getWidth(),
                 decalDefinition.getHeight(),
                 blockDepth,

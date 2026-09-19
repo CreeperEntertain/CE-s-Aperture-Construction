@@ -191,6 +191,7 @@ void main() {
             DecalData decal = decals[decalIndices[decalOffset + j]];
 
             vec3 decalNormal = normalize(decal.normal.xyz);
+            bool glowing = decal.normal.w >= 0.5;
 
             float fade = angleFade(surfaceNormal, decalNormal);
 
@@ -233,14 +234,16 @@ void main() {
 
             color.a *= fade;
 
-            uint lightPacked = fragments[offset + 2u];
+            if (!glowing) {
+                uint lightPacked = fragments[offset + 2u];
 
-            ivec2 lightCoords = ivec2(
-                    int(lightPacked & 0xFFu),
-                    int((lightPacked >> 8u) & 0xFFu)
-            );
+                ivec2 lightCoords = ivec2(
+                        int(lightPacked & 0xFFu),
+                        int((lightPacked >> 8u) & 0xFFu)
+                );
 
-            color.rgb *= minecraft_sample_lightmap(Lightmap, lightCoords).rgb;
+                color.rgb *= minecraft_sample_lightmap(Lightmap, lightCoords).rgb;
+            }
 
             layers[i] = over(color, layers[i]);
             decalApplied = true;

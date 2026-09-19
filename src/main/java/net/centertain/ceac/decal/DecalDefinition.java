@@ -16,22 +16,26 @@ public final class DecalDefinition {
     private final int width;
     private final int height;
     private final ResourceLocation resourceLocation;
+    private final boolean glowing;
 
     public DecalDefinition(
             String name,
             int width,
             int height,
-            ResourceLocation resourceLocation
+            ResourceLocation resourceLocation,
+            boolean glowing
     ) {
         this.name = name;
         this.width = width;
         this.height = height;
         this.resourceLocation = resourceLocation;
+        this.glowing = glowing;
     }
     public DecalDefinition(
             ResourceLocation resourceLocation
     ) {
         this.resourceLocation = resourceLocation;
+        this.glowing = false;
 
         String path = resourceLocation.getPath();
         int slash = path.lastIndexOf('/');
@@ -59,7 +63,7 @@ public final class DecalDefinition {
                 image.close();
             }
         } catch (IOException e) {
-            throw  new RuntimeException("Failed to load decal texture " + resourceLocation, e);
+            throw new RuntimeException("Failed to load decal texture " + resourceLocation, e);
         }
     }
 
@@ -74,5 +78,8 @@ public final class DecalDefinition {
     }
     public ResourceLocation getResourceLocation() {
         return resourceLocation;
+    }
+    public boolean getGlowing() {
+        return glowing;
     }
 }

@@ -169,6 +169,7 @@ void main() {
         DecalData decal = decals[decalIndices[decalOffset + j]];
 
         vec3 decalNormal = normalize(decal.normal.xyz);
+        bool glowing = decal.normal.w >= 0.5;
 
         float fade = angleFade(surfaceNormal, decalNormal);
 
@@ -217,11 +218,13 @@ void main() {
 
         color.a *= fade;
 
-        vec2 lightCoords = texture(LightmapCoords, uv).rg;
+        if (!glowing) {
+            vec2 lightCoords = texture(LightmapCoords, uv).rg;
 
-        vec2 lightUV = clamp(lightCoords, vec2(0.5 / 16.0), vec2(15.5 / 16.0));
+            vec2 lightUV = clamp(lightCoords, vec2(0.5 / 16.0), vec2(15.5 / 16.0));
 
-        color.rgb *= texture(Lightmap, lightUV).rgb;
+            color.rgb *= texture(Lightmap, lightUV).rgb;
+        }
 
         fragColor = color;
         return;
