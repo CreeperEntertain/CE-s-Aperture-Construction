@@ -22,8 +22,6 @@ public class PreviewerHelpScreen extends PhysScreen {
         super(Component.literal("Precise Placement Help Screen"));
     }
 
-    private void example() {}
-
     @Override
     protected void init() {
         super.init();
