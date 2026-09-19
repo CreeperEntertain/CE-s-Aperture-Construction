@@ -72,6 +72,56 @@ public class PhysButton extends Button implements PhysElement {
                 onPress
         );
     }
+    public PhysButton(
+            @NotNull PhysElement dimensionSupplier,
+            Component text,
+            int textColor,
+            float textScale,
+            int backgroundColor,
+            int outlineColor,
+            @Nullable ResourceLocation texture,
+            Runnable onPress
+    ) {
+        super (
+                dimensionSupplier.getX(),
+                dimensionSupplier.getY(),
+                dimensionSupplier.getWidth(),
+                dimensionSupplier.getHeight(),
+                text,
+                textColor,
+                textScale,
+                backgroundColor,
+                outlineColor,
+                texture,
+                onPress
+        );
+    }
+    public PhysButton(
+            @NotNull PhysElement dimensionSupplier,
+            int width,
+            int height,
+            Component text,
+            int textColor,
+            float textScale,
+            int backgroundColor,
+            int outlineColor,
+            @Nullable ResourceLocation texture,
+            Runnable onPress
+    ) {
+        super (
+                dimensionSupplier.getX(),
+                dimensionSupplier.getY(),
+                width,
+                height,
+                text,
+                textColor,
+                textScale,
+                backgroundColor,
+                outlineColor,
+                texture,
+                onPress
+        );
+    }
 
     @Override
     protected void renderWidget(
