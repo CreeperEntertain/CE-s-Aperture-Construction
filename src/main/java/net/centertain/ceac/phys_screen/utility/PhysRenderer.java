@@ -78,21 +78,11 @@ public final class PhysRenderer {
         GameRenderer gameRenderer = minecraft.gameRenderer;
         Camera camera = gameRenderer.getMainCamera();
 
-        GameRendererAccessor renderer = (GameRendererAccessor) gameRenderer;
+        Matrix4f baseProjectionMatrix = gameRenderer.getProjectionMatrix(70.0);
+        Vector3f currentProjectionScale = projectionMatrix.getScale(new Vector3f());
+        Vector3f baseProjectionScale = baseProjectionMatrix.getScale(new Vector3f());
 
-        double currentFov = renderer.ceac$getFov(
-                camera,
-                minecraft.getFrameTime(),
-                true
-        );
-        double baseFov = renderer.ceac$getFov(
-                camera,
-                minecraft.getFrameTime(),
-                false
-        );
-        double fovScale =
-                Math.tan(Math.toRadians(currentFov) / 2.0) /
-                Math.tan(Math.toRadians(baseFov) / 2.0);
+        double fovScale = baseProjectionScale.x() / currentProjectionScale.x();
 
         poseStack.pushPose();
 
