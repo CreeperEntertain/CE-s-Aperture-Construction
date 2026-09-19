@@ -7,6 +7,7 @@ import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,33 +79,7 @@ public class PreviewerHelpScreen extends PhysScreen {
         List<PhysElement> keyPrompts = new ArrayList<>();
 
         for (int i = 0; i < keys.length; i++) {
-            PhysImage key = new PhysImage(
-                    16,
-                    16,
-                    keys[i]
-            );
-            PhysLabel prompt = new PhysLabel(
-                    GuiConstants.COLOR_SOLID_WHITE,
-                    Component.literal(prompts[i]),
-                    false
-            );
-            PhysAligner alignedPrompt = new PhysAligner(
-                    WIDTH - (2 * GuiConstants.SCREEN_PADDING) - GuiConstants.ELEMENT_PADDING - 16,
-                    16,
-                    PhysAligner.Alignment.LEFT,
-                    prompt
-            );
-
-            List<PhysElement> pair = new ArrayList<>(List.of(key, alignedPrompt));
-
-            PhysStackPanel keyPrompt = new PhysStackPanel(
-                    PhysStackPanel.Alignment.HORIZONTAL,
-                    16,
-                    GuiConstants.ELEMENT_PADDING,
-                    GuiConstants.COLOR_TRANSPARENT,
-                    pair
-            );
-
+            PhysStackPanel keyPrompt = getKeyPrompt(keys, i, prompts);
             keyPrompts.add(keyPrompt);
         }
 
@@ -122,5 +97,34 @@ public class PreviewerHelpScreen extends PhysScreen {
                 GuiConstants.SCREEN_PADDING,
                 promptList
         ));
+    }
+
+    private static @NotNull PhysStackPanel getKeyPrompt(ResourceLocation[] keys, int i, String[] prompts) {
+        PhysImage key = new PhysImage(
+                16,
+                16,
+                keys[i]
+        );
+        PhysLabel prompt = new PhysLabel(
+                GuiConstants.COLOR_SOLID_WHITE,
+                Component.literal(prompts[i]),
+                false
+        );
+        PhysAligner alignedPrompt = new PhysAligner(
+                WIDTH - (2 * GuiConstants.SCREEN_PADDING) - GuiConstants.ELEMENT_PADDING - 16,
+                16,
+                PhysAligner.Alignment.LEFT,
+                prompt
+        );
+
+        List<PhysElement> pair = new ArrayList<>(List.of(key, alignedPrompt));
+
+        return new PhysStackPanel(
+                PhysStackPanel.Alignment.HORIZONTAL,
+                16,
+                GuiConstants.ELEMENT_PADDING,
+                GuiConstants.COLOR_TRANSPARENT,
+                pair
+        );
     }
 }
