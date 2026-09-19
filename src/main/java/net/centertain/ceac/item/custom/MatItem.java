@@ -2,11 +2,18 @@ package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.material.Material;
+import net.centertain.ceac.material.MaterialBreakingParticle;
 import net.centertain.ceac.material.MaterialShapeBlockEntity;
 import net.centertain.ceac.material.MaterialShapeFace;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -81,6 +88,8 @@ public abstract class MatItem extends Item {
                     state
             );
 
+        spawnMaterialParticles(level, pos, state, face);
+
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
@@ -123,6 +132,88 @@ public abstract class MatItem extends Item {
                 soundType.getVolume(),
                 soundType.getPitch()
         );
+    }
+
+    private void spawnMaterialParticles(
+            Level level,
+            BlockPos pos,
+            BlockState state,
+            MaterialShapeFace face
+    ) {
+        if (!(level instanceof ClientLevel clientLevel))
+            return;
+        ResourceLocation texture = material.get().getTexture(materialCoordinate);
+        if (texture == null)
+            return;
+
+        TextureAtlasSprite sprite = Minecraft.getInstance()
+                .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
+                .apply(texture);
+
+        RandomSource random = clientLevel.getRandom();
+
+        for (int i = 0; i < 16; i++) {
+            Vec3 point = randomPointOnFace(face, random);
+
+            double xd = random.nextDouble() - 0.5D;
+            double yd = random.nextDouble() - 0.5D;
+            double zd = random.nextDouble() - 0.5D;
+
+            clientLevel.getBlockEntity(pos); // no-op; keeps this entirely client-side
+
+            Minecraft.getInstance().particleEngine.add(new MaterialBreakingParticle(
+                    clientLevel,
+                    pos.getX() + point.x,
+                    pos.getY() + point.y,
+                    pos.getZ() + point.z,
+                    xd,
+                    yd,
+                    zd,
+                    state,
+                    pos,
+                    sprite
+            ));
+        }
+    }
+
+    private Vec3 randomPointOnFace(
+            MaterialShapeFace face,
+            RandomSource random
+    ) {
+        List<Vec3> vertices = face.getVertices();
+
+        Vec3 a = vertices.get(0);
+        Vec3 b = vertices.get(1);
+        Vec3 c = vertices.get(2);
+
+        if (vertices.size() == 3 || random.nextBoolean())
+            return randomPointOnTriangle(a, b, c, random);
+
+        return randomPointOnTriangle(
+                a,
+                c,
+                vertices.get(3),
+                random
+        );
+    }
+
+    private Vec3 randomPointOnTriangle(
+            Vec3 a,
+            Vec3 b,
+            Vec3 c,
+            RandomSource random
+    ) {
+        double u = random.nextDouble();
+        double v = random.nextDouble();
+
+        if (u + v > 1.0) {
+            u = 1.0 - u;
+            v = 1.0 - v;
+        }
+
+        return a
+                .add(b.subtract(a).scale(u))
+                .add(c.subtract(a).scale(v));
     }
 
     private Vec3 faceCenter(
