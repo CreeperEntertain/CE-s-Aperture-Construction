@@ -141,7 +141,7 @@ public final class TranslucentKBuffer {
                 data.put((float) normal.x);
                 data.put((float) normal.y);
                 data.put((float) normal.z);
-                data.put(0.0f);
+                data.put(decal.getGlowing() ? 1.0f : 0.0f);
 
                 // Volume + rotation
                 data.put((float) width);
