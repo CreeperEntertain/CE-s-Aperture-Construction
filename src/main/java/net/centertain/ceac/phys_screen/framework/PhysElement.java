@@ -10,7 +10,7 @@ public interface PhysElement {
     int getY();
     int getWidth();
     int getHeight();
-    PhysDimensions getDimensions();
+    @NotNull PhysDimensions getDimensions();
 
     void setX(int x);
     void setY(int y);
