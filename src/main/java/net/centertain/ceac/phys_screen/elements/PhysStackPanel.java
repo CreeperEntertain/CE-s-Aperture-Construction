@@ -2,6 +2,7 @@ package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -32,6 +33,22 @@ public class PhysStackPanel implements PhysElement {
     ) {
         this.x = x;
         this.y = y;
+        this.alignment = alignment;
+        this.wideness = wideness;
+        this.spacing = spacing;
+        this.backgroundColor = backgroundColor;
+        this.elements = elements;
+    }
+    public PhysStackPanel(
+            @NotNull PhysElement positionSupplier,
+            Alignment alignment,
+            int wideness,
+            int spacing,
+            int backgroundColor,
+            List<PhysElement> elements
+    ) {
+        this.x = positionSupplier.getX();
+        this.y = positionSupplier.getY();
         this.alignment = alignment;
         this.wideness = wideness;
         this.spacing = spacing;
