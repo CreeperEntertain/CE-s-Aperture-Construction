@@ -3,6 +3,7 @@ package net.centertain.ceac.decal.client;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import net.centertain.ceac.Profiler;
 import net.centertain.ceac.decal.DecalDefinition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -48,7 +49,7 @@ public final class DecalLoader {
         for (DecalPack pack : decals)
             pack.sortDecals();
 
-        printDecals();
+        profileDecals();
     }
     private static void extracted(
             PackResources resourcePack,
@@ -127,19 +128,28 @@ public final class DecalLoader {
         }
     }
 
-    public static void printDecals() {
-        System.out.println("INSTALLED DECALS INCLUDE...");
+    private record DecalLogEntry(
+            String path,
+            String name,
+            int width,
+            int height,
+            boolean glowing
+    ) {}
+    public static void profileDecals() {
+        List<List<DecalLogEntry>> packs = new ArrayList<>();
         for (DecalPack pack : decals) {
-            System.out.println("\n" + pack.getName() + ": \n");
-            for (DecalDefinition decal : pack.getDecals())
-                System.out.println(
-                        decal.getResourceLocation().getPath() + ": \n" +
-                        "    name: " + decal.getName() + "\n" +
-                        "    width: " + decal.getWidth() + "\n" +
-                        "    height: " + decal.getHeight() + "\n" +
-                        "    glowing: " + decal.getGlowing()
-                );
+            List<DecalLogEntry> definitions = new ArrayList<>();
+            for (DecalDefinition definition : pack.getDecals())
+                definitions.add(new DecalLogEntry(
+                        definition.getResourceLocation().getPath(),
+                        definition.getName(),
+                        definition.getWidth(),
+                        definition.getHeight(),
+                        definition.getGlowing()
+                ));
+            packs.add(definitions);
         }
+        Profiler.set("Loaded Packs", packs);
     }
 
     public static @Nullable DecalDefinition getDefinitionFromResourceLocation(ResourceLocation resourceLocation) {
