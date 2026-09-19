@@ -28,6 +28,7 @@ public abstract class Material {
         return textures.get(coordinate);
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted") // ?????
     public boolean containsCoordinate(Vector2i coordinate) {
         return textures.containsKey(coordinate);
     }
