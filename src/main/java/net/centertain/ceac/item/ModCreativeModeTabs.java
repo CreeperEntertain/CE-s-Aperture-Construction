@@ -23,7 +23,10 @@ public class ModCreativeModeTabs {
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.DECAL.get());
                         pOutput.accept(ModItems.SCRAPER.get());
+
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_BlOCK.get());
+
+                        pOutput.accept(ModItems.EXAMPLE.get());
                     })
                     .build()
     );
