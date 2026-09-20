@@ -9,7 +9,6 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-@SuppressWarnings("JavaPrintToLogpoint")
 public class SyncDecalPacket {
     public enum Action {
         ADD,
