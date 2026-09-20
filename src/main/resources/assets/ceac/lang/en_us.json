@@ -9,8 +9,8 @@
 
   "item.ceac.example": "Example",
 
-  "block.ceac.model_shape_block": "Model Shape: Block",
-  "block.ceac.model_shape_slope": "Model Shape: Slope",
+  "block.ceac.material_shape_block": "Material Shape: Block",
+  "block.ceac.material_shape_slope": "Material Shape: Slope",
 
   "sound.ceac.decal.placement": "Decal placed",
   "sound.ceac.decal.deletion": "Decal removed",

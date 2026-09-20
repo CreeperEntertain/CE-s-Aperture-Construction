@@ -19,7 +19,7 @@ public final class ModBlockEntities {
             MATERIAL_SHAPE = BLOCK_ENTITIES.register(
                     "material_shape",
                     () -> BlockEntityType.Builder.of(MaterialShapeBlockEntity::new,
-                            ModBlocks.MODEL_SHAPE_BlOCK.get()
+                            ModBlocks.MATERIAL_SHAPE_BlOCK.get()
                     ).build(null)
             );
 

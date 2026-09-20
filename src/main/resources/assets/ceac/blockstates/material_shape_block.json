@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "ceac:block/material_shape_block"
+    }
+  }
+}

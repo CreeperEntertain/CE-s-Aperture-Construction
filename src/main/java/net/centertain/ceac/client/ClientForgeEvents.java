@@ -4,7 +4,7 @@ import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.centertain.ceac.decal.server.DecalBreakage;
-import net.centertain.ceac.material.utility.ModelShapeSelectionOutline;
+import net.centertain.ceac.material.utility.MaterialShapeSelectionOutline;
 import net.centertain.ceac.utility.Soundworks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
@@ -89,6 +89,6 @@ public class ClientForgeEvents {
 
     @SubscribeEvent
     public static void renderSelection(RenderHighlightEvent.Block event) {
-        ModelShapeSelectionOutline.replaceSelectionOutline(event);
+        MaterialShapeSelectionOutline.replaceSelectionOutline(event);
     }
 }

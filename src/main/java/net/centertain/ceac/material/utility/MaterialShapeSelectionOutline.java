@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.block.custom.MaterialShape;
-import net.centertain.ceac.material.MaterialShapeFace;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
@@ -27,8 +26,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public final class ModelShapeSelectionOutline {
-    private ModelShapeSelectionOutline() {}
+public final class MaterialShapeSelectionOutline {
+    private MaterialShapeSelectionOutline() {}
 
     public static void replaceSelectionOutline(RenderHighlightEvent.Block event) {
         BlockHitResult target = event.getTarget();

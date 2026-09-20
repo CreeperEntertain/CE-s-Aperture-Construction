@@ -1,5 +1,5 @@
 {
-  "parent": "ceac:block/model_shape_slope",
+  "parent": "ceac:block/material_shape_slope",
   "display": {
     "thirdperson_righthand": {
       "rotation": [75, 45, 0],

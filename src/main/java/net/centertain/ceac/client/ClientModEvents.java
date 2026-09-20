@@ -4,7 +4,7 @@ import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.centertain.ceac.material.MaterialShapeBakedModel;
-import net.centertain.ceac.material.loaders.ModelShapeSlopeLoader;
+import net.centertain.ceac.material.loaders.MaterialShapeSlopeLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.resources.model.BakedModel;
@@ -102,6 +102,6 @@ public class ClientModEvents
 
     @SubscribeEvent
     public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
-        event.register("model_shape_slope", ModelShapeSlopeLoader.INSTANCE);
+        event.register("material_shape_slope", MaterialShapeSlopeLoader.INSTANCE);
     }
 }
