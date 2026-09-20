@@ -13,14 +13,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,6 +60,56 @@ public abstract class MatItem extends Item {
         return true;
     }
 
+
+    @Override
+    public void inventoryTick(
+            @NotNull ItemStack stack,
+            @NotNull Level level,
+            @NotNull Entity entity,
+            int slot,
+            boolean selected
+    ) {
+        if (!(entity instanceof Player player))
+            return;
+        if (!selected)
+            return;
+
+        HitResult hit = player.pick(player.getBlockReach(), 1.0f, false);
+        if (!(hit instanceof BlockHitResult blockHit))
+            return;
+
+        BlockPos pos = blockHit.getBlockPos();
+        BlockState state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof MaterialShape shape))
+            return;
+        if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
+            return;
+
+        Vec3 origin = player.getEyePosition();
+        Vec3 direction = player.getViewVector(1.0f);
+        Vec3 localOrigin = origin.subtract(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ()
+        );
+
+        localOrigin = shape.transformPointToLocal(state, localOrigin);
+        direction = shape.transformDirectionToLocal(state, direction);
+
+        MaterialShapeFace face = findFace(
+                shape,
+                localOrigin,
+                direction,
+                player.getBlockReach()
+        );
+        if (face == null)
+            return;
+
+        Vector2i materialCoordinate = material.get().getCoordinate(face, pos);
+
+        this.materialCoordinate = materialCoordinate;
+        System.out.println(material.get().getName() + " -> " + materialCoordinate);
+    }
 
     @Override
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {

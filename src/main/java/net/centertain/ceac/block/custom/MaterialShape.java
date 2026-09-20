@@ -85,7 +85,7 @@ public abstract class MaterialShape extends Block implements EntityBlock {
     }
 
     private MaterialShapeFace createFace(BakedQuad quad) {
-        return new MaterialShapeFace(null, getQuadVertices(quad));
+        return new MaterialShapeFace(this, null, getQuadVertices(quad));
     }
 
     private List<Vec3> getQuadVertices(BakedQuad quad) {
