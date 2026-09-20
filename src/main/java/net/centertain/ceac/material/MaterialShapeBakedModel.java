@@ -2,7 +2,6 @@ package net.centertain.ceac.material;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Transformation;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.block.custom.material_shapes.MaterialShapeSlope;
 import net.minecraft.client.Minecraft;
@@ -12,21 +11,15 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.BakedModelWrapper;
-import net.minecraftforge.client.model.IQuadTransformer;
-import net.minecraftforge.client.model.QuadTransformers;
 import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3f;
-import org.joml.Quaternionf;
 import org.joml.Vector2i;
-import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,26 +82,19 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
         Direction facing = state.getValue(MaterialShapeSlope.FACING);
         int rotation = state.getValue(MaterialShapeSlope.ROTATION);
 
-        Vec3 x = direction(facing.getOpposite());
-        Vec3 y = referenceUp(facing);
-        Vec3 z = x.cross(y);
+        Vec3 forward = direction(facing);
 
-        switch (rotation) {
-            case 1 -> {
-                Vec3 oldY = y;
-                y = z.scale(-1.0);
-                z = oldY;
-            }
-            case 2 -> {
-                y = y.scale(-1.0);
-                z = z.scale(-1.0);
-            }
-            case 3 -> {
-                Vec3 oldY = y;
-                y = z;
-                z = oldY.scale(-1.0);
-            }
-        }
+        Vec3 x = forward.scale(-1.0);
+        Vec3 y = switch (facing) {
+            case UP -> new Vec3(0, 0, -1);
+            case DOWN -> new Vec3(0, 0, 1);
+            default -> new Vec3(0, 1, 0);
+        };
+
+        for (int i = 0; i < rotation; i++)
+            y = y.cross(forward).add(forward.scale(y.dot(forward)));
+
+        Vec3 z = y.cross(forward).normalize();
 
         int[] vertices = quad.getVertices().clone();
         VertexFormat format = DefaultVertexFormat.BLOCK;
@@ -129,14 +115,9 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
 
             transformed[i] = transformPoint(point, x, y, z);
 
-            vertices[offset] =
-                    Float.floatToRawIntBits((float) transformed[i].x);
-
-            vertices[offset + 1] =
-                    Float.floatToRawIntBits((float) transformed[i].y);
-
-            vertices[offset + 2] =
-                    Float.floatToRawIntBits((float) transformed[i].z);
+            vertices[offset] = Float.floatToRawIntBits((float) transformed[i].x);
+            vertices[offset + 1] = Float.floatToRawIntBits((float) transformed[i].y);
+            vertices[offset + 2] = Float.floatToRawIntBits((float) transformed[i].z);
         }
 
         Vec3 normal = transformed[1]
@@ -183,13 +164,6 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
                 direction.getStepY(),
                 direction.getStepZ()
         );
-    }
-
-    private Vec3 referenceUp(Direction facing) {
-        return switch (facing) {
-            case UP, DOWN -> new Vec3(0, 0, 1);
-            default -> new Vec3(0, 1, 0);
-        };
     }
 
     private int packNormal(Vec3 normal) {
