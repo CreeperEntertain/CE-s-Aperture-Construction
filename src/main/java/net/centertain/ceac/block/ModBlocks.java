@@ -32,6 +32,7 @@ public final class ModBlocks {
         registerBlockItem(name, result);
         return result;
     }
+    @SuppressWarnings("UnusedReturnValue")
     private static <T extends Block> RegistryObject<Item> registerBlockItem(
             String name,
             RegistryObject<T> block
