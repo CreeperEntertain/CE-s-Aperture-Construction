@@ -36,14 +36,22 @@ import java.util.function.Supplier;
 public abstract class MatItem extends Item {
     private final Supplier<Material> material;
     private Vector2i materialCoordinate;
+    private final String category;
+    private final double price;
 
     protected MatItem(
+            @Nullable String category,
+            double price,
             Properties properties,
             Supplier<Material> material
     ) {
-        super(properties);
+        super(properties.stacksTo(1));
         this.material = material;
         this.materialCoordinate = new Vector2i();
+        this.category = category == null
+                ? "Materials"
+                : category;
+        this.price = price;
     }
 
     public Material getMaterial() {
@@ -51,6 +59,12 @@ public abstract class MatItem extends Item {
     }
     public Vector2i getMaterialCoordinate() {
         return materialCoordinate;
+    }
+    public final String getCategory() {
+        return category;
+    }
+    public final double getPrice() {
+        return price;
     }
 
     public boolean setMaterialCoordinate(Vector2i materialCoordinate) {
@@ -172,7 +186,7 @@ public abstract class MatItem extends Item {
             BlockPos pos,
             BlockState state
     ) {
-        int faceIndex = shape.faces().indexOf(face);
+        int faceIndex = shape.getFaces().indexOf(face);
 
         blockEntity.setMaterial(
                 faceIndex,
@@ -311,7 +325,7 @@ public abstract class MatItem extends Item {
         double closest = reach;
         MaterialShapeFace result = null;
 
-        for (MaterialShapeFace face : shape.faces()) {
+        for (MaterialShapeFace face : shape.getFaces()) {
             List<Vec3> vertices = face.getVertices();
 
             if (vertices.size() < 3)

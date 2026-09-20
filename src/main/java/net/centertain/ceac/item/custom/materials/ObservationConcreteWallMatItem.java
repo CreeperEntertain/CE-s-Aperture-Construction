@@ -5,6 +5,11 @@ import net.centertain.ceac.material.ModMaterials;
 
 public class ObservationConcreteWallMatItem extends MatItem {
     public ObservationConcreteWallMatItem(Properties properties) {
-        super(properties, ModMaterials.OBSERVATION_CONCRETE_WALL);
+        super(
+                null,
+                1000.0,
+                properties,
+                ModMaterials.OBSERVATION_CONCRETE_WALL
+        );
     }
 }

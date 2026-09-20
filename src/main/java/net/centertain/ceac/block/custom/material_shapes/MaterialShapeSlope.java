@@ -27,7 +27,11 @@ public class MaterialShapeSlope extends MaterialShape {
     public static IntegerProperty ROTATION = IntegerProperty.create("rotation", 0, 3);
 
     public MaterialShapeSlope(Properties properties) {
-        super(properties);
+        super(
+                null,
+                10.0,
+                properties
+        );
         registerDefaultState(getStateDefinition().any()
                 .setValue(FACING, Direction.WEST)
                 .setValue(ROTATION, 0)

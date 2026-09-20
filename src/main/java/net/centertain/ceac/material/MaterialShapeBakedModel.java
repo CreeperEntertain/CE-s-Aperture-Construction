@@ -176,8 +176,8 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
 
     private int findFace(BakedQuad quad) {
         List<Vec3> quadVertices = getQuadVertices(quad);
-        for (int i = 0; i < shape.faces().size(); i++)
-            if (sameVertices(quadVertices, shape.faces().get(i).getVertices()))
+        for (int i = 0; i < shape.getFaces().size(); i++)
+            if (sameVertices(quadVertices, shape.getFaces().get(i).getVertices()))
                 return i;
         return -1;
     }
