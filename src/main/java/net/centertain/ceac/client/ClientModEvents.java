@@ -73,20 +73,30 @@ public class ClientModEvents
             if (!(block instanceof MaterialShape materialShape))
                 continue;
 
-            BlockState state = block.defaultBlockState();
+            BlockState defaultState = block.defaultBlockState();
+            ModelResourceLocation defaultLocation = BlockModelShaper.stateToModelLocation(defaultState);
 
-            ModelResourceLocation modelLocation = BlockModelShaper.stateToModelLocation(state);
+            BakedModel canonicalModel = event.getModels().get(defaultLocation);
 
-            BakedModel original = event.getModels().get(modelLocation);
-            if (original == null)
+            if (canonicalModel == null)
                 continue;
 
-            materialShape.createFaces(original);
+            materialShape.createFaces(canonicalModel);
 
-            event.getModels().put(
-                    modelLocation,
-                    new MaterialShapeBakedModel(original, materialShape)
-            );
+            for (BlockState state : block.getStateDefinition().getPossibleStates()) {
+                ModelResourceLocation location = BlockModelShaper.stateToModelLocation(state);
+
+                if (!event.getModels().containsKey(location))
+                    continue;
+
+                event.getModels().put(
+                        location,
+                        new MaterialShapeBakedModel(
+                                canonicalModel,
+                                materialShape
+                        )
+                );
+            }
         }
     }
 

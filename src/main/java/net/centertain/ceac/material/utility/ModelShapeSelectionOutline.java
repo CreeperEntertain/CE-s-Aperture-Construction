@@ -1,20 +1,28 @@
 package net.centertain.ceac.material.utility;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.material.MaterialShapeFace;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderHighlightEvent;
+import net.minecraftforge.client.model.data.ModelData;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,8 +39,12 @@ public final class ModelShapeSelectionOutline {
             return;
 
         BlockState state = level.getBlockState(pos);
-        if (!(state.getBlock() instanceof MaterialShape shape))
+        if (!(state.getBlock() instanceof MaterialShape))
             return;
+
+        BakedModel model = Minecraft.getInstance()
+                .getBlockRenderer()
+                .getBlockModel(state);
 
         event.setCanceled(true);
 
@@ -52,30 +64,77 @@ public final class ModelShapeSelectionOutline {
 
         VertexConsumer consumer = event.getMultiBufferSource().getBuffer(RenderType.lines());
 
+        RandomSource random = RandomSource.create();
         Set<Edge> edges = new HashSet<>();
 
-        for (MaterialShapeFace face : shape.faces()) {
-            List<Vec3> vertices = face.getVertices();
+        for (Direction side : Direction.values())
+            addEdges(edges, model.getQuads(
+                    state,
+                    side,
+                    random,
+                    ModelData.EMPTY,
+                    null
+            ));
+        addEdges(edges, model.getQuads(
+                state,
+                null,
+                random,
+                ModelData.EMPTY,
+                null
+        ));
+
+        for (Edge edge : edges)
+            drawLine(
+                    consumer,
+                    poseMatrix,
+                    normalMatrix,
+                    edge.a(),
+                    edge.b(),
+                    0x66000000
+            );
+
+        poseStack.popPose();
+    }
+
+    private static void addEdges(
+            Set<Edge> edges,
+            List<BakedQuad> quads
+    ) {
+        for (BakedQuad quad : quads) {
+            List<Vec3> vertices = getQuadVertices(quad);
 
             for (int i = 0; i < vertices.size(); i++) {
                 Vec3 a = vertices.get(i);
                 Vec3 b = vertices.get((i + 1) % vertices.size());
 
-                Edge edge = Edge.of(a, b);
-
-                if (edges.add(edge))
-                    drawLine(
-                            consumer,
-                            poseMatrix,
-                            normalMatrix,
-                            a,
-                            b,
-                            0x66000000
-                    );
+                edges.add(Edge.of(a, b));
             }
         }
+    }
 
-        poseStack.popPose();
+    private static List<Vec3> getQuadVertices(BakedQuad quad) {
+        int[] vertices = quad.getVertices();
+        VertexFormat format = DefaultVertexFormat.BLOCK;
+
+        int stride = format.getIntegerSize();
+        int positionOffset = format.getOffset(0) / Integer.BYTES;
+
+        List<Vec3> points = new ArrayList<>(4);
+
+        for (int i = 0; i < 4; i++) {
+            int offset = i * stride + positionOffset;
+
+            Vec3 point = new Vec3(
+                    Float.intBitsToFloat(vertices[offset]),
+                    Float.intBitsToFloat(vertices[offset + 1]),
+                    Float.intBitsToFloat(vertices[offset + 2])
+            );
+
+            if (!points.contains(point))
+                points.add(point);
+        }
+
+        return List.copyOf(points);
     }
 
     private static void drawLine(

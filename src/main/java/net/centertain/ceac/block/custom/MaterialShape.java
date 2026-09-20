@@ -39,6 +39,16 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         return faces;
     }
 
+    public Vec3 transformPointToLocal(BlockState state, Vec3 point) {
+        return point;
+    }
+    public Vec3 transformDirectionToLocal(BlockState state, Vec3 direction) {
+        return direction;
+    }
+    public Vec3 transformPointToWorld(BlockState state, Vec3 point) {
+        return point;
+    }
+
     @Override
     public BlockEntity newBlockEntity(
             @NotNull BlockPos pos,

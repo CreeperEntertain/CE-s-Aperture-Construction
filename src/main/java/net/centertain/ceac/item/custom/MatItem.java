@@ -75,12 +75,14 @@ public abstract class MatItem extends Item {
 
         Vec3 origin = player.getEyePosition();
         Vec3 direction = player.getViewVector(1.0F);
-
         Vec3 localOrigin = origin.subtract(
                 pos.getX(),
                 pos.getY(),
                 pos.getZ()
         );
+
+        localOrigin = shape.transformPointToLocal(state, localOrigin);
+        direction = shape.transformDirectionToLocal(state, direction);
 
         MaterialShapeFace face = findFace(
                 shape,
@@ -103,7 +105,7 @@ public abstract class MatItem extends Item {
                     state
             );
 
-        spawnMaterialParticles(level, pos, state, face);
+        spawnMaterialParticles(level, pos, state, face, shape);
 
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -153,7 +155,8 @@ public abstract class MatItem extends Item {
             Level level,
             BlockPos pos,
             BlockState state,
-            MaterialShapeFace face
+            MaterialShapeFace face,
+            MaterialShape shape
     ) {
         if (!(level instanceof ClientLevel clientLevel))
             return;
@@ -168,7 +171,7 @@ public abstract class MatItem extends Item {
         RandomSource random = clientLevel.getRandom();
 
         for (int i = 0; i < 16; i++) {
-            Vec3 point = randomPointOnFace(face, random);
+            Vec3 point = shape.transformPointToWorld(state, randomPointOnFace(face, random));
 
             double xd = random.nextDouble() - 0.5D;
             double yd = random.nextDouble() - 0.5D;

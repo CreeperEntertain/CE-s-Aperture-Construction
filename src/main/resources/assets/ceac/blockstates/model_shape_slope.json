@@ -1,7 +1,9 @@
 {
-  "variants": {
-    "": {
-      "model": "ceac:block/model_shape_slope"
+  "multipart": [
+    {
+      "apply": {
+        "model": "ceac:block/model_shape_slope"
+      }
     }
-  }
+  ]
 }
