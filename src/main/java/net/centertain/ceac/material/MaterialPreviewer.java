@@ -196,12 +196,7 @@ public final class MaterialPreviewer {
                     pose,
                     vertices.get(0),
                     normal,
-                    uAxis,
-                    vAxis,
-                    minU,
-                    minV,
-                    uSize,
-                    vSize,
+                    uAxis, vAxis, minU, minV, uSize, vSize,
                     sprite
             );
             putVertex(
@@ -209,12 +204,7 @@ public final class MaterialPreviewer {
                     pose,
                     vertices.get(i),
                     normal,
-                    uAxis,
-                    vAxis,
-                    minU,
-                    minV,
-                    uSize,
-                    vSize,
+                    uAxis, vAxis, minU, minV, uSize, vSize,
                     sprite
             );
             putVertex(
@@ -222,25 +212,14 @@ public final class MaterialPreviewer {
                     pose,
                     vertices.get(i + 1),
                     normal,
-                    uAxis,
-                    vAxis,
-                    minU,
-                    minV,
-                    uSize,
-                    vSize,
+                    uAxis, vAxis, minU, minV, uSize, vSize,
                     sprite
             );
             putVertex(
                     consumer,
                     pose,
                     vertices.get(0),
-                    normal,
-                    uAxis,
-                    vAxis,
-                    minU,
-                    minV,
-                    uSize,
-                    vSize,
+                    normal, uAxis, vAxis, minU, minV, uSize, vSize,
                     sprite
             );
         }
