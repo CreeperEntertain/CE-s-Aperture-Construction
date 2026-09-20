@@ -4,6 +4,7 @@ import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.centertain.ceac.decal.server.DecalBreakage;
+import net.centertain.ceac.material.MaterialPlacement;
 import net.centertain.ceac.material.utility.MaterialShapeSelectionOutline;
 import net.centertain.ceac.utility.Soundworks;
 import net.minecraft.client.Minecraft;
@@ -74,7 +75,10 @@ public class ClientForgeEvents {
 
     @SubscribeEvent
     public static void onMouseButton(InputEvent.MouseButton.Pre event) {
-        DecalPlacement.swapPrecisePlacement(event);
+        if (!MaterialPlacement.getAdjustOffset())
+            DecalPlacement.swapPrecisePlacement(event);
+        if (!DecalPlacement.getPrecisePlacement())
+            MaterialPlacement.swapAdjustOffset(event);
     }
 
     @SubscribeEvent
@@ -85,6 +89,7 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void onKeyInput(InputEvent.Key event) {
         DecalPlacement.suppressPrecisePlacementKeys(event);
+        MaterialPlacement.suppressAdjustOffsetKeys(event);
     }
 
     @SubscribeEvent
