@@ -1,4 +1,4 @@
-package net.centertain.ceac.material.models.utility;
+package net.centertain.ceac.material.utility;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.renderer.block.model.BakedQuad;

@@ -4,12 +4,14 @@ import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.centertain.ceac.decal.server.DecalBreakage;
+import net.centertain.ceac.material.utility.ModelShapeSelectionOutline;
 import net.centertain.ceac.utility.Soundworks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RenderHighlightEvent;
 import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
@@ -83,5 +85,10 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void onKeyInput(InputEvent.Key event) {
         DecalPlacement.suppressPrecisePlacementKeys(event);
+    }
+
+    @SubscribeEvent
+    public static void renderSelection(RenderHighlightEvent.Block event) {
+        ModelShapeSelectionOutline.replaceSelectionOutline(event);
     }
 }

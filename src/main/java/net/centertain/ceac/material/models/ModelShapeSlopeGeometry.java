@@ -1,6 +1,6 @@
 package net.centertain.ceac.material.models;
 
-import net.centertain.ceac.material.models.utility.ModelShapeHelper;
+import net.centertain.ceac.material.utility.ModelShapeHelper;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
