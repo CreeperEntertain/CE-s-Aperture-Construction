@@ -1,9 +1,8 @@
-package net.centertain.ceac.decal.client;
+package net.centertain.ceac.client.events;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.centertain.ceac.client.render.CeacRenderTypes;
 import net.centertain.ceac.decal.DecalPreviewer;
+import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.DecalRenderer;
 import net.centertain.ceac.phys_screen.framework.GameRendererViewOffsetAccessor;
 import net.centertain.ceac.phys_screen.utility.PhysRenderHelper;
@@ -25,8 +24,8 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
         value = Dist.CLIENT,
         bus = Mod.EventBusSubscriber.Bus.FORGE
 )
-public final class DecalRenderEvents {
-    private DecalRenderEvents() {}
+public final class ClientRenderEvents {
+    private ClientRenderEvents() {}
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {

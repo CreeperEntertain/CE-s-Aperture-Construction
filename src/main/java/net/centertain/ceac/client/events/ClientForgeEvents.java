@@ -1,4 +1,4 @@
-package net.centertain.ceac.client;
+package net.centertain.ceac.client.events;
 
 import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalPlacement;
