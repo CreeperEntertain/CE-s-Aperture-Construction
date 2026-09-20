@@ -23,8 +23,8 @@ import java.util.Map;
 
 public class MaterialShapeSlope extends MaterialShape {
     private static final Map<Direction, VoxelShape[]> SHAPES = makeShapes();
-    public static final DirectionProperty FACING = BlockStateProperties.FACING;
-    public static final IntegerProperty ROTATION = IntegerProperty.create("rotation", 0, 3);
+    public static DirectionProperty FACING = BlockStateProperties.FACING;
+    public static IntegerProperty ROTATION = IntegerProperty.create("rotation", 0, 3);
 
     public MaterialShapeSlope(Properties properties) {
         super(properties);
