@@ -136,7 +136,12 @@ public abstract class MatItem extends Item {
                 Block.UPDATE_CLIENTS
         );
 
-        Vec3 center = faceCenter(face, pos);
+        Vec3 center = shape.transformPointToWorld(state, faceCenter(face)).add(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ()
+        );
+
         SoundType soundType = material.get().getSoundType();
 
         level.playSound(
@@ -234,22 +239,13 @@ public abstract class MatItem extends Item {
                 .add(c.subtract(a).scale(v));
     }
 
-    private Vec3 faceCenter(
-            MaterialShapeFace face,
-            BlockPos pos
-    ) {
+    private Vec3 faceCenter(MaterialShapeFace face) {
         Vec3 center = Vec3.ZERO;
 
         for (Vec3 vertex : face.getVertices())
             center = center.add(vertex);
 
-        center = center.scale(1.0 / face.getVertices().size());
-
-        return center.add(
-                pos.getX(),
-                pos.getY(),
-                pos.getZ()
-        );
+        return center.scale(1.0 / face.getVertices().size());
     }
 
     private @Nullable MaterialShapeFace findFace(
