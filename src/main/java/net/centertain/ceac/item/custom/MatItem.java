@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
@@ -67,13 +68,27 @@ public abstract class MatItem extends Item {
         if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
             return InteractionResult.PASS;
 
-        Vec3 localHit = context.getClickLocation().subtract(
+        Player player = context.getPlayer();
+
+        if (player == null)
+            return InteractionResult.PASS;
+
+        Vec3 origin = player.getEyePosition();
+        Vec3 direction = player.getViewVector(1.0F);
+
+        Vec3 localOrigin = origin.subtract(
                 pos.getX(),
                 pos.getY(),
                 pos.getZ()
         );
 
-        MaterialShapeFace face = findFace(shape, localHit);
+        MaterialShapeFace face = findFace(
+                shape,
+                localOrigin,
+                direction,
+                player.getBlockReach()
+        );
+
         if (face == null)
             return InteractionResult.PASS;
         if (!shape.canApplyMaterial(state, face, context.getItemInHand()))
@@ -236,56 +251,77 @@ public abstract class MatItem extends Item {
 
     private @Nullable MaterialShapeFace findFace(
             MaterialShape shape,
-            Vec3 point
+            Vec3 origin,
+            Vec3 direction,
+            double reach
     ) {
-        for (MaterialShapeFace face : shape.faces())
-            if (containsPoint(face.getVertices(), point))
-                return face;
-        return null;
+        double closest = reach;
+        MaterialShapeFace result = null;
+
+        for (MaterialShapeFace face : shape.faces()) {
+            List<Vec3> vertices = face.getVertices();
+
+            if (vertices.size() < 3)
+                continue;
+
+            Vec3 a = vertices.get(0);
+
+            for (int i = 1; i < vertices.size() - 1; i++) {
+                double distance = rayTriangle(
+                        origin,
+                        direction,
+                        a,
+                        vertices.get(i),
+                        vertices.get(i + 1),
+                        reach
+                );
+                if (distance >= 0.0 && distance < closest) {
+                    closest = distance;
+                    result = face;
+                }
+            }
+        }
+
+        return result;
     }
 
-    private boolean containsPoint(
-            List<Vec3> vertices,
-            Vec3 point
-    ) {
-        if (vertices.size() < 3)
-            return false;
-        for (int i = 1; i < vertices.size() - 1; i++)
-            if (pointIntTriangle(
-                    point,
-                    vertices.get(0),
-                    vertices.get(i),
-                    vertices.get(i + 1)
-            ))
-                return true;
-        return false;
-    }
-
-    private boolean pointIntTriangle(
-            Vec3 point,
+    private double rayTriangle(
+            Vec3 origin,
+            Vec3 direction,
             Vec3 a,
             Vec3 b,
-            Vec3 c
+            Vec3 c,
+            double reach
     ) {
-        Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
-        if (Math.abs(point.subtract(a).dot(normal)) > 0.001)
-            return false;
+        final double epsilon = 1.0E-7;
 
-        Vec3 ab = b.subtract(a);
-        Vec3 bc = c.subtract(b);
-        Vec3 ca = a.subtract(c);
+        Vec3 edge1 = b.subtract(a);
+        Vec3 edge2 = c.subtract(a);
 
-        Vec3 ap = point.subtract(a);
-        Vec3 bp = point.subtract(b);
-        Vec3 cp = point.subtract(c);
+        Vec3 h = direction.cross(edge2);
+        double determinant = edge1.dot(h);
 
-        double side1 = ab.cross(ap).dot(normal);
-        double side2 = bc.cross(bp).dot(normal);
-        double side3 = ca.cross(cp).dot(normal);
+        if (Math.abs(determinant) < epsilon)
+            return -1.0;
 
-        return
-                side1 >= -0.001 &&
-                side2 >= -0.001 &&
-                side3 >= -0.001;
+        double inverse = 1.0 / determinant;
+
+        Vec3 s = origin.subtract(a);
+        double u = inverse * s.dot(h);
+
+        if (u < 0.0 || u > 1.0)
+            return -1.0;
+
+        Vec3 q = s.cross(edge1);
+        double v = inverse * direction.dot(q);
+
+        if (v < 0.0 || u + v > 1.0)
+            return -1.0;
+
+        double distance = inverse * edge2.dot(q);
+
+        return distance >= 0.0 && distance <= reach
+                ? distance
+                : -1.0;
     }
 }
