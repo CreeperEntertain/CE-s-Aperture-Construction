@@ -67,7 +67,7 @@ public class ScraperItem extends Item {
                 if (decal.getAttachedBlocks().contains(pos))
                     decalList.add(decal);
             }
-        if (serverPlayer.getPose() == Pose.CROUCHING) {
+        if (serverPlayer.isCrouching()) {
             List<Decal> decals = new ArrayList<>();
             for (Decal decal : decalList)
                 if (stack.getDamageValue() < stack.getMaxDamage()) {
