@@ -1,12 +1,14 @@
 package net.centertain.ceac.material;
 
 import net.centertain.ceac.item.custom.MatItem;
+import net.centertain.ceac.network.ModNetworking;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.InputEvent;
+import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
 
 public final class MaterialPlacement {
@@ -22,13 +24,12 @@ public final class MaterialPlacement {
         adjustOffset = state;
     }
 
-    private enum Direction{
+    private enum Direction {
         UP,
         DOWN,
         LEFT,
         RIGHT
     }
-
 
     public static void swapAdjustOffset(InputEvent.MouseButton.Pre event) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -50,11 +51,16 @@ public final class MaterialPlacement {
         adjustOffset = !adjustOffset;
     }
 
-    public static void suppressAdjustOffsetKeys(InputEvent.Key event) {
+    public static void suppressAdjustOffsetKeys(
+            InputEvent.Key event
+    ) {
         if (!adjustOffset)
             return;
+
         int key = event.getKey();
+
         Minecraft minecraft = Minecraft.getInstance();
+
         for (KeyMapping mapping : minecraft.options.keyMappings) {
             if (mapping.getKey().getValue() != key)
                 continue;
@@ -62,6 +68,7 @@ public final class MaterialPlacement {
             //noinspection StatementWithEmptyBody
             while (mapping.consumeClick()) {}
         }
+
         switch (key) {
             case GLFW.GLFW_KEY_W -> shiftMaterialCoordinate(Direction.UP);
             case GLFW.GLFW_KEY_S -> shiftMaterialCoordinate(Direction.DOWN);
@@ -70,24 +77,45 @@ public final class MaterialPlacement {
         }
     }
 
-    private static void shiftMaterialCoordinate(Direction direction) {
-        Player player = Minecraft.getInstance().player;
+    private static void shiftMaterialCoordinate(
+            Direction direction
+    ) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+
         if (player == null)
             return;
-        boolean mainHand = player.getMainHandItem().getItem() instanceof MatItem;
-        Item item = mainHand
-                ? player.getMainHandItem().getItem()
-                : player.getOffhandItem().getItem();
-        if (!(item instanceof MatItem matItem))
+
+        InteractionHand hand;
+        ItemStack stack;
+
+        if (player.getMainHandItem().getItem() instanceof MatItem) {
+            hand = InteractionHand.MAIN_HAND;
+            stack = player.getMainHandItem();
+        } else if (player.getOffhandItem().getItem() instanceof MatItem) {
+            hand = InteractionHand.OFF_HAND;
+            stack = player.getOffhandItem();
+        } else
             return;
-        ItemStack stack = mainHand
-                ? player.getMainHandItem()
-                : player.getOffhandItem();
+
+        MatItem matItem = (MatItem) stack.getItem();
+
+        Vector2i offset = matItem.getMaterialCoordinateOffset(stack);
+
+        int x = offset.x;
+        int y = offset.y;
+
         switch (direction) {
-            case UP -> matItem.setMaterialCoordinateOffset(matItem.getMaterialCoordinateOffset().add(0, 1));
-            case DOWN -> matItem.setMaterialCoordinateOffset(matItem.getMaterialCoordinateOffset().add(0, -1));
-            case LEFT -> matItem.setMaterialCoordinateOffset(matItem.getMaterialCoordinateOffset().add(-1, 0));
-            case RIGHT -> matItem.setMaterialCoordinateOffset(matItem.getMaterialCoordinateOffset().add(1, 0));
+            case UP -> y++;
+            case DOWN -> y--;
+            case LEFT -> x--;
+            case RIGHT -> x++;
         }
+
+        Vector2i newOffset = new Vector2i(x, y);
+
+        matItem.setMaterialCoordinateOffset(stack, newOffset);
+
+        ModNetworking.CHANNEL.sendToServer(new MaterialOffsetPacket(hand, newOffset));
     }
 }

@@ -2,6 +2,7 @@ package net.centertain.ceac.network;
 
 import net.centertain.ceac.decal.network.SyncDecalItemPacket;
 import net.centertain.ceac.decal.network.SyncDecalPacket;
+import net.centertain.ceac.material.MaterialOffsetPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
@@ -35,6 +36,13 @@ public final class ModNetworking {
                 SyncDecalItemPacket::encode,
                 SyncDecalItemPacket::decode,
                 SyncDecalItemPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                MaterialOffsetPacket.class,
+                MaterialOffsetPacket::encode,
+                MaterialOffsetPacket::decode,
+                MaterialOffsetPacket::handle
         );
     }
 }
