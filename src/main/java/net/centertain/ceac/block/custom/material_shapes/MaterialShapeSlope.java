@@ -17,7 +17,8 @@ public class MaterialShapeSlope extends MaterialShape {
         super(properties);
     }
 
-    @Override
+    @SuppressWarnings("deprecation") // Literally what the docs told me to use. Why would you deprecate something that's
+    @Override                        // the only real way to do the thing? No, really. Enlighten me.
     public @NotNull VoxelShape getShape(
             @NotNull BlockState state,
             @NotNull BlockGetter level,
