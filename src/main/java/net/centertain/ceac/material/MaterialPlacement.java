@@ -68,7 +68,8 @@ public final class MaterialPlacement {
             //noinspection StatementWithEmptyBody
             while (mapping.consumeClick()) {}
         }
-
+        if (event.getAction() != GLFW.GLFW_PRESS)
+            return;
         switch (key) {
             case GLFW.GLFW_KEY_W -> shiftMaterialCoordinate(Direction.UP);
             case GLFW.GLFW_KEY_S -> shiftMaterialCoordinate(Direction.DOWN);
