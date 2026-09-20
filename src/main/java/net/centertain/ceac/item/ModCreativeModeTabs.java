@@ -25,6 +25,7 @@ public final class ModCreativeModeTabs {
                         pOutput.accept(ModItems.SCRAPER.get());
 
                         pOutput.accept(ModBlocks.MODEL_SHAPE_BlOCK.get());
+                        pOutput.accept(ModBlocks.MODEL_SHAPE_SLOPE.get());
 
                         pOutput.accept(ModItems.EXAMPLE.get());
                     })
