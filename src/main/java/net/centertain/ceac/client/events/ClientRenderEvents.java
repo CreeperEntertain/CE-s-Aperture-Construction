@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.decal.DecalPreviewer;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.DecalRenderer;
+import net.centertain.ceac.material.MaterialPlacement;
+import net.centertain.ceac.material.MaterialPreviewer;
 import net.centertain.ceac.phys_screen.framework.GameRendererViewOffsetAccessor;
 import net.centertain.ceac.phys_screen.utility.PhysRenderHelper;
 import net.minecraft.client.Minecraft;
@@ -35,6 +37,9 @@ public final class ClientRenderEvents {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS)
             decalRendering(event, poseStack, bufferSource);
 
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS)
+            materialPreviewRendering(event, poseStack, bufferSource);
+
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL)
             physScreenRendering(bufferSource);
     }
@@ -55,6 +60,19 @@ public final class ClientRenderEvents {
 
         DecalRenderer.captureOpaqueDepth();
         DecalRenderer.render(event);
+    }
+
+
+    private static void materialPreviewRendering(
+            @NotNull RenderLevelStageEvent event,
+            PoseStack poseStack,
+            MultiBufferSource.BufferSource bufferSource
+    ) {
+        if (MaterialPlacement.getAdjustOffset())
+            MaterialPreviewer.render(
+                    poseStack,
+                    bufferSource
+            );
     }
 
 

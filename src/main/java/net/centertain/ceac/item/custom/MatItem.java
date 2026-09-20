@@ -1,10 +1,7 @@
 package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.block.custom.MaterialShape;
-import net.centertain.ceac.material.Material;
-import net.centertain.ceac.material.MaterialBreakingParticle;
-import net.centertain.ceac.material.MaterialShapeBlockEntity;
-import net.centertain.ceac.material.MaterialShapeFace;
+import net.centertain.ceac.material.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -104,6 +101,76 @@ public abstract class MatItem extends Item {
     }
 
     @Override
+    public void inventoryTick(
+            @NotNull ItemStack stack,
+            @NotNull Level level,
+            @NotNull Entity entity,
+            int slot,
+            boolean selected
+    ) {
+        if (!(entity instanceof Player player))
+            return;
+        if (!level.isClientSide)
+            return;
+        if (!selected) {
+            MaterialPreviewer.destroy();
+            return;
+        }
+        if (!MaterialPlacement.getAdjustOffset()) {
+            MaterialPreviewer.destroy();
+            return;
+        }
+
+        HitResult hit = player.pick(
+                player.getBlockReach(),
+                1.0f,
+                false
+        );
+        if (!(hit instanceof BlockHitResult blockHit)) {
+            MaterialPreviewer.destroy();
+            return;
+        }
+
+        BlockPos pos = blockHit.getBlockPos();
+        BlockState state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof MaterialShape shape)) {
+            MaterialPreviewer.destroy();
+            return;
+        }
+
+        Vec3 origin = player.getEyePosition();
+        Vec3 direction = player.getViewVector(1.0f);
+        Vec3 localOrigin = origin.subtract(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ()
+        );
+
+        localOrigin = shape.transformPointToLocal(state, localOrigin);
+        direction = shape.transformDirectionToLocal(state, direction);
+
+        MaterialShapeFace face = findFace(
+                shape,
+                localOrigin,
+                direction,
+                player.getBlockReach()
+        );
+        if (face == null) {
+            MaterialPreviewer.destroy();
+            return;
+        }
+
+        Vector2i materialCoordinate = material.get().getCoordinate(face, pos);
+
+        MaterialPreviewer.update(
+                material.get(),
+                getMaterialCoordinateWithOffset(stack, materialCoordinate),
+                pos,
+                face
+        );
+    }
+
+    @Override
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
@@ -115,7 +182,6 @@ public abstract class MatItem extends Item {
             return InteractionResult.PASS;
 
         Player player = context.getPlayer();
-
         if (player == null)
             return InteractionResult.PASS;
 
@@ -144,7 +210,7 @@ public abstract class MatItem extends Item {
 
         Vector2i materialCoordinate = material.get().getCoordinate(face, pos);
 
-        if (!level.isClientSide) {
+        if (!level.isClientSide)
             serverSide(
                     shape,
                     face,
@@ -155,7 +221,6 @@ public abstract class MatItem extends Item {
                     context.getItemInHand(),
                     materialCoordinate
             );
-        }
 
         spawnMaterialParticles(
                 level,
