@@ -5,8 +5,6 @@ import net.minecraft.world.level.block.SoundType;
 
 public class MaterialShapeBlock extends MaterialShape {
     public MaterialShapeBlock(Properties properties) {
-        super(properties
-                .sound(SoundType.NETHERITE_BLOCK)
-        );
+        super(properties);
     }
 }

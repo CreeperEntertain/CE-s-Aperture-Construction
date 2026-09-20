@@ -73,39 +73,52 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
     }
 
     private int findFace(BakedQuad quad) {
-        int[] vertices = quad.getVertices();
-
-        for (int i = 0; i < shape.faces().size(); i++) {
-            MaterialShapeFace face = shape.faces().get(i);
-            if (sameVertices(vertices, face.getVertices()))
+        List<Vec3> quadVertices = getQuadVertices(quad);
+        for (int i = 0; i < shape.faces().size(); i++)
+            if (sameVertices(quadVertices, shape.faces().get(i).getVertices()))
                 return i;
-        }
-
         return -1;
     }
 
-    private boolean sameVertices(
-            int[] quadVertices,
-            List<Vec3> faceVertices
-    ) {
+    private List<Vec3> getQuadVertices(BakedQuad quad) {
+        int[] vertices = quad.getVertices();
         VertexFormat format = DefaultVertexFormat.BLOCK;
+
         int stride = format.getIntegerSize();
         int positionOffset = format.getOffset(0) / Integer.BYTES;
-        if (faceVertices.size() != 4)
-            return false;
+
+        List<Vec3> points = new ArrayList<>(4);
 
         for (int i = 0; i < 4; i++) {
             int offset = i * stride + positionOffset;
-            Vec3 vertex = faceVertices.get(i);
-
-            if (Float.intBitsToFloat(quadVertices[offset]) != vertex.x)
-                return false;
-            if (Float.intBitsToFloat(quadVertices[offset + 1]) != vertex.y)
-                return false;
-            if (Float.intBitsToFloat(quadVertices[offset + 2]) != vertex.z)
-                return false;
+            Vec3 point = new Vec3(
+                    Float.intBitsToFloat(vertices[offset]),
+                    Float.intBitsToFloat(vertices[offset + 1]),
+                    Float.intBitsToFloat(vertices[offset + 2])
+            );
+            if (!points.contains(point))
+                points.add(point);
         }
 
+        return points;
+    }
+
+    private boolean sameVertices(
+            List<Vec3> a,
+            List<Vec3> b
+    ) {
+        if (a.size() != b.size())
+            return false;
+        for (Vec3 vertex : a) {
+            boolean found = false;
+            for (Vec3 other : b)
+                if (vertex.distanceToSqr(other) < 1.0E-10) {
+                    found = true;
+                    break;
+                }
+            if (!found)
+                return false;
+        }
         return true;
     }
 

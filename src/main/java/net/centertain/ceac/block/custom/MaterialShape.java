@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -30,7 +31,9 @@ public abstract class MaterialShape extends Block implements EntityBlock {
     private final List<MaterialShapeFace> faces;
 
     protected MaterialShape(Properties properties) {
-        super(properties);
+        super(properties
+                .sound(SoundType.NETHERITE_BLOCK)
+        );
         this.faces = new ArrayList<>();
     }
 
@@ -74,7 +77,11 @@ public abstract class MaterialShape extends Block implements EntityBlock {
     }
 
     private MaterialShapeFace createFace(BakedQuad quad) {
-        int [] vertices = quad.getVertices();
+        return new MaterialShapeFace(null, getQuadVertices(quad));
+    }
+
+    private List<Vec3> getQuadVertices(BakedQuad quad) {
+        int[] vertices = quad.getVertices();
         VertexFormat format = DefaultVertexFormat.BLOCK;
 
         int stride = format.getIntegerSize();
@@ -84,14 +91,16 @@ public abstract class MaterialShape extends Block implements EntityBlock {
 
         for (int i = 0; i < 4; i++) {
             int offset = i * stride + positionOffset;
-            points.add(new Vec3(
+            Vec3 point = new Vec3(
                     Float.intBitsToFloat(vertices[offset]),
                     Float.intBitsToFloat(vertices[offset + 1]),
                     Float.intBitsToFloat(vertices[offset + 2])
-            ));
+            );
+            if (!points.contains(point))
+                points.add(point);
         }
 
-        return new MaterialShapeFace(null, points);
+        return List.copyOf(points);
     }
 
     public final boolean applyMaterial(
