@@ -55,14 +55,11 @@ public class SyncDecalPacket {
     }
     private static void handleAddition(CompoundTag data) {
         Decal decal = Decal.deserializeNBT(data);
-        if (decal != null) {
+        if (decal != null)
             ClientDecals.put(decal);
-            System.out.println("Client received decal " + decal.getId());
-        }
     }
     private static void handleRemoval(CompoundTag data) {
         UUID id = data.getUUID("Id");
         ClientDecals.remove(id);
-        System.out.println("Client removed decal " + id);
     }
 }
