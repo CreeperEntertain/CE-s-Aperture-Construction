@@ -36,6 +36,7 @@ import java.util.function.Supplier;
 public abstract class MatItem extends Item {
     private final Supplier<Material> material;
     private Vector2i materialCoordinate;
+    private Vector2i materialCoordinateOffset;
     private final String category;
     private final double price;
 
@@ -48,6 +49,7 @@ public abstract class MatItem extends Item {
         super(properties.stacksTo(1));
         this.material = material;
         this.materialCoordinate = new Vector2i();
+        this.materialCoordinateOffset = new Vector2i();
         this.category = category == null
                 ? "Materials"
                 : category;
@@ -59,6 +61,15 @@ public abstract class MatItem extends Item {
     }
     public Vector2i getMaterialCoordinate() {
         return materialCoordinate;
+    }
+    public Vector2i getMaterialCoordinateOffset() {
+        return materialCoordinateOffset;
+    }
+    public Vector2i getMaterialCoordinateWithOffset() {
+        return new Vector2i(
+                Math.floorMod(materialCoordinate.x + materialCoordinateOffset.x, material.get().getTilingSize().x),
+                Math.floorMod(materialCoordinate.y + materialCoordinateOffset.y, material.get().getTilingSize().y)
+        );
     }
     public final String getCategory() {
         return category;
@@ -72,6 +83,12 @@ public abstract class MatItem extends Item {
             return false;
         this.materialCoordinate = materialCoordinate;
         return true;
+    }
+    public void setMaterialCoordinateOffset(Vector2i offset) {
+        materialCoordinateOffset = new Vector2i(
+                Math.floorMod(offset.x, material.get().getTilingSize().x),
+                Math.floorMod(offset.y, material.get().getTilingSize().y)
+        );
     }
 
 
@@ -119,10 +136,7 @@ public abstract class MatItem extends Item {
         if (face == null)
             return;
 
-        Vector2i materialCoordinate = material.get().getCoordinate(face, pos);
-
-        this.materialCoordinate = materialCoordinate;
-        System.out.println(material.get().getName() + " -> " + materialCoordinate);
+        this.materialCoordinate = material.get().getCoordinate(face, pos);
     }
 
     @Override
@@ -191,7 +205,7 @@ public abstract class MatItem extends Item {
         blockEntity.setMaterial(
                 faceIndex,
                 material.get(),
-                materialCoordinate
+                getMaterialCoordinateWithOffset()
         );
 
         blockEntity.setChanged();
@@ -233,7 +247,7 @@ public abstract class MatItem extends Item {
     ) {
         if (!(level instanceof ClientLevel clientLevel))
             return;
-        ResourceLocation texture = material.get().getTexture(materialCoordinate);
+        ResourceLocation texture = material.get().getTexture(getMaterialCoordinateWithOffset());
         if (texture == null)
             return;
 
