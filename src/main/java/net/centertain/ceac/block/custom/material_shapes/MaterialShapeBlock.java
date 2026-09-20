@@ -4,6 +4,10 @@ import net.centertain.ceac.block.custom.MaterialShape;
 
 public class MaterialShapeBlock extends MaterialShape {
     public MaterialShapeBlock(Properties properties) {
-        super(properties);
+        super(
+                null,
+                10.0,
+                properties
+        );
     }
 }

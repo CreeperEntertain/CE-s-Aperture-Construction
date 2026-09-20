@@ -13,14 +13,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,14 +36,24 @@ import java.util.function.Supplier;
 public abstract class MatItem extends Item {
     private final Supplier<Material> material;
     private Vector2i materialCoordinate;
+    private Vector2i materialCoordinateOffset;
+    private final String category;
+    private final double price;
 
     protected MatItem(
+            @Nullable String category,
+            double price,
             Properties properties,
             Supplier<Material> material
     ) {
-        super(properties);
+        super(properties.stacksTo(1));
         this.material = material;
         this.materialCoordinate = new Vector2i();
+        this.materialCoordinateOffset = new Vector2i();
+        this.category = category == null
+                ? "Materials"
+                : category;
+        this.price = price;
     }
 
     public Material getMaterial() {
@@ -48,6 +62,21 @@ public abstract class MatItem extends Item {
     public Vector2i getMaterialCoordinate() {
         return materialCoordinate;
     }
+    public Vector2i getMaterialCoordinateOffset() {
+        return materialCoordinateOffset;
+    }
+    public Vector2i getMaterialCoordinateWithOffset() {
+        return new Vector2i(
+                Math.floorMod(materialCoordinate.x + materialCoordinateOffset.x, material.get().getTilingSize().x),
+                Math.floorMod(materialCoordinate.y + materialCoordinateOffset.y, material.get().getTilingSize().y)
+        );
+    }
+    public final String getCategory() {
+        return category;
+    }
+    public final double getPrice() {
+        return price;
+    }
 
     public boolean setMaterialCoordinate(Vector2i materialCoordinate) {
         if (!material.get().containsCoordinate(materialCoordinate))
@@ -55,7 +84,60 @@ public abstract class MatItem extends Item {
         this.materialCoordinate = materialCoordinate;
         return true;
     }
+    public void setMaterialCoordinateOffset(Vector2i offset) {
+        materialCoordinateOffset = new Vector2i(
+                Math.floorMod(offset.x, material.get().getTilingSize().x),
+                Math.floorMod(offset.y, material.get().getTilingSize().y)
+        );
+    }
 
+
+    @Override
+    public void inventoryTick(
+            @NotNull ItemStack stack,
+            @NotNull Level level,
+            @NotNull Entity entity,
+            int slot,
+            boolean selected
+    ) {
+        if (!(entity instanceof Player player))
+            return;
+        if (!selected)
+            return;
+
+        HitResult hit = player.pick(player.getBlockReach(), 1.0f, false);
+        if (!(hit instanceof BlockHitResult blockHit))
+            return;
+
+        BlockPos pos = blockHit.getBlockPos();
+        BlockState state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof MaterialShape shape))
+            return;
+        if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
+            return;
+
+        Vec3 origin = player.getEyePosition();
+        Vec3 direction = player.getViewVector(1.0f);
+        Vec3 localOrigin = origin.subtract(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ()
+        );
+
+        localOrigin = shape.transformPointToLocal(state, localOrigin);
+        direction = shape.transformDirectionToLocal(state, direction);
+
+        MaterialShapeFace face = findFace(
+                shape,
+                localOrigin,
+                direction,
+                player.getBlockReach()
+        );
+        if (face == null)
+            return;
+
+        this.materialCoordinate = material.get().getCoordinate(face, pos);
+    }
 
     @Override
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {
@@ -118,12 +200,12 @@ public abstract class MatItem extends Item {
             BlockPos pos,
             BlockState state
     ) {
-        int faceIndex = shape.faces().indexOf(face);
+        int faceIndex = shape.getFaces().indexOf(face);
 
         blockEntity.setMaterial(
                 faceIndex,
                 material.get(),
-                materialCoordinate
+                getMaterialCoordinateWithOffset()
         );
 
         blockEntity.setChanged();
@@ -165,7 +247,7 @@ public abstract class MatItem extends Item {
     ) {
         if (!(level instanceof ClientLevel clientLevel))
             return;
-        ResourceLocation texture = material.get().getTexture(materialCoordinate);
+        ResourceLocation texture = material.get().getTexture(getMaterialCoordinateWithOffset());
         if (texture == null)
             return;
 
@@ -257,7 +339,7 @@ public abstract class MatItem extends Item {
         double closest = reach;
         MaterialShapeFace result = null;
 
-        for (MaterialShapeFace face : shape.faces()) {
+        for (MaterialShapeFace face : shape.getFaces()) {
             List<Vec3> vertices = face.getVertices();
 
             if (vertices.size() < 3)

@@ -7,6 +7,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -85,7 +86,12 @@ public class MaterialShapeBlockEntity extends BlockEntity {
             MaterialAssignment assignment = entry.getValue();
 
             CompoundTag materialTag = new CompoundTag();
-            materialTag.putString("Name", assignment.material.getName());
+
+            ResourceLocation id = ModMaterials.REGISTRY.get().getKey(assignment.material);
+            if (id == null)
+                continue;
+
+            materialTag.putString("Id", id.toString());
             materialTag.putInt("X", assignment.x);
             materialTag.putInt("Y", assignment.y);
 
@@ -103,10 +109,16 @@ public class MaterialShapeBlockEntity extends BlockEntity {
 
         CompoundTag materialsTag = tag.getCompound("Materials");
 
-        for (String key: materialsTag.getAllKeys()) {
+        for (String key : materialsTag.getAllKeys()) {
             CompoundTag materialTag = materialsTag.getCompound(key);
 
-            Material material = ModMaterials.EXAMPLE.get();
+            ResourceLocation id = ResourceLocation.tryParse(materialTag.getString("Id"));
+            if (id == null)
+                continue;
+
+            Material material = ModMaterials.REGISTRY.get().getValue(id);
+            if (material == null)
+                continue;
 
             loaded.put(Integer.parseInt(key), new MaterialAssignment(
                     material,

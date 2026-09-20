@@ -6,8 +6,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import org.joml.Vector3f;
 
-public final class ModelShapeHelper {
-    private ModelShapeHelper() {}
+public final class MaterialShapeHelper {
+    private MaterialShapeHelper() {}
 
     public static Vertex vertex(
             float x,

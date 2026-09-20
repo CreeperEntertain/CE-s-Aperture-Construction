@@ -2,7 +2,7 @@
   "multipart": [
     {
       "apply": {
-        "model": "ceac:block/model_shape_slope"
+        "model": "ceac:block/material_shape_slope"
       }
     }
   ]

@@ -3,13 +3,13 @@ package net.centertain.ceac.item.custom.materials;
 import net.centertain.ceac.item.custom.MatItem;
 import net.centertain.ceac.material.ModMaterials;
 
-public class ExampleMatItem extends MatItem {
-    public ExampleMatItem(Properties properties) {
+public class ObservationConcreteWallMatItem extends MatItem {
+    public ObservationConcreteWallMatItem(Properties properties) {
         super(
                 null,
-                0.0,
+                1000.0,
                 properties,
-                ModMaterials.EXAMPLE
+                ModMaterials.OBSERVATION_CONCRETE_WALL
         );
     }
 }

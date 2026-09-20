@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "ceac:block/model_shape"
+    "all": "ceac:block/material_shape"
   }
 }

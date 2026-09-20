@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
@@ -27,16 +28,32 @@ import java.util.List;
 
 public abstract class MaterialShape extends Block implements EntityBlock {
     private final List<MaterialShapeFace> faces;
+    private final String category;
+    private final double price;
 
-    protected MaterialShape(Properties properties) {
+    protected MaterialShape(
+            @Nullable String category,
+            double price,
+            Properties properties
+    ) {
         super(properties
                 .sound(SoundType.NETHERITE_BLOCK)
         );
         this.faces = new ArrayList<>();
+        this.category = category == null
+                ? "Material Shapes"
+                : category;
+        this.price = price;
     }
 
-    public final List<MaterialShapeFace> faces() {
+    public final List<MaterialShapeFace> getFaces() {
         return faces;
+    }
+    public final String getCategory() {
+        return category;
+    }
+    public final double getPrice() {
+        return price;
     }
 
     public Vec3 transformPointToLocal(BlockState state, Vec3 point) {
@@ -85,7 +102,7 @@ public abstract class MaterialShape extends Block implements EntityBlock {
     }
 
     private MaterialShapeFace createFace(BakedQuad quad) {
-        return new MaterialShapeFace(null, getQuadVertices(quad));
+        return new MaterialShapeFace(this, null, getQuadVertices(quad));
     }
 
     private List<Vec3> getQuadVertices(BakedQuad quad) {

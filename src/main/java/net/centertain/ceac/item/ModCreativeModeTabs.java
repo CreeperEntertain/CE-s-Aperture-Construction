@@ -24,10 +24,11 @@ public final class ModCreativeModeTabs {
                         pOutput.accept(ModItems.DECAL.get());
                         pOutput.accept(ModItems.SCRAPER.get());
 
-                        pOutput.accept(ModBlocks.MODEL_SHAPE_BlOCK.get());
-                        pOutput.accept(ModBlocks.MODEL_SHAPE_SLOPE.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_BlOCK.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_SLOPE.get());
 
                         pOutput.accept(ModItems.EXAMPLE.get());
+                        pOutput.accept(ModItems.OBSERVATION_CONCRETE_WALL.get());
                     })
                     .build()
     );
