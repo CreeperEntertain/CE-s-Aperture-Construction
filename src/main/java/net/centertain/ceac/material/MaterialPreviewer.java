@@ -3,6 +3,7 @@ package net.centertain.ceac.material;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.phys_screen.MaterialPreviewerHelpScreen;
 import net.centertain.ceac.phys_screen.framework.PhysScreen;
 import net.centertain.ceac.phys_screen.utility.PhysRenderer;
@@ -15,6 +16,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -134,7 +139,15 @@ public final class MaterialPreviewer {
         assert face != null;
         assert position != null;
 
-        List<Vec3> vertices = face.getVertices();
+        Level level = Minecraft.getInstance().level;
+        if (level == null)
+            return false;
+        BlockState state = level.getBlockState(position);
+        if (!(state.getBlock() instanceof MaterialShape shape))
+            return false;
+        List<Vec3> vertices = face.getVertices().stream()
+                .map(vertex -> shape.transformPointToWorld(state, vertex))
+                .toList();
         double totalX = 0;
         double totalY = 0;
         double totalZ = 0;
@@ -182,7 +195,15 @@ public final class MaterialPreviewer {
         assert position != null;
         assert face != null;
 
-        List<Vec3> vertices = face.getVertices();
+        Level level = Minecraft.getInstance().level;
+        if (level == null)
+            return false;
+        BlockState state = level.getBlockState(position);
+        if (!(state.getBlock() instanceof MaterialShape shape))
+            return false;
+        List<Vec3> vertices = face.getVertices().stream()
+                .map(vertex -> shape.transformPointToWorld(state, vertex))
+                .toList();
         if (vertices.size() < 3) // Fuck it, another check to calm the soul. Amen.
             return false;
 
