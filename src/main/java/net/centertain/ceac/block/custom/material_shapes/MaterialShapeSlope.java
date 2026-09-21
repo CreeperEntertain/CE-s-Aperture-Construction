@@ -266,6 +266,11 @@ public class MaterialShapeSlope extends MaterialShape {
                 .add(basis.z().scale(local.z));
     }
 
+    @Override
+    public boolean rotateFromViewDirection(Vec3 viewDirection, boolean clockwise) {
+        return false;
+    }
+
     private Basis getBasis(BlockState state) {
         Direction facing = state.getValue(FACING);
         int rotation = state.getValue(ROTATION);

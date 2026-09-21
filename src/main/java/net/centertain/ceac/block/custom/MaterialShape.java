@@ -74,6 +74,8 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         return new MaterialShapeBlockEntity(pos, state);
     }
 
+    public abstract boolean rotateFromViewDirection(Vec3 viewDirection, boolean clockwise);
+
     public void createFaces(BakedModel model) {
         faces.clear();
 
