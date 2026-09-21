@@ -84,12 +84,17 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
 
         Vec3 forward = direction(facing);
 
-        Vec3 x = forward.scale(-1.0);
-        Vec3 y = switch (facing) {
+        Vec3 baseX = forward.scale(-1.0);
+        Vec3 baseY = switch (facing) {
             case UP -> new Vec3(0, 0, -1);
             case DOWN -> new Vec3(0, 0, 1);
             default -> new Vec3(0, 1, 0);
         };
+        Vec3 baseZ = baseY.cross(forward).normalize();
+
+        //noinspection UnnecessaryLocalVariable
+        Vec3 x = baseX; // Thanks for the suggestion, compiler, but I like my code readable.
+        Vec3 y = baseY;
 
         for (int i = 0; i < rotation; i++)
             y = y.cross(forward).add(forward.scale(y.dot(forward)));
@@ -100,24 +105,79 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
         VertexFormat format = DefaultVertexFormat.BLOCK;
 
         int stride = format.getIntegerSize();
+        int uvOffset = format.getOffset(2) / Integer.BYTES;
         int normalOffset = format.getOffset(4) / Integer.BYTES;
 
+        Vec3[] original = new Vec3[4];
         Vec3[] transformed = new Vec3[4];
+
+        TextureAtlasSprite sprite = quad.getSprite();
 
         for (int i = 0; i < 4; i++) {
             int offset = i * stride;
 
-            Vec3 point = new Vec3(
+            original[i] = new Vec3(
                     Float.intBitsToFloat(vertices[offset]),
                     Float.intBitsToFloat(vertices[offset + 1]),
                     Float.intBitsToFloat(vertices[offset + 2])
             );
 
-            transformed[i] = transformPoint(point, x, y, z);
+            transformed[i] = transformPoint(original[i], x, y, z);
 
             vertices[offset] = Float.floatToRawIntBits((float) transformed[i].x);
             vertices[offset + 1] = Float.floatToRawIntBits((float) transformed[i].y);
             vertices[offset + 2] = Float.floatToRawIntBits((float) transformed[i].z);
+        }
+
+        Vec3 referenceNormal = original[1]
+                .subtract(original[0])
+                .cross(original[2].subtract(original[0]))
+                .normalize();
+
+        referenceNormal = transformDirection(
+                referenceNormal,
+                baseX,
+                baseY,
+                baseZ
+        ).normalize();
+
+        Direction projection = Direction.getNearest(
+                referenceNormal.x,
+                referenceNormal.y,
+                referenceNormal.z
+        );
+
+        double minU = Double.POSITIVE_INFINITY;
+        double maxU = Double.NEGATIVE_INFINITY;
+        double minV = Double.POSITIVE_INFINITY;
+        double maxV = Double.NEGATIVE_INFINITY;
+
+        double[] projectedU = new double[4];
+        double[] projectedV = new double[4];
+
+        for (int i = 0; i < 4; i++) {
+            projectedU[i] = getTextureU(projection, transformed[i]);
+            projectedV[i] = getTextureV(projection, transformed[i]);
+
+            minU = Math.min(minU, projectedU[i]);
+            maxU = Math.max(maxU, projectedU[i]);
+            minV = Math.min(minV, projectedV[i]);
+            maxV = Math.max(maxV, projectedV[i]);
+        }
+
+        double uSize = maxU - minU;
+        double vSize = maxV - minV;
+
+        if (uSize > 1.0e-7 && vSize > 1.0e-7) {
+            for (int i = 0; i < 4; i++) {
+                double u = (projectedU[i] - minU) / uSize;
+                double v = (projectedV[i] - minV) / vSize;
+
+                int offset = i * stride + uvOffset;
+
+                vertices[offset] = Float.floatToRawIntBits(sprite.getU(u * 16.0));
+                vertices[offset + 1] = Float.floatToRawIntBits(sprite.getV(v * 16.0));
+            }
         }
 
         Vec3 normal = transformed[1]
@@ -142,6 +202,40 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
                 quad.isShade(),
                 quad.hasAmbientOcclusion()
         );
+    }
+
+    private Vec3 transformDirection(
+            Vec3 direction,
+            Vec3 x,
+            Vec3 y,
+            Vec3 z
+    ) {
+        return x.scale(direction.x)
+                .add(y.scale(direction.y))
+                .add(z.scale(direction.z));
+    }
+
+    private double getTextureU(
+            Direction direction,
+            Vec3 point
+    ) {
+        return switch (direction) {
+            case UP, DOWN, SOUTH -> point.x;
+            case NORTH -> 1.0 - point.x;
+            case WEST -> point.z;
+            case EAST -> 1.0 - point.z;
+        };
+    }
+
+    private double getTextureV(
+            Direction direction,
+            Vec3 point
+    ) {
+        return switch (direction) {
+            case UP -> point.z;
+            case DOWN -> 1.0 - point.z;
+            case NORTH, SOUTH, WEST, EAST -> 1.0 - point.y;
+        };
     }
 
     private Vec3 transformPoint(
