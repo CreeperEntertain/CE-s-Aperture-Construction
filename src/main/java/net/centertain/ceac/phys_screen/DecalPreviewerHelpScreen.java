@@ -25,7 +25,7 @@ public class DecalPreviewerHelpScreen extends PhysScreen {
     protected void init() {
         super.init();
 
-        PhysRect background = new PhysRect(
+        addPhysElement(new PhysRect(
                 0,
                 0,
                 WIDTH,
@@ -33,8 +33,7 @@ public class DecalPreviewerHelpScreen extends PhysScreen {
                 GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
                 GuiConstants.COLOR_SOLID_WHITE,
                 1
-        );
-        addPhysElement(background);
+        ));
 
         ResourceLocation[] keys = {
                 ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/phys_screen/key_enter.png"),
@@ -75,10 +74,8 @@ public class DecalPreviewerHelpScreen extends PhysScreen {
 
         List<PhysElement> keyPrompts = new ArrayList<>();
 
-        for (int i = 0; i < keys.length; i++) {
-            PhysStackPanel keyPrompt = getKeyPrompt(keys, i, prompts);
-            keyPrompts.add(keyPrompt);
-        }
+        for (int i = 0; i < keys.length; i++)
+            keyPrompts.add(getKeyPrompt(keys, i, prompts));
 
         PhysStackPanel promptList = new PhysStackPanel(
                 PhysStackPanel.Alignment.VERTICAL,
