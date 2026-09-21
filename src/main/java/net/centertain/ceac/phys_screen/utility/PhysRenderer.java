@@ -1,10 +1,12 @@
 package net.centertain.ceac.phys_screen.utility;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.centertain.ceac.client.mixin.GameRendererAccessor;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import net.centertain.ceac.phys_screen.framework.PhysScreen;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -73,7 +75,14 @@ public final class PhysRenderer {
             double constantSizeScale
     ) {
         Minecraft minecraft = Minecraft.getInstance();
-        Camera camera = minecraft.gameRenderer.getMainCamera();
+        GameRenderer gameRenderer = minecraft.gameRenderer;
+        Camera camera = gameRenderer.getMainCamera();
+
+        Matrix4f baseProjectionMatrix = gameRenderer.getProjectionMatrix(70.0);
+        Vector3f currentProjectionScale = projectionMatrix.getScale(new Vector3f());
+        Vector3f baseProjectionScale = baseProjectionMatrix.getScale(new Vector3f());
+
+        double fovScale = baseProjectionScale.x() / currentProjectionScale.x();
 
         poseStack.pushPose();
 
@@ -114,7 +123,7 @@ public final class PhysRenderer {
         double sizeScale = 1.0;
 
         if (stayConstantSize)
-            sizeScale = cameraZ * (constantSizeScale / 2.0);
+            sizeScale = cameraZ * (constantSizeScale / 2.0) * fovScale;
 
         cameraX += viewSpaceOffset.x * sizeScale;
         cameraY += viewSpaceOffset.y * sizeScale;
