@@ -27,6 +27,7 @@ public final class MaterialPreviewer {
 
     private static final PhysScreen helpScreen = new MaterialPreviewerHelpScreen();
 
+    private static boolean initialized = false;
     private static boolean helpScreenShown = true;
     private static boolean previewVisible = false;
 
@@ -82,21 +83,27 @@ public final class MaterialPreviewer {
             BlockPos newPosition,
             MaterialShapeFace newFace
     ) {
-        helpScreen.init(
-                Minecraft.getInstance(),
-                MaterialPreviewerHelpScreen.WIDTH,
-                MaterialPreviewerHelpScreen.HEIGHT
-        );
         material = newMaterial;
         materialCoordinate = newMaterialCoordinate;
         position = newPosition;
         face = newFace;
+        init();
     }
     public static void destroy() {
         material = null;
         materialCoordinate = null;
         position = null;
         face = null;
+    }
+    public static void init() {
+        if (initialized)
+            return;
+        initialized = true;
+        helpScreen.init(
+                Minecraft.getInstance(),
+                MaterialPreviewerHelpScreen.WIDTH,
+                MaterialPreviewerHelpScreen.HEIGHT
+        );
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted") // Shut up
