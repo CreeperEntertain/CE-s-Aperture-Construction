@@ -1,7 +1,6 @@
 package net.centertain.ceac.phys_screen;
 
 import net.centertain.ceac.GuiConstants;
-import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.phys_screen.elements.*;
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysScreen;
@@ -14,11 +13,11 @@ import java.util.List;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
-public class PreviewerHelpScreen extends PhysScreen {
+public class DecalPreviewerHelpScreen extends PhysScreen {
     public static final int WIDTH = 150;
     public static final int HEIGHT = 361;
 
-    public PreviewerHelpScreen() {
+    public DecalPreviewerHelpScreen() {
         super(Component.literal("Precise Placement Help Screen"));
     }
 
