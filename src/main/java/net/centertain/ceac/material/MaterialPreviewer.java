@@ -28,6 +28,7 @@ public final class MaterialPreviewer {
     private static final PhysScreen helpScreen = new MaterialPreviewerHelpScreen();
 
     private static boolean helpScreenShown = false;
+    private static boolean previewVisible = false;
 
     private static @Nullable Material material;
     private static @Nullable Vector2i materialCoordinate;
@@ -45,6 +46,9 @@ public final class MaterialPreviewer {
     public static boolean getHelpScreenShown() {
         return helpScreenShown;
     }
+    public static boolean getPreviewVisible() {
+        return previewVisible;
+    }
     public static @Nullable Material getMaterial() {
         return material;
     }
@@ -60,6 +64,9 @@ public final class MaterialPreviewer {
 
     public static void setHelpScreenShown(boolean state) {
         helpScreenShown = state;
+    }
+    public static void setPreviewVisible(boolean state) {
+        previewVisible = state;
     }
     public static void setMaterial(@Nullable Material newMaterial) {
         material = newMaterial;
@@ -117,6 +124,7 @@ public final class MaterialPreviewer {
     ) {
         if (!isActive())
             return;
+        System.out.println("Render reached");
 
         assert face != null;
 
@@ -146,14 +154,14 @@ public final class MaterialPreviewer {
         );
     }
 
-    public static void render(
+    public static boolean render(
             PoseStack poseStack,
             MultiBufferSource.BufferSource bufferSource
     ) {
         if (!MaterialPlacement.getAdjustOffset())
-            return;
+            return false;
         if (!isActive())
-            return;
+            return false;
 
         // Doing this shit because the isActive() check proves they're not null. So the compiler shuts the hell up.
         assert material != null;
@@ -163,11 +171,11 @@ public final class MaterialPreviewer {
 
         List<Vec3> vertices = face.getVertices();
         if (vertices.size() < 3) // Fuck it, another check to calm the soul. Amen.
-            return;
+            return false;
 
         ResourceLocation texture = material.getTexture(materialCoordinate);
         if (texture == null)
-            return;
+            return false;
 
         TextureAtlasSprite sprite = Minecraft.getInstance()
                 .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
@@ -230,7 +238,7 @@ public final class MaterialPreviewer {
         double uSize = maxU - minU;
         double vSize = maxV - minV;
         if (uSize <= 1.0e-7 || vSize <= 1.0e-7)
-            return;
+            return false;
 
 
 
@@ -285,6 +293,8 @@ public final class MaterialPreviewer {
         bufferSource.endBatch(RenderType.translucent());
 
         poseStack.popPose();
+
+        return true;
     }
 
     private static void putVertex(

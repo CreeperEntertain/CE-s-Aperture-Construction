@@ -71,6 +71,7 @@ public final class MaterialPlacement {
         if (event.getAction() != GLFW.GLFW_PRESS)
             return;
         switch (key) {
+            case GLFW.GLFW_KEY_ENTER -> MaterialPreviewer.setPreviewVisible(!MaterialPreviewer.getPreviewVisible());
             case GLFW.GLFW_KEY_W -> shiftMaterialCoordinate(Direction.UP);
             case GLFW.GLFW_KEY_S -> shiftMaterialCoordinate(Direction.DOWN);
             case GLFW.GLFW_KEY_A -> shiftMaterialCoordinate(Direction.LEFT);

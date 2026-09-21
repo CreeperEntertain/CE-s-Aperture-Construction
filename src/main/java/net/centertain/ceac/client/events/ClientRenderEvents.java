@@ -67,10 +67,10 @@ public final class ClientRenderEvents {
             MultiBufferSource.BufferSource bufferSource
     ) {
         if (MaterialPlacement.getAdjustOffset())
-            MaterialPreviewer.render(
+            MaterialPreviewer.setPreviewVisible(MaterialPreviewer.render(
                     poseStack,
                     bufferSource
-            );
+            ));
     }
 
 
@@ -103,7 +103,8 @@ public final class ClientRenderEvents {
     private static void materialHelpScreenRendering(MultiBufferSource.BufferSource bufferSource) {
         if (!(
                 MaterialPlacement.getAdjustOffset() &&
-                MaterialPreviewer.getHelpScreenShown()
+                MaterialPreviewer.getHelpScreenShown() &&
+                MaterialPreviewer.getPreviewVisible()
         ))
             return;
         MaterialPreviewer.renderHelpScreen(
