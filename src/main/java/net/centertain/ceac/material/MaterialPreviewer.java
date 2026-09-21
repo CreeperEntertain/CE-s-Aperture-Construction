@@ -116,13 +116,13 @@ public final class MaterialPreviewer {
         );
     }
 
-    public static void renderHelpScreen(
+    public static boolean renderHelpScreen(
             PoseStack poseStack,
             MultiBufferSource bufferSource,
             Matrix4f projectionMatrix
     ) {
         if (!isActive())
-            return;
+            return false;
         System.out.println("Render reached");
 
         assert face != null;
@@ -151,6 +151,8 @@ public final class MaterialPreviewer {
                 projectionMatrix,
                 true
         );
+
+        return true;
     }
 
     public static boolean render(
