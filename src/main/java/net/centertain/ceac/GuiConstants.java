@@ -1,5 +1,7 @@
 package net.centertain.ceac;
 
+import net.minecraft.world.phys.Vec3;
+
 public final class GuiConstants {
     public static final int SCREEN_PADDING = 15;
     public static final int ELEMENT_PADDING = 5;
@@ -11,6 +13,8 @@ public final class GuiConstants {
     public static final int STACK_SCROLL_SPEED = 10;
     public static final int FLOW_SCROLL_SPEED = 50;
     public static final int SCROLL_BAR_WIDTH = 1;
+
+    public static final Vec3 HELP_SCREEN_OFFSET = new Vec3(1.5, 0.0, 0.0);
 
     public static final int COLOR_SOLID_BLACK = 0xFF000000;
     public static final int COLOR_TRANSLUCENT_BLACK_25 = 0x40000000;

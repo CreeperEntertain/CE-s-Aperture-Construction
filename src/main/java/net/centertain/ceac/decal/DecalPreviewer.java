@@ -151,7 +151,7 @@ public final class DecalPreviewer {
         boolean isHovered = PhysRenderer.billboardAfterLevel(
                 helpScreen,
                 decal.getOrigin(),
-                new Vec3(1.5, 0, 0),
+                GuiConstants.HELP_SCREEN_OFFSET,
                 poseStack,
                 bufferSource,
                 projectionMatrix,

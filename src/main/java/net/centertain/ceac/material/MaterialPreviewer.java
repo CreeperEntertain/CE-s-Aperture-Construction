@@ -2,6 +2,10 @@ package net.centertain.ceac.material;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.phys_screen.MaterialPreviewerHelpScreen;
+import net.centertain.ceac.phys_screen.framework.PhysScreen;
+import net.centertain.ceac.phys_screen.utility.PhysRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -13,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 import org.joml.Vector2i;
 
 import java.util.List;
@@ -20,13 +25,26 @@ import java.util.List;
 public final class MaterialPreviewer {
     private static final double EXTRUSION = 0.002;
 
+    private static final PhysScreen helpScreen = new MaterialPreviewerHelpScreen();
+
+    private static boolean helpScreenShown = false;
+
     private static @Nullable Material material;
     private static @Nullable Vector2i materialCoordinate;
     private static @Nullable BlockPos position;
     private static @Nullable MaterialShapeFace face;
 
-    private MaterialPreviewer() {}
+    private MaterialPreviewer() {
+        helpScreen.init(
+                Minecraft.getInstance(),
+                MaterialPreviewerHelpScreen.WIDTH,
+                MaterialPreviewerHelpScreen.HEIGHT
+        );
+    }
 
+    public static boolean getHelpScreenShown() {
+        return helpScreenShown;
+    }
     public static @Nullable Material getMaterial() {
         return material;
     }
@@ -40,6 +58,9 @@ public final class MaterialPreviewer {
         return face;
     }
 
+    public static void setHelpScreenShown(boolean state) {
+        helpScreenShown = state;
+    }
     public static void setMaterial(@Nullable Material newMaterial) {
         material = newMaterial;
     }
@@ -72,6 +93,7 @@ public final class MaterialPreviewer {
         face = null;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted") // Shut up
     public static boolean isActive() {
         return (
                 material != null &&
@@ -85,6 +107,42 @@ public final class MaterialPreviewer {
                 (material == null) == (materialCoordinate == null) &&
                 (materialCoordinate == null) == (position == null) &&
                 (position == null) == (face == null)
+        );
+    }
+
+    public static void renderHelpScreen(
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            Matrix4f projectionMatrix
+    ) {
+        if (!isActive())
+            return;
+
+        assert face != null;
+
+        List<Vec3> vertices = face.getVertices();
+        double totalX = 0;
+        double totalY = 0;
+        double totalZ = 0;
+        for (Vec3 vertex : vertices) {
+            totalX += vertex.x;
+            totalY += vertex.y;
+            totalZ += vertex.z;
+        }
+        Vec3 faceCenter = new Vec3(
+                totalX / vertices.size(),
+                totalY / vertices.size(),
+                totalZ / vertices.size()
+        );
+
+        boolean hovered = PhysRenderer.billboardAfterLevel(
+                helpScreen,
+                faceCenter,
+                GuiConstants.HELP_SCREEN_OFFSET,
+                poseStack,
+                bufferSource,
+                projectionMatrix,
+                true
         );
     }
 

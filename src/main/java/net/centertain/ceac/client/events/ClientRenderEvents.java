@@ -6,7 +6,6 @@ import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.DecalRenderer;
 import net.centertain.ceac.material.MaterialPlacement;
 import net.centertain.ceac.material.MaterialPreviewer;
-import net.centertain.ceac.phys_screen.framework.GameRendererViewOffsetAccessor;
 import net.centertain.ceac.phys_screen.utility.PhysRenderHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -17,7 +16,6 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix4f;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
@@ -80,14 +78,15 @@ public final class ClientRenderEvents {
         PhysRenderHelper.prepareAfterLevelRender();
         try { // Place all billboard PhysScreen render entries in here.
 
-            helpScreenRendering(bufferSource);
+            decalHelpScreenRendering(bufferSource);
+            materialHelpScreenRendering(bufferSource);
 
         } finally { // Always revert state, regardless of whether a renderer throws.
             PhysRenderHelper.finishAfterLevelRender(bufferSource);
         }
     }
 
-    private static void helpScreenRendering(MultiBufferSource.BufferSource bufferSource) {
+    private static void decalHelpScreenRendering(MultiBufferSource.BufferSource bufferSource) {
         DecalPreviewer preview = DecalPlacement.getDecalPreview();
         if (!(
                 preview != null &&
@@ -101,9 +100,16 @@ public final class ClientRenderEvents {
                 PhysRenderHelper.getProjectionMatrix()
         );
     }
-
-    private static Matrix4f getCleanAfterLevelMatrix() {
-        GameRendererViewOffsetAccessor renderer = (GameRendererViewOffsetAccessor) Minecraft.getInstance().gameRenderer;
-        return renderer.ceac$getProjectionBeforeViewOffset();
+    private static void materialHelpScreenRendering(MultiBufferSource.BufferSource bufferSource) {
+        if (!(
+                MaterialPlacement.getAdjustOffset() &&
+                MaterialPreviewer.getHelpScreenShown()
+        ))
+            return;
+        MaterialPreviewer.renderHelpScreen(
+                PhysRenderHelper.getCleanPoseStack(),
+                bufferSource,
+                PhysRenderHelper.getProjectionMatrix()
+        );
     }
 }
