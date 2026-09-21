@@ -123,9 +123,9 @@ public final class MaterialPreviewer {
     ) {
         if (!isActive())
             return false;
-        System.out.println("Render reached");
 
         assert face != null;
+        assert position != null;
 
         List<Vec3> vertices = face.getVertices();
         double totalX = 0;
@@ -140,6 +140,10 @@ public final class MaterialPreviewer {
                 totalX / vertices.size(),
                 totalY / vertices.size(),
                 totalZ / vertices.size()
+        ).add(
+                position.getX(),
+                position.getY(),
+                position.getZ()
         );
 
         boolean hovered = PhysRenderer.billboardAfterLevel(
