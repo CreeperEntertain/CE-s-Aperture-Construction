@@ -35,13 +35,7 @@ public final class MaterialPreviewer {
     private static @Nullable BlockPos position;
     private static @Nullable MaterialShapeFace face;
 
-    private MaterialPreviewer() {
-        helpScreen.init(
-                Minecraft.getInstance(),
-                MaterialPreviewerHelpScreen.WIDTH,
-                MaterialPreviewerHelpScreen.HEIGHT
-        );
-    }
+    private MaterialPreviewer() {}
 
     public static boolean getHelpScreenShown() {
         return helpScreenShown;
@@ -88,6 +82,11 @@ public final class MaterialPreviewer {
             BlockPos newPosition,
             MaterialShapeFace newFace
     ) {
+        helpScreen.init(
+                Minecraft.getInstance(),
+                MaterialPreviewerHelpScreen.WIDTH,
+                MaterialPreviewerHelpScreen.HEIGHT
+        );
         material = newMaterial;
         materialCoordinate = newMaterialCoordinate;
         position = newPosition;
