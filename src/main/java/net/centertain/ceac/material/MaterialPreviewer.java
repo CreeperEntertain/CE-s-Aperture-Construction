@@ -156,11 +156,12 @@ public final class MaterialPreviewer {
         boolean hovered = PhysRenderer.billboardAfterLevel(
                 helpScreen,
                 faceCenter,
-                GuiConstants.HELP_SCREEN_OFFSET,
+                GuiConstants.HELP_SCREEN_OFFSET.multiply(1.5, 1.5, 1.5),
                 poseStack,
                 bufferSource,
                 projectionMatrix,
-                true
+                true,
+                0.5
         );
 
         return true;
