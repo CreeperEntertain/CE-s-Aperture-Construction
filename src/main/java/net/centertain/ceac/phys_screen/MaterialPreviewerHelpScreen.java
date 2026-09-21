@@ -15,7 +15,7 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public class MaterialPreviewerHelpScreen extends PhysScreen {
     public static final int WIDTH = 150;
-    public static final int HEIGHT = 114;
+    public static final int HEIGHT = 131;
 
     public MaterialPreviewerHelpScreen() {
         super(Component.literal("Material Preview Help Screen"));
