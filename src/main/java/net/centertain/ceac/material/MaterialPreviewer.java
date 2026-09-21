@@ -27,7 +27,7 @@ public final class MaterialPreviewer {
 
     private static final PhysScreen helpScreen = new MaterialPreviewerHelpScreen();
 
-    private static boolean helpScreenShown = false;
+    private static boolean helpScreenShown = true;
     private static boolean previewVisible = false;
 
     private static @Nullable Material material;
