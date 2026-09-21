@@ -39,7 +39,7 @@ public final class ClientRenderEvents {
             materialPreviewRendering(event, poseStack, bufferSource);
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL)
-            physScreenRendering(bufferSource);
+            billboardPhysScreenRendering(bufferSource);
     }
 
 
@@ -74,7 +74,7 @@ public final class ClientRenderEvents {
     }
 
 
-    private static void physScreenRendering(MultiBufferSource.BufferSource bufferSource) {
+    private static void billboardPhysScreenRendering(MultiBufferSource.BufferSource bufferSource) {
         PhysRenderHelper.prepareAfterLevelRender();
         try { // Place all billboard PhysScreen render entries in here.
 
