@@ -98,7 +98,7 @@ public final class ClientRenderEvents {
                 PhysRenderHelper.getCleanPoseStack(),
                 bufferSource,
                 PhysRenderHelper.getProjectionMatrix()
-        );<
+        );
     }
     private static void materialHelpScreenRendering(MultiBufferSource.BufferSource bufferSource) {
         if (!(
