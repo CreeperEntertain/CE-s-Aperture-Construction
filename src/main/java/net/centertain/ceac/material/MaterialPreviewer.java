@@ -29,6 +29,7 @@ import java.util.List;
 
 public final class MaterialPreviewer {
     private static final double EXTRUSION = 0.002;
+    private static final double DIRECTION_BIAS = 1.0e-6;
 
     private static final PhysScreen helpScreen = new MaterialPreviewerHelpScreen();
 
@@ -220,39 +221,11 @@ public final class MaterialPreviewer {
         Vec3 c = vertices.get(2);
 
         Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
-
-        Direction side = Direction.getNearest(normal.x, normal.y, normal.z);
-
-        Vec3 uAxis;
-        Vec3 vAxis;
-
-        switch (side) {
-            case UP -> {
-                uAxis = new Vec3(1, 0, 0);
-                vAxis = new Vec3(0, 0, 1);
-            }
-            case DOWN -> {
-                uAxis = new Vec3(-1, 0, 0);
-                vAxis = new Vec3(0, 0, 1);
-            }
-            case NORTH -> {
-                uAxis = new Vec3(-1, 0, 0);
-                vAxis = new Vec3(0, 1, 0);
-            }
-            case SOUTH -> {
-                uAxis = new Vec3(1, 0, 0);
-                vAxis = new Vec3(0, 1, 0);
-            }
-            case WEST -> {
-                uAxis = new Vec3(0, 0, 1);
-                vAxis = new Vec3(0, 1, 0);
-            }
-            case EAST -> {
-                uAxis = new Vec3(0, 0, -1);
-                vAxis = new Vec3(0, 1, 0);
-            }
-            default -> throw new AssertionError(side);
-        }
+        Direction projection = Direction.getNearest(
+                normal.x,
+                normal.y * (1.0 - DIRECTION_BIAS),
+                normal.z
+        );
 
         double minU = Double.POSITIVE_INFINITY;
         double maxU = Double.NEGATIVE_INFINITY;
@@ -260,8 +233,8 @@ public final class MaterialPreviewer {
         double maxV = Double.NEGATIVE_INFINITY;
 
         for (Vec3 vertex : vertices) {
-            double u = vertex.dot(uAxis);
-            double v = vertex.dot(vAxis);
+            double u = getTextureU(projection, vertex);
+            double v = getTextureV(projection, vertex);
 
             minU = Math.min(minU, u);
             maxU = Math.max(maxU, u);
@@ -296,7 +269,8 @@ public final class MaterialPreviewer {
                     pose,
                     vertices.get(0),
                     normal,
-                    uAxis, vAxis, minU, minV, uSize, vSize,
+                    projection,
+                    minU, minV, uSize, vSize,
                     sprite
             );
             putVertex(
@@ -304,7 +278,8 @@ public final class MaterialPreviewer {
                     pose,
                     vertices.get(i),
                     normal,
-                    uAxis, vAxis, minU, minV, uSize, vSize,
+                    projection,
+                    minU, minV, uSize, vSize,
                     sprite
             );
             putVertex(
@@ -312,14 +287,17 @@ public final class MaterialPreviewer {
                     pose,
                     vertices.get(i + 1),
                     normal,
-                    uAxis, vAxis, minU, minV, uSize, vSize,
+                    projection,
+                    minU, minV, uSize, vSize,
                     sprite
             );
             putVertex(
                     consumer,
                     pose,
                     vertices.get(0),
-                    normal, uAxis, vAxis, minU, minV, uSize, vSize,
+                    normal,
+                    projection,
+                    minU, minV, uSize, vSize,
                     sprite
             );
         }
@@ -336,8 +314,7 @@ public final class MaterialPreviewer {
             PoseStack.Pose pose,
             Vec3 vertex,
             Vec3 normal,
-            Vec3 uAxis,
-            Vec3 vAxis,
+            Direction projection,
             double minU,
             double minV,
             double uSize,
@@ -346,8 +323,8 @@ public final class MaterialPreviewer {
     ) {
         Vec3 point = vertex.add(normal.scale(EXTRUSION));
 
-        double u = (vertex.dot(uAxis) - minU) / uSize;
-        double v = (vertex.dot(vAxis) - minV) / vSize;
+        double u = (getTextureU(projection, vertex) - minU) / uSize;
+        double v = (getTextureV(projection, vertex) - minV) / vSize;
 
         float textureU = sprite.getU(u * 16.0);
         float textureV = sprite.getV(v * 16.0);
@@ -358,7 +335,7 @@ public final class MaterialPreviewer {
                 (float) point.y,
                 (float) point.z
         )
-                .color(255, 255, 255, 128)
+                .color(255, 255, 255, 127)
                 .uv(textureU, textureV)
                 .uv2(LightTexture.FULL_BRIGHT)
                 .normal(
@@ -368,5 +345,21 @@ public final class MaterialPreviewer {
                         (float) normal.z
                 )
                 .endVertex();
+    }
+
+    private static double getTextureU(Direction direction, Vec3 point) {
+        return switch (direction) {
+            case UP, DOWN, SOUTH -> point.x;
+            case NORTH -> 1.0 - point.x;
+            case WEST -> point.z;
+            case EAST -> 1.0 - point.z;
+        };
+    }
+
+    private static double getTextureV(Direction direction, Vec3 point) {
+        return switch (direction) {
+            case UP -> point.z;
+            case DOWN, NORTH, SOUTH, WEST, EAST -> 1.0 - point.y;
+        };
     }
 }
