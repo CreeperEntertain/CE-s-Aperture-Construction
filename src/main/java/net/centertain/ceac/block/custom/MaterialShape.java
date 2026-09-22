@@ -213,13 +213,13 @@ public abstract class MaterialShape extends Block implements EntityBlock {
                 double edgeX = x1 - x0;
                 double edgeY = y1 - y0;
                 double pointX = px - x0;
-                double pointy = py = y0;
+                double pointY = py - y0;
 
-                double cross = edgeX * pointy - edgeY * pointX;
+                double cross = edgeX * pointY - edgeY * pointX;
 
                 if (Math.abs(cross) <= epsilon) {
-                    double dot = pointX * edgeX + pointy * edgeY;
-                    double lengthSquared = edgeX * edgeX + edgeY + edgeY;
+                    double dot = pointX * edgeX + pointY * edgeY;
+                    double lengthSquared = edgeX * edgeX + edgeY * edgeY;
 
                     if (dot >= -epsilon && dot <= lengthSquared + epsilon) {
                         inside = true;
