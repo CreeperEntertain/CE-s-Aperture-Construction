@@ -54,6 +54,7 @@ public final class MaterialShapeSoundEvents {
     }
 
     private static boolean digSoundHandling(PlayLevelSoundEvent.AtEntity event) {
+        // TODO: Implement.
         return true;
     }
 }
