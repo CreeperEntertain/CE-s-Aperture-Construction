@@ -106,17 +106,17 @@ public final class PhysRenderer {
         );
 
         double cameraX =
-                relative.x * cameraRight.x()
-                + relative.y * cameraRight.y()
-                + relative.z * cameraRight.z();
+                relative.x * cameraRight.x() +
+                relative.y * cameraRight.y() +
+                relative.z * cameraRight.z();
         double cameraY =
-                relative.x * cameraUp.x()
-                + relative.y * cameraUp.y()
-                + relative.z * cameraUp.z();
+                relative.x * cameraUp.x() +
+                relative.y * cameraUp.y() +
+                relative.z * cameraUp.z();
         double cameraZ =
-                relative.x * cameraLook.x()
-                + relative.y * cameraLook.y()
-                + relative.z * cameraLook.z();
+                relative.x * cameraLook.x() +
+                relative.y * cameraLook.y() +
+                relative.z * cameraLook.z();
 
         cameraZ += viewSpaceOffset.z;
 
