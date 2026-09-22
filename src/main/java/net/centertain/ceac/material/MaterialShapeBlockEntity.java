@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
 import java.util.HashMap;
@@ -74,6 +75,11 @@ public class MaterialShapeBlockEntity extends BlockEntity {
                     getBlockState(),
                     Block.UPDATE_CLIENTS
             );
+    }
+
+    public @Nullable Material getMaterial(int face) {
+        MaterialAssignment assignment = materials.get(face);
+        return assignment == null ? null : assignment.material();
     }
 
     @Override

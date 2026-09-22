@@ -78,18 +78,10 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         return new MaterialShapeBlockEntity(pos, state);
     }
 
-    @Override
-    public @NotNull SoundType getSoundType(
-            BlockState state,
-            LevelReader level,
-            BlockPos pos,
-            @Nullable Entity entity
-    ) {
-        return getSoundType(lastActionLocation, false);
-    }
-
     public SoundType getSoundType(
             Vec3 position,
+            LevelReader level,
+            BlockPos pos,
             boolean setLocation
     ) {
         if (setLocation)
@@ -97,7 +89,12 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         MaterialShapeFace face = getNearestFace(position);
         if (face == null)
             return this.soundType;
-        Material material = face.getMaterial();
+        int faceIndex = faces.indexOf(face);
+        if (faceIndex < 0)
+            return this.soundType;
+        if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
+            return this.soundType;
+        Material material = blockEntity.getMaterial(faceIndex);
         if (material == null)
             return this.soundType;
         return material.getSoundType();
