@@ -18,9 +18,7 @@ public final class CeacRenderTypes {
             false,
             false,
             RenderType.CompositeState.builder()
-                    .setShaderState(new RenderStateShard.ShaderStateShard(
-                            GameRenderer::getPositionColorShader
-                    ))
+                    .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader))
                     .setTransparencyState(new RenderStateShard.TransparencyStateShard(
                             "translucent",
                             () -> {
@@ -29,14 +27,9 @@ public final class CeacRenderTypes {
                             },
                             RenderSystem::disableBlend
                     ))
-                    .setDepthTestState(new RenderStateShard.DepthTestStateShard(
-                            "always",
-                            GL11.GL_ALWAYS
-                    ))
+                    .setDepthTestState(new RenderStateShard.DepthTestStateShard("always", GL11.GL_ALWAYS))
                     .setCullState(new RenderStateShard.CullStateShard(false))
-                    .setWriteMaskState(new RenderStateShard.WriteMaskStateShard(
-                            true, false
-                    ))
+                    .setWriteMaskState(new RenderStateShard.WriteMaskStateShard(true, false))
                     .createCompositeState(false)
     );
 
@@ -49,14 +42,8 @@ public final class CeacRenderTypes {
                 false,
                 false,
                 RenderType.CompositeState.builder()
-                        .setShaderState(new RenderStateShard.ShaderStateShard(
-                                GameRenderer::getPositionColorTexShader
-                        ))
-                        .setTextureState(new RenderStateShard.TextureStateShard(
-                                texture,
-                                false,
-                                false
-                        ))
+                        .setShaderState(new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorTexShader))
+                        .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
                         .setTransparencyState(new RenderStateShard.TransparencyStateShard(
                                 "translucent",
                                 () -> {
@@ -65,14 +52,9 @@ public final class CeacRenderTypes {
                                 },
                                 RenderSystem::disableBlend
                         ))
-                        .setDepthTestState(new RenderStateShard.DepthTestStateShard(
-                                "always",
-                                GL11.GL_ALWAYS
-                        ))
+                        .setDepthTestState(new RenderStateShard.DepthTestStateShard("always", GL11.GL_ALWAYS))
                         .setCullState(new RenderStateShard.CullStateShard(false))
-                        .setWriteMaskState(new RenderStateShard.WriteMaskStateShard(
-                                true, false
-                        ))
+                        .setWriteMaskState(new RenderStateShard.WriteMaskStateShard(true, false))
                         .createCompositeState(false)
         );
     }
