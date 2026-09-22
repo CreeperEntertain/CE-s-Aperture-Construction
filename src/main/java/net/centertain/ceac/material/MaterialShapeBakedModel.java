@@ -62,8 +62,9 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
         for (BakedQuad quad : original) {
             int faceIndex = findFace(quad);
 
-            MaterialShapeBlockEntity.MaterialAssignment assignment =
-                    materials == null ? null : materials.get(faceIndex);
+            MaterialShapeBlockEntity.MaterialAssignment assignment = materials == null
+                    ? null
+                    : materials.get(faceIndex);
 
             if (assignment != null)
                 quad = retexture(quad, assignment);
@@ -170,7 +171,7 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
         double uSize = maxU - minU;
         double vSize = maxV - minV;
 
-        if (uSize > 1.0e-7 && vSize > 1.0e-7) {
+        if (uSize > 1.0e-7 && vSize > 1.0e-7)
             for (int i = 0; i < 4; i++) {
                 double u = (projectedU[i] - minU) / uSize;
                 double v = (projectedV[i] - minV) / vSize;
@@ -180,7 +181,6 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
                 vertices[offset] = Float.floatToRawIntBits(sprite.getU(u * 16.0));
                 vertices[offset + 1] = Float.floatToRawIntBits(sprite.getV(v * 16.0));
             }
-        }
 
         Vec3 normal = transformed[1]
                 .subtract(transformed[0])
