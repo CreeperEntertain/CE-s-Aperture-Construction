@@ -19,13 +19,12 @@ public final class TranslucentRenderTargets {
     }
 
     public static void resize(int width, int height) {
-        if (translucentDepth != null) {
+        if (translucentDepth != null)
             translucentDepth.resize(
                     width,
                     height,
                     Minecraft.ON_OSX
             );
-        }
         TranslucentKBuffer.resize(width, height);
     }
 
