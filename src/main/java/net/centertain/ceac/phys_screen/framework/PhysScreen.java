@@ -18,6 +18,7 @@ public class PhysScreen extends Screen {
 
     protected void build() {}
 
+    @SuppressWarnings("UnusedReturnValue")
     protected <T extends PhysElement> T addPhysElement(T element) {
         physElements.add(element);
 
