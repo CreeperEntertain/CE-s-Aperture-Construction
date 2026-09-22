@@ -130,33 +130,123 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         return List.copyOf(points);
     }
 
-    public final MaterialShapeFace getNearestFace(
-            Vec3 hitPosition
-    ) {
-        List<MaterialShapeFace> filteredFaces = new ArrayList<>();
+    public final @Nullable MaterialShapeFace getNearestFace(Vec3 hitPosition) {
+        final double epsilon = 1.0e-6;
 
-        for (MaterialShapeFace face : faces)
-            if (isPointOnFace(face, hitPosition))
-                filteredFaces.add(face);
+        @Nullable MaterialShapeFace closestFace = null;
+        double shortestDistance = Double.POSITIVE_INFINITY;
 
-        return filteredFaces.get(0);
-    }
+        for (MaterialShapeFace face : faces) {
+            List<Vec3> vertices = face.getVertices();
+            if (vertices.size() < 3)
+                continue;
 
-    private boolean isPointOnFace(
-            MaterialShapeFace face,
-            Vec3 hitPosition
-    ) {
-        List<Vec3> vertices = face.getVertices();
+            Vec3 a = vertices.get(0);
+            Vec3 b = vertices.get(1);
+            Vec3 c = vertices.get(2);
 
-        Vec3 a = vertices.get(0);
-        Vec3 b = vertices.get(1);
-        Vec3 c = vertices.get(2);
+            Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
 
-        Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
+            // Signed distance between point & plane
+            double signedDistance = hitPosition.subtract(a).dot(normal);
 
-        // TODO: Figure this shit out
+            // Face plane projection
+            Vec3 projected = hitPosition.subtract(normal.scale(signedDistance));
 
-        return true;
+            // Projection onto least parallel plane to face
+            double nx = Math.abs(normal.x);
+            double ny = Math.abs(normal.y);
+            double nz = Math.abs(normal.z);
+
+            int droppedAxis = nx >= ny && nx >= nz ? 0 : ny >= nz ? 1 : 2;
+
+            double px;
+            double py;
+
+            switch (droppedAxis) {
+                case 0 -> {
+                    px = projected.y;
+                    py = projected.z;
+                } case 1 -> {
+                    px = projected.x;
+                    py = projected.z;
+                } default -> {
+                    px = projected.x;
+                    py = projected.y;
+                }
+            }
+
+            // Point-in-polygon test using raycasting
+            boolean inside = false;
+
+            for (int i = 0; i < vertices.size(); i++) {
+                Vec3 v0 = vertices.get(i);
+                Vec3 v1 = vertices.get((i + 1) % vertices.size());
+
+                double x0;
+                double y0;
+                double x1;
+                double y1;
+
+                switch (droppedAxis) {
+                    case 0 -> {
+                        //noinspection SuspiciousNameCombination
+                        x0 = v0.y;
+                        y0 = v0.z;
+                        //noinspection SuspiciousNameCombination
+                        x1 = v1.y;
+                        y1 = v1.z;
+                    } case 1 -> {
+                        x0 = v0.x;
+                        y0 = v0.z;
+                        x1 = v1.x;
+                        y1 = v1.z;
+                    } default -> {
+                        x0 = v0.x;
+                        y0 = v0.y;
+                        x1 = v1.x;
+                        y1 = v1.y;
+                    }
+                }
+
+                // Is projected point on this edge?
+                double edgeX = x1 - x0;
+                double edgeY = y1 - y0;
+                double pointX = px - x0;
+                double pointy = py = y0;
+
+                double cross = edgeX * pointy - edgeY * pointX;
+
+                if (Math.abs(cross) <= epsilon) {
+                    double dot = pointX * edgeX + pointy * edgeY;
+                    double lengthSquared = edgeX * edgeX + edgeY + edgeY;
+
+                    if (dot >= -epsilon && dot <= lengthSquared + epsilon) {
+                        inside = true;
+                        break;
+                    }
+                }
+
+                // Standard raycasting toggle
+                if ((y0 > py) != (y1 > py)) {
+                    double intersectionX = (x1 - x0) * (py - y0) / (y1 - y0) + x0;
+                    if (px < intersectionX)
+                        inside = !inside;
+                }
+            }
+
+            if (!inside)
+                continue;
+
+            double distance = Math.abs(signedDistance);
+
+            if (distance < shortestDistance) {
+                shortestDistance = distance;
+                closestFace = face;
+            }
+        }
+
+        return closestFace;
     }
 
     public final boolean applyMaterial(
