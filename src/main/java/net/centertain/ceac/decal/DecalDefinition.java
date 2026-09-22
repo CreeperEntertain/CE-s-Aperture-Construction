@@ -31,9 +31,7 @@ public final class DecalDefinition {
         this.resourceLocation = resourceLocation;
         this.glowing = glowing;
     }
-    public DecalDefinition(
-            ResourceLocation resourceLocation
-    ) {
+    public DecalDefinition(ResourceLocation resourceLocation) {
         this.resourceLocation = resourceLocation;
         this.glowing = false;
 
