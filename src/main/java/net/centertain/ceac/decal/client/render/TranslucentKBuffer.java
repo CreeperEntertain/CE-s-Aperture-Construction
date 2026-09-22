@@ -116,9 +116,8 @@ public final class TranslucentKBuffer {
                     (long) decalCapacity * 20L * Float.BYTES,
                     GL15.GL_DYNAMIC_DRAW
             );
-        } else {
+        } else
             GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, decalBuffer);
-        }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer data = stack.mallocFloat(count * 20);
@@ -191,28 +190,17 @@ public final class TranslucentKBuffer {
             int maxY = (int) Math.floor((origin.y + HALF_VOLUME) / CELL_SIZE);
             int maxZ = (int) Math.floor((origin.z + HALF_VOLUME) / CELL_SIZE);
 
-            for (int x = minX; x <= maxX; ++x) {
-                for (int y = minY; y <= maxY; ++y) {
+            for (int x = minX; x <= maxX; ++x)
+                for (int y = minY; y <= maxY; ++y)
                     for (int z = minZ; z <= maxZ; ++z) {
                         CellKey key = new CellKey(x, y, z);
-
-                        cells.computeIfAbsent(
-                                key,
-                                ignored -> new ArrayList<>()
-                        ).add(decalIndex);
+                        cells.computeIfAbsent(key, ignored -> new ArrayList<>()).add(decalIndex);
                     }
-                }
-            }
         }
 
         List<CellKey> keys = new ArrayList<>(cells.keySet());
 
-        keys.sort(
-                Comparator
-                        .comparingInt(CellKey::x)
-                        .thenComparingInt(CellKey::y)
-                        .thenComparingInt(CellKey::z)
-        );
+        keys.sort(Comparator.comparingInt(CellKey::x).thenComparingInt(CellKey::y).thenComparingInt(CellKey::z));
 
         cellCount = keys.size();
 
@@ -356,9 +344,8 @@ public final class TranslucentKBuffer {
             textureHandleCapacity = Math.max(count, 64);
             GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, textureHandleBuffer);
             GL15.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, (long) textureHandleCapacity * Long.BYTES, GL15.GL_STATIC_DRAW);
-        } else {
+        } else
             GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, textureHandleBuffer);
-        }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             LongBuffer data = stack.mallocLong(count);
