@@ -113,6 +113,8 @@ public final class DecalRenderer {
             opaqueDepthTarget.resize(width, height, true);
         }
         opaqueDepthTarget.copyDepthFrom(mainTarget);
+
+        mainTarget.bindWrite(false);
     }
 
     public static int getOpaqueDepthTexture() {
