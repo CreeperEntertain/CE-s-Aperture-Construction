@@ -33,10 +33,7 @@ public final class PhysRenderHelper {
         previousDepthFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
 
         RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(
-                newProjectionMatrix,
-                RenderSystem.getVertexSorting()
-        );
+        RenderSystem.setProjectionMatrix(newProjectionMatrix, RenderSystem.getVertexSorting());
 
         RenderSystem.depthFunc(GL11.GL_ALWAYS);
 
