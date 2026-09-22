@@ -67,10 +67,7 @@ public final class ClientRenderEvents {
             MultiBufferSource.BufferSource bufferSource
     ) {
         if (MaterialPlacement.getAdjustOffset())
-            MaterialPreviewer.setPreviewVisible(MaterialPreviewer.render(
-                    poseStack,
-                    bufferSource
-            ));
+            MaterialPreviewer.setPreviewVisible(MaterialPreviewer.render(poseStack, bufferSource));
     }
 
 
