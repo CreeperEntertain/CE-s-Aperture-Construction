@@ -154,7 +154,7 @@ public class DecalShaders {
                 height,
                 true
         );
-        for (int level = 1; level < levels; ++level) {
+        for (int level = 1; level < levels; ++level)
             decalDepthPyramid.dispatch(
                     sourceDepthTexture,
                     pyramidTexture,
@@ -164,7 +164,6 @@ public class DecalShaders {
                     height,
                     false
             );
-        }
     }
 
     public static ShaderInstance getTranslucentCapture() {
