@@ -112,9 +112,8 @@ public class DecalManager implements INBTSerializable<CompoundTag> {
     public CompoundTag serializeNBT() {
         CompoundTag root = new CompoundTag();
         ListTag decalList = new ListTag();
-        for (Decal decal : decals.values()) {
+        for (Decal decal : decals.values())
             decalList.add(decal.serializeNBT());
-        }
         root.put("Decals", decalList);
         return root;
     }
