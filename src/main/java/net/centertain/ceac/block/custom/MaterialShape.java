@@ -130,6 +130,35 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         return List.copyOf(points);
     }
 
+    public final MaterialShapeFace getNearestFace(
+            Vec3 hitPosition
+    ) {
+        List<MaterialShapeFace> filteredFaces = new ArrayList<>();
+
+        for (MaterialShapeFace face : faces)
+            if (isPointOnFace(face, hitPosition))
+                filteredFaces.add(face);
+
+        return filteredFaces.get(0);
+    }
+
+    private boolean isPointOnFace(
+            MaterialShapeFace face,
+            Vec3 hitPosition
+    ) {
+        List<Vec3> vertices = face.getVertices();
+
+        Vec3 a = vertices.get(0);
+        Vec3 b = vertices.get(1);
+        Vec3 c = vertices.get(2);
+
+        Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
+
+        // TODO: Figure this shit out
+
+        return true;
+    }
+
     public final boolean applyMaterial(
             Level level,
             BlockPos pos,
