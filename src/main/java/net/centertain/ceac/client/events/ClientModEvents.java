@@ -89,13 +89,7 @@ public class ClientModEvents
                 if (!event.getModels().containsKey(location))
                     continue;
 
-                event.getModels().put(
-                        location,
-                        new MaterialShapeBakedModel(
-                                canonicalModel,
-                                materialShape
-                        )
-                );
+                event.getModels().put(location, new MaterialShapeBakedModel(canonicalModel, materialShape));
             }
         }
     }
