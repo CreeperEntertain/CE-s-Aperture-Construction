@@ -288,14 +288,13 @@ public class Button extends AbstractWidget {
         if (time <= duration) {
             float progress = (float) time / duration;
             scrollOffset = overflow * progress;
-        } else if (time <= duration + pause) {
+        } else if (time <= duration + pause)
             scrollOffset = overflow;
-        } else if (time <= duration + pause + duration) {
+        else if (time <= duration + pause + duration) {
             float progress = (float) (time - (duration + pause)) / duration;
             scrollOffset = overflow * (1.0f - progress);
-        } else {
+        } else
             scrollOffset = 0.0f;
-        }
         return scrollOffset;
     }
 
@@ -308,9 +307,6 @@ public class Button extends AbstractWidget {
     protected void updateWidgetNarration(
             @NotNull NarrationElementOutput narrationElementOutput
     ) {
-        narrationElementOutput.add(
-                NarratedElementType.TITLE,
-                getMessage()
-        );
+        narrationElementOutput.add(NarratedElementType.TITLE, getMessage());
     }
 }
