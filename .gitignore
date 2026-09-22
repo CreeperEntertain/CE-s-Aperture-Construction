@@ -22,3 +22,6 @@ gradle-app.setting
 /run
 /run/logs
 /.idea
+.idea/compiler.xml
+.idea/gradle.xml
+.idea/modules.xml
