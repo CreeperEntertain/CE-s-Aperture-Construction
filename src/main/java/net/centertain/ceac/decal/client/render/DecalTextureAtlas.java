@@ -72,11 +72,10 @@ public final class DecalTextureAtlas {
                     for (int y = 0; y < missingImage.getHeight(); ++y)
                         for (int x = 0; x < missingImage.getWidth(); ++x)
                             image.setPixelRGBA(x, y, missingImage.getPixelRGBA(x, y));
-                } else {
+                } else
                     try (InputStream stream = resourceManager.getResource(actualLocation).orElseThrow().open()) {
                         image = NativeImage.read(stream);
                     }
-                }
                 images.add(new TextureImage(actualLocation, image));
             } catch (IOException exception) {
                 throw new RuntimeException("Failed to load decal texture " + location, exception);
@@ -129,12 +128,10 @@ public final class DecalTextureAtlas {
                         )
                 );
                 LOCATIONS.put(image.location(), textureLocation);
-                if (image.location().equals(MISSING_TEXTURE)) {
-                    for (ResourceLocation requiredTexture : required) {
+                if (image.location().equals(MISSING_TEXTURE))
+                    for (ResourceLocation requiredTexture : required)
                         if (resourceManager.getResource(requiredTexture).isEmpty())
                             LOCATIONS.put(requiredTexture, textureLocation);
-                    }
-                }
 
                 image.image().close();
             }
@@ -157,14 +154,12 @@ public final class DecalTextureAtlas {
     }
 
     private static @NotNull List<PageBuilder> getBuilders(List<TextureImage> images, int maxTextureSize) {
-        for (TextureImage image : images) {
-            if (image.width() + PADDING * 2 > maxTextureSize ||
-                    image.height() + PADDING * 2 > maxTextureSize)
+        for (TextureImage image : images)
+            if (image.width() + PADDING * 2 > maxTextureSize || image.height() + PADDING * 2 > maxTextureSize)
                 throw new IllegalStateException(
                         "Decal texture " + image.location() +
                         " exceeds GL_MAX_TEXTURE_SIZE (" + maxTextureSize + ")."
                 );
-        }
 
         int estimatedPageWidth = getEstimatedPageWidth(images, maxTextureSize);
         return createBuilders(images, estimatedPageWidth);
@@ -174,14 +169,13 @@ public final class DecalTextureAtlas {
         List<PageBuilder> builders = new ArrayList<>();
         PageBuilder page = new PageBuilder(estimatedPageWidth);
 
-        for (TextureImage image : images) {
+        for (TextureImage image : images)
             if (!page.tryAdd(image)) {
                 builders.add(page);
                 page = new PageBuilder(estimatedPageWidth);
                 if (!page.tryAdd(image))
                     throw new IllegalStateException("Failed to place decal texture " + image.location() + ".");
             }
-        }
 
         builders.add(page);
         return builders;
