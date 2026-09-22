@@ -41,11 +41,10 @@ public final class MaterialShapeSoundEvents {
 
         assert event.getSound() != null;
         String path = event.getSound().get().getLocation().getPath();
-        if (
-                path.endsWith(".hurt") ||
-                path.endsWith(".small_fall") ||
-                path.endsWith(".big_fall")
-        )
+        if (!(
+                path.endsWith(".step") ||
+                path.endsWith(".fall")
+        ))
             return false;
 
         event.setSound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound));
