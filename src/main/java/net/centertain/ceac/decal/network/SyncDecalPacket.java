@@ -44,12 +44,10 @@ public class SyncDecalPacket {
 
     public static void handle(SyncDecalPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
-        context.enqueueWork(() -> {
-            switch (packet.action) {
-                case ADD -> handleAddition(packet.data);
-                case REMOVE -> handleRemoval(packet.data);
-            }
-        });
+        context.enqueueWork(() -> {switch (packet.action) {
+            case ADD -> handleAddition(packet.data);
+            case REMOVE -> handleRemoval(packet.data);
+        }});
         context.setPacketHandled(true);
     }
     private static void handleAddition(CompoundTag data) {
