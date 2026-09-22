@@ -11,9 +11,7 @@ public final class DecalDepthPyramid {
     private DecalDepthPyramid() {}
 
     public static void ensure(int width, int height) {
-        int newLevels = 32 - Integer.numberOfLeadingZeros(
-                Math.max(width, height)
-        );
+        int newLevels = 32 - Integer.numberOfLeadingZeros(Math.max(width, height));
 
         if (
                 texture != 0 &&
