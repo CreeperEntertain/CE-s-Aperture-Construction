@@ -201,9 +201,10 @@ public class MaterialShapeSlope extends MaterialShape {
             int[] a,
             int[] b
     ) {
-        return a[0] * b[0]
-                + a[1] * b[1]
-                + a[2] * b[2];
+        return
+                a[0] * b[0] +
+                a[1] * b[1] +
+                a[2] * b[2];
     }
 
     @Override protected void createBlockStateDefinition(
