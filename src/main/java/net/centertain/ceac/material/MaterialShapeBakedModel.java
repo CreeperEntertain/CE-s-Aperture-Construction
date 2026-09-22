@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
+    private static final double DIRECTION_BIAS = 1.0e-6;
+
     private final MaterialShape shape;
 
     public MaterialShapeBakedModel(
@@ -143,7 +145,7 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
 
         Direction projection = Direction.getNearest(
                 referenceNormal.x,
-                referenceNormal.y,
+                referenceNormal.y * (1.0 - DIRECTION_BIAS),
                 referenceNormal.z
         );
 

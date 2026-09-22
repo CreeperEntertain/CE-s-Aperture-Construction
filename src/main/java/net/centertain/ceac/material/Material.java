@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class Material {
+    private static final double DIRECTION_BIAS = 1.0e-6;
+
     private final String name;
     private final SoundType soundType;
     private final Map<Vector2i, ResourceLocation> textures;
@@ -100,7 +102,11 @@ public abstract class Material {
 
         Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
 
-        Direction side = Direction.getNearest(normal.x, normal.y, normal.z);
+        Direction side = Direction.getNearest(
+                normal.x,
+                normal.y * (1.0 - DIRECTION_BIAS),
+                normal.z
+        );
 
         int width = tilingSize.x;
         int height = tilingSize.y;
