@@ -140,8 +140,7 @@ public class PhysButton extends Button implements PhysElement {
             int mouseX,
             int mouseY,
             float partialTick
-    ) {
-    }
+    ) {}
 
 
     public void updatePhysicalHover(
