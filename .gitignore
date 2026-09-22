@@ -26,3 +26,4 @@ gradle-app.setting
 .idea/gradle.xml
 .idea/modules.xml
 /.idea/modules
+/run
