@@ -42,25 +42,12 @@ public final class ClippingVertexConsumer extends VertexConsumerWrapper {
 
     private record Vertex(
             Matrix4f matrix,
-            double x,
-            double y,
-            double z,
-            int red,
-            int green,
-            int blue,
-            int alpha,
-            float u,
-            float v,
-            int overlayU,
-            int overlayV,
-            boolean hasOverlay,
-            int lightU,
-            int lightV,
-            boolean hasLight,
-            float normalX,
-            float normalY,
-            float normalZ,
-            boolean hasNormal
+            double x, double y, double z,
+            int red, int green, int blue, int alpha,
+            float u, float v,
+            int overlayU, int overlayV, boolean hasOverlay,
+            int lightU, int lightV, boolean hasLight,
+            float normalX, float normalY, float normalZ, boolean hasNormal
     ) {}
 
 
@@ -167,25 +154,12 @@ public final class ClippingVertexConsumer extends VertexConsumerWrapper {
 
         vertices[vertexCount++] = new Vertex(
                 matrix,
-                x,
-                y,
-                z,
-                red,
-                green,
-                blue,
-                alpha,
-                u,
-                v,
-                overlayU,
-                overlayV,
-                hasOverlay,
-                lightU,
-                lightV,
-                hasLight,
-                normalX,
-                normalY,
-                normalZ,
-                hasNormal
+                x, y, z,
+                red, green, blue, alpha,
+                u, v,
+                overlayU, overlayV, hasOverlay,
+                lightU, lightV, hasLight,
+                normalX, normalY, normalZ, hasNormal
         );
 
         matrix = null;
