@@ -25,12 +25,11 @@ public final class DecalSyncEvents {
         if (chunk == null)
             return;
         DecalManager manager = DecalCapabilities.get(chunk);
-        for (Decal decal : manager.getDecals().values()) {
+        for (Decal decal : manager.getDecals().values())
             ModNetworking.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> player),
                     new SyncDecalPacket(decal)
             );
-        }
     }
     @SubscribeEvent
     public static void onChunkUnwatch(ChunkWatchEvent.UnWatch event) {
@@ -38,11 +37,10 @@ public final class DecalSyncEvents {
         Level level = event.getLevel();
         LevelChunk chunk = level.getChunk(event.getPos().x, event.getPos().z);
         DecalManager manager = DecalCapabilities.get(chunk);
-        for (Decal decal : manager.getDecals().values()) {
+        for (Decal decal : manager.getDecals().values())
             ModNetworking.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> player),
                     new SyncDecalPacket(decal.getId())
             );
-        }
     }
 }
