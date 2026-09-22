@@ -10,8 +10,10 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -30,6 +32,8 @@ public abstract class MaterialShape extends Block implements EntityBlock {
     private final List<MaterialShapeFace> faces;
     private final String category;
     private final double price;
+
+    private Vec3 lastActionLocation = new Vec3(0.0, 0.0, 0.0);
 
     protected MaterialShape(
             @Nullable String category,
@@ -72,6 +76,31 @@ public abstract class MaterialShape extends Block implements EntityBlock {
             @NotNull BlockState state
     ) {
         return new MaterialShapeBlockEntity(pos, state);
+    }
+
+    @Override
+    public @NotNull SoundType getSoundType(
+            BlockState state,
+            LevelReader level,
+            BlockPos pos,
+            @Nullable Entity entity
+    ) {
+        return getSoundType(lastActionLocation, false);
+    }
+
+    public SoundType getSoundType(
+            Vec3 position,
+            boolean setLocation
+    ) {
+        if (setLocation)
+            lastActionLocation = position;
+        MaterialShapeFace face = getNearestFace(position);
+        if (face == null)
+            return this.soundType;
+        Material material = face.getMaterial();
+        if (material == null)
+            return this.soundType;
+        return material.getSoundType();
     }
 
     public abstract boolean rotateFromViewDirection(Vec3 viewDirection, boolean clockwise);
