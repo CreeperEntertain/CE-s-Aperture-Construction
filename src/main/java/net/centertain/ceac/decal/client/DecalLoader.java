@@ -36,14 +36,13 @@ public final class DecalLoader {
         ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
         Map<String, DecalPack> packs = new HashMap<>();
 
-        for (PackResources resourcePack : resourceManager.listPacks().toList()) {
+        for (PackResources resourcePack : resourceManager.listPacks().toList())
             resourcePack.listResources(
                     PackType.CLIENT_RESOURCES,
                     "ceac",
                     "textures/decal",
                     (location, resource) -> extracted(resourcePack, location, packs)
             );
-        }
 
         decals.addAll(packs.values());
         for (DecalPack pack : decals)
