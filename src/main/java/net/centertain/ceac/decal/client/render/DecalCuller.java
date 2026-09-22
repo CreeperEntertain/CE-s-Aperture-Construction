@@ -15,10 +15,9 @@ public final class DecalCuller {
             Vec3 cameraPosition
     ) {
         Map<UUID, Decal> result = new HashMap<>();
-        for (Map.Entry<UUID, Decal> entry : decals.entrySet()) {
+        for (Map.Entry<UUID, Decal> entry : decals.entrySet())
             if (isInsideFrustum(entry.getValue(), viewProjection, cameraPosition))
                 result.put(entry.getKey(), entry.getValue());
-        }
         return result;
     }
 
@@ -28,10 +27,9 @@ public final class DecalCuller {
             Vec3 cameraPosition
     ) {
         List<Decal> result = new ArrayList<>();
-        for (Decal decal : decals) {
+        for (Decal decal : decals)
             if (isInsideFrustum(decal, viewProjection, cameraPosition))
                 result.add(decal);
-        }
         return result;
     }
 
@@ -58,40 +56,35 @@ public final class DecalCuller {
 
         float[][] planes = {
                 {
-                        viewProjection.m03() + viewProjection.m00(),
-                        viewProjection.m13() + viewProjection.m10(),
-                        viewProjection.m23() + viewProjection.m20(),
-                        viewProjection.m33() + viewProjection.m30()
-                },
-                {
-                        viewProjection.m03() - viewProjection.m00(),
-                        viewProjection.m13() - viewProjection.m10(),
-                        viewProjection.m23() - viewProjection.m20(),
-                        viewProjection.m33() - viewProjection.m30()
-                },
-                {
-                        viewProjection.m03() + viewProjection.m01(),
-                        viewProjection.m13() + viewProjection.m11(),
-                        viewProjection.m23() + viewProjection.m21(),
-                        viewProjection.m33() + viewProjection.m31()
-                },
-                {
-                        viewProjection.m03() - viewProjection.m01(),
-                        viewProjection.m13() - viewProjection.m11(),
-                        viewProjection.m23() - viewProjection.m21(),
-                        viewProjection.m33() - viewProjection.m31()
-                },
-                {
-                        viewProjection.m03() + viewProjection.m02(),
-                        viewProjection.m13() + viewProjection.m12(),
-                        viewProjection.m23() + viewProjection.m22(),
-                        viewProjection.m33() + viewProjection.m32()
-                },
-                {
-                        viewProjection.m03() - viewProjection.m02(),
-                        viewProjection.m13() - viewProjection.m12(),
-                        viewProjection.m23() - viewProjection.m22(),
-                        viewProjection.m33() - viewProjection.m32()
+                    viewProjection.m03() + viewProjection.m00(),
+                    viewProjection.m13() + viewProjection.m10(),
+                    viewProjection.m23() + viewProjection.m20(),
+                    viewProjection.m33() + viewProjection.m30()
+                }, {
+                    viewProjection.m03() - viewProjection.m00(),
+                    viewProjection.m13() - viewProjection.m10(),
+                    viewProjection.m23() - viewProjection.m20(),
+                    viewProjection.m33() - viewProjection.m30()
+                }, {
+                    viewProjection.m03() + viewProjection.m01(),
+                    viewProjection.m13() + viewProjection.m11(),
+                    viewProjection.m23() + viewProjection.m21(),
+                    viewProjection.m33() + viewProjection.m31()
+                }, {
+                    viewProjection.m03() - viewProjection.m01(),
+                    viewProjection.m13() - viewProjection.m11(),
+                    viewProjection.m23() - viewProjection.m21(),
+                    viewProjection.m33() - viewProjection.m31()
+                }, {
+                    viewProjection.m03() + viewProjection.m02(),
+                    viewProjection.m13() + viewProjection.m12(),
+                    viewProjection.m23() + viewProjection.m22(),
+                    viewProjection.m33() + viewProjection.m32()
+                }, {
+                    viewProjection.m03() - viewProjection.m02(),
+                    viewProjection.m13() - viewProjection.m12(),
+                    viewProjection.m23() - viewProjection.m22(),
+                    viewProjection.m33() - viewProjection.m32()
                 }
         };
 
@@ -143,10 +136,9 @@ public final class DecalCuller {
 
         List<Decal> result = new ArrayList<>();
 
-        for (int i = 0; i < decals.size(); ++i) {
+        for (int i = 0; i < decals.size(); ++i)
             if (visible[i])
                 result.add(decals.get(i));
-        }
 
         return result;
     }
