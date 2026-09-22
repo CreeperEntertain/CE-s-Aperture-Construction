@@ -15,8 +15,8 @@ public final class MaterialShapeSoundEvents {
     private MaterialShapeSoundEvents() {}
 
     public static void handleSoundEvents(PlayLevelSoundEvent.AtEntity event) {
-        if (topSoundHandling(event))
-            return;
+        if (topSoundHandling(event)) return;
+        if (digSoundHandling(event)) return;
     }
 
     private static boolean topSoundHandling(PlayLevelSoundEvent.AtEntity event) {
@@ -50,6 +50,10 @@ public final class MaterialShapeSoundEvents {
         event.setSound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound));
         event.setNewPitch(soundType.pitch);
 
+        return true;
+    }
+
+    private static boolean digSoundHandling(PlayLevelSoundEvent.AtEntity event) {
         return true;
     }
 }
