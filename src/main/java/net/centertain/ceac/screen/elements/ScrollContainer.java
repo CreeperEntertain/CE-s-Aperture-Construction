@@ -94,8 +94,7 @@ public class ScrollContainer implements Renderable, GuiEventListener {
     }
 
     @Override
-    public void setFocused(boolean focused) {
-    }
+    public void setFocused(boolean focused) {}
 
     @Override
     public boolean isFocused() {
