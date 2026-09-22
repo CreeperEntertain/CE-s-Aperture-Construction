@@ -109,9 +109,8 @@ public final class DecalRenderer {
         if (opaqueDepthTarget == null) {
             opaqueDepthTarget = new TextureTarget(width, height, true, Minecraft.ON_OSX);
             opaqueDepthTarget.resize(width, height, true);
-        } else if (opaqueDepthTarget.width != width || opaqueDepthTarget.height != height) {
+        } else if (opaqueDepthTarget.width != width || opaqueDepthTarget.height != height)
             opaqueDepthTarget.resize(width, height, true);
-        }
         opaqueDepthTarget.copyDepthFrom(mainTarget);
 
         mainTarget.bindWrite(false);
@@ -129,8 +128,8 @@ public final class DecalRenderer {
     ) {
         if (
                 opaqueLightmapDepthTexture != 0 &&
-                        opaqueLightmapDepthWidth == width &&
-                        opaqueLightmapDepthHeight == height
+                opaqueLightmapDepthWidth == width &&
+                opaqueLightmapDepthHeight == height
         )
             return;
 
@@ -190,9 +189,8 @@ public final class DecalRenderer {
             opaqueLightmapTarget = new TextureTarget(width, height, false, Minecraft.ON_OSX);
             opaqueLightmapTarget.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             opaqueLightmapTarget.resize(width, height, true);
-        } else if (opaqueLightmapTarget.width != width || opaqueLightmapTarget.height != height) {
+        } else if (opaqueLightmapTarget.width != width || opaqueLightmapTarget.height != height)
             opaqueLightmapTarget.resize(width, height, true);
-        }
 
         opaqueLightmapTarget.bindWrite(false);
         opaqueLightmapTarget.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -227,9 +225,8 @@ public final class DecalRenderer {
             decalCoverageTarget = new TextureTarget(width, height, true, Minecraft.ON_OSX);
             decalCoverageTarget.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             decalCoverageTarget.resize(width, height, true);
-        } else if (decalCoverageTarget.width != width || decalCoverageTarget.height != height) {
+        } else if (decalCoverageTarget.width != width || decalCoverageTarget.height != height)
             decalCoverageTarget.resize(width, height, true);
-        }
     }
 
     public static void render(RenderLevelStageEvent event) {
@@ -424,9 +421,7 @@ public final class DecalRenderer {
 
             GL15.glBufferData(
                     GL15.GL_ARRAY_BUFFER,
-                    (long) decalInstanceCapacity *
-                            10L *
-                            Float.BYTES,
+                    (long) decalInstanceCapacity * 10L * Float.BYTES,
                     GL15.GL_DYNAMIC_DRAW
             );
         }
@@ -438,13 +433,12 @@ public final class DecalRenderer {
                 Vec3 origin = decal.getOrigin();
                 Vec3 normal = decal.getNormal();
 
-                Vector4f transformed =
-                        new Vector4f(
-                                (float)(origin.x - cameraPosition.x),
-                                (float)(origin.y - cameraPosition.y),
-                                (float)(origin.z - cameraPosition.z),
-                                1.0f
-                        );
+                Vector4f transformed = new Vector4f(
+                        (float)(origin.x - cameraPosition.x),
+                        (float)(origin.y - cameraPosition.y),
+                        (float)(origin.z - cameraPosition.z),
+                        1.0f
+                );
 
                 transformed.mul(decalPoseMat);
 
