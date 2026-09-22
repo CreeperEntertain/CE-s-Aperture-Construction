@@ -157,9 +157,8 @@ public final class Decal {
 
         ListTag blocks = new ListTag();
 
-        for (BlockPos pos : attachedBlocks) {
+        for (BlockPos pos : attachedBlocks)
             blocks.add(NbtUtils.writeBlockPos(pos));
-        }
 
         tag.put("AttachedBlocks", blocks);
 
@@ -226,9 +225,8 @@ public final class Decal {
         Set<BlockPos> attachedBlocks = new HashSet<>();
         if (tag.contains("AttachedBlocks", Tag.TAG_LIST)) {
             ListTag blocks = tag.getList("AttachedBlocks", Tag.TAG_COMPOUND);
-            for (int i = 0; i < blocks.size(); i++) {
+            for (int i = 0; i < blocks.size(); i++)
                 attachedBlocks.add(NbtUtils.readBlockPos(blocks.getCompound(i)));
-            }
         }
 
         return new Decal(
