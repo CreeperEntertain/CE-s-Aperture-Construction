@@ -25,12 +25,8 @@ public abstract class GameRendererMixin implements GameRendererViewOffsetAccesso
             ),
             index = 0
     )
-    private PoseStack ceac$captureProjectionBeforeViewOffset(
-            PoseStack poseStack
-    ) {
-        ceac$projectionBeforeViewOffset =
-                new Matrix4f(poseStack.last().pose());
-
+    private PoseStack ceac$captureProjectionBeforeViewOffset(PoseStack poseStack) {
+        ceac$projectionBeforeViewOffset = new Matrix4f(poseStack.last().pose());
         return poseStack;
     }
 
@@ -42,11 +38,8 @@ public abstract class GameRendererMixin implements GameRendererViewOffsetAccesso
             ),
             index = 7
     )
-    private Matrix4f ceac$captureProjectionAfterViewOffset(
-            Matrix4f projectionMatrix
-    ) {
+    private Matrix4f ceac$captureProjectionAfterViewOffset(Matrix4f projectionMatrix) {
         ceac$projectionAfterViewOffset = new Matrix4f(projectionMatrix);
-
         return projectionMatrix;
     }
 
