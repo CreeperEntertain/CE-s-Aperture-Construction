@@ -1,9 +1,11 @@
 package net.centertain.ceac.material;
 
+import net.centertain.ceac.block.custom.MaterialShape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
@@ -92,9 +94,13 @@ public abstract class Material {
     }
     public Vector2i getCoordinate(
             MaterialShapeFace face,
-            BlockPos pos
+            BlockPos pos,
+            BlockState state
     ) {
-        List<Vec3> vertices = face.getVertices();
+        MaterialShape shape = face.getOwner();
+        
+        List<Vec3> vertices = face.getVertices().stream()
+                .map(vertex -> shape.transformPointToWorld(state, vertex)).toList();
 
         Vec3 a = vertices.get(0);
         Vec3 b = vertices.get(1);

@@ -160,7 +160,7 @@ public abstract class MatItem extends Item {
             return;
         }
 
-        Vector2i materialCoordinate = material.get().getCoordinate(face, pos);
+        Vector2i materialCoordinate = material.get().getCoordinate(face, pos, state);
 
         MaterialPreviewer.update(
                 material.get(),
@@ -208,7 +208,7 @@ public abstract class MatItem extends Item {
         if (!shape.canApplyMaterial(state, face, context.getItemInHand()))
             return InteractionResult.PASS;
 
-        Vector2i materialCoordinate = material.get().getCoordinate(face, pos);
+        Vector2i materialCoordinate = material.get().getCoordinate(face, pos, state);
 
         if (!level.isClientSide)
             serverSide(

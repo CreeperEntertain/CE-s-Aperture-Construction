@@ -2,6 +2,7 @@ package net.centertain.ceac.material;
 
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
@@ -40,12 +41,13 @@ public class MaterialShapeFace {
 
     public void setMaterial(
             @Nullable Material material,
-            BlockPos pos
+            BlockPos pos,
+            BlockState state
     ) {
         this.material = material;
         this.materialCoordinate = material == null
                 ? new Vector2i(0, 0)
-                : material.getCoordinate(this, pos);
+                : material.getCoordinate(this, pos, state);
     }
     public boolean setMaterialCoordinate(Vector2i materialCoordinate) {
         if (material == null)
