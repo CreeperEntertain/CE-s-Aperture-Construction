@@ -5,6 +5,7 @@ import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.centertain.ceac.decal.server.DecalBreakage;
 import net.centertain.ceac.material.MaterialPlacement;
+import net.centertain.ceac.material.MaterialShapeSoundEvents;
 import net.centertain.ceac.material.utility.MaterialShapeSelectionOutline;
 import net.centertain.ceac.utility.Soundworks;
 import net.minecraft.client.Minecraft;
@@ -14,6 +15,7 @@ import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderHighlightEvent;
 import net.minecraftforge.event.GameShuttingDownEvent;
+import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -95,5 +97,10 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void renderSelection(RenderHighlightEvent.Block event) {
         MaterialShapeSelectionOutline.replaceSelectionOutline(event);
+    }
+
+    @SubscribeEvent
+    public static void onPlayLevelSound(PlayLevelSoundEvent.AtEntity event) {
+        MaterialShapeSoundEvents.handleSoundEvents(event);
     }
 }
