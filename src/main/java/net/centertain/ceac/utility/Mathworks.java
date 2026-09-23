@@ -22,4 +22,11 @@ public final class Mathworks {
                 level.random.triangle(0.0D, 0.1148500017118454D)
         );
     }
+
+    public static boolean isVec3InRange(Vec3 a, Vec3 b, double epsilon) {
+        boolean dx = Math.abs(a.x - b.x) <= epsilon;
+        boolean dy = Math.abs(a.y - b.y) <= epsilon;
+        boolean dz = Math.abs(a.z - b.z) <= epsilon;
+        return dx && dy && dz;
+    }
 }
