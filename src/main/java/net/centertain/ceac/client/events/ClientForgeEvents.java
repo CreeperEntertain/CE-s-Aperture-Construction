@@ -14,6 +14,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderHighlightEvent;
+import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.TickEvent;
@@ -100,7 +101,12 @@ public class ClientForgeEvents {
     }
 
     @SubscribeEvent
-    public static void onPlayLevelSound(PlayLevelSoundEvent.AtEntity event) {
-        MaterialShapeSoundEvents.handleSoundEvents(event);
+    public static void onPlayLevelSound(PlayLevelSoundEvent event) {
+        MaterialShapeSoundEvents.handleLevelSoundEvents(event);
+    }
+
+    @SubscribeEvent
+    public static void onPlaySound(PlaySoundEvent event) {
+        MaterialShapeSoundEvents.handleGeneralSoundEvents(event);
     }
 }
