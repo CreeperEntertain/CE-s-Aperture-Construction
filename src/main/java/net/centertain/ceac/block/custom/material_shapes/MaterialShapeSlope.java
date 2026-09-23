@@ -1,40 +1,27 @@
 package net.centertain.ceac.block.custom.material_shapes;
 
-import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.block.custom.MaterialShapeRotatable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.Map;
 
-public class MaterialShapeSlope extends MaterialShape {
+public class MaterialShapeSlope extends MaterialShapeRotatable {
     private static final Map<Direction, VoxelShape[]> SHAPES = makeShapes();
-    public static DirectionProperty FACING = BlockStateProperties.FACING;
-    public static IntegerProperty ROTATION = IntegerProperty.create("rotation", 0, 3);
 
     public MaterialShapeSlope(Properties properties) {
         super(
                 null,
                 10.0,
                 properties
-        );
-        registerDefaultState(getStateDefinition().any()
-                .setValue(FACING, Direction.WEST)
-                .setValue(ROTATION, 0)
         );
     }
 
@@ -73,13 +60,11 @@ public class MaterialShapeSlope extends MaterialShape {
                 facing.getStepY(),
                 facing.getStepZ()
         };
-
         int[] xAxis = {
                 -forward[0],
                 -forward[1],
                 -forward[2]
         };
-
         int[] up = switch (facing) {
             case UP -> new int[]{0, 0, -1};
             case DOWN -> new int[]{0, 0, 1};
@@ -105,17 +90,14 @@ public class MaterialShapeSlope extends MaterialShape {
 
             Result result = getResult(x, height, xAxis, up, zAxis, minX, minY, minZ, maxX, maxY, maxZ);
 
-            shape = Shapes.or(
-                    shape,
-                    Block.box(
-                            result.minX(),
-                            result.minY(),
-                            result.minZ(),
-                            result.maxX(),
-                            result.maxY(),
-                            result.maxZ()
-                    )
-            );
+            shape = Shapes.or(shape, Block.box(
+                    result.minX,
+                    result.minY,
+                    result.minZ,
+                    result.maxX,
+                    result.maxY,
+                    result.maxZ
+            ));
         }
 
         return shape;
@@ -125,8 +107,8 @@ public class MaterialShapeSlope extends MaterialShape {
             int x, int height, int[] xAxis, int[] up, int[] zAxis,
             int minX, int minY, int minZ, int maxX, int maxY, int maxZ
     ) {
-        for (int dx = 0; dx <= 1; dx++) {
-            for (int dy = 0; dy <= 1; dy++) {
+        for (int dx = 0; dx <= 1; dx++)
+            for (int dy = 0; dy <= 1; dy++)
                 for (int dz = 0; dz <= 1; dz++) {
                     int localX = x + dx;
                     int localY = dy * height;
@@ -140,12 +122,10 @@ public class MaterialShapeSlope extends MaterialShape {
                             + xAxis[0] * relativeX
                             + up[0] * relativeY
                             + zAxis[0] * relativeZ;
-
                     int worldY = 8
                             + xAxis[1] * relativeX
                             + up[1] * relativeY
                             + zAxis[1] * relativeZ;
-
                     int worldZ = 8
                             + xAxis[2] * relativeX
                             + up[2] * relativeY
@@ -158,8 +138,7 @@ public class MaterialShapeSlope extends MaterialShape {
                     maxY = Math.max(maxY, worldY);
                     maxZ = Math.max(maxZ, worldZ);
                 }
-            }
-        }
+
         return new Result(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
@@ -206,100 +185,4 @@ public class MaterialShapeSlope extends MaterialShape {
                 a[1] * b[1] +
                 a[2] * b[2];
     }
-
-    @Override protected void createBlockStateDefinition(
-            @NotNull StateDefinition.Builder<Block, BlockState> builder
-    ) {
-        builder.add(FACING, ROTATION);
-    }
-
-    @Override
-    public @Nullable BlockState getStateForPlacement(
-            @NotNull BlockPlaceContext context
-    ) {
-        return defaultBlockState()
-                .setValue(FACING, context.getNearestLookingDirection().getOpposite())
-                .setValue(ROTATION, 0);
-    }
-
-
-
-    @Override
-    public Vec3 transformPointToLocal(
-            BlockState state,
-            Vec3 point
-    ) {
-        Basis basis = getBasis(state);
-        Vec3 local = point.subtract(0.5, 0.5, 0.5);
-
-        return new Vec3(
-                local.dot(basis.x()),
-                local.dot(basis.y()),
-                local.dot(basis.z())
-        ).add(0.5, 0.5, 0.5);
-    }
-
-    @Override
-    public Vec3 transformDirectionToLocal(
-            BlockState state,
-            Vec3 direction
-    ) {
-        Basis basis = getBasis(state);
-
-        return new Vec3(
-                direction.dot(basis.x()),
-                direction.dot(basis.y()),
-                direction.dot(basis.z())
-        );
-    }
-
-    @Override
-    public Vec3 transformPointToWorld(
-            BlockState state,
-            Vec3 point
-    ) {
-        Basis basis = getBasis(state);
-        Vec3 local = point.subtract(0.5, 0.5, 0.5);
-
-        return new Vec3(0.5, 0.5, 0.5)
-                .add(basis.x().scale(local.x))
-                .add(basis.y().scale(local.y))
-                .add(basis.z().scale(local.z));
-    }
-
-    @Override
-    public boolean rotateFromViewDirection(Vec3 viewDirection, boolean clockwise) {
-        return false;
-    }
-
-    private Basis getBasis(BlockState state) {
-        Direction facing = state.getValue(FACING);
-        int rotation = state.getValue(ROTATION);
-
-        Vec3 forward = new Vec3(
-                facing.getStepX(),
-                facing.getStepY(),
-                facing.getStepZ()
-        );
-
-        Vec3 x = forward.scale(-1.0);
-        Vec3 y = switch (facing) {
-            case UP -> new Vec3(0, 0, -1);
-            case DOWN -> new Vec3(0, 0, 1);
-            default -> new Vec3(0, 1, 0);
-        };
-
-        for (int i = 0; i < rotation; i++)
-            y = y.cross(forward).add(forward.scale(y.dot(forward)));
-
-        Vec3 z = y.cross(forward).normalize();
-
-        return new Basis(x, y, z);
-    }
-
-    private record Basis(
-            Vec3 x,
-            Vec3 y,
-            Vec3 z
-    ) {}
 }
