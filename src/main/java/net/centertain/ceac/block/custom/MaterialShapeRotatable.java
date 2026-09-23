@@ -60,6 +60,8 @@ public abstract class MaterialShapeRotatable extends MaterialShape {
 
             for (int rotation = 0; rotation < 4; rotation++)
                 rotations[rotation] = makeShape(facing, rotation);
+
+            shapes.put(facing, rotations);
         }
 
         return Map.copyOf(shapes);
