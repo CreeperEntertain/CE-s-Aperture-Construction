@@ -144,14 +144,14 @@ public abstract class MatItem extends Item {
                 false
         );
         if (!(hit instanceof BlockHitResult blockHit)) {
-            MaterialPreviewer.destroy();
+            MaterialPlacement.forceCleanup();
             return;
         }
 
         BlockPos pos = blockHit.getBlockPos();
         BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof MaterialShape shape)) {
-            MaterialPreviewer.destroy();
+            MaterialPlacement.forceCleanup();
             return;
         }
 
@@ -173,7 +173,7 @@ public abstract class MatItem extends Item {
                 player.getBlockReach()
         );
         if (face == null) {
-            MaterialPreviewer.destroy();
+            MaterialPlacement.forceCleanup();
             return;
         }
 

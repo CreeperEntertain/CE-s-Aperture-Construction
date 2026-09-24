@@ -32,7 +32,10 @@ public class ClientForgeEvents {
     public static void onClientTick(final TickEvent.ClientTickEvent event) {
         Soundworks.playLocalStereoSounds(event);
 
-        TranslucentRenderTargets.onTick(event);
+        if (event.phase != TickEvent.Phase.END)
+            return;
+
+        TranslucentRenderTargets.onTick();
 
         DecalPlacement.previewClearing();
         MaterialPlacement.previewClearing();

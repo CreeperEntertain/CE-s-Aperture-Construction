@@ -19,9 +19,7 @@ public final class TranslucentRenderTargets {
         TranslucentKBuffer.init(width, height);
     }
 
-    public static void onTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END)
-            return;
+    public static void onTick() {
         Minecraft minecraft = Minecraft.getInstance();
         int width = minecraft.getWindow().getWidth();
         int height = minecraft.getWindow().getHeight();
