@@ -108,8 +108,52 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape {
             Vec3 viewDirection,
             boolean clockwise
     ) {
-        // TODO: Rotation behavior
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() != this)
+            return false;
+        if (viewDirection.lengthSqr() < 1.0e-8)
+            return false;
+
+        Vec3 axis = viewDirection.normalize();
+        double angle = clockwise ? -Math.PI / 2.0 : Math.PI / 2.0;
+
+        Basis current = getBasis(state);
+
+        Vec3 targetX = rotateVector(current.x, axis, angle);
+        Vec3 targetY = rotateVector(current.y, axis, angle);
+        Vec3 targetZ = rotateVector(current.z, axis, angle);
+
+        BlockState bestState = state;
+        double bestScore = -Double.MAX_VALUE;
+
+        for (Direction facing : Direction.values())
+            for (int rotation = 0; rotation < 4; rotation++) {
+                BlockState candidate = state.setValue(FACING, facing).setValue(ROTATION, rotation);
+                Basis basis = getBasis(candidate);
+
+                double score =
+                        targetX.dot(basis.x) +
+                        targetY.dot(basis.y) +
+                        targetZ.dot(basis.z);
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestState = candidate;
+                }
+            }
+
+        if (bestState == state)
+            return false;
+
+        level.setBlock(pos, bestState, 3);
         return true;
+    }
+
+    private static Vec3 rotateVector(Vec3 vector, Vec3 axis, double angle) {
+        return vector
+                .scale(Math.cos(angle))
+                .add(axis.cross(vector).scale(Math.sin(angle)))
+                .add(axis.scale(axis.dot(vector) * (1.0 - Math.cos(angle))));
     }
 
     private Basis getBasis(BlockState state) {
