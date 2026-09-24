@@ -69,7 +69,7 @@ public class WrenchItem extends Item {
                 level,
                 pos,
                 lookVector,
-                !serverPlayer.isCrouching()
+                serverPlayer.isCrouching()
         );
         if (success) {
             stack.hurtAndBreak(1, serverPlayer, p -> p.broadcastBreakEvent(hand));

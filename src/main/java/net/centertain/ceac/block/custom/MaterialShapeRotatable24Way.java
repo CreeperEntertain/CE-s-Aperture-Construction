@@ -106,7 +106,7 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape {
             Level level,
             BlockPos pos,
             Vec3 viewDirection,
-            boolean clockwise
+            boolean counterclockwise
     ) {
         BlockState state = level.getBlockState(pos);
         if (state.getBlock() != this)
@@ -115,7 +115,7 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape {
             return false;
 
         Vec3 axis = viewDirection.normalize();
-        double angle = clockwise ? -Math.PI / 2.0 : Math.PI / 2.0;
+        double angle = counterclockwise ? -Math.PI / 2.0 : Math.PI / 2.0;
 
         Basis current = getBasis(state);
 
