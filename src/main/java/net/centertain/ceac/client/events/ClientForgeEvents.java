@@ -8,8 +8,6 @@ import net.centertain.ceac.material.MaterialPlacement;
 import net.centertain.ceac.material.MaterialShapeSoundEvents;
 import net.centertain.ceac.material.utility.MaterialShapeSelectionOutline;
 import net.centertain.ceac.utility.Soundworks;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
@@ -34,26 +32,13 @@ public class ClientForgeEvents {
     public static void onClientTick(final TickEvent.ClientTickEvent event) {
         Soundworks.playLocalStereoSounds(event);
 
-        // Translucent target resizing
         if (event.phase != TickEvent.Phase.END)
             return;
-        Minecraft minecraft = Minecraft.getInstance();
-        int width = minecraft.getWindow().getWidth();
-        int height = minecraft.getWindow().getHeight();
-        TranslucentRenderTargets.resize(width, height);
 
-        // Decal preview clearing
-        Player player = minecraft.player;
-        if (player == null) {
-            DecalPlacement.decalItemPresent = false;
-            DecalPlacement.decalItemSeenThisTick = false;
-            DecalPlacement.forceCleanup();
-            return;
-        }
-        if (DecalPlacement.decalItemPresent && !DecalPlacement.decalItemSeenThisTick)
-            DecalPlacement.forceCleanup();
-        DecalPlacement.decalItemPresent = DecalPlacement.decalItemSeenThisTick;
-        DecalPlacement.decalItemSeenThisTick = false;
+        TranslucentRenderTargets.onTick();
+
+        DecalPlacement.previewClearing();
+        MaterialPlacement.previewClearing();
     }
 
     @SubscribeEvent
