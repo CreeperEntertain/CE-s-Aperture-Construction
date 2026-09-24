@@ -6,8 +6,6 @@ import net.centertain.ceac.material.ModMaterials;
 public class ExampleMatItem extends MatItem {
     public ExampleMatItem(Properties properties) {
         super(
-                null,
-                0.0,
                 properties,
                 ModMaterials.EXAMPLE
         );
