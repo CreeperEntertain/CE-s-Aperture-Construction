@@ -349,8 +349,7 @@ public final class MaterialPreviewer {
             int deltaX = coordinate.x - materialCoordinate.x;
             int deltaY = coordinate.y - materialCoordinate.y;
 
-            Vec3 offset = uAxis.scale(deltaX * getMaterialUDirection(projection))
-                    .add(vAxis.scale(deltaY * getMaterialVDirection(projection)));
+            Vec3 offset = uAxis.scale(deltaX).add(vAxis.scale(deltaY));
 
             int alpha = coordinate.equals(materialCoordinate)
                     ? SELECTED_ALPHA
@@ -397,18 +396,6 @@ public final class MaterialPreviewer {
         return origin
                 .add(uAxis.scale(u - originU))
                 .add(vAxis.scale(v - originV));
-    }
-
-    private static double getMaterialUDirection(Direction direction) {
-        return direction == Direction.DOWN
-                ? 1.0
-                : -1.0;
-    }
-
-    private static double getMaterialVDirection(Direction direction) {
-        return direction == Direction.UP
-                ? -1.0
-                : 1.0;
     }
 
     private static void putVertex(
