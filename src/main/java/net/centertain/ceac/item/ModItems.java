@@ -2,6 +2,7 @@ package net.centertain.ceac.item;
 
 import net.centertain.ceac.item.custom.*;
 import net.centertain.ceac.item.custom.materials.ExampleMatItem;
+import net.centertain.ceac.item.custom.materials.MultiExampleMatItem;
 import net.centertain.ceac.item.custom.materials.ObservationConcreteWallMatItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -27,6 +28,8 @@ public final class ModItems {
             () -> new ExampleMatItem(new Item.Properties()));
     public static final RegistryObject<Item> OBSERVATION_CONCRETE_WALL = ITEMS.register("observation_concrete_wall",
             () -> new ObservationConcreteWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> MULTI_EXAMPLE = ITEMS.register("multi_example",
+            () -> new MultiExampleMatItem(new Item.Properties()));
 
 
     private ModItems() {}

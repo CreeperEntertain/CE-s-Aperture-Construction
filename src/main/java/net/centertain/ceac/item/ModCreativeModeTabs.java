@@ -29,6 +29,7 @@ public final class ModCreativeModeTabs {
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_SLOPE.get());
 
                         pOutput.accept(ModItems.EXAMPLE.get());
+                        pOutput.accept(ModItems.MULTI_EXAMPLE.get());
                         pOutput.accept(ModItems.OBSERVATION_CONCRETE_WALL.get());
                     })
                     .build()
