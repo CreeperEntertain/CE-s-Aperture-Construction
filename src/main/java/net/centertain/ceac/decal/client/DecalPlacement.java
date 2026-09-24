@@ -10,6 +10,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.InputEvent;
 import org.jetbrains.annotations.Nullable;
@@ -152,12 +153,17 @@ public final class DecalPlacement {
         Player player = minecraft.player;
         if (player == null)
             return;
-        boolean mainHand = player.getMainHandItem().getItem() instanceof DecalItem;
-        boolean offHand = player.getOffhandItem().getItem() instanceof DecalItem;
-        if (!mainHand && !offHand)
+        ItemStack stack;
+        if (player.getMainHandItem().getItem() instanceof DecalItem)
+            stack = player.getMainHandItem();
+        else if (player.getOffhandItem().getItem() instanceof DecalItem)
+            stack = player.getOffhandItem();
+        else
             return;
-        event.setCanceled(true);
+        if (stack.getOrCreateTag().getString("SelectedTexture").isEmpty())
+            return;
 
+        event.setCanceled(true);
         precisePlacement = !precisePlacement;
     }
     public static void rotateAbstraction(InputEvent.MouseScrollingEvent event) {
