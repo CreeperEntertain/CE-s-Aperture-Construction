@@ -20,6 +20,8 @@ public final class ModItems {
             () -> new DecalItem(new Item.Properties()));
     public static final RegistryObject<Item> SCRAPER = ITEMS.register("scraper",
             () -> new ScraperItem(new Item.Properties()));
+    public static final RegistryObject<Item> WRENCH = ITEMS.register("wrench",
+            () -> new WrenchItem(new Item.Properties()));
 
     public static final RegistryObject<Item> EXAMPLE = ITEMS.register("example",
             () -> new ExampleMatItem(new Item.Properties()));
