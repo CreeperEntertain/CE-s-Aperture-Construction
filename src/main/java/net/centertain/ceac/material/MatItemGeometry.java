@@ -59,7 +59,7 @@ public class MatItemGeometry implements IUnbakedGeometry<MatItemGeometry> {
         // One plane, we like to keep it down low
         float z = 0.5f;
 
-        List<BakedQuad> quads = new ArrayList<>(width * height);
+        List<BakedQuad> quads = new ArrayList<>(width * height * 2);
 
         for (int y = 0; y < height; y++) {
             float y0 = bottom + y * fit;
@@ -69,20 +69,37 @@ public class MatItemGeometry implements IUnbakedGeometry<MatItemGeometry> {
                 float x0 = left + x * fit;
                 float x1 = x0 + fit;
 
-                ResourceLocation texture = material.getTexture(new Vector2i(x, y));
-                if (texture == null)
+                ResourceLocation frontTexture = material.getTexture(new Vector2i(x, y));
+                if (frontTexture == null)
                     continue;
 
-                TextureAtlasSprite sprite = sprites.apply(
+                TextureAtlasSprite frontSprite = sprites.apply(
                         context.getMaterial("layer" + (y * width + x))
                 );
 
                 quads.add(MaterialShapeHelper.quad(
-                        sprite,
+                        frontSprite,
                         MaterialShapeHelper.vertex(x0, y0, z, 0.0F, 1.0F),
                         MaterialShapeHelper.vertex(x1, y0, z, 1.0F, 1.0F),
                         MaterialShapeHelper.vertex(x1, y1, z, 1.0F, 0.0F),
                         MaterialShapeHelper.vertex(x0, y1, z, 0.0F, 0.0F)
+                ));
+
+                int backX = width - 1 - x;
+                ResourceLocation backTexture = material.getTexture(new Vector2i(backX, y));
+                if (backTexture == null)
+                    continue;
+
+                TextureAtlasSprite backSprite = sprites.apply(
+                        context.getMaterial("layer" + (y * width + backX))
+                );
+
+                quads.add(MaterialShapeHelper.quad(
+                        backSprite,
+                        MaterialShapeHelper.vertex(x0, y0, z, 1.0F, 1.0F),
+                        MaterialShapeHelper.vertex(x0, y1, z, 1.0F, 0.0F),
+                        MaterialShapeHelper.vertex(x1, y1, z, 0.0F, 0.0F),
+                        MaterialShapeHelper.vertex(x1, y0, z, 0.0F, 1.0F)
                 ));
             }
         }
