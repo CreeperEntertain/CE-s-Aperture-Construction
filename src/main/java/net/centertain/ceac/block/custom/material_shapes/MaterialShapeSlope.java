@@ -20,7 +20,7 @@ public class MaterialShapeSlope extends MaterialShapeRotatable {
     public MaterialShapeSlope(Properties properties) {
         super(
                 null,
-                10.0,
+                null,
                 properties
         );
     }

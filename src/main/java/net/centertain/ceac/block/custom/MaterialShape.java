@@ -46,7 +46,7 @@ public abstract class MaterialShape extends Block implements EntityBlock {
 
     protected MaterialShape(
             @Nullable String category,
-            double price,
+            @Nullable Double price,
             Properties properties
     ) {
         super(properties
@@ -56,7 +56,9 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         this.category = category == null
                 ? "Material Shapes"
                 : category;
-        this.price = price;
+        this.price = price == null
+                ? 10.0
+                : price;
     }
 
     public final List<MaterialShapeFace> getFaces() {

@@ -7,7 +7,7 @@ public class MaterialShapeBlock extends MaterialShape {
     public MaterialShapeBlock(Properties properties) {
         super(
                 null,
-                10.0,
+                null,
                 properties
         );
     }

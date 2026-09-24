@@ -18,7 +18,7 @@ public abstract class MaterialShapeRotatable extends MaterialShape {
 
     public MaterialShapeRotatable(
             @Nullable String category,
-            double price,
+            @Nullable Double price,
             Properties properties
     ) {
         super(
