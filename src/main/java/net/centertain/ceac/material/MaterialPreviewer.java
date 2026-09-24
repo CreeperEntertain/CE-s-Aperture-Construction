@@ -443,7 +443,8 @@ public final class MaterialPreviewer {
     private static double getTextureV(Direction direction, Vec3 point) {
         return switch (direction) {
             case UP -> point.z;
-            case DOWN, NORTH, SOUTH, WEST, EAST -> 1.0 - point.y;
+            case DOWN -> 1.0 - point.z;
+            case NORTH, SOUTH, WEST, EAST -> 1.0 - point.y;
         };
     }
 }
