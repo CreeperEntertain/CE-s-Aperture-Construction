@@ -16,9 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -247,7 +245,91 @@ public final class MaterialPreviewer {
         if (uSize <= 1.0e-7 || vSize <= 1.0e-7)
             return false;
 
+        double[][] uv = new double[vertices.size()][2];
 
+        for (int i = 0; i < vertices.size(); i++) {
+            uv[i][0] = (getTextureU(projection, vertices.get(i)) - minU) / uSize;
+            uv[i][1] = (getTextureV(projection, vertices.get(i)) - minV) / vSize;
+        }
+
+        int i0 = -1;
+        int i1 = -1;
+        int i2 = -1;
+
+        for (int aIndex = 0; aIndex < vertices.size(); aIndex++)
+            for (int bIndex = aIndex + 1; bIndex < vertices.size(); bIndex++)
+                for (int cIndex = bIndex + 1; cIndex < vertices.size(); cIndex++) {
+                    double du1 = uv[bIndex][0] - uv[aIndex][0];
+                    double dv1 = uv[bIndex][1] - uv[aIndex][1];
+                    double du2 = uv[cIndex][0] - uv[aIndex][0];
+                    double dv2 = uv[cIndex][1] - uv[aIndex][1];
+
+                    double determinant = du1 * dv2 - du2 * dv1;
+
+                    if (Math.abs(determinant) > 1.0e-7) {
+                        i0 = aIndex;
+                        i1 = bIndex;
+                        i2 = cIndex;
+                        break;
+                    }
+                }
+
+        if (i0 < 0)
+            return false;
+
+        Vec3 p0 = vertices.get(i0);
+        Vec3 p1 = vertices.get(i1);
+        Vec3 p2 = vertices.get(i2);
+
+        double u0 = uv[i0][0];
+        double v0 = uv[i0][1];
+
+        double du1 = uv[i1][0] - u0;
+        double dv1 = uv[i1][1] - v0;
+        double du2 = uv[i2][0] - u0;
+        double dv2 = uv[i2][1] - v0;
+
+        double determinant = du1 * dv2 - du2 * dv1;
+
+        Vec3 delta1 = p1.subtract(p0);
+        Vec3 delta2 = p2.subtract(p0);
+
+        Vec3 uAxis = delta1.scale(dv2)
+                .subtract(delta2.scale(dv1))
+                .scale(1.0 / determinant);
+
+        Vec3 vAxis = delta2.scale(du1)
+                .subtract(delta1.scale(du2))
+                .scale(1.0 / determinant);
+
+        Vec3[] plane = {
+                getTexturePlanePoint(p0, u0, v0, uAxis, vAxis, 0.0, 0.0),
+                getTexturePlanePoint(p0, u0, v0, uAxis, vAxis, 1.0, 0.0),
+                getTexturePlanePoint(p0, u0, v0, uAxis, vAxis, 1.0, 1.0),
+                getTexturePlanePoint(p0, u0, v0, uAxis, vAxis, 0.0, 1.0)
+        };
+
+        double[][] planeUV = {
+                {0.0, 0.0},
+                {1.0, 0.0},
+                {1.0, 1.0},
+                {0.0, 1.0}
+        };
+
+        Vec3 planeNormal = plane[1]
+                .subtract(plane[0])
+                .cross(plane[2].subtract(plane[0]))
+                .normalize();
+
+        if (planeNormal.dot(normal) < 0.0) {
+            Vec3 tempPoint = plane[1];
+            plane[1] = plane[3];
+            plane[3] = tempPoint;
+
+            double[] tempUV = planeUV[1];
+            planeUV[1] = planeUV[3];
+            planeUV[3] = tempUV;
+        }
 
         poseStack.pushPose();
 
@@ -263,43 +345,11 @@ public final class MaterialPreviewer {
 
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());
 
-        for (int i = 1; i < vertices.size() - 1; i++) {
-            putVertex(
-                    consumer,
-                    pose,
-                    vertices.get(0),
-                    normal,
-                    projection,
-                    minU, minV, uSize, vSize,
-                    sprite
-            );
-            putVertex(
-                    consumer,
-                    pose,
-                    vertices.get(i),
-                    normal,
-                    projection,
-                    minU, minV, uSize, vSize,
-                    sprite
-            );
-            putVertex(
-                    consumer,
-                    pose,
-                    vertices.get(i + 1),
-                    normal,
-                    projection,
-                    minU, minV, uSize, vSize,
-                    sprite
-            );
-            putVertex(
-                    consumer,
-                    pose,
-                    vertices.get(0),
-                    normal,
-                    projection,
-                    minU, minV, uSize, vSize,
-                    sprite
-            );
+        for (int i = 1; i < plane.length - 1; i++) {
+            putVertex(consumer, pose, plane[0], normal, planeUV[0][0], planeUV[0][1], sprite);
+            putVertex(consumer, pose, plane[1], normal, planeUV[1][0], planeUV[1][1], sprite);
+            putVertex(consumer, pose, plane[2], normal, planeUV[2][0], planeUV[2][1], sprite);
+            putVertex(consumer, pose, plane[3], normal, planeUV[3][0], planeUV[3][1], sprite);
         }
 
         bufferSource.endBatch(RenderType.translucent());
@@ -309,22 +359,30 @@ public final class MaterialPreviewer {
         return true;
     }
 
+    private static Vec3 getTexturePlanePoint(
+            Vec3 origin,
+            double originU,
+            double originV,
+            Vec3 uAxis,
+            Vec3 vAxis,
+            double u,
+            double v
+    ) {
+        return origin
+                .add(uAxis.scale(u - originU))
+                .add(vAxis.scale(v - originV));
+    }
+
     private static void putVertex(
             VertexConsumer consumer,
             PoseStack.Pose pose,
             Vec3 vertex,
             Vec3 normal,
-            Direction projection,
-            double minU,
-            double minV,
-            double uSize,
-            double vSize,
+            double u,
+            double v,
             TextureAtlasSprite sprite
     ) {
         Vec3 point = vertex.add(normal.scale(EXTRUSION));
-
-        double u = (getTextureU(projection, vertex) - minU) / uSize;
-        double v = (getTextureV(projection, vertex) - minV) / vSize;
 
         float textureU = sprite.getU(u * 16.0);
         float textureV = sprite.getV(v * 16.0);
