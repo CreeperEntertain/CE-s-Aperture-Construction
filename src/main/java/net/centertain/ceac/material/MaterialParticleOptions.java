@@ -12,7 +12,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation", "ClassCanBeRecord"})
 public final class MaterialParticleOptions implements ParticleOptions {
     public static final Codec<MaterialParticleOptions> CODEC =
             RecordCodecBuilder.create(instance -> instance.group(

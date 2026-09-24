@@ -56,7 +56,7 @@ public class MaterialBreakingParticle extends TerrainParticle {
                     state,
                     pos,
                     sprite
-            ).setPower(0.2f).scale(0.6f);
+            );
         }
     }
 }
