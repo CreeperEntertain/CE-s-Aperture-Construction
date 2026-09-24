@@ -29,6 +29,9 @@ public final class MaterialPreviewer {
     private static final double EXTRUSION = 0.002;
     private static final double DIRECTION_BIAS = 1.0e-6;
 
+    private static final int SELECTED_ALPHA = 255;
+    private static final int UNSELECTED_ALPHA = 128;
+
     private static final PhysScreen helpScreen = new MaterialPreviewerHelpScreen();
 
     private static boolean initialized = false;
@@ -206,13 +209,8 @@ public final class MaterialPreviewer {
         if (vertices.size() < 3) // Fuck it, another check to calm the soul. Amen.
             return false;
 
-        ResourceLocation texture = material.getTexture(materialCoordinate);
-        if (texture == null)
+        if (material.getTexture(materialCoordinate) == null)
             return false;
-
-        TextureAtlasSprite sprite = Minecraft.getInstance()
-                .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-                .apply(texture);
 
         Vec3 a = vertices.get(0);
         Vec3 b = vertices.get(1);
@@ -345,11 +343,39 @@ public final class MaterialPreviewer {
 
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());
 
-        for (int i = 1; i < plane.length - 1; i++) {
-            putVertex(consumer, pose, plane[0], normal, planeUV[0][0], planeUV[0][1], sprite);
-            putVertex(consumer, pose, plane[1], normal, planeUV[1][0], planeUV[1][1], sprite);
-            putVertex(consumer, pose, plane[2], normal, planeUV[2][0], planeUV[2][1], sprite);
-            putVertex(consumer, pose, plane[3], normal, planeUV[3][0], planeUV[3][1], sprite);
+        for (var entry : material.getTextures().entrySet()) {
+            Vector2i coordinate = entry.getKey();
+
+            int deltaX = coordinate.x - materialCoordinate.x;
+            int deltaY = coordinate.y - materialCoordinate.y;
+
+            Vec3 offset = uAxis.scale(deltaX * getMaterialUDirection(projection))
+                    .add(vAxis.scale(deltaY * getMaterialVDirection(projection)));
+
+            int alpha = coordinate.equals(materialCoordinate)
+                    ? SELECTED_ALPHA
+                    : UNSELECTED_ALPHA;
+
+            ResourceLocation location = entry.getValue();
+
+            TextureAtlasSprite entrySprite = Minecraft.getInstance()
+                    .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
+                    .apply(location);
+
+            for (int i = 0; i < plane.length; i++) {
+                Vec3 point = plane[i].add(offset);
+
+                putVertex(
+                        consumer,
+                        pose,
+                        point,
+                        normal,
+                        planeUV[i][0],
+                        planeUV[i][1],
+                        alpha,
+                        entrySprite
+                );
+            }
         }
 
         bufferSource.endBatch(RenderType.translucent());
@@ -373,6 +399,18 @@ public final class MaterialPreviewer {
                 .add(vAxis.scale(v - originV));
     }
 
+    private static double getMaterialUDirection(Direction direction) {
+        return direction == Direction.DOWN
+                ? 1.0
+                : -1.0;
+    }
+
+    private static double getMaterialVDirection(Direction direction) {
+        return direction == Direction.UP
+                ? -1.0
+                : 1.0;
+    }
+
     private static void putVertex(
             VertexConsumer consumer,
             PoseStack.Pose pose,
@@ -380,6 +418,7 @@ public final class MaterialPreviewer {
             Vec3 normal,
             double u,
             double v,
+            int alpha,
             TextureAtlasSprite sprite
     ) {
         Vec3 point = vertex.add(normal.scale(EXTRUSION));
@@ -393,7 +432,7 @@ public final class MaterialPreviewer {
                 (float) point.y,
                 (float) point.z
         )
-                .color(255, 255, 255, 127)
+                .color(255, 255, 255, alpha)
                 .uv(textureU, textureV)
                 .uv2(LightTexture.FULL_BRIGHT)
                 .normal(
