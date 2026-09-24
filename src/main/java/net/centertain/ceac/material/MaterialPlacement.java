@@ -14,6 +14,9 @@ import org.lwjgl.glfw.GLFW;
 public final class MaterialPlacement {
     private static boolean adjustOffset = false;
 
+    public static boolean matItemPresent;
+    public static boolean matItemSeenThisTick;
+
     private MaterialPlacement() {}
 
     public static boolean getAdjustOffset() {
@@ -22,6 +25,19 @@ public final class MaterialPlacement {
 
     public static void setAdjustOffset(boolean state) {
         adjustOffset = state;
+
+         if (!state) {
+             MaterialPreviewer.destroy();
+             MaterialPreviewer.setPreviewVisible(false);
+         }
+    }
+
+    public static void markMatItemPresent() {
+        matItemSeenThisTick = true;
+    }
+
+    public static void forceCleanup() {
+        setAdjustOffset(false);
     }
 
     private enum Direction {
@@ -48,7 +64,7 @@ public final class MaterialPlacement {
             return;
         event.setCanceled(true);
 
-        adjustOffset = !adjustOffset;
+        setAdjustOffset(!adjustOffset);
     }
 
     public static void suppressAdjustOffsetKeys(

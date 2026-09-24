@@ -132,6 +132,7 @@ public abstract class MatItem extends Item {
             return;
         if (offhand && player.getMainHandItem().getItem() instanceof MatItem)
             return;
+        MaterialPlacement.markMatItemPresent();
         if (!MaterialPlacement.getAdjustOffset()) {
             MaterialPreviewer.destroy();
             return;

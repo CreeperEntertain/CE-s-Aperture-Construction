@@ -54,6 +54,19 @@ public class ClientForgeEvents {
             DecalPlacement.forceCleanup();
         DecalPlacement.decalItemPresent = DecalPlacement.decalItemSeenThisTick;
         DecalPlacement.decalItemSeenThisTick = false;
+
+        // Material preview clearing
+        player = minecraft.player;
+        if (player == null) {
+            MaterialPlacement.matItemPresent = false;
+            MaterialPlacement.matItemSeenThisTick = false;
+            MaterialPlacement.forceCleanup();
+            return;
+        }
+        if (MaterialPlacement.matItemPresent && !MaterialPlacement.matItemSeenThisTick)
+            MaterialPlacement.forceCleanup();
+        MaterialPlacement.matItemPresent = MaterialPlacement.matItemSeenThisTick;
+        MaterialPlacement.matItemSeenThisTick = false;
     }
 
     @SubscribeEvent
