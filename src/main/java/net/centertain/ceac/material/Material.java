@@ -123,24 +123,24 @@ public abstract class Material {
                     Math.floorMod(pos.getZ(), height)
             );
             case DOWN -> new Vector2i(
-                    Math.floorMod(-pos.getX() - 1, width),
-                    Math.floorMod(pos.getZ(), height)
+                    Math.floorMod(pos.getX(), width),
+                    Math.floorMod(-pos.getZ() - 1, height)
             );
             case NORTH -> new Vector2i(
                     Math.floorMod(-pos.getX() - 1, width),
-                    Math.floorMod(pos.getY(), height)
+                    Math.floorMod(-pos.getY() - 1, height)
             );
             case SOUTH -> new Vector2i(
                     Math.floorMod(pos.getX(), width),
-                    Math.floorMod(pos.getY(), height)
+                    Math.floorMod(-pos.getY() - 1, height)
             );
             case WEST -> new Vector2i(
                     Math.floorMod(pos.getZ(), width),
-                    Math.floorMod(pos.getY(), height)
+                    Math.floorMod(-pos.getY() - 1, height)
             );
             case EAST -> new Vector2i(
                     Math.floorMod(-pos.getZ() - 1, width),
-                    Math.floorMod(pos.getY(), height)
+                    Math.floorMod(-pos.getY() - 1, height)
             );
         };
     }
