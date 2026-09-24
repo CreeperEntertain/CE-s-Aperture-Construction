@@ -127,10 +127,11 @@ public abstract class MatItem extends Item {
             return;
         if (!level.isClientSide)
             return;
-        if (!selected) {
-            MaterialPreviewer.destroy();
+        boolean offhand = player.getOffhandItem() == stack;
+        if (!selected && !offhand)
             return;
-        }
+        if (offhand && player.getMainHandItem().getItem() instanceof MatItem)
+            return;
         if (!MaterialPlacement.getAdjustOffset()) {
             MaterialPreviewer.destroy();
             return;
