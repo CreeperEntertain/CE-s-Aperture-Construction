@@ -1,6 +1,6 @@
 package net.centertain.ceac.block.custom.material_shapes;
 
-import net.centertain.ceac.block.custom.MaterialShapeRotatable;
+import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class MaterialShapeSlope extends MaterialShapeRotatable {
+public class MaterialShapeSlope extends MaterialShapeRotatable24Way {
     private static final Map<Direction, VoxelShape[]> SHAPES = makeShapes();
 
     public MaterialShapeSlope(Properties properties) {
