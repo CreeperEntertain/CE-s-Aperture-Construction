@@ -35,8 +35,8 @@ public final class DecalPlacement {
     private static int gridSizeIndex = 3;
     private static double gridSize = GRID_SIZES[gridSizeIndex];
 
-    public static boolean decalItemPresent;
-    public static boolean decalItemSeenThisTick;
+    private static boolean decalItemPresent;
+    private static boolean decalItemSeenThisTick;
 
     private static int stretchDelay = 0;
 
@@ -56,6 +56,20 @@ public final class DecalPlacement {
         setTempDecal(null);
         setDecalPreview(null);
         precisePlacement = false;
+    }
+    public static void previewClearing() {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        if (player == null) {
+            decalItemPresent = false;
+            decalItemSeenThisTick = false;
+            forceCleanup();
+            return;
+        }
+        if (decalItemPresent && !decalItemSeenThisTick)
+            forceCleanup();
+        decalItemPresent = decalItemSeenThisTick;
+        decalItemSeenThisTick = false;
     }
 
     public static void setTempDecal(@Nullable Decal decal) {

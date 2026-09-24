@@ -14,8 +14,8 @@ import org.lwjgl.glfw.GLFW;
 public final class MaterialPlacement {
     private static boolean adjustOffset = false;
 
-    public static boolean matItemPresent;
-    public static boolean matItemSeenThisTick;
+    private static boolean matItemPresent;
+    private static boolean matItemSeenThisTick;
 
     private MaterialPlacement() {}
 
@@ -38,6 +38,20 @@ public final class MaterialPlacement {
 
     public static void forceCleanup() {
         setAdjustOffset(false);
+    }
+    public static void previewClearing() {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        if (player == null) {
+            matItemPresent = false;
+            matItemSeenThisTick = false;
+            forceCleanup();
+            return;
+        }
+        if (matItemPresent && !matItemSeenThisTick)
+            forceCleanup();
+        matItemPresent = matItemSeenThisTick;
+        matItemSeenThisTick = false;
     }
 
     private enum Direction {

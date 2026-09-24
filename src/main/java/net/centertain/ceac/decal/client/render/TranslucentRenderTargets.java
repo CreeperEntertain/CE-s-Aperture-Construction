@@ -3,6 +3,7 @@ package net.centertain.ceac.decal.client.render;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import net.minecraft.client.Minecraft;
+import net.minecraftforge.event.TickEvent;
 
 public final class TranslucentRenderTargets {
     private static RenderTarget translucentDepth;
@@ -16,6 +17,15 @@ public final class TranslucentRenderTargets {
         translucentDepth.setClearColor(1.0F, 1.0F, 1.0F, 1.0F);
         translucentDepth.clear(true);
         TranslucentKBuffer.init(width, height);
+    }
+
+    public static void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END)
+            return;
+        Minecraft minecraft = Minecraft.getInstance();
+        int width = minecraft.getWindow().getWidth();
+        int height = minecraft.getWindow().getHeight();
+        TranslucentRenderTargets.resize(width, height);
     }
 
     public static void resize(int width, int height) {
