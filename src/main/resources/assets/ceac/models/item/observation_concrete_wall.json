@@ -1,6 +1,10 @@
 {
-  "parent": "item/generated",
+  "parent": "minecraft:item/generated",
+  "loader": "ceac:material_item",
   "textures": {
-    "layer0": "ceac:item/observation_concrete_wall"
+    "layer0": "ceac:material/observation_concrete_wall/top_left",
+    "layer1": "ceac:material/observation_concrete_wall/top_right",
+    "layer2": "ceac:material/observation_concrete_wall/bottom_left",
+    "layer3": "ceac:material/observation_concrete_wall/bottom_right"
   }
 }
