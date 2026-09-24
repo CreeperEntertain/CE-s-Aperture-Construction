@@ -242,9 +242,9 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         Minecraft.getInstance().particleEngine.add(
                 new MaterialBreakingParticle(
                         clientLevel,
-                        worldPoint.x,
-                        worldPoint.y,
-                        worldPoint.z,
+                        entity.getRandomX(0.5),
+                        entity.getY() + 0.1,
+                        entity.getRandomZ(0.5),
                         movement.x * -4.0,
                         1.5,
                         movement.z * -4.0,
