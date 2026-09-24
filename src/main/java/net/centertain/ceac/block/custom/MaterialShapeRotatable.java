@@ -1,7 +1,9 @@
 package net.centertain.ceac.block.custom;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -100,7 +102,12 @@ public abstract class MaterialShapeRotatable extends MaterialShape {
     }
 
     @Override
-    public boolean rotateFromViewDirection(Vec3 viewDirection, boolean clockwise) {
+    public boolean rotateFromViewDirection(
+            Level level,
+            BlockPos pos,
+            Vec3 viewDirection,
+            boolean clockwise
+    ) {
         // TODO: Rotation behavior
         return true;
     }

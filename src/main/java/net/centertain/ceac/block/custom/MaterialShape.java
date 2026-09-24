@@ -231,7 +231,12 @@ public abstract class MaterialShape extends Block implements EntityBlock {
                 .add(c.subtract(a).scale(v));
     }
 
-    public boolean rotateFromViewDirection(Vec3 viewDirection, boolean clockwise) {
+    public boolean rotateFromViewDirection(
+            Level level,
+            BlockPos pos,
+            Vec3 viewDirection,
+            boolean clockwise
+    ) {
         return false;
     }
 
