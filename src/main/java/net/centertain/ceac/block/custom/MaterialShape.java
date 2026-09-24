@@ -235,7 +235,7 @@ public abstract class MaterialShape extends Block implements EntityBlock {
             Level level,
             BlockPos pos,
             Vec3 viewDirection,
-            boolean clockwise
+            boolean counterclockwise
     ) {
         return false;
     }
