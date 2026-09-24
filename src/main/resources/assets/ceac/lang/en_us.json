@@ -3,9 +3,11 @@
 
   "tooltip.ceac.decal.desc": "Press middle mouse to toggle precise mode",
   "tooltip.ceac.scraper.desc": "Press middle mouse to toggle x-ray mode",
+  "tooltip.ceac.wrench.desc": "Crouch to rotate material shapes counter-clockwise",
 
   "item.ceac.decal": "Decal",
   "item.ceac.scraper": "Scraper",
+  "item.ceac.wrench": "Wrench",
 
   "item.ceac.example": "Example",
   "item.ceac.observation_concrete_wall": "Observation Concrete Wall",
