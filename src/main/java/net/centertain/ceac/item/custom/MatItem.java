@@ -39,18 +39,33 @@ public abstract class MatItem extends Item {
     private static final String OFFSET_X = "MaterialOffsetX";
     private static final String OFFSET_Y = "MaterialOffsetY";
 
+    private static final String DEFAULT_CATEGORY = "Materials";
+    private static final double DEFAULT_PRICE = 1000.0;
+
     protected MatItem(
             @Nullable String category,
-            double price,
+            @Nullable Double price,
             Properties properties,
             Supplier<Material> material
     ) {
         super(properties.stacksTo(1));
         this.material = material;
         this.category = category == null
-                ? "Materials"
+                ? DEFAULT_CATEGORY
                 : category;
-        this.price = price;
+        this.price = price == null
+                ? DEFAULT_PRICE
+                : price;
+    }
+
+    protected MatItem(
+        Properties properties,
+        Supplier<Material> material
+    ) {
+        super(properties.stacksTo(1));
+        this.material = material;
+        this.category = DEFAULT_CATEGORY;
+        this.price = DEFAULT_PRICE;
     }
 
     public Material getMaterial() {
