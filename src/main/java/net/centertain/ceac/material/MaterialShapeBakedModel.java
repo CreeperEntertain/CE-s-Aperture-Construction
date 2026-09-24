@@ -139,9 +139,9 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
 
         referenceNormal = transformDirection(
                 referenceNormal,
-                baseX,
-                baseY,
-                baseZ
+                x,
+                y,
+                z
         ).normalize();
 
         Direction projection = Direction.getNearest(
