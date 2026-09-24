@@ -7,9 +7,4 @@ public class MaterialShapeBlock extends MaterialShape {
     public MaterialShapeBlock(Properties properties) {
         super(properties);
     }
-
-    @Override
-    public boolean rotateFromViewDirection(Vec3 viewDirection, boolean clockwise) {
-        return false;
-    }
 }

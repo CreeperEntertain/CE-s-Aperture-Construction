@@ -101,7 +101,8 @@ public abstract class MaterialShapeRotatable extends MaterialShape {
 
     @Override
     public boolean rotateFromViewDirection(Vec3 viewDirection, boolean clockwise) {
-        return false;
+        // TODO: Rotation behavior
+        return true;
     }
 
     private Basis getBasis(BlockState state) {
