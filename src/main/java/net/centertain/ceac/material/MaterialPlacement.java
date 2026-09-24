@@ -110,8 +110,8 @@ public final class MaterialPlacement {
         switch (direction) {
             case UP -> y++;
             case DOWN -> y--;
-            case LEFT -> x--;
-            case RIGHT -> x++;
+            case LEFT -> x++;
+            case RIGHT -> x--;
         }
 
         Vector2i newOffset = new Vector2i(x, y);
