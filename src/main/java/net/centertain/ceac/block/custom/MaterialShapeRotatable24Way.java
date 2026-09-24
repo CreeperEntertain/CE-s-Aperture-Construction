@@ -156,7 +156,7 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape {
                 .add(axis.scale(axis.dot(vector) * (1.0 - Math.cos(angle))));
     }
 
-    private Basis getBasis(BlockState state) {
+    protected Basis getBasis(BlockState state) {
         Direction facing = state.getValue(FACING);
         int rotation = state.getValue(ROTATION);
 
@@ -180,7 +180,7 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape {
         return new Basis(x, y, z);
     }
 
-    private record Basis(
+    protected record Basis(
             Vec3 x,
             Vec3 y,
             Vec3 z
