@@ -2,10 +2,7 @@ package net.centertain.ceac.block.custom;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.centertain.ceac.material.Material;
-import net.centertain.ceac.material.MaterialBreakingParticle;
-import net.centertain.ceac.material.MaterialShapeBlockEntity;
-import net.centertain.ceac.material.MaterialShapeFace;
+import net.centertain.ceac.material.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
@@ -15,7 +12,10 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -36,7 +36,6 @@ import org.joml.Vector2i;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public abstract class MaterialShape extends Block implements EntityBlock {
@@ -189,6 +188,149 @@ public abstract class MaterialShape extends Block implements EntityBlock {
                 return true;
             }
         });
+    }
+
+    @Override
+    public boolean addRunningEffects(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Entity entity
+    ) {
+        Vec3 localPosition = entity.position().subtract(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ()
+        );
+        MaterialShapeFace face = getNearestFace(transformPointToLocal(state, localPosition));
+        if (face == null)
+            return false;
+
+        int faceIndex = faces.indexOf(face);
+        if (faceIndex < 0)
+            return false;
+        if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
+            return false;
+
+        Material material = blockEntity.getMaterial(faceIndex);
+        if (material == null)
+            return false;
+
+        Vector2i coordinate = material.getCoordinate(face, pos, state);
+        ResourceLocation texture = material.getTexture(coordinate);
+        if (texture == null)
+            return false;
+        if (!(level instanceof ClientLevel clientLevel))
+            return true;
+
+        TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
+
+        Vec3 point = projectOntoFace(face, localPosition);
+
+        List<Vec3> vertices = face.getVertices();
+
+        Vec3 a = vertices.get(0);
+        Vec3 b = vertices.get(1);
+        Vec3 c = vertices.get(2);
+
+        Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
+
+        Vec3 worldPoint = transformPointToWorld(state, point.add(normal.scale(0.1)))
+                .add(pos.getX(), pos.getY(), pos.getZ());
+        Vec3 movement = entity.getDeltaMovement();
+
+        Minecraft.getInstance().particleEngine.add(
+                new MaterialBreakingParticle(
+                        clientLevel,
+                        worldPoint.x,
+                        worldPoint.y,
+                        worldPoint.z,
+                        movement.x * -4.0,
+                        1.5,
+                        movement.z * -4.0,
+                        state,
+                        pos,
+                        sprite
+                )
+        );
+
+        return true;
+    }
+
+    @Override
+    public boolean addLandingEffects(
+            @NotNull BlockState state1,
+            @NotNull ServerLevel level,
+            @NotNull BlockPos pos,
+            @NotNull BlockState state2, // What the fuck, Mojang?
+            @NotNull LivingEntity entity,
+            int numberOfParticles
+    ) {
+        Vec3 localPosition = entity.position().subtract(pos.getX(), pos.getY(), pos.getZ());
+        localPosition = transformPointToLocal(state2, localPosition);
+
+        MaterialShapeFace face = getNearestFace(localPosition);
+        if (face == null)
+            return false;
+
+        int faceIndex = faces.indexOf(face);
+        if (faceIndex < 0)
+            return false;
+        if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
+            return false;
+
+        Material material = blockEntity.getMaterial(faceIndex);
+        if (material == null)
+            return false;
+
+        Vector2i coordinate = material.getCoordinate(face, pos, state2);
+        ResourceLocation texture = material.getTexture(coordinate);
+        if (texture == null)
+            return false;
+
+        Vec3 point = projectOntoFace(face, localPosition);
+
+        List<Vec3> vertices = face.getVertices();
+
+        Vec3 a = vertices.get(0);
+        Vec3 b = vertices.get(1);
+        Vec3 c = vertices.get(2);
+
+        Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
+
+        Vec3 worldPoint = transformPointToWorld(state2, point.add(normal.scale(0.1)))
+                .add(pos.getX(), pos.getY(), pos.getZ());
+
+        level.sendParticles(
+                new MaterialParticleOptions(texture, pos),
+                worldPoint.x,
+                worldPoint.y,
+                worldPoint.z,
+                numberOfParticles,
+                0.0,
+                0.0,
+                0.0,
+                0.15
+        );
+
+        return true;
+    }
+
+    private Vec3 projectOntoFace(
+            MaterialShapeFace face,
+            Vec3 point
+    ) {
+        List<Vec3> vertices = face.getVertices();
+
+        Vec3 a = vertices.get(0);
+        Vec3 b = vertices.get(1);
+        Vec3 c = vertices.get(2);
+
+        Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
+
+        double distance = point.subtract(a).dot(normal);
+
+        return point.subtract(normal.scale(distance));
     }
 
     public static Vec3 randomPointOnFace(

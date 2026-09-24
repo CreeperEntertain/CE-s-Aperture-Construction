@@ -3,8 +3,10 @@ package net.centertain.ceac.client.events;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
+import net.centertain.ceac.material.MaterialBreakingParticle;
 import net.centertain.ceac.material.MaterialShapeBakedModel;
 import net.centertain.ceac.material.loaders.MaterialShapeSlopeLoader;
+import net.centertain.ceac.particle.ModParticles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.resources.model.BakedModel;
@@ -17,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -97,5 +100,13 @@ public class ClientModEvents
     @SubscribeEvent
     public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
         event.register("material_shape_slope", MaterialShapeSlopeLoader.INSTANCE);
+    }
+
+    @SubscribeEvent
+    public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
+        event.registerSpecial(
+                ModParticles.MATERIAL.get(),
+                new MaterialBreakingParticle.Provider()
+        );
     }
 }
