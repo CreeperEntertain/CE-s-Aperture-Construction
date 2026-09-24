@@ -314,7 +314,7 @@ public abstract class MatItem extends Item {
         RandomSource random = clientLevel.getRandom();
 
         for (int i = 0; i < 16; i++) {
-            Vec3 point = shape.transformPointToWorld(state, randomPointOnFace(face, random));
+            Vec3 point = shape.transformPointToWorld(state, MaterialShape.randomPointOnFace(face, random));
 
             double xd = random.nextDouble() - 0.5D;
             double yd = random.nextDouble() - 0.5D;
@@ -333,46 +333,6 @@ public abstract class MatItem extends Item {
                     sprite
             ));
         }
-    }
-
-    private Vec3 randomPointOnFace(
-            MaterialShapeFace face,
-            RandomSource random
-    ) {
-        List<Vec3> vertices = face.getVertices();
-
-        Vec3 a = vertices.get(0);
-        Vec3 b = vertices.get(1);
-        Vec3 c = vertices.get(2);
-
-        if (vertices.size() == 3 || random.nextBoolean())
-            return randomPointOnTriangle(a, b, c, random);
-
-        return randomPointOnTriangle(
-                a,
-                c,
-                vertices.get(3),
-                random
-        );
-    }
-
-    private Vec3 randomPointOnTriangle(
-            Vec3 a,
-            Vec3 b,
-            Vec3 c,
-            RandomSource random
-    ) {
-        double u = random.nextDouble();
-        double v = random.nextDouble();
-
-        if (u + v > 1.0) {
-            u = 1.0 - u;
-            v = 1.0 - v;
-        }
-
-        return a
-                .add(b.subtract(a).scale(u))
-                .add(c.subtract(a).scale(v));
     }
 
     private Vec3 faceCenter(MaterialShapeFace face) {

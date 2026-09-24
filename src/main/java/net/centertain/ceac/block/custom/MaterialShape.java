@@ -3,27 +3,41 @@ package net.centertain.ceac.block.custom;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.material.Material;
+import net.centertain.ceac.material.MaterialBreakingParticle;
 import net.centertain.ceac.material.MaterialShapeBlockEntity;
 import net.centertain.ceac.material.MaterialShapeFace;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
 import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2i;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 public abstract class MaterialShape extends Block implements EntityBlock {
     private final List<MaterialShapeFace> faces;
@@ -91,6 +105,116 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         if (material == null)
             return this.soundType;
         return material.getSoundType();
+    }
+
+    @Override
+    public void initializeClient(@NotNull Consumer<IClientBlockExtensions> consumer) {
+        consumer.accept(new IClientBlockExtensions() {
+            @Override
+            public boolean addHitEffects(
+                    @NotNull BlockState state,
+                    @NotNull Level level,
+                    @NotNull HitResult target,
+                    @NotNull ParticleEngine manager) {
+                if (!(level instanceof ClientLevel clientLevel))
+                    return false;
+                if (!(target instanceof BlockHitResult blockHit))
+                    return false;
+
+                BlockPos pos = blockHit.getBlockPos();
+                Vec3 hit = blockHit.getLocation();
+                Vec3 localHit = hit.subtract(
+                        pos.getX(),
+                        pos.getY(),
+                        pos.getZ()
+                );
+
+                MaterialShapeFace face = getNearestFace(transformPointToLocal(state, localHit));
+                if (face == null)
+                    return false;
+
+                int faceIndex = faces.indexOf(face);
+                if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
+                    return false;
+
+                Material material = blockEntity.getMaterial(faceIndex);
+                if (material == null)
+                    return false;
+
+                Vector2i coordinate = material.getCoordinate(face, pos, state);
+                ResourceLocation texture = material.getTexture(coordinate);
+                if (texture == null)
+                    return false;
+
+                TextureAtlasSprite sprite = Minecraft.getInstance()
+                        .getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
+                RandomSource random = clientLevel.getRandom();
+
+                List<Vec3> vertices = face.getVertices();
+                Vec3 a = vertices.get(0);
+                Vec3 b = vertices.get(1);
+                Vec3 c = vertices.get(2);
+
+                Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
+                Vec3 localPoint = randomPointOnFace(face, random).add(normal.scale(0.1));
+                Vec3 worldPoint = transformPointToWorld(state, localPoint).add(pos.getX(), pos.getY(), pos.getZ());
+
+                manager.add(new MaterialBreakingParticle(
+                        clientLevel,
+                        worldPoint.x,
+                        worldPoint.y,
+                        worldPoint.z,
+                        0.0,
+                        0.0,
+                        0.0,
+                        state,
+                        pos,
+                        sprite
+                ).setPower(0.2f).scale(0.6f));
+
+                return true;
+            }
+        });
+    }
+
+    public static Vec3 randomPointOnFace(
+            MaterialShapeFace face,
+            RandomSource random
+    ) {
+        List<Vec3> vertices = face.getVertices();
+
+        Vec3 a = vertices.get(0);
+        Vec3 b = vertices.get(1);
+        Vec3 c = vertices.get(2);
+
+        if (vertices.size() == 3 || random.nextBoolean())
+            return randomPointOnTriangle(a, b, c, random);
+
+        return randomPointOnTriangle(
+                a,
+                c,
+                vertices.get(3),
+                random
+        );
+    }
+
+    public static Vec3 randomPointOnTriangle(
+            Vec3 a,
+            Vec3 b,
+            Vec3 c,
+            RandomSource random
+    ) {
+        double u = random.nextDouble();
+        double v = random.nextDouble();
+
+        if (u + v > 1.0) {
+            u = 1.0 - u;
+            v = 1.0 - v;
+        }
+
+        return a
+                .add(b.subtract(a).scale(u))
+                .add(c.subtract(a).scale(v));
     }
 
     public abstract boolean rotateFromViewDirection(Vec3 viewDirection, boolean clockwise);
