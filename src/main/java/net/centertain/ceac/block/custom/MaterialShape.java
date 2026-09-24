@@ -44,6 +44,9 @@ public abstract class MaterialShape extends Block implements EntityBlock {
     private final String category;
     private final double price;
 
+    private static final String DEFAULT_CATEGORY = "Material Shapes";
+    private static final double DEFAULT_PRICE = 10.0;
+
     protected MaterialShape(
             @Nullable String category,
             @Nullable Double price,
@@ -54,11 +57,20 @@ public abstract class MaterialShape extends Block implements EntityBlock {
         );
         this.faces = new ArrayList<>();
         this.category = category == null
-                ? "Material Shapes"
+                ? DEFAULT_CATEGORY
                 : category;
         this.price = price == null
-                ? 10.0
+                ? DEFAULT_PRICE
                 : price;
+    }
+
+    protected MaterialShape(Properties properties) {
+        super(properties
+                .sound(SoundType.NETHERITE_BLOCK)
+        );
+        this.faces = new ArrayList<>();
+        this.category = DEFAULT_CATEGORY;
+        this.price = DEFAULT_PRICE;
     }
 
     public final List<MaterialShapeFace> getFaces() {

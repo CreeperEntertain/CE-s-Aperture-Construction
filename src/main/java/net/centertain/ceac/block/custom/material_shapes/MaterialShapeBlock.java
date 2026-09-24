@@ -5,11 +5,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class MaterialShapeBlock extends MaterialShape {
     public MaterialShapeBlock(Properties properties) {
-        super(
-                null,
-                null,
-                properties
-        );
+        super(properties);
     }
 
     @Override

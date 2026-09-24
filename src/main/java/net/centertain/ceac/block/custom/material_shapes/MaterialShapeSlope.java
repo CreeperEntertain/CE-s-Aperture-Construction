@@ -18,11 +18,7 @@ public class MaterialShapeSlope extends MaterialShapeRotatable {
     private static final Map<Direction, VoxelShape[]> SHAPES = makeShapes();
 
     public MaterialShapeSlope(Properties properties) {
-        super(
-                null,
-                null,
-                properties
-        );
+        super(properties);
     }
 
     @SuppressWarnings("deprecation") // Literally what the docs told me to use. Why would you deprecate something that's

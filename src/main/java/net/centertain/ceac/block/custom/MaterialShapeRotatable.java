@@ -16,7 +16,7 @@ public abstract class MaterialShapeRotatable extends MaterialShape {
     public static DirectionProperty FACING = BlockStateProperties.FACING;
     public static IntegerProperty ROTATION = IntegerProperty.create("rotation", 0, 3);
 
-    public MaterialShapeRotatable(
+    protected MaterialShapeRotatable(
             @Nullable String category,
             @Nullable Double price,
             Properties properties
@@ -26,6 +26,14 @@ public abstract class MaterialShapeRotatable extends MaterialShape {
                 price,
                 properties
         );
+        registerDefaultState(getStateDefinition().any()
+                .setValue(FACING, Direction.WEST)
+                .setValue(ROTATION, 0)
+        );
+    }
+
+    protected MaterialShapeRotatable(Properties properties) {
+        super(properties);
         registerDefaultState(getStateDefinition().any()
                 .setValue(FACING, Direction.WEST)
                 .setValue(ROTATION, 0)
