@@ -1,6 +1,22 @@
 {
-  "parent": "item/generated",
+  "parent": "minecraft:item/generated",
+  "loader": "ceac:material_item",
   "textures": {
-    "layer0": "ceac:item/multi_example"
+    "layer0": "ceac:material/multi_example/0_0",
+    "layer1": "ceac:material/multi_example/0_1",
+    "layer2": "ceac:material/multi_example/0_2",
+    "layer3": "ceac:material/multi_example/0_3",
+    "layer4": "ceac:material/multi_example/1_0",
+    "layer5": "ceac:material/multi_example/1_1",
+    "layer6": "ceac:material/multi_example/1_2",
+    "layer7": "ceac:material/multi_example/1_3",
+    "layer8": "ceac:material/multi_example/2_0",
+    "layer9": "ceac:material/multi_example/2_1",
+    "layer10": "ceac:material/multi_example/2_2",
+    "layer11": "ceac:material/multi_example/2_3",
+    "layer12": "ceac:material/multi_example/3_0",
+    "layer13": "ceac:material/multi_example/3_1",
+    "layer14": "ceac:material/multi_example/3_2",
+    "layer15": "ceac:material/multi_example/3_3"
   }
 }
