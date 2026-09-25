@@ -31,7 +31,7 @@ public final class ScraperXray {
     }
 
 
-    public static void renderXrayView() {
+    public static void renderXrayView(PoseStack poseStack) {
         if (!xrayViewActive)
             return;
         Minecraft minecraft = Minecraft.getInstance();
@@ -47,10 +47,6 @@ public final class ScraperXray {
             return;
 
         Camera camera = minecraft.gameRenderer.getMainCamera();
-
-        PoseStack poseStack = new PoseStack();
-        poseStack.mulPose(Axis.XP.rotationDegrees(camera.getXRot()));
-        poseStack.mulPose(Axis.YP.rotationDegrees(camera.getYRot()));
 
         OutlineBufferSource outlineBuffer = minecraft.renderBuffers().outlineBufferSource();
         outlineBuffer.setColor(255, 255, 255, 255);

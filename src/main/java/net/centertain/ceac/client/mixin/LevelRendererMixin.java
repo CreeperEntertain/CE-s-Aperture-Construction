@@ -236,6 +236,6 @@ public abstract class LevelRendererMixin {
             Matrix4f projectionMatrix,
             CallbackInfo ci
     ) {
-        ScraperXray.renderXrayView();
+        ScraperXray.renderXrayView(poseStack);
     }
 }
