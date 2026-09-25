@@ -1,6 +1,4 @@
 {
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "ceac:item/example"
-  }
+  "parent": "minecraft:item/generated",
+  "loader": "ceac:material_item"
 }

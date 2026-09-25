@@ -4,12 +4,14 @@ import net.centertain.ceac.item.custom.MatItem;
 import net.centertain.ceac.material.utility.MaterialShapeHelper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
 import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
@@ -62,6 +64,7 @@ public class MatItemGeometry implements IUnbakedGeometry<MatItemGeometry> {
         List<BakedQuad> quads = new ArrayList<>(width * height * 2);
 
         for (int y = 0; y < height; y++) {
+            int materialY = height - 1 - y;
             float y0 = bottom + y * fit;
             float y1 = y0 + fit;
 
@@ -69,13 +72,11 @@ public class MatItemGeometry implements IUnbakedGeometry<MatItemGeometry> {
                 float x0 = left + x * fit;
                 float x1 = x0 + fit;
 
-                ResourceLocation frontTexture = material.getTexture(new Vector2i(x, y));
+                ResourceLocation frontTexture = material.getTexture(new Vector2i(x, materialY));
                 if (frontTexture == null)
                     continue;
 
-                TextureAtlasSprite frontSprite = sprites.apply(
-                        context.getMaterial("layer" + (y * width + x))
-                );
+                TextureAtlasSprite frontSprite = sprites.apply(new net.minecraft.client.resources.model.Material(InventoryMenu.BLOCK_ATLAS, frontTexture));
 
                 quads.add(MaterialShapeHelper.quad(
                         frontSprite,
@@ -86,13 +87,11 @@ public class MatItemGeometry implements IUnbakedGeometry<MatItemGeometry> {
                 ));
 
                 int backX = width - 1 - x;
-                ResourceLocation backTexture = material.getTexture(new Vector2i(backX, y));
+                ResourceLocation backTexture = material.getTexture(new Vector2i(backX, materialY));
                 if (backTexture == null)
                     continue;
 
-                TextureAtlasSprite backSprite = sprites.apply(
-                        context.getMaterial("layer" + (y * width + backX))
-                );
+                TextureAtlasSprite backSprite = sprites.apply(new net.minecraft.client.resources.model.Material(InventoryMenu.BLOCK_ATLAS, backTexture));
 
                 quads.add(MaterialShapeHelper.quad(
                         backSprite,
