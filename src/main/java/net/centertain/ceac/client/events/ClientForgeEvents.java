@@ -1,5 +1,6 @@
 package net.centertain.ceac.client.events;
 
+import net.centertain.ceac.client.MenuSelector;
 import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
@@ -63,10 +64,7 @@ public class ClientForgeEvents {
 
     @SubscribeEvent
     public static void onMouseButton(InputEvent.MouseButton.Pre event) {
-        if (!MaterialPlacement.getAdjustOffset())
-            DecalPlacement.swapPrecisePlacement(event);
-        if (!DecalPlacement.getPrecisePlacement())
-            MaterialPlacement.swapAdjustOffset(event);
+        MenuSelector.setMenuState(event);
     }
 
     @SubscribeEvent

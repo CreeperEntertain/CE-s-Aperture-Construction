@@ -3,14 +3,12 @@ package net.centertain.ceac.decal.client;
 import net.centertain.ceac.decal.AbstractDecal;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.DecalPreviewer;
-import net.centertain.ceac.item.custom.DecalItem;
 import net.centertain.ceac.sound.ModSounds;
 import net.centertain.ceac.utility.Soundworks;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.InputEvent;
 import org.jetbrains.annotations.Nullable;
@@ -142,30 +140,6 @@ public final class DecalPlacement {
         SMALLER
     }
 
-    public static void swapPrecisePlacement(InputEvent.MouseButton.Pre event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.screen != null)
-            return;
-        if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
-            return;
-        if (event.getAction() != GLFW.GLFW_PRESS)
-            return;
-        Player player = minecraft.player;
-        if (player == null)
-            return;
-        ItemStack stack;
-        if (player.getMainHandItem().getItem() instanceof DecalItem)
-            stack = player.getMainHandItem();
-        else if (player.getOffhandItem().getItem() instanceof DecalItem)
-            stack = player.getOffhandItem();
-        else
-            return;
-        if (stack.getOrCreateTag().getString("SelectedTexture").isEmpty())
-            return;
-
-        event.setCanceled(true);
-        precisePlacement = !precisePlacement;
-    }
     public static void rotateAbstraction(InputEvent.MouseScrollingEvent event) {
         if (!DecalPlacement.getPrecisePlacement())
             return;

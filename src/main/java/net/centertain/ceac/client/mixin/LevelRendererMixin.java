@@ -3,6 +3,7 @@ package net.centertain.ceac.client.mixin;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import net.centertain.ceac.decal.ScraperXray;
 import net.centertain.ceac.decal.client.*;
 import net.centertain.ceac.decal.client.render.*;
 import net.centertain.ceac.decal.client.render.TranslucentKBuffer;
@@ -17,6 +18,7 @@ import org.lwjgl.opengl.GL42;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
@@ -200,5 +202,40 @@ public abstract class LevelRendererMixin {
                 GL15.GL_WRITE_ONLY,
                 GL30.GL_RGBA8
         );
+    }
+
+    @ModifyVariable(
+            method = "renderLevel",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/OutlineBufferSource;endOutlineBatch()V"
+            ),
+            ordinal = 2
+    )
+    private boolean ceac$enableScraperXray(boolean flag2) {
+        return flag2 || ScraperXray.getXrayViewActive();
+    }
+
+    @SuppressWarnings("DiscouragedShift")
+    @Inject(
+            method = "renderLevel",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/OutlineBufferSource;endOutlineBatch()V",
+                    shift = At.Shift.BEFORE
+            )
+    )
+    private void ceac$renderScraperXray(
+            PoseStack poseStack,
+            float partialTick,
+            long finishNanoTime,
+            boolean renderBlockOutline,
+            Camera camera,
+            GameRenderer gameRenderer,
+            LightTexture lightTexture,
+            Matrix4f projectionMatrix,
+            CallbackInfo ci
+    ) {
+        ScraperXray.renderXrayView();
     }
 }

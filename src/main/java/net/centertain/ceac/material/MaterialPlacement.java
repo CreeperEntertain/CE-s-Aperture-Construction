@@ -61,26 +61,6 @@ public final class MaterialPlacement {
         RIGHT
     }
 
-    public static void swapAdjustOffset(InputEvent.MouseButton.Pre event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.screen != null)
-            return;
-        if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_MIDDLE)
-            return;
-        if (event.getAction() != GLFW.GLFW_PRESS)
-            return;
-        Player player = minecraft.player;
-        if (player == null)
-            return;
-        boolean mainHand = player.getMainHandItem().getItem() instanceof MatItem;
-        boolean offHand = player.getOffhandItem().getItem() instanceof MatItem;
-        if (!mainHand && !offHand)
-            return;
-        event.setCanceled(true);
-
-        setAdjustOffset(!adjustOffset);
-    }
-
     public static void suppressAdjustOffsetKeys(
             InputEvent.Key event
     ) {
