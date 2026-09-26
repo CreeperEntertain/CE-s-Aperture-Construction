@@ -151,37 +151,15 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
                 referenceNormal.z
         );
 
-        double minU = Double.POSITIVE_INFINITY;
-        double maxU = Double.NEGATIVE_INFINITY;
-        double minV = Double.POSITIVE_INFINITY;
-        double maxV = Double.NEGATIVE_INFINITY;
-
-        double[] projectedU = new double[4];
-        double[] projectedV = new double[4];
-
         for (int i = 0; i < 4; i++) {
-            projectedU[i] = getTextureU(projection, transformed[i]);
-            projectedV[i] = getTextureV(projection, transformed[i]);
+            double u = getTextureU(projection, transformed[i]);
+            double v = getTextureV(projection, transformed[i]);
 
-            minU = Math.min(minU, projectedU[i]);
-            maxU = Math.max(maxU, projectedU[i]);
-            minV = Math.min(minV, projectedV[i]);
-            maxV = Math.max(maxV, projectedV[i]);
+            int offset = i * stride + uvOffset;
+
+            vertices[offset] = Float.floatToRawIntBits(sprite.getU(u * 16.0));
+            vertices[offset + 1] = Float.floatToRawIntBits(sprite.getV(v * 16.0));
         }
-
-        double uSize = maxU - minU;
-        double vSize = maxV - minV;
-
-        if (uSize > 1.0e-7 && vSize > 1.0e-7)
-            for (int i = 0; i < 4; i++) {
-                double u = (projectedU[i] - minU) / uSize;
-                double v = (projectedV[i] - minV) / vSize;
-
-                int offset = i * stride + uvOffset;
-
-                vertices[offset] = Float.floatToRawIntBits(sprite.getU(u * 16.0));
-                vertices[offset + 1] = Float.floatToRawIntBits(sprite.getV(v * 16.0));
-            }
 
         Vec3 normal = transformed[1]
                 .subtract(transformed[0])
