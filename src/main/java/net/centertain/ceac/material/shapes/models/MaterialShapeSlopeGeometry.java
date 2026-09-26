@@ -1,6 +1,6 @@
-package net.centertain.ceac.material.models;
+package net.centertain.ceac.material.shapes.models;
 
-import net.centertain.ceac.material.utility.MaterialShapeHelper;
+import net.centertain.ceac.material.utility.ModelHelper;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
@@ -33,46 +33,46 @@ public class MaterialShapeSlopeGeometry implements IUnbakedGeometry<MaterialShap
         builder.particle(sprite);
 
         // Bottom
-        builder.addUnculledFace(MaterialShapeHelper.quad(
+        builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                MaterialShapeHelper.vertex(0, 0, 0, 0, 1),
-                MaterialShapeHelper.vertex(1, 0, 0, 1, 1),
-                MaterialShapeHelper.vertex(1, 0, 1, 1, 0),
-                MaterialShapeHelper.vertex(0, 0, 1, 0, 0)
+                ModelHelper.vertex(0, 0, 0, 0, 1),
+                ModelHelper.vertex(1, 0, 0, 1, 1),
+                ModelHelper.vertex(1, 0, 1, 1, 0),
+                ModelHelper.vertex(0, 0, 1, 0, 0)
         ));
 
         // Vertical end
-        builder.addUnculledFace(MaterialShapeHelper.quad(
+        builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                MaterialShapeHelper.vertex(1, 0, 0, 1, 1),
-                MaterialShapeHelper.vertex(1, 1, 0, 1, 0),
-                MaterialShapeHelper.vertex(1, 1, 1, 0, 0),
-                MaterialShapeHelper.vertex(1, 0, 1, 0, 1)
+                ModelHelper.vertex(1, 0, 0, 1, 1),
+                ModelHelper.vertex(1, 1, 0, 1, 0),
+                ModelHelper.vertex(1, 1, 1, 0, 0),
+                ModelHelper.vertex(1, 0, 1, 0, 1)
         ));
 
         // Sloped face
-        builder.addUnculledFace(MaterialShapeHelper.quad(
+        builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                MaterialShapeHelper.vertex(0, 0, 0, 0, 1),
-                MaterialShapeHelper.vertex(0, 0, 1, 1, 1),
-                MaterialShapeHelper.vertex(1, 1, 1, 1, 0),
-                MaterialShapeHelper.vertex(1, 1, 0, 0, 0)
+                ModelHelper.vertex(0, 0, 0, 0, 1),
+                ModelHelper.vertex(0, 0, 1, 1, 1),
+                ModelHelper.vertex(1, 1, 1, 1, 0),
+                ModelHelper.vertex(1, 1, 0, 0, 0)
         ));
 
         // Triangle at z = 0
-        builder.addUnculledFace(MaterialShapeHelper.triangle(
+        builder.addUnculledFace(ModelHelper.triangle(
                 sprite,
-                MaterialShapeHelper.vertex(0, 0, 0, 1, 1),
-                MaterialShapeHelper.vertex(1, 1, 0, 0, 0),
-                MaterialShapeHelper.vertex(1, 0, 0, 0, 1)
+                ModelHelper.vertex(0, 0, 0, 1, 1),
+                ModelHelper.vertex(1, 1, 0, 0, 0),
+                ModelHelper.vertex(1, 0, 0, 0, 1)
         ));
 
         // Triangle at z = 1
-        builder.addUnculledFace(MaterialShapeHelper.triangle(
+        builder.addUnculledFace(ModelHelper.triangle(
                 sprite,
-                MaterialShapeHelper.vertex(0, 0, 1, 0, 1),
-                MaterialShapeHelper.vertex(1, 0, 1, 1, 1),
-                MaterialShapeHelper.vertex(1, 1, 1, 1, 0)
+                ModelHelper.vertex(0, 0, 1, 0, 1),
+                ModelHelper.vertex(1, 0, 1, 1, 1),
+                ModelHelper.vertex(1, 1, 1, 1, 0)
         ));
 
         return builder.build(context.getRenderType(modelLocation));

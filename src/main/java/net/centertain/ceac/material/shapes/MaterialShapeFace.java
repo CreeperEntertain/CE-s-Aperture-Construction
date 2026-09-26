@@ -1,6 +1,7 @@
-package net.centertain.ceac.material;
+package net.centertain.ceac.material.shapes;
 
 import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.material.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;

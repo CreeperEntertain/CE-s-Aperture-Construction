@@ -2,6 +2,11 @@ package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.material.*;
+import net.centertain.ceac.material.particle.MaterialBreakingParticle;
+import net.centertain.ceac.material.preview.MaterialPlacement;
+import net.centertain.ceac.material.preview.MaterialPreviewer;
+import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
+import net.centertain.ceac.material.shapes.MaterialShapeFace;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;

@@ -2,7 +2,7 @@ package net.centertain.ceac.network;
 
 import net.centertain.ceac.decal.network.SyncDecalItemPacket;
 import net.centertain.ceac.decal.network.SyncDecalPacket;
-import net.centertain.ceac.material.MaterialOffsetPacket;
+import net.centertain.ceac.material.network.MaterialOffsetPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;

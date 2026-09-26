@@ -1,10 +1,10 @@
-package net.centertain.ceac.material;
+package net.centertain.ceac.material.item;
 
 import net.centertain.ceac.item.custom.MatItem;
-import net.centertain.ceac.material.utility.MaterialShapeHelper;
+import net.centertain.ceac.material.Material;
+import net.centertain.ceac.material.utility.ModelHelper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBaker;
@@ -78,12 +78,12 @@ public class MatItemGeometry implements IUnbakedGeometry<MatItemGeometry> {
 
                 TextureAtlasSprite frontSprite = sprites.apply(new net.minecraft.client.resources.model.Material(InventoryMenu.BLOCK_ATLAS, frontTexture));
 
-                quads.add(MaterialShapeHelper.quad(
+                quads.add(ModelHelper.quad(
                         frontSprite,
-                        MaterialShapeHelper.vertex(x0, y0, z, 0.0F, 1.0F),
-                        MaterialShapeHelper.vertex(x1, y0, z, 1.0F, 1.0F),
-                        MaterialShapeHelper.vertex(x1, y1, z, 1.0F, 0.0F),
-                        MaterialShapeHelper.vertex(x0, y1, z, 0.0F, 0.0F)
+                        ModelHelper.vertex(x0, y0, z, 0.0F, 1.0F),
+                        ModelHelper.vertex(x1, y0, z, 1.0F, 1.0F),
+                        ModelHelper.vertex(x1, y1, z, 1.0F, 0.0F),
+                        ModelHelper.vertex(x0, y1, z, 0.0F, 0.0F)
                 ));
 
                 int backX = width - 1 - x;
@@ -93,12 +93,12 @@ public class MatItemGeometry implements IUnbakedGeometry<MatItemGeometry> {
 
                 TextureAtlasSprite backSprite = sprites.apply(new net.minecraft.client.resources.model.Material(InventoryMenu.BLOCK_ATLAS, backTexture));
 
-                quads.add(MaterialShapeHelper.quad(
+                quads.add(ModelHelper.quad(
                         backSprite,
-                        MaterialShapeHelper.vertex(x0, y0, z, 1.0F, 1.0F),
-                        MaterialShapeHelper.vertex(x0, y1, z, 1.0F, 0.0F),
-                        MaterialShapeHelper.vertex(x1, y1, z, 0.0F, 0.0F),
-                        MaterialShapeHelper.vertex(x1, y0, z, 0.0F, 1.0F)
+                        ModelHelper.vertex(x0, y0, z, 1.0F, 1.0F),
+                        ModelHelper.vertex(x0, y1, z, 1.0F, 0.0F),
+                        ModelHelper.vertex(x1, y1, z, 0.0F, 0.0F),
+                        ModelHelper.vertex(x1, y0, z, 0.0F, 1.0F)
                 ));
             }
         }

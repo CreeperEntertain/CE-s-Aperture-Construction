@@ -1,4 +1,4 @@
-package net.centertain.ceac.material;
+package net.centertain.ceac.material.item;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;

@@ -1,6 +1,8 @@
-package net.centertain.ceac.material;
+package net.centertain.ceac.material.shapes;
 
 import net.centertain.ceac.block_entity.ModBlockEntities;
+import net.centertain.ceac.material.Material;
+import net.centertain.ceac.material.ModMaterials;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;

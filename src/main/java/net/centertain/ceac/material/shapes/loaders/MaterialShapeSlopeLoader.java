@@ -1,9 +1,9 @@
-package net.centertain.ceac.material.loaders;
+package net.centertain.ceac.material.shapes.loaders;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.centertain.ceac.material.models.MaterialShapeSlopeGeometry;
+import net.centertain.ceac.material.shapes.models.MaterialShapeSlopeGeometry;
 import net.minecraftforge.client.model.geometry.IGeometryLoader;
 
 public enum MaterialShapeSlopeLoader implements IGeometryLoader<MaterialShapeSlopeGeometry> {

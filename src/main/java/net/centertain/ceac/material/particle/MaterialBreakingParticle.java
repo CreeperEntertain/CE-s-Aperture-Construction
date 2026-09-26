@@ -1,4 +1,4 @@
-package net.centertain.ceac.material;
+package net.centertain.ceac.material.particle;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;

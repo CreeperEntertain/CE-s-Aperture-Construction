@@ -1,4 +1,4 @@
-package net.centertain.ceac.material;
+package net.centertain.ceac.material.shapes;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;

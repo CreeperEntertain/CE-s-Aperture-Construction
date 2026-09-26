@@ -1,4 +1,4 @@
-package net.centertain.ceac.material;
+package net.centertain.ceac.material.particle;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;

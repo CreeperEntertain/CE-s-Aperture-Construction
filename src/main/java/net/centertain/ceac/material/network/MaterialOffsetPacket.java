@@ -1,4 +1,4 @@
-package net.centertain.ceac.material;
+package net.centertain.ceac.material.network;
 
 import net.centertain.ceac.item.custom.MatItem;
 import net.minecraft.network.FriendlyByteBuf;

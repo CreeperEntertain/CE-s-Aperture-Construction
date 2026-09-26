@@ -1,6 +1,7 @@
 package net.centertain.ceac.material;
 
 import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.material.shapes.MaterialShapeFace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;

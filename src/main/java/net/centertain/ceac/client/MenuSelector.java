@@ -5,7 +5,7 @@ import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.item.custom.DecalItem;
 import net.centertain.ceac.item.custom.MatItem;
 import net.centertain.ceac.item.custom.ScraperItem;
-import net.centertain.ceac.material.MaterialPlacement;
+import net.centertain.ceac.material.preview.MaterialPlacement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.InputEvent;

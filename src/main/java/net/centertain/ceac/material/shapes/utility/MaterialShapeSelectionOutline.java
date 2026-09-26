@@ -1,4 +1,4 @@
-package net.centertain.ceac.material.utility;
+package net.centertain.ceac.material.shapes.utility;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;

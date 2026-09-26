@@ -1,7 +1,7 @@
 package net.centertain.ceac.block_entity;
 
 import net.centertain.ceac.block.ModBlocks;
-import net.centertain.ceac.material.MaterialShapeBlockEntity;
+import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;

@@ -2,7 +2,7 @@ package net.centertain.ceac.client.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.centertain.ceac.material.MaterialShapeBakedModel;
+import net.centertain.ceac.material.shapes.MaterialShapeBakedModel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;

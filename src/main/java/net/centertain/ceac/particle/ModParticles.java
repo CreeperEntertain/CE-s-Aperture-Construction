@@ -1,7 +1,7 @@
 package net.centertain.ceac.particle;
 
 import com.mojang.serialization.Codec;
-import net.centertain.ceac.material.MaterialParticleOptions;
+import net.centertain.ceac.material.particle.MaterialParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;

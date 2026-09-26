@@ -1,9 +1,11 @@
-package net.centertain.ceac.material;
+package net.centertain.ceac.material.preview;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.GuiConstants;
 import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.material.Material;
+import net.centertain.ceac.material.shapes.MaterialShapeFace;
 import net.centertain.ceac.phys_screen.MaterialPreviewerHelpScreen;
 import net.centertain.ceac.phys_screen.framework.PhysScreen;
 import net.centertain.ceac.phys_screen.utility.PhysRenderer;
