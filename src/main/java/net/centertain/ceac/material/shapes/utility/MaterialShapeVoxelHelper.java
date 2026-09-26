@@ -133,8 +133,6 @@ public final class MaterialShapeVoxelHelper {
 
     private static boolean[][][] rasterize(List<Triangle> triangles) {
         boolean[][][] voxels = new boolean[SIZE][SIZE][SIZE];
-        double radius = Math.sqrt(3.0) / (2.0 * SIZE) - EPSILON;
-        double radiusSqr = radius * radius;
 
         for (Triangle triangle : triangles) {
             double minX = Math.min(triangle.a.x(), Math.min(triangle.b.x(), triangle.c.x()));
@@ -144,25 +142,18 @@ public final class MaterialShapeVoxelHelper {
             double maxY = Math.max(triangle.a.y(), Math.max(triangle.b.y(), triangle.c.y()));
             double maxZ = Math.max(triangle.a.z(), Math.max(triangle.b.z(), triangle.c.z()));
 
-            int startX = Math.max(0, (int) Math.floor(minX * SIZE) - 1);
+            int startX = Math.max(0, (int) Math.floor(minX * SIZE));
             int endX = Math.min(SIZE - 1, (int) Math.ceil(maxX * SIZE));
-            int startY = Math.max(0, (int) Math.floor(minY * SIZE) - 1);
+            int startY = Math.max(0, (int) Math.floor(minY * SIZE));
             int endY = Math.min(SIZE - 1, (int) Math.ceil(maxY * SIZE));
-            int startZ = Math.max(0, (int) Math.floor(minZ * SIZE) - 1);
+            int startZ = Math.max(0, (int) Math.floor(minZ * SIZE));
             int endZ = Math.min(SIZE - 1, (int) Math.ceil(maxZ * SIZE));
 
             for (int x = startX; x <= endX; x++)
                 for (int y = startY; y <= endY; y++)
-                    for (int z = startZ; z <= endZ; z++) {
-                        Vec3 center = new Vec3(
-                                (x + 0.5) / SIZE,
-                                (y + 0.5) / SIZE,
-                                (z + 0.5) / SIZE
-                        );
-
-                        if (distanceSquared(center, triangle) < radiusSqr)
+                    for (int z = startZ; z <= endZ; z++)
+                        if (triangleIntersectsVoxel(triangle, x, y, z))
                             voxels[x][y][z] = true;
-                    }
         }
 
         fillInterior(voxels);
@@ -170,56 +161,95 @@ public final class MaterialShapeVoxelHelper {
         return voxels;
     }
 
-    private static double distanceSquared(
-            Vec3 point,
-            Triangle triangle
+    private static boolean triangleIntersectsVoxel(
+            Triangle triangle,
+            int x,
+            int y,
+            int z
     ) {
-        Vec3 ab = triangle.b.subtract(triangle.a);
-        Vec3 ac = triangle.c.subtract(triangle.a);
-        Vec3 ap = point.subtract(triangle.a);
+        double minX = x / (double) SIZE;
+        double minY = y / (double) SIZE;
+        double minZ = z / (double) SIZE;
+        double maxX = (x + 1) / (double) SIZE;
+        double maxY = (y + 1) / (double) SIZE;
+        double maxZ = (z + 1) / (double) SIZE;
 
-        double d1 = ab.dot(ap);
-        double d2 = ac.dot(ap);
-        if (d1 <= 0.0 && d2 <= 0.0)
-            return point.distanceToSqr(triangle.a);
+        List<Vec3> polygon = List.of(triangle.a, triangle.b, triangle.c);
 
-        Vec3 bp = point.subtract(triangle.b);
-        double d3 = ab.dot(bp);
-        double d4 = ac.dot(bp);
-        if (d3 >= 0.0 && d4 <= d3)
-            return point.distanceToSqr(triangle.b);
+        polygon = clipPolygon(polygon, 0, minX, true);
+        polygon = clipPolygon(polygon, 0, maxX, false);
+        polygon = clipPolygon(polygon, 1, minY, true);
+        polygon = clipPolygon(polygon, 1, maxY, false);
+        polygon = clipPolygon(polygon, 2, minZ, true);
+        polygon = clipPolygon(polygon, 2, maxZ, false);
 
-        double vc = d1 * d4 - d3 * d2;
-        if (vc <= 0.0 && d1 >= 0.0 && d3 <= 0.0) {
-            double v = d1 / (d1 - d3);
-            Vec3 projection = triangle.a.add(ab.scale(v));
-            return point.distanceToSqr(projection);
+        if (polygon.size() < 3)
+            return false;
+
+        Vec3 origin = polygon.get(0);
+        double area = 0.0;
+
+        for (int i = 1; i < polygon.size() - 1; i++)
+            area += polygon.get(i)
+                    .subtract(origin)
+                    .cross(polygon.get(i + 1).subtract(origin))
+                    .length() * 0.5;
+
+        return area > EPSILON;
+    }
+
+    private static List<Vec3> clipPolygon(
+            List<Vec3> polygon,
+            int axis,
+            double boundary,
+            boolean keepGreater
+    ) {
+        if (polygon.isEmpty())
+            return polygon;
+
+        List<Vec3> clipped = new ArrayList<>();
+
+        Vec3 previous = polygon.get(polygon.size() - 1);
+        double previousValue = getAxis(previous, axis);
+        boolean previousInside = keepGreater
+                ? previousValue >= boundary - EPSILON
+                : previousValue <= boundary + EPSILON;
+
+        for (Vec3 current : polygon) {
+            double currentValue = getAxis(current, axis);
+            boolean currentInside = keepGreater
+                    ? currentValue >= boundary - EPSILON
+                    : currentValue <= boundary + EPSILON;
+
+            if (currentInside != previousInside) {
+                double denominator = currentValue - previousValue;
+                if (Math.abs(denominator) > EPSILON) {
+                    double t = (boundary - previousValue) / denominator;
+                    clipped.add(previous.add(current.subtract(previous).scale(t)));
+                }
+            }
+
+            if (currentInside)
+                clipped.add(current);
+
+            previous = current;
+            previousValue = currentValue;
+            previousInside = currentInside;
         }
 
-        Vec3 cp = point.subtract(triangle.c);
-        double d5 = ab.dot(cp);
-        double d6 = ac.dot(cp);
-        if (d6 >= 0.0 && d5 <= d6)
-            return point.distanceToSqr(triangle.c);
+        return clipped;
+    }
 
-        double vb = d5 * d2 - d1 * d6;
-        if (vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0) {
-            double w = d2 / (d2 - d6);
-            Vec3 projection = triangle.a.add(ac.scale(w));
-            return point.distanceToSqr(projection);
-        }
-
-        double va = d3 * d6 - d5 * d4;
-        if (va <= 0.0 && (d4 - d3) >= 0.0 && (d5 - d6) >= 0.0) {
-            double w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
-            Vec3 projection = triangle.b.add(triangle.c.subtract(triangle.b).scale(w));
-            return point.distanceToSqr(projection);
-        }
-
-        Vec3 normal = ab.cross(ac).normalize();
-        double distance = point.subtract(triangle.a).dot(normal);
-
-        return distance * distance;
+    private static double getAxis(
+            Vec3 point,
+            int axis
+    ) {
+        return switch (axis) {
+            case 0 -> point.x;
+            case 1 -> point.y;
+            case 2 -> point.z;
+            default -> throw new IllegalArgumentException("Invalid axis: " + axis);
+        };
     }
 
     private static void fillInterior(boolean[][][] voxels) {
