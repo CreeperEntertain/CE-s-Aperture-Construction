@@ -2,7 +2,7 @@ package net.centertain.ceac.block.custom.material_shapes;
 
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.material.shapes.models.MaterialShapeSlopeGeometry;
-import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper;
+import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class MaterialShapeSlope extends MaterialShapeRotatable24Way {
     private static final Map<Direction, VoxelShape[]> SHAPES =
-            MaterialShapeVoxelHelper.makeShapes(() -> MaterialShapeSlopeGeometry.COLLISION_SHAPE);
+            MaterialShapeVoxelHelper24Way.makeShapes(() -> MaterialShapeSlopeGeometry.COLLISION_SHAPE);
 
     public MaterialShapeSlope(Properties properties) {
         super(properties);

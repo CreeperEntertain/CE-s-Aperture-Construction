@@ -2,24 +2,20 @@ package net.centertain.ceac.block.custom.material_shapes;
 
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.material.shapes.models.MaterialShapeHalfSlopeBottomGeometry;
-import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper;
+import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.EnumMap;
 import java.util.Map;
 
 public class MaterialShapeHalfSlopeBottom extends MaterialShapeRotatable24Way {
     private static final Map<Direction, VoxelShape[]> SHAPES =
-            MaterialShapeVoxelHelper.makeShapes(() -> MaterialShapeHalfSlopeBottomGeometry.COLLISION_SHAPE);
+            MaterialShapeVoxelHelper24Way.makeShapes(() -> MaterialShapeHalfSlopeBottomGeometry.COLLISION_SHAPE);
 
     public MaterialShapeHalfSlopeBottom(Properties properties) {
         super(properties);

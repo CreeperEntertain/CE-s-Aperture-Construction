@@ -16,11 +16,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Supplier;
 
-public final class MaterialShapeVoxelHelper {
+public final class MaterialShapeVoxelHelper24Way {
     private static final int SIZE = 16;
     private static final double EPSILON = 1.0e-9;
 
-    private MaterialShapeVoxelHelper() {}
+    private MaterialShapeVoxelHelper24Way() {}
 
     public static Map<Direction, VoxelShape[]> makeShapes(
             Supplier<BakedModel> source
