@@ -11,6 +11,8 @@ import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import java.util.function.Function;
 
 public class MaterialShapeSlopeGeometry implements IUnbakedGeometry<MaterialShapeSlopeGeometry> {
+    public static BakedModel COLLISION_SHAPE;
+
     @Override
     public BakedModel bake(
             IGeometryBakingContext context,
@@ -75,6 +77,7 @@ public class MaterialShapeSlopeGeometry implements IUnbakedGeometry<MaterialShap
                 ModelHelper.vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f)
         ));
 
-        return builder.build(context.getRenderType(modelLocation));
+        COLLISION_SHAPE = builder.build(context.getRenderType(modelLocation));
+        return COLLISION_SHAPE;
     }
 }
