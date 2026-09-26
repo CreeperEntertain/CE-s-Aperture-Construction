@@ -7,6 +7,7 @@ import net.centertain.ceac.material.item.MatItemLoader;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;
 import net.centertain.ceac.material.shapes.MaterialShapeBakedModel;
 import net.centertain.ceac.material.shapes.loaders.MaterialShapeHalfSlopeBottomLoader;
+import net.centertain.ceac.material.shapes.loaders.MaterialShapeHalfSlopeTopLoader;
 import net.centertain.ceac.material.shapes.loaders.MaterialShapeSlopeLoader;
 import net.centertain.ceac.particle.ModParticles;
 import net.minecraft.client.Minecraft;
@@ -103,6 +104,7 @@ public class ClientModEvents
     public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
         event.register("material_shape_slope", MaterialShapeSlopeLoader.INSTANCE);
         event.register("material_shape_half_slope_bottom", MaterialShapeHalfSlopeBottomLoader.INSTANCE);
+        event.register("material_shape_half_slope_top", MaterialShapeHalfSlopeTopLoader.INSTANCE);
 
         event.register("material_item", MatItemLoader.INSTANCE);
     }
