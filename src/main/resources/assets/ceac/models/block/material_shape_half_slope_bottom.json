@@ -1,0 +1,6 @@
+{
+  "loader": "ceac:material_shape_half_slope_bottom",
+  "textures": {
+    "texture": "ceac:block/material_shape"
+  }
+}

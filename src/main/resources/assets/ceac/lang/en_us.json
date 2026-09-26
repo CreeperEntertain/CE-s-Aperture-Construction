@@ -15,6 +15,7 @@
 
   "block.ceac.material_shape_block": "Material Shape: Block",
   "block.ceac.material_shape_slope": "Material Shape: Slope",
+  "block.ceac.material_shape_half_slope_bottom": "Material Shape: Half Slope (Bottom)",
 
   "sound.ceac.decal.placement": "Decal placed",
   "sound.ceac.decal.deletion": "Decal removed",

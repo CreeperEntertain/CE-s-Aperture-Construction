@@ -3,6 +3,7 @@ package net.centertain.ceac.material.shapes;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.block.custom.material_shapes.MaterialShapeSlope;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
@@ -79,11 +80,11 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
             BakedQuad quad,
             BlockState state
     ) {
-        if (!(state.getBlock() instanceof MaterialShapeSlope))
+        if (!(state.getBlock() instanceof MaterialShapeRotatable24Way))
             return quad;
 
-        Direction facing = state.getValue(MaterialShapeSlope.FACING);
-        int rotation = state.getValue(MaterialShapeSlope.ROTATION);
+        Direction facing = state.getValue(MaterialShapeRotatable24Way.FACING);
+        int rotation = state.getValue(MaterialShapeRotatable24Way.ROTATION);
 
         Vec3 forward = direction(facing);
 

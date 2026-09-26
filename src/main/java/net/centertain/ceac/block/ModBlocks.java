@@ -1,6 +1,7 @@
 package net.centertain.ceac.block;
 
 import net.centertain.ceac.block.custom.material_shapes.MaterialShapeBlock;
+import net.centertain.ceac.block.custom.material_shapes.MaterialShapeHalfSlopeBottom;
 import net.centertain.ceac.block.custom.material_shapes.MaterialShapeSlope;
 import net.centertain.ceac.item.ModItems;
 import net.minecraft.world.item.BlockItem;
@@ -25,6 +26,8 @@ public final class ModBlocks {
             () -> new MaterialShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
     public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope",
             () -> new MaterialShapeSlope(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_SLOPE_BOTTOM = registerBlock("material_shape_half_slope_bottom",
+            () -> new MaterialShapeHalfSlopeBottom(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
 
 
     private static <T extends Block> RegistryObject<T> registerBlock(

@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "ceac:block/material_shape_half_slope_bottom"
+      }
+    }
+  ]
+}
