@@ -35,44 +35,44 @@ public class MaterialShapeSlopeGeometry implements IUnbakedGeometry<MaterialShap
         // Bottom
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(0, 0, 0, 0, 1),
-                ModelHelper.vertex(1, 0, 0, 1, 1),
-                ModelHelper.vertex(1, 0, 1, 1, 0),
-                ModelHelper.vertex(0, 0, 1, 0, 0)
+                ModelHelper.vertex(0.0f, 0.0f, 0.0f, 0.0f, 1.0f),
+                ModelHelper.vertex(1.0f, 0.0f, 0.0f, 1.0f, 1.0f),
+                ModelHelper.vertex(1.0f, 0.0f, 1.0f, 1.0f, 0.0f),
+                ModelHelper.vertex(0.0f, 0.0f, 1.0f, 0.0f, 0.0f)
         ));
 
         // Vertical end
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(1, 0, 0, 1, 1),
-                ModelHelper.vertex(1, 1, 0, 1, 0),
-                ModelHelper.vertex(1, 1, 1, 0, 0),
-                ModelHelper.vertex(1, 0, 1, 0, 1)
+                ModelHelper.vertex(1.0f, 0.0f, 0.0f, 1.0f, 1.0f),
+                ModelHelper.vertex(1.0f, 1.0f, 0.0f, 1.0f, 0.0f),
+                ModelHelper.vertex(1.0f, 1.0f, 1.0f, 0.0f, 0.0f),
+                ModelHelper.vertex(1.0f, 0.0f, 1.0f, 0.0f, 1.0f)
         ));
 
         // Sloped face
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(0, 0, 0, 0, 1),
-                ModelHelper.vertex(0, 0, 1, 1, 1),
-                ModelHelper.vertex(1, 1, 1, 1, 0),
-                ModelHelper.vertex(1, 1, 0, 0, 0)
+                ModelHelper.vertex(0.0f, 0.0f, 0.0f, 0.0f, 1.0f),
+                ModelHelper.vertex(0.0f, 0.0f, 1.0f, 1.0f, 1.0f),
+                ModelHelper.vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f),
+                ModelHelper.vertex(1.0f, 1.0f, 0.0f, 0.0f, 0.0f)
         ));
 
         // Triangle at z = 0
         builder.addUnculledFace(ModelHelper.triangle(
                 sprite,
-                ModelHelper.vertex(0, 0, 0, 1, 1),
-                ModelHelper.vertex(1, 1, 0, 0, 0),
-                ModelHelper.vertex(1, 0, 0, 0, 1)
+                ModelHelper.vertex(0.0f, 0.0f, 0.0f, 1.0f, 1.0f),
+                ModelHelper.vertex(1.0f, 1.0f, 0.0f, 0.0f, 0.0f),
+                ModelHelper.vertex(1.0f, 0.0f, 0.0f, 0.0f, 1.0f)
         ));
 
         // Triangle at z = 1
         builder.addUnculledFace(ModelHelper.triangle(
                 sprite,
-                ModelHelper.vertex(0, 0, 1, 0, 1),
-                ModelHelper.vertex(1, 0, 1, 1, 1),
-                ModelHelper.vertex(1, 1, 1, 1, 0)
+                ModelHelper.vertex(0.0f, 0.0f, 1.0f, 0.0f, 1.0f),
+                ModelHelper.vertex(1.0f, 0.0f, 1.0f, 1.0f, 1.0f),
+                ModelHelper.vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f)
         ));
 
         return builder.build(context.getRenderType(modelLocation));
