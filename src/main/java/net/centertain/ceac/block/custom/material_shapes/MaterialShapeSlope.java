@@ -1,6 +1,7 @@
 package net.centertain.ceac.block.custom.material_shapes;
 
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
+import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -12,11 +13,11 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.EnumMap;
 import java.util.Map;
 
 public class MaterialShapeSlope extends MaterialShapeRotatable24Way {
-    private static final Map<Direction, VoxelShape[]> SHAPES = makeShapes();
+    private static final Map<Direction, VoxelShape[]> SHAPES =
+            MaterialShapeVoxelHelper.makeShapes(MaterialShapeSlope::makeShape);
 
     public MaterialShapeSlope(Properties properties) {
         super(properties);
@@ -31,21 +32,6 @@ public class MaterialShapeSlope extends MaterialShapeRotatable24Way {
             @NotNull CollisionContext context
     ) {
         return SHAPES.get(state.getValue(FACING))[state.getValue(ROTATION)];
-    }
-
-    private static Map<Direction, VoxelShape[]> makeShapes() {
-        Map<Direction, VoxelShape[]> shapes = new EnumMap<>(Direction.class);
-
-        for (Direction facing : Direction.values()) {
-            VoxelShape[] rotations = new VoxelShape[4];
-
-            for (int rotation = 0; rotation < 4; rotation++)
-                rotations[rotation] = makeShape(facing, rotation);
-
-            shapes.put(facing, rotations);
-        }
-
-        return Map.copyOf(shapes);
     }
 
     private static VoxelShape makeShape(
