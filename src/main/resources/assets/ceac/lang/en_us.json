@@ -24,6 +24,11 @@
   "block.ceac.material_shape_block": "Material Shape: Block",
 
   "block.ceac.material_shape_slope": "Material Shape: Slope",
+  "block.ceac.material_shape_full_corner_outer": "Material Shape: Full Corner (Outer)",
+  "block.ceac.material_shape_full_corner_inner": "Material Shape: Full Corner (Inner)",
+  "block.ceac.material_shape_full_roof": "Material Shape: Full Roof",
+  "block.ceac.material_shape_full_roof_end": "Material Shape: Full Roof (end)",
+  "block.ceac.material_shape_full_pyramid": "Material Shape: Full Pyramid",
 
   "block.ceac.material_shape_half_slope_bottom": "Material Shape: Half Slope (Bottom)",
   "block.ceac.material_shape_half_slope_top": "Material Shape: Half Slope (Top)",

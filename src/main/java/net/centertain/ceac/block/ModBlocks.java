@@ -1,13 +1,13 @@
 package net.centertain.ceac.block;
 
 import net.centertain.ceac.block.custom.material_shapes.*;
+import net.centertain.ceac.block.custom.material_shapes.full_slopes.*;
 import net.centertain.ceac.block.custom.material_shapes.half_slopes.HalfSlopeBottom;
 import net.centertain.ceac.block.custom.material_shapes.half_slopes.HalfSlopeTop;
 import net.centertain.ceac.block.custom.material_shapes.quarter_slopes.QuarterSlopeFirst;
 import net.centertain.ceac.block.custom.material_shapes.quarter_slopes.QuarterSlopeFourth;
 import net.centertain.ceac.block.custom.material_shapes.quarter_slopes.QuarterSlopeSecond;
 import net.centertain.ceac.block.custom.material_shapes.quarter_slopes.QuarterSlopeThird;
-import net.centertain.ceac.block.custom.material_shapes.full_slopes.Slope;
 import net.centertain.ceac.block.custom.material_shapes.third_slopes.ThirdSlopeFirst;
 import net.centertain.ceac.block.custom.material_shapes.third_slopes.ThirdSlopeSecond;
 import net.centertain.ceac.block.custom.material_shapes.third_slopes.ThirdSlopeThird;
@@ -34,6 +34,16 @@ public final class ModBlocks {
 
     public static final RegistryObject<net.minecraft.world.level.block.Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope",
             () -> new Slope(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<net.minecraft.world.level.block.Block> MATERIAL_SHAPE_FULL_CORNER_OUTER = registerBlock("material_shape_full_corner_outer",
+            () -> new FullCornerOuter(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<net.minecraft.world.level.block.Block> MATERIAL_SHAPE_FULL_CORNER_INNER = registerBlock("material_shape_full_corner_inner",
+            () -> new FullCornerInner(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<net.minecraft.world.level.block.Block> MATERIAL_SHAPE_FULL_ROOF = registerBlock("material_shape_full_roof",
+            () -> new FullRoof(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<net.minecraft.world.level.block.Block> MATERIAL_SHAPE_FULL_ROOF_END = registerBlock("material_shape_full_roof_end",
+            () -> new FullRoofEnd(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<net.minecraft.world.level.block.Block> MATERIAL_SHAPE_FULL_PYRAMID = registerBlock("material_shape_full_pyramid",
+            () -> new FullPyramid(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
 
     public static final RegistryObject<net.minecraft.world.level.block.Block> MATERIAL_SHAPE_HALF_SLOPE_BOTTOM = registerBlock("material_shape_half_slope_bottom",
             () -> new HalfSlopeBottom(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
