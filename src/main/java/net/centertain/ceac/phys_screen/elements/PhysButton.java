@@ -3,7 +3,7 @@ package net.centertain.ceac.phys_screen.elements;
 import net.centertain.ceac.phys_screen.framework.*;
 import org.jetbrains.annotations.NotNull;
 
-public class PhysButton implements PhysElement, PhysHoverable, PhysClickable {
+public class PhysButton implements PhysElement, PhysHoverable, PhysClickable, PhysElementContainer {
     private boolean isHovered;
 
     private int x;
