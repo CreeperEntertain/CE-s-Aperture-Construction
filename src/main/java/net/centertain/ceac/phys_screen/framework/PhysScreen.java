@@ -12,11 +12,6 @@ import java.util.List;
 public class PhysScreen extends Screen {
     private final List<PhysElement> physElements = new ArrayList<>();
 
-    private final List<PhysHoverable> hoverables = new ArrayList<>();
-    private final List<PhysClickable> clickables = new ArrayList<>();
-    private final List<PhysElementContainer> containers = new ArrayList<>();
-    private final List<PhysElementLister> listers = new ArrayList<>();
-
     protected PhysScreen(Component title) {
         super(title);
     }
@@ -29,14 +24,6 @@ public class PhysScreen extends Screen {
 
         if (element instanceof GuiEventListener && element instanceof NarratableEntry)
             addWidget((GuiEventListener & NarratableEntry) element);
-        if (element instanceof PhysHoverable hoverable)
-            hoverables.add(hoverable);
-        if (element instanceof PhysClickable clickable)
-            clickables.add(clickable);
-        if (element instanceof PhysElementContainer container)
-            containers.add(container);
-        if (element instanceof PhysElementLister lister)
-            listers.add(lister);
 
         return element;
     }
@@ -116,16 +103,19 @@ public class PhysScreen extends Screen {
         )
             return false;
 
-        for (PhysClickable clickable : clickables)
-            if (clickable.registerClick())
-                return true;
-        for (PhysElementContainer container : containers) {
-            if (!(container.getElement() instanceof PhysClickable clickable))
-                continue;
-            if (clickable.registerClick())
-                return true;
-        }
+        for (PhysElement element : physElements)
+            processElementClick(element);
 
         return false;
+    }
+
+    private void processElementClick(PhysElement element) {
+        if (element instanceof PhysClickable clickable)
+            clickable.registerClick();
+        if (element instanceof PhysElementContainer container)
+            processElementClick(container.getElement());
+        if (element instanceof PhysElementLister lister)
+            for (PhysElement listedElement : lister.getElements())
+                processElementClick(listedElement);
     }
 }
