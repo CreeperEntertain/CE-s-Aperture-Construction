@@ -1,6 +1,10 @@
 package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.phys_screen.framework.*;
+import net.centertain.ceac.phys_screen.framework.element_types.PhysClickable;
+import net.centertain.ceac.phys_screen.framework.element_types.PhysElementContainer;
+import net.centertain.ceac.phys_screen.framework.element_types.PhysHoverable;
+import net.centertain.ceac.phys_screen.framework.element_types.PhysReactable;
 import org.jetbrains.annotations.NotNull;
 
 public class PhysButton implements PhysElement, PhysHoverable, PhysClickable, PhysElementContainer {

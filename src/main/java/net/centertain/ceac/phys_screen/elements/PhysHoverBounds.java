@@ -2,7 +2,7 @@ package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
-import net.centertain.ceac.phys_screen.framework.PhysHoverable;
+import net.centertain.ceac.phys_screen.framework.element_types.PhysHoverable;
 import org.jetbrains.annotations.NotNull;
 
 public class PhysHoverBounds implements PhysElement, PhysHoverable {

@@ -1,11 +1,9 @@
 package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.phys_screen.framework.PhysElement;
-import net.centertain.ceac.phys_screen.framework.PhysElementContainer;
+import net.centertain.ceac.phys_screen.framework.element_types.PhysElementContainer;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import org.jetbrains.annotations.NotNull;
-
-import java.awt.*;
 
 public class PhysPadder implements PhysElement, PhysElementContainer {
     private int x;

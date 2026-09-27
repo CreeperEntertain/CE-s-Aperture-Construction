@@ -2,12 +2,11 @@ package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
-import net.centertain.ceac.phys_screen.framework.PhysReactable;
+import net.centertain.ceac.phys_screen.framework.element_types.PhysReactable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
 import java.util.function.Supplier;
 
 public class PhysMarquee implements PhysElement, PhysReactable {
