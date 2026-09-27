@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
-import net.centertain.ceac.block.custom.material_shapes.MaterialShapeSlope;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
