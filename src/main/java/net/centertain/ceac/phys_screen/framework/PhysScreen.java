@@ -67,7 +67,7 @@ public class PhysScreen extends Screen {
                 mouseY < getScreenHeight();
 
         for (GuiEventListener child : children()) {
-            if (child instanceof PhysButton button)
+            if (child instanceof PhysHoverable button)
                 button.updatePhysicalHover(
                         mouseX,
                         mouseY
