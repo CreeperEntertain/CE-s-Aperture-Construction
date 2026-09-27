@@ -1,4 +1,4 @@
-package net.centertain.ceac.material.shapes.models.third_slopes;
+package net.centertain.ceac.material.shapes.models.third_slopes.third;
 
 import net.centertain.ceac.material.utility.ModelHelper;
 import net.minecraft.client.renderer.block.model.ItemOverrides;

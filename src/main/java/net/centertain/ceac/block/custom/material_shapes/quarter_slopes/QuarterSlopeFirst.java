@@ -1,7 +1,7 @@
 package net.centertain.ceac.block.custom.material_shapes.quarter_slopes;
 
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
-import net.centertain.ceac.material.shapes.models.quarter_slopes.QuarterSlopeFirstGeometry;
+import net.centertain.ceac.material.shapes.models.quarter_slopes.first.QuarterSlopeFirstGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
