@@ -1,4 +1,4 @@
-package net.centertain.ceac.material.shapes.models.half_slopes;
+package net.centertain.ceac.material.shapes.models.half_slopes.top;
 
 import net.centertain.ceac.material.utility.ModelHelper;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
@@ -10,7 +10,7 @@ import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 
 import java.util.function.Function;
 
-public class HalfSlopeTopGeometry implements IUnbakedGeometry<HalfSlopeTopGeometry> {
+public class HalfCornerInnerTopGeometry implements IUnbakedGeometry<HalfCornerInnerTopGeometry> {
     public static BakedModel COLLISION_SHAPE;
 
     @Override
@@ -36,33 +36,33 @@ public class HalfSlopeTopGeometry implements IUnbakedGeometry<HalfSlopeTopGeomet
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(0f, 0.5f, -0f, 0f, 1f),
-                ModelHelper.vertex(0f, 0.5f, 1f, 0f, 0.5f),
-                ModelHelper.vertex(1f, 0.5f, 1f, 1f, 0f),
-                ModelHelper.vertex(1f, 0.5f, -0f, 1f, 1f)
+                ModelHelper.vertex(1f, 0.5f, 0f, 1f, 0.5f),
+                ModelHelper.vertex(1f, 0.5f, 1f, 0f, 0.5f),
+                ModelHelper.vertex(1f, 0f, 1f, 0f, 1f),
+                ModelHelper.vertex(1f, 0f, 0f, 1f, 1f)
         ));
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(1f, 0.5f, -0f, 1f, 0.5f),
+                ModelHelper.vertex(1f, 0.5f, 0f, 1f, 0.5f),
                 ModelHelper.vertex(1f, 1f, -0f, 1f, 0f),
                 ModelHelper.vertex(1f, 1f, 1f, 0f, 0f),
                 ModelHelper.vertex(1f, 0.5f, 1f, 0f, 0.5f)
         ));
 
-        builder.addUnculledFace(ModelHelper.quad(
-                sprite,
-                ModelHelper.vertex(0f, 0.5f, -0f, 0f, 1f),
-                ModelHelper.vertex(0f, 0.5f, 1f, 1f, 1f),
-                ModelHelper.vertex(1f, 1f, 1f, 1f, 0f),
-                ModelHelper.vertex(1f, 1f, -0f, 0f, 0f)
-        ));
-
         builder.addUnculledFace(ModelHelper.triangle(
                 sprite,
-                ModelHelper.vertex(0f, 0.5f, -0f, 1f, 0.5f),
+                ModelHelper.vertex(0f, 0.5f, 1f, 1f, 0.5f),
+                ModelHelper.vertex(0f, 1f, -0f, 0f, 0f),
+                ModelHelper.vertex(0f, 0.5f, 0f, 0f, 0.5f)
+        ));
+
+        builder.addUnculledFace(ModelHelper.quad(
+                sprite,
+                ModelHelper.vertex(0f, 0.5f, 0f, 1f, 0.5f),
+                ModelHelper.vertex(0f, 1f, -0f, 1f, 0f),
                 ModelHelper.vertex(1f, 1f, -0f, 0f, 0f),
-                ModelHelper.vertex(1f, 0.5f, -0f, 0f, 0.5f)
+                ModelHelper.vertex(1f, 0.5f, 0f, 0f, 0.5f)
         ));
 
         builder.addUnculledFace(ModelHelper.triangle(
@@ -72,26 +72,32 @@ public class HalfSlopeTopGeometry implements IUnbakedGeometry<HalfSlopeTopGeomet
                 ModelHelper.vertex(1f, 1f, 1f, 1f, 0f)
         ));
 
-        builder.addUnculledFace(ModelHelper.quad(
+        builder.addUnculledFace(ModelHelper.triangle(
                 sprite,
-                ModelHelper.vertex(0f, 0f, 0f, 0.0001f, 0.9999f),
-                ModelHelper.vertex(1f, 0f, 0f, 0.9999f, 0.9999f),
-                ModelHelper.vertex(1f, 0f, 1f, 0.9999f, 0.0001f),
-                ModelHelper.vertex(0f, 0f, 1f, 0.0001f, 0.0001f)
+                ModelHelper.vertex(1f, 1f, -0f, 0f, 0f),
+                ModelHelper.vertex(0f, 0.5f, 1f, 1f, 1f),
+                ModelHelper.vertex(1f, 1f, 1f, 1f, 0f)
+        ));
+
+        builder.addUnculledFace(ModelHelper.triangle(
+                sprite,
+                ModelHelper.vertex(0f, 1f, -0f, -0f, 0f),
+                ModelHelper.vertex(0f, 0.5f, 1f, 0f, 1f),
+                ModelHelper.vertex(1f, 1f, -0f, 1f, 0f)
         ));
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(1f, 0.5f, -0f, 1f, 0.5f),
-                ModelHelper.vertex(1f, 0.5f, 1f, 0f, 0.5f),
-                ModelHelper.vertex(1f, 0f, 1f, 0f, 1f),
-                ModelHelper.vertex(1f, 0f, 0f, 1f, 1f)
+                ModelHelper.vertex(0f, 0f, 0f, 0f, 1f),
+                ModelHelper.vertex(1f, 0f, 0f, 1f, 1f),
+                ModelHelper.vertex(1f, 0f, 1f, 1f, 0f),
+                ModelHelper.vertex(0f, 0f, 1f, 0f, 0f)
         ));
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
                 ModelHelper.vertex(0f, 0.5f, 1f, 1f, 0.5f),
-                ModelHelper.vertex(0f, 0.5f, -0f, 0f, 0.5f),
+                ModelHelper.vertex(0f, 0.5f, 0f, 0f, 0.5f),
                 ModelHelper.vertex(0f, 0f, 0f, 0f, 1f),
                 ModelHelper.vertex(0f, 0f, 1f, 1f, 1f)
         ));
@@ -106,8 +112,8 @@ public class HalfSlopeTopGeometry implements IUnbakedGeometry<HalfSlopeTopGeomet
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(0f, 0.5f, -0f, 1f, 0.5f),
-                ModelHelper.vertex(1f, 0.5f, -0f, 0f, 0.5f),
+                ModelHelper.vertex(0f, 0.5f, 0f, 1f, 0.5f),
+                ModelHelper.vertex(1f, 0.5f, 0f, 0f, 0.5f),
                 ModelHelper.vertex(1f, 0f, 0f, 0f, 1f),
                 ModelHelper.vertex(0f, 0f, 0f, 1f, 1f)
         ));

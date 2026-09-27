@@ -1,7 +1,7 @@
 package net.centertain.ceac.block.custom.material_shapes.half_slopes;
 
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
-import net.centertain.ceac.material.shapes.models.half_slopes.HalfSlopeBottomGeometry;
+import net.centertain.ceac.material.shapes.models.half_slopes.bottom.HalfSlopeBottomGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
