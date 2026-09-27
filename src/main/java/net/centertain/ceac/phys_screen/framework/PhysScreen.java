@@ -12,6 +12,11 @@ import java.util.List;
 public class PhysScreen extends Screen {
     private final List<PhysElement> physElements = new ArrayList<>();
 
+    private final List<PhysHoverable> hoverables = new ArrayList<>();
+    private final List<PhysClickable> clickables = new ArrayList<>();
+    private final List<PhysElementContainer> containers = new ArrayList<>();
+    private final List<PhysElementLister> listers = new ArrayList<>();
+
     protected PhysScreen(Component title) {
         super(title);
     }
@@ -24,6 +29,14 @@ public class PhysScreen extends Screen {
 
         if (element instanceof GuiEventListener && element instanceof NarratableEntry)
             addWidget((GuiEventListener & NarratableEntry) element);
+        if (element instanceof PhysHoverable hoverable)
+            hoverables.add(hoverable);
+        if (element instanceof PhysClickable clickable)
+            clickables.add(clickable);
+        if (element instanceof PhysElementContainer container)
+            containers.add(container);
+        if (element instanceof PhysElementLister lister)
+            listers.add(lister);
 
         return element;
     }
@@ -67,20 +80,49 @@ public class PhysScreen extends Screen {
                 mouseY < getScreenHeight();
 
         for (GuiEventListener child : children()) {
-            if (child instanceof PhysHoverable button)
-                button.updatePhysicalHover(
-                        mouseX,
-                        mouseY
-                );
+            if (child instanceof PhysHoverable hoverable)
+                hoverable.updatePhysicalHover(mouseX, mouseY);
         }
+
+        processHover(mouseX, mouseY, hoverables, containers);
+        for (PhysElementLister lister : listers)
+            for (PhysElement listedElement : lister.getElements())
+                processElementHover(mouseX, mouseY, listedElement);
 
         return mouseOver;
     }
 
-    public boolean clickMouse(
+    private void processElementHover(
             double mouseX,
             double mouseY,
-            int button
+            PhysElement element
+    ) {
+        if (element instanceof PhysHoverable hoverable)
+            hoverable.updatePhysicalHover(mouseX, mouseY);
+        if (element instanceof PhysElementContainer container)
+            if (container.getElement() instanceof PhysHoverable hoverable)
+                hoverable.updatePhysicalHover(mouseX, mouseY);
+        if (element instanceof PhysElementLister lister)
+            for (PhysElement listedElement : lister.getElements())
+                processElementHover(mouseX, mouseY, listedElement);
+    }
+
+    private void processHover(
+            double mouseX,
+            double mouseY,
+            List<PhysHoverable> hoverables,
+            List<PhysElementContainer> containers
+    ) {
+        for (PhysHoverable hoverable : hoverables)
+            hoverable.updatePhysicalHover(mouseX, mouseY);
+        for (PhysElementContainer container : containers)
+            if (container.getElement() instanceof PhysHoverable hoverable)
+                hoverable.updatePhysicalHover(mouseX, mouseY);
+    }
+
+    public boolean clickMouse(
+            double mouseX,
+            double mouseY
     ) {
         if (
                 mouseX < 0.0 ||
@@ -89,6 +131,17 @@ public class PhysScreen extends Screen {
                 mouseY >= getScreenHeight()
         )
             return false;
-        return super.mouseClicked(mouseX, mouseY, button);
+
+        for (PhysClickable clickable : clickables)
+            if (clickable.registerClick())
+                return true;
+        for (PhysElementContainer container : containers) {
+            if (!(container.getElement() instanceof PhysClickable clickable))
+                continue;
+            if (clickable.registerClick())
+                return true;
+        }
+
+        return false;
     }
 }

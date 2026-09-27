@@ -2,6 +2,7 @@ package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
+import net.centertain.ceac.phys_screen.framework.PhysReactable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.util.function.Supplier;
 
-public class PhysMarquee implements PhysElement {
+public class PhysMarquee implements PhysElement, PhysReactable {
     private int x;
     private int y;
     private int width;
@@ -21,41 +22,35 @@ public class PhysMarquee implements PhysElement {
 
     public PhysMarquee(
             int width,
-            @NotNull PhysLabel label,
-            @NotNull Supplier<Boolean> scrollCondition
+            @NotNull PhysLabel label
     ) {
         this.x = 0;
         this.y = 0;
         this.width = width;
         this.label = label;
-        this.scrollCondition = scrollCondition;
     }
 
     public PhysMarquee(
             @NotNull PhysElement positionSupplier,
             int width,
-            @NotNull PhysLabel label,
-            @NotNull Supplier<Boolean> scrollCondition
+            @NotNull PhysLabel label
     ) {
         this.x = positionSupplier.getWidth();
         this.y = positionSupplier.getHeight();
         this.width = width;
         this.label = label;
-        this.scrollCondition = scrollCondition;
     }
 
     public PhysMarquee(
             int x,
             int y,
             int width,
-            @NotNull PhysLabel label,
-            @NotNull Supplier<Boolean> scrollCondition
+            @NotNull PhysLabel label
     ) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.label = label;
-        this.scrollCondition = scrollCondition;
     }
 
     public int getX() {
@@ -177,5 +172,9 @@ public class PhysMarquee implements PhysElement {
         }
 
         return 0.0f;
+    }
+
+    public void parentHover(Supplier<Boolean> parentHoverState) {
+        scrollCondition = parentHoverState;
     }
 }

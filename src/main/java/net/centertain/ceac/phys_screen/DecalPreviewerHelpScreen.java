@@ -74,12 +74,10 @@ public class DecalPreviewerHelpScreen extends PhysScreen {
 
         List<PhysElement> keyPrompts = new ArrayList<>();
 
+        keyPrompts.add(formButton());
+
         for (int i = 0; i < keys.length; i++)
             keyPrompts.add(getKeyPrompt(keys, i, prompts));
-
-        PhysHoverBounds hoverBounds = new PhysHoverBounds(WIDTH - (GuiConstants.SCREEN_PADDING * 2), 15);
-        addPhysElement(hoverBounds);
-        keyPrompts.add(formButton(hoverBounds));
 
         PhysStackPanel promptList = new PhysStackPanel(
                 PhysStackPanel.Alignment.VERTICAL,
@@ -97,7 +95,7 @@ public class DecalPreviewerHelpScreen extends PhysScreen {
         ));
     }
 
-    private static @NotNull PhysElement formButton(PhysHoverBounds hoverBounds) {
+    private static @NotNull PhysElement formButton() {
         PhysLabel label = new PhysLabel(
                 GuiConstants.COLOR_SOLID_WHITE,
                 Component.literal("AJDGHSFDJHAGFDJAFSJDHFAJDJHASGFDJHGASFDJHFASDJHFASJHDFJSAGHFDJASFDHSGFD"),
@@ -106,8 +104,7 @@ public class DecalPreviewerHelpScreen extends PhysScreen {
 
         PhysMarquee marquee = new PhysMarquee(
                 WIDTH - (GuiConstants.SCREEN_PADDING * 2),
-                label,
-                hoverBounds::getIsHovered
+                label
         );
 
         return new PhysButton(
@@ -115,7 +112,8 @@ public class DecalPreviewerHelpScreen extends PhysScreen {
                 0,
                 marquee,
                 () -> {},
-                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
+                GuiConstants.COLOR_SOLID_WHITE
         );
     }
 

@@ -1,12 +1,13 @@
 package net.centertain.ceac.phys_screen.elements;
 
 import net.centertain.ceac.phys_screen.framework.PhysElement;
+import net.centertain.ceac.phys_screen.framework.PhysElementLister;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class PhysStackPanel implements PhysElement {
+public class PhysStackPanel implements PhysElement, PhysElementLister {
     private int x;
     private int y;
     private Alignment alignment;

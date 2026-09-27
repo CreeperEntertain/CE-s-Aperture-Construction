@@ -1,9 +1,6 @@
 package net.centertain.ceac.phys_screen.elements;
 
-import net.centertain.ceac.phys_screen.framework.PhysClickable;
-import net.centertain.ceac.phys_screen.framework.PhysElement;
-import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
-import net.centertain.ceac.phys_screen.framework.PhysHoverable;
+import net.centertain.ceac.phys_screen.framework.*;
 import org.jetbrains.annotations.NotNull;
 
 public class PhysButton implements PhysElement, PhysHoverable, PhysClickable {
@@ -33,6 +30,8 @@ public class PhysButton implements PhysElement, PhysHoverable, PhysClickable {
         this.onClick = onClick;
         this.backgroundColor = backgroundColor;
         this.outlineColor = 0x00000000;
+
+        updateHoverables();
     }
 
     public PhysButton(
@@ -51,6 +50,8 @@ public class PhysButton implements PhysElement, PhysHoverable, PhysClickable {
         this.onClick = onClick;
         this.backgroundColor = backgroundColor;
         this.outlineColor = outlineColor;
+
+        updateHoverables();
     }
 
     public PhysButton(
@@ -67,6 +68,8 @@ public class PhysButton implements PhysElement, PhysHoverable, PhysClickable {
         this.onClick = onClick;
         this.backgroundColor = backgroundColor;
         this.outlineColor = 0x00000000;
+
+        updateHoverables();
     }
 
     public PhysButton(
@@ -84,6 +87,13 @@ public class PhysButton implements PhysElement, PhysHoverable, PhysClickable {
         this.onClick = onClick;
         this.backgroundColor = backgroundColor;
         this.outlineColor = outlineColor;
+
+        updateHoverables();
+    }
+
+    private void updateHoverables() {
+        if (element instanceof PhysReactable reactable)
+            reactable.parentHover(this::getIsHovered);
     }
 
     public boolean getIsHovered() {
@@ -159,10 +169,11 @@ public class PhysButton implements PhysElement, PhysHoverable, PhysClickable {
                 mouseY < getY() + getHeight();
     }
 
-    public void registerClick() {
+    public boolean registerClick() {
         if (!isHovered)
-            return;
+            return false;
         onClick.run();
+        return true;
     }
 
 
