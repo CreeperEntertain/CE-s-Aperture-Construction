@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
@@ -174,9 +173,58 @@ public final class MaterialShapeVoxelHelper24Way {
                             voxels[x][y][z] = true;
         }
 
-        fillInterior(voxels);
+        for (int x = 0; x < SIZE; x++)
+            for (int y = 0; y < SIZE; y++)
+                for (int z = 0; z < SIZE; z++) {
+                    if (voxels[x][y][z])
+                        continue;
+
+                    Vec3 center = new Vec3(
+                            (x + 0.5) / SIZE,
+                            (y + 0.5) / SIZE,
+                            (z + 0.5) / SIZE
+                    );
+
+                    if (isInsideMesh(center, triangles))
+                        voxels[x][y][z] = true;
+                }
 
         return voxels;
+    }
+
+    private static boolean isInsideMesh(
+            Vec3 point,
+            List<Triangle> triangles
+    ) {
+        double solidAngle = 0.0;
+
+        for (Triangle triangle : triangles) {
+            Vec3 a = triangle.a().subtract(point);
+            Vec3 b = triangle.b().subtract(point);
+            Vec3 c = triangle.c().subtract(point);
+
+            double lengthA = a.length();
+            double lengthB = b.length();
+            double lengthC = c.length();
+
+            if (
+                    lengthA < EPSILON ||
+                            lengthB < EPSILON ||
+                            lengthC < EPSILON
+            )
+                return true;
+
+            double numerator = a.dot(b.cross(c));
+            double denominator =
+                    lengthA * lengthB * lengthC +
+                            lengthA * b.dot(c) +
+                            lengthB * c.dot(a) +
+                            lengthC * a.dot(b);
+
+            solidAngle += 2.0 * Math.atan2(numerator, denominator);
+        }
+
+        return Math.abs(solidAngle) > 2.0 * Math.PI;
     }
 
     private static boolean triangleIntersectsVoxel(
@@ -268,49 +316,6 @@ public final class MaterialShapeVoxelHelper24Way {
             case 2 -> point.z;
             default -> throw new IllegalArgumentException("Invalid axis: " + axis);
         };
-    }
-
-    private static void fillInterior(boolean[][][] voxels) {
-        boolean[][][] outside = new boolean[SIZE + 2][SIZE + 2][ SIZE + 2];
-        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
-
-        outside[0][0][0] = true;
-        queue.add(new BlockPos(0, 0, 0));
-
-        while (!queue.isEmpty()) {
-            BlockPos pos = queue.remove();
-
-            for (Direction direction : Direction.values()) {
-                int x = pos.getX() + direction.getStepX();
-                int y = pos.getY() + direction.getStepY();
-                int z = pos.getZ() + direction.getStepZ();
-
-                if (
-                        x < 0 || x > SIZE + 1 ||
-                        y < 0 || y > SIZE + 1 ||
-                        z < 0 || z > SIZE + 1
-                )
-                    continue;
-                if (outside[x][y][z])
-                    continue;
-                if (
-                        x > 0 && x <= SIZE &&
-                        y > 0 && y <= SIZE &&
-                        z > 0 && z <= SIZE &&
-                        voxels[x - 1][y - 1][z - 1]
-                )
-                    continue;
-
-                outside[x][y][z] = true;
-                queue.add(new BlockPos(x, y, z));
-            }
-        }
-
-        for (int x = 0; x < SIZE; x++)
-            for (int y = 0; y < SIZE; y++)
-                for (int z = 0; z < SIZE; z++)
-                    if (!outside[x + 1][y + 1][z + 1])
-                        voxels[x][y][z] = true;
     }
 
     private static VoxelShape compact(boolean[][][] voxels) {
