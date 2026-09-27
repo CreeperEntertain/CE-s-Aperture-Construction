@@ -32,15 +32,16 @@ public final class MaterialShapeVoxelHelper24Way {
             BakedModel source
     ) {
         Map<Direction, VoxelShape[]> shapes = new EnumMap<>(Direction.class);
+        boolean[][][] canonical = rasterize(getTriangles(source));
 
         for (Direction facing : Direction.values()) {
             VoxelShape[] rotations = new VoxelShape[4];
             for (int rotation = 0; rotation < 4; rotation++)
-                rotations[rotation] = compact(rasterize(getTriangles(
-                        source,
+                rotations[rotation] = compact(transformVoxels(
+                        canonical,
                         facing,
                         rotation
-                )));
+                ));
 
             shapes.put(facing, rotations);
         }
@@ -48,26 +49,20 @@ public final class MaterialShapeVoxelHelper24Way {
     }
 
     private static List<Triangle> getTriangles(
-            BakedModel source,
-            Direction facing,
-            int rotation
+            BakedModel source
     ) {
         List<Triangle> triangles = new ArrayList<>();
         RandomSource random = RandomSource.create();
 
         addTriangles(
                 triangles,
-                source.getQuads(null, null, random, ModelData.EMPTY, null),
-                facing,
-                rotation
+                source.getQuads(null, null, random, ModelData.EMPTY, null)
         );
 
         for (Direction side : Direction.values())
             addTriangles(
                     triangles,
-                    source.getQuads(null, side, random, ModelData.EMPTY, null),
-                    facing,
-                    rotation
+                    source.getQuads(null, side, random, ModelData.EMPTY, null)
             );
 
         return triangles;
@@ -75,9 +70,7 @@ public final class MaterialShapeVoxelHelper24Way {
 
     private static void addTriangles(
             List<Triangle> triangles,
-            List<BakedQuad> quads,
-            Direction facing,
-            int rotation
+            List<BakedQuad> quads
     ) {
         VertexFormat format = DefaultVertexFormat.BLOCK;
         int stride = format.getIntegerSize();
@@ -89,14 +82,10 @@ public final class MaterialShapeVoxelHelper24Way {
 
             for (int i = 0; i < 4; i++) {
                 int offset = i * stride + positionOffset;
-                points[i] = transform(
-                        new Vec3(
-                                Float.intBitsToFloat(vertices[offset]),
-                                Float.intBitsToFloat(vertices[offset + 1]),
-                                Float.intBitsToFloat(vertices[offset + 2])
-                        ),
-                        facing,
-                        rotation
+                points[i] = new Vec3(
+                        Float.intBitsToFloat(vertices[offset]),
+                        Float.intBitsToFloat(vertices[offset + 1]),
+                        Float.intBitsToFloat(vertices[offset + 2])
                 );
             }
 
@@ -106,11 +95,13 @@ public final class MaterialShapeVoxelHelper24Way {
         }
     }
 
-    private static Vec3 transform(
-            Vec3 point,
+    private static boolean[][][] transformVoxels(
+            boolean[][][] voxels,
             Direction facing,
             int rotation
     ) {
+        boolean[][][] transformed = new boolean[SIZE][SIZE][SIZE];
+
         Vec3 forward = new Vec3(facing.getStepX(), facing.getStepY(), facing.getStepZ());
         Vec3 x = forward.scale(-1.0);
         Vec3 y = switch (facing) {
@@ -123,12 +114,39 @@ public final class MaterialShapeVoxelHelper24Way {
             y = y.cross(forward).add(forward.scale(y.dot(forward)));
 
         Vec3 z = y.cross(forward).normalize();
-        Vec3 local = point.subtract(0.5, 0.5, 0.5);
 
-        return new Vec3(0.5, 0.5, 0.5)
-                .add(x.scale(local.x))
-                .add(y.scale(local.y))
-                .add(z.scale(local.z));
+        int xx = (int) Math.round(x.x);
+        int xy = (int) Math.round(x.y);
+        int xz = (int) Math.round(x.z);
+        int yx = (int) Math.round(y.x);
+        int yy = (int) Math.round(y.y);
+        int yz = (int) Math.round(y.z);
+        int zx = (int) Math.round(z.x);
+        int zy = (int) Math.round(z.y);
+        int zz = (int) Math.round(z.z);
+
+        for (int localX = 0; localX < SIZE; localX++)
+            for (int localY = 0; localY < SIZE; localY++)
+                for (int localZ = 0; localZ < SIZE; localZ++) {
+                    if (!voxels[localX][localY][localZ])
+                        continue;
+
+                    int centerX = localX * 2 - (SIZE - 1);
+                    int centerY = localY * 2 - (SIZE - 1);
+                    int centerZ = localZ * 2 - (SIZE - 1);
+
+                    int worldX = xx * centerX + yx * centerY + zx * centerZ;
+                    int worldY = xy * centerX + yy * centerY + zy * centerZ;
+                    int worldZ = xz * centerX + yz * centerY + zz * centerZ;
+
+                    int targetX = (worldX + SIZE - 1) / 2;
+                    int targetY = (worldY + SIZE - 1) / 2;
+                    int targetZ = (worldZ + SIZE - 1) / 2;
+
+                    transformed[targetX][targetY][targetZ] = true;
+                }
+
+        return transformed;
     }
 
     private static boolean[][][] rasterize(List<Triangle> triangles) {
