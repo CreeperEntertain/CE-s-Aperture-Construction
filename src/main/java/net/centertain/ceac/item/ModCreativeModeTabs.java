@@ -15,6 +15,7 @@ public final class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
 
+    @SuppressWarnings("unused")
     public static final RegistryObject<CreativeModeTab> CEAC_TAB = CREATIVE_MODE_TABS.register("ceac_tab",
             () -> CreativeModeTab
                     .builder()
@@ -25,10 +26,22 @@ public final class ModCreativeModeTabs {
                         pOutput.accept(ModItems.SCRAPER.get());
                         pOutput.accept(ModItems.WRENCH.get());
 
+
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_BlOCK.get());
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_SLOPE.get());
+
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_SLOPE_BOTTOM.get());
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_SLOPE_TOP.get());
+
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_SLOPE_FIRST.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_SLOPE_SECOND.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_SLOPE_THIRD.get());
+
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_FIRST.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_SECOND.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_THIRD.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_FOURTH.get());
+
 
                         pOutput.accept(ModItems.EXAMPLE.get());
                         pOutput.accept(ModItems.MULTI_EXAMPLE.get());

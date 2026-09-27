@@ -1,0 +1,49 @@
+# Generated from CEAC Java geometry.
+# Geometry: MaterialShapeSlopeGeometry
+o MaterialShapeSlopeGeometry
+
+v 0 0 0
+v 1 0 0
+v 1 0 1
+v 0 0 1
+v 1 1 0
+v 1 1 1
+v 1 0 1
+v 0 0 1
+v 1 1 1
+v 1 1 0
+v 0 0 0
+v 1 0 0
+v 0 0 1
+v 1 0 1
+
+vt 0 1
+vt 1 1
+vt 1 0
+vt 0 0
+vt 1 0
+vt 0 0
+vt 0 1
+vt 1 1
+vt 1 0
+vt 0 0
+vt 1 1
+vt 0 1
+vt 0 1
+vt 1 1
+
+# Bottom
+f 1/1 2/2 3/3 4/4
+
+# Vertical end
+f 2/2 5/5 6/6 7/7
+
+# Sloped face
+f 1/1 8/8 9/9 10/10
+
+# Triangle at z = 0
+f 11/11 10/10 12/12
+
+# Triangle at z = 1
+f 13/13 14/14 9/9
+

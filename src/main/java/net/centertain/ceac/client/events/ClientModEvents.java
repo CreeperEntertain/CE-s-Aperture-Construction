@@ -6,9 +6,7 @@ import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.centertain.ceac.material.item.MatItemLoader;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;
 import net.centertain.ceac.material.shapes.MaterialShapeBakedModel;
-import net.centertain.ceac.material.shapes.loaders.MaterialShapeHalfSlopeBottomLoader;
-import net.centertain.ceac.material.shapes.loaders.MaterialShapeHalfSlopeTopLoader;
-import net.centertain.ceac.material.shapes.loaders.MaterialShapeSlopeLoader;
+import net.centertain.ceac.material.shapes.loaders.*;
 import net.centertain.ceac.particle.ModParticles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
@@ -103,8 +101,19 @@ public class ClientModEvents
     @SubscribeEvent
     public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
         event.register("material_shape_slope", MaterialShapeSlopeLoader.INSTANCE);
+
         event.register("material_shape_half_slope_bottom", MaterialShapeHalfSlopeBottomLoader.INSTANCE);
         event.register("material_shape_half_slope_top", MaterialShapeHalfSlopeTopLoader.INSTANCE);
+
+        event.register("material_shape_third_slope_first", MaterialShapeThirdSlopeFirstLoader.INSTANCE);
+        event.register("material_shape_third_slope_second", MaterialShapeThirdSlopeSecondLoader.INSTANCE);
+        event.register("material_shape_third_slope_third", MaterialShapeThirdSlopeThirdLoader.INSTANCE);
+
+        event.register("material_shape_quarter_slope_first", MaterialShapeQuarterSlopeFirstLoader.INSTANCE);
+        event.register("material_shape_quarter_slope_second", MaterialShapeQuarterSlopeSecondLoader.INSTANCE);
+        event.register("material_shape_quarter_slope_third", MaterialShapeQuarterSlopeThirdLoader.INSTANCE);
+        event.register("material_shape_quarter_slope_fourth", MaterialShapeQuarterSlopeFourthLoader.INSTANCE);
+
 
         event.register("material_item", MatItemLoader.INSTANCE);
     }

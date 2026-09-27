@@ -17,6 +17,13 @@
   "block.ceac.material_shape_slope": "Material Shape: Slope",
   "block.ceac.material_shape_half_slope_bottom": "Material Shape: Half Slope (Bottom)",
   "block.ceac.material_shape_half_slope_top": "Material Shape: Half Slope (Top)",
+  "block.ceac.material_shape_third_slope_first": "Material Shape: Third Slope (1st)",
+  "block.ceac.material_shape_third_slope_second": "Material Shape: Third Slope (2nd)",
+  "block.ceac.material_shape_third_slope_third": "Material Shape: Third Slope (3rd)",
+  "block.ceac.material_shape_quarter_slope_first": "Material Shape: Quarter Slope (1st)",
+  "block.ceac.material_shape_quarter_slope_second": "Material Shape: Quarter Slope (2nd)",
+  "block.ceac.material_shape_quarter_slope_third": "Material Shape: Quarter Slope (3rd)",
+  "block.ceac.material_shape_quarter_slope_fourth": "Material Shape: Quarter Slope (4th)",
 
   "sound.ceac.decal.placement": "Decal placed",
   "sound.ceac.decal.deletion": "Decal removed",

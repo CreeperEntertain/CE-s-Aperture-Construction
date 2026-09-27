@@ -1,9 +1,6 @@
 package net.centertain.ceac.block;
 
-import net.centertain.ceac.block.custom.material_shapes.MaterialShapeBlock;
-import net.centertain.ceac.block.custom.material_shapes.MaterialShapeHalfSlopeBottom;
-import net.centertain.ceac.block.custom.material_shapes.MaterialShapeHalfSlopeTop;
-import net.centertain.ceac.block.custom.material_shapes.MaterialShapeSlope;
+import net.centertain.ceac.block.custom.material_shapes.*;
 import net.centertain.ceac.item.ModItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -25,12 +22,30 @@ public final class ModBlocks {
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("material_shape_block",
             () -> new MaterialShapeBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+
     public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope",
             () -> new MaterialShapeSlope(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+
     public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_SLOPE_BOTTOM = registerBlock("material_shape_half_slope_bottom",
             () -> new MaterialShapeHalfSlopeBottom(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
     public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_SLOPE_TOP = registerBlock("material_shape_half_slope_top",
             () -> new MaterialShapeHalfSlopeTop(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_SLOPE_FIRST = registerBlock("material_shape_third_slope_first",
+            () -> new MaterialShapeThirdSlopeFirst(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_SLOPE_SECOND = registerBlock("material_shape_third_slope_second",
+            () -> new MaterialShapeThirdSlopeSecond(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_SLOPE_THIRD = registerBlock("material_shape_third_slope_third",
+            () -> new MaterialShapeThirdSlopeThird(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_FIRST = registerBlock("material_shape_quarter_slope_first",
+            () -> new MaterialShapeQuarterSlopeFirst(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_SECOND = registerBlock("material_shape_quarter_slope_second",
+            () -> new MaterialShapeQuarterSlopeSecond(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_THIRD = registerBlock("material_shape_quarter_slope_third",
+            () -> new MaterialShapeQuarterSlopeThird(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_FOURTH = registerBlock("material_shape_quarter_slope_fourth",
+            () -> new MaterialShapeQuarterSlopeFourth(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
 
 
     private static <T extends Block> RegistryObject<T> registerBlock(

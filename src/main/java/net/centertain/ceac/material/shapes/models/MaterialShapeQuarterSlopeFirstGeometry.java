@@ -10,7 +10,7 @@ import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 
 import java.util.function.Function;
 
-public class MaterialShapeHalfSlopeBottomGeometry implements IUnbakedGeometry<MaterialShapeHalfSlopeBottomGeometry> {
+public class MaterialShapeQuarterSlopeFirstGeometry implements IUnbakedGeometry<MaterialShapeQuarterSlopeFirstGeometry> {
     public static BakedModel COLLISION_SHAPE;
 
     @Override
@@ -36,40 +36,40 @@ public class MaterialShapeHalfSlopeBottomGeometry implements IUnbakedGeometry<Ma
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
+                ModelHelper.vertex(0f, 0f, 1f, 0f, 0f),
                 ModelHelper.vertex(0f, 0f, 0f, 0f, 1f),
                 ModelHelper.vertex(1f, 0f, 0f, 1f, 1f),
-                ModelHelper.vertex(1f, 0f, 1f, 1f, 0f),
-                ModelHelper.vertex(0f, 0f, 1f, 0f, 0f)
+                ModelHelper.vertex(1f, 0f, 1f, 1f, 0f)
         ));
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(1f, 0f, 0f, 1f, 1f),
-                ModelHelper.vertex(1f, 0.5f, -0f, 1f, 0.5f),
-                ModelHelper.vertex(1f, 0.5f, 1f, 0f, 0.5f),
-                ModelHelper.vertex(1f, 0f, 1f, 0f, 1f)
-        ));
-
-        builder.addUnculledFace(ModelHelper.quad(
-                sprite,
+                ModelHelper.vertex(1f, 0.25f, 1f, 1f, 0f),
+                ModelHelper.vertex(1f, 0.25f, -0f, 0f, 0f),
                 ModelHelper.vertex(0f, 0f, 0f, 0f, 1f),
-                ModelHelper.vertex(0f, 0f, 1f, 1f, 1f),
-                ModelHelper.vertex(1f, 0.5f, 1f, 1f, 0f),
-                ModelHelper.vertex(1f, 0.5f, -0f, 0f, 0f)
-        ));
-
-        builder.addUnculledFace(ModelHelper.triangle(
-                sprite,
-                ModelHelper.vertex(0f, 0f, 0f, 1f, 1f),
-                ModelHelper.vertex(1f, 0.5f, -0f, 0f, 0.5f),
-                ModelHelper.vertex(1f, 0f, 0f, 0f, 1f)
+                ModelHelper.vertex(0f, 0f, 1f, 1f, 1f)
         ));
 
         builder.addUnculledFace(ModelHelper.triangle(
                 sprite,
                 ModelHelper.vertex(0f, 0f, 1f, 0f, 1f),
                 ModelHelper.vertex(1f, 0f, 1f, 1f, 1f),
-                ModelHelper.vertex(1f, 0.5f, 1f, 1f, 0.5f)
+                ModelHelper.vertex(1f, 0.25f, 1f, 1f, 0.75f)
+        ));
+
+        builder.addUnculledFace(ModelHelper.triangle(
+                sprite,
+                ModelHelper.vertex(0f, 0f, 0f, 1f, 1f),
+                ModelHelper.vertex(1f, 0.25f, -0f, 0f, 0.75f),
+                ModelHelper.vertex(1f, 0f, 0f, 0f, 1f)
+        ));
+
+        builder.addUnculledFace(ModelHelper.quad(
+                sprite,
+                ModelHelper.vertex(1f, 0.25f, 1f, 0f, 0.75f),
+                ModelHelper.vertex(1f, 0f, 1f, 0f, 1f),
+                ModelHelper.vertex(1f, 0f, 0f, 1f, 1f),
+                ModelHelper.vertex(1f, 0.25f, -0f, 1f, 0.75f)
         ));
 
         COLLISION_SHAPE = builder.build(context.getRenderType(modelLocation));
