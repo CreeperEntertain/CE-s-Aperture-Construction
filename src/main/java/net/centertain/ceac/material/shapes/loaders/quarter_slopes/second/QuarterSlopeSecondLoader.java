@@ -1,4 +1,4 @@
-package net.centertain.ceac.material.shapes.loaders.quarter_slopes;
+package net.centertain.ceac.material.shapes.loaders.quarter_slopes.second;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;

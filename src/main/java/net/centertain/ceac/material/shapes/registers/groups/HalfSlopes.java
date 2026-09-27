@@ -1,7 +1,7 @@
 package net.centertain.ceac.material.shapes.registers.groups;
 
-import net.centertain.ceac.material.shapes.loaders.half_slopes.HalfSlopeBottomLoader;
-import net.centertain.ceac.material.shapes.loaders.half_slopes.HalfSlopeTopLoader;
+import net.centertain.ceac.material.shapes.loaders.half_slopes.bottom.HalfSlopeBottomLoader;
+import net.centertain.ceac.material.shapes.loaders.half_slopes.top.HalfSlopeTopLoader;
 import net.minecraftforge.client.event.ModelEvent;
 
 public final class HalfSlopes {

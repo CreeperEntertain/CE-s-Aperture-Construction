@@ -1,8 +1,8 @@
 package net.centertain.ceac.material.shapes.registers.groups;
 
-import net.centertain.ceac.material.shapes.loaders.third_slope.ThirdSlopeFirstLoader;
-import net.centertain.ceac.material.shapes.loaders.third_slope.ThirdSlopeSecondLoader;
-import net.centertain.ceac.material.shapes.loaders.third_slope.ThirdSlopeThirdLoader;
+import net.centertain.ceac.material.shapes.loaders.third_slope.first.ThirdSlopeFirstLoader;
+import net.centertain.ceac.material.shapes.loaders.third_slope.second.ThirdSlopeSecondLoader;
+import net.centertain.ceac.material.shapes.loaders.third_slope.third.ThirdSlopeThirdLoader;
 import net.minecraftforge.client.event.ModelEvent;
 
 public final class ThirdSlopes {

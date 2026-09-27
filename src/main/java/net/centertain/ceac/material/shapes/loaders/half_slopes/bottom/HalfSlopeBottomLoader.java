@@ -1,19 +1,19 @@
-package net.centertain.ceac.material.shapes.loaders.third_slope;
+package net.centertain.ceac.material.shapes.loaders.half_slopes.bottom;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.centertain.ceac.material.shapes.models.third_slopes.first.ThirdSlopeFirstGeometry;
+import net.centertain.ceac.material.shapes.models.half_slopes.bottom.HalfSlopeBottomGeometry;
 import net.minecraftforge.client.model.geometry.IGeometryLoader;
 
-public enum ThirdSlopeFirstLoader implements IGeometryLoader<ThirdSlopeFirstGeometry> {
+public enum HalfSlopeBottomLoader implements IGeometryLoader<HalfSlopeBottomGeometry> {
     INSTANCE;
 
     @Override
-    public ThirdSlopeFirstGeometry read(
+    public HalfSlopeBottomGeometry read(
             JsonObject jsonObject,
             JsonDeserializationContext deserializationContext
     ) throws JsonParseException {
-        return new ThirdSlopeFirstGeometry();
+        return new HalfSlopeBottomGeometry();
     }
 }

@@ -1,4 +1,4 @@
-package net.centertain.ceac.material.shapes.loaders.half_slopes;
+package net.centertain.ceac.material.shapes.loaders.half_slopes.top;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;

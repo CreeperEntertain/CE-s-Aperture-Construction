@@ -1,9 +1,9 @@
 package net.centertain.ceac.material.shapes.registers.groups;
 
-import net.centertain.ceac.material.shapes.loaders.quarter_slopes.QuarterSlopeFirstLoader;
-import net.centertain.ceac.material.shapes.loaders.quarter_slopes.QuarterSlopeFourthLoader;
-import net.centertain.ceac.material.shapes.loaders.quarter_slopes.QuarterSlopeSecondLoader;
-import net.centertain.ceac.material.shapes.loaders.quarter_slopes.QuarterSlopeThirdLoader;
+import net.centertain.ceac.material.shapes.loaders.quarter_slopes.first.QuarterSlopeFirstLoader;
+import net.centertain.ceac.material.shapes.loaders.quarter_slopes.fourth.QuarterSlopeFourthLoader;
+import net.centertain.ceac.material.shapes.loaders.quarter_slopes.second.QuarterSlopeSecondLoader;
+import net.centertain.ceac.material.shapes.loaders.quarter_slopes.third.QuarterSlopeThirdLoader;
 import net.minecraftforge.client.event.ModelEvent;
 
 public final class QuarterSlopes {
