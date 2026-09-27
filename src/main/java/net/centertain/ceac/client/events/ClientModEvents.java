@@ -6,16 +6,7 @@ import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.centertain.ceac.material.item.MatItemLoader;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;
 import net.centertain.ceac.material.shapes.MaterialShapeBakedModel;
-import net.centertain.ceac.material.shapes.loaders.half_slope.HalfSlopeBottomLoader;
-import net.centertain.ceac.material.shapes.loaders.half_slope.HalfSlopeTopLoader;
-import net.centertain.ceac.material.shapes.loaders.quarter_slope.QuarterSlopeFirstLoader;
-import net.centertain.ceac.material.shapes.loaders.quarter_slope.QuarterSlopeFourthLoader;
-import net.centertain.ceac.material.shapes.loaders.quarter_slope.QuarterSlopeSecondLoader;
-import net.centertain.ceac.material.shapes.loaders.quarter_slope.QuarterSlopeThirdLoader;
-import net.centertain.ceac.material.shapes.loaders.slope.SlopeLoader;
-import net.centertain.ceac.material.shapes.loaders.third_slope.ThirdSlopeFirstLoader;
-import net.centertain.ceac.material.shapes.loaders.third_slope.ThirdSlopeSecondLoader;
-import net.centertain.ceac.material.shapes.loaders.third_slope.ThirdSlopeThirdLoader;
+import net.centertain.ceac.material.shapes.registers.MaterialShapeLoaderRegister;
 import net.centertain.ceac.particle.ModParticles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
@@ -109,20 +100,7 @@ public class ClientModEvents
 
     @SubscribeEvent
     public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
-        event.register("material_shape_slope", SlopeLoader.INSTANCE);
-
-        event.register("material_shape_half_slope_bottom", HalfSlopeBottomLoader.INSTANCE);
-        event.register("material_shape_half_slope_top", HalfSlopeTopLoader.INSTANCE);
-
-        event.register("material_shape_third_slope_first", ThirdSlopeFirstLoader.INSTANCE);
-        event.register("material_shape_third_slope_second", ThirdSlopeSecondLoader.INSTANCE);
-        event.register("material_shape_third_slope_third", ThirdSlopeThirdLoader.INSTANCE);
-
-        event.register("material_shape_quarter_slope_first", QuarterSlopeFirstLoader.INSTANCE);
-        event.register("material_shape_quarter_slope_second", QuarterSlopeSecondLoader.INSTANCE);
-        event.register("material_shape_quarter_slope_third", QuarterSlopeThirdLoader.INSTANCE);
-        event.register("material_shape_quarter_slope_fourth", QuarterSlopeFourthLoader.INSTANCE);
-
+        MaterialShapeLoaderRegister.registerLoaders(event);
 
         event.register("material_item", MatItemLoader.INSTANCE);
     }

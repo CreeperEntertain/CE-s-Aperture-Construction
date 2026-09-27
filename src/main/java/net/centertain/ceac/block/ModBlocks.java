@@ -1,16 +1,16 @@
 package net.centertain.ceac.block;
 
 import net.centertain.ceac.block.custom.material_shapes.*;
-import net.centertain.ceac.block.custom.material_shapes.half_slope.HalfSlopeBottom;
-import net.centertain.ceac.block.custom.material_shapes.half_slope.HalfSlopeTop;
-import net.centertain.ceac.block.custom.material_shapes.quarter_slope.QuarterSlopeFirst;
-import net.centertain.ceac.block.custom.material_shapes.quarter_slope.QuarterSlopeFourth;
-import net.centertain.ceac.block.custom.material_shapes.quarter_slope.QuarterSlopeSecond;
-import net.centertain.ceac.block.custom.material_shapes.quarter_slope.QuarterSlopeThird;
-import net.centertain.ceac.block.custom.material_shapes.slope.Slope;
-import net.centertain.ceac.block.custom.material_shapes.third_slope.ThirdSlopeFirst;
-import net.centertain.ceac.block.custom.material_shapes.third_slope.ThirdSlopeSecond;
-import net.centertain.ceac.block.custom.material_shapes.third_slope.ThirdSlopeThird;
+import net.centertain.ceac.block.custom.material_shapes.half_slopes.HalfSlopeBottom;
+import net.centertain.ceac.block.custom.material_shapes.half_slopes.HalfSlopeTop;
+import net.centertain.ceac.block.custom.material_shapes.quarter_slopes.QuarterSlopeFirst;
+import net.centertain.ceac.block.custom.material_shapes.quarter_slopes.QuarterSlopeFourth;
+import net.centertain.ceac.block.custom.material_shapes.quarter_slopes.QuarterSlopeSecond;
+import net.centertain.ceac.block.custom.material_shapes.quarter_slopes.QuarterSlopeThird;
+import net.centertain.ceac.block.custom.material_shapes.full_slopes.Slope;
+import net.centertain.ceac.block.custom.material_shapes.third_slopes.ThirdSlopeFirst;
+import net.centertain.ceac.block.custom.material_shapes.third_slopes.ThirdSlopeSecond;
+import net.centertain.ceac.block.custom.material_shapes.third_slopes.ThirdSlopeThird;
 import net.centertain.ceac.item.ModItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
