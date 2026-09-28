@@ -37,14 +37,8 @@ import org.joml.Vector2i;
 import java.util.List;
 import java.util.function.Supplier;
 
-public abstract class MatItem extends Item {
+public abstract class MatItem extends BasicItem {
     private final Supplier<Material> material;
-<<<<<<< Updated upstream
-    private final String category;
-    private final String subcategory;
-    private final double price;
-=======
->>>>>>> Stashed changes
 
     private static final String OFFSET_X = "MaterialOffsetX";
     private static final String OFFSET_Y = "MaterialOffsetY";
@@ -59,17 +53,6 @@ public abstract class MatItem extends Item {
             Properties properties,
             Supplier<Material> material
     ) {
-<<<<<<< Updated upstream
-        super(properties.stacksTo(1));
-        this.material = material;
-        this.category = category == null
-                ? DEFAULT_CATEGORY
-                : category;
-        this.subcategory = subcategory;
-        this.price = price == null
-                ? DEFAULT_PRICE
-                : price;
-=======
         super(
                 properties.stacksTo(1),
                 category == null
@@ -81,7 +64,6 @@ public abstract class MatItem extends Item {
                         : price
         );
         this.material = material;
->>>>>>> Stashed changes
     }
 
     protected MatItem(
@@ -89,13 +71,6 @@ public abstract class MatItem extends Item {
         String subcategory,
         Supplier<Material> material
     ) {
-<<<<<<< Updated upstream
-        super(properties.stacksTo(1));
-        this.material = material;
-        this.category = DEFAULT_CATEGORY;
-        this.subcategory = subcategory;
-        this.price = DEFAULT_PRICE;
-=======
         super(
                 properties.stacksTo(1),
                 DEFAULT_CATEGORY,
@@ -103,7 +78,6 @@ public abstract class MatItem extends Item {
                 DEFAULT_PRICE
         );
         this.material = material;
->>>>>>> Stashed changes
     }
 
     public Material getMaterial() {
@@ -133,18 +107,6 @@ public abstract class MatItem extends Item {
                 Math.floorMod(materialCoordinate.y + offset.y, height)
         );
     }
-<<<<<<< Updated upstream
-    public final String getCategory() {
-        return category;
-    }
-    public final String getSubcategory() {
-        return subcategory;
-    }
-    public final double getPrice() {
-        return price;
-    }
-=======
->>>>>>> Stashed changes
 
     public void setMaterialCoordinateOffset(
             ItemStack stack,
