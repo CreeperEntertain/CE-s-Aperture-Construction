@@ -47,7 +47,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
     private final List<MaterialShapeFace> faces;
 
     private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIAL_SHAPES;
-    private static final double DEFAULT_PRICE = 10.0;
+    private static final double DEFAULT_PRICE = 50.0;
 
     protected MaterialShape(
             Properties properties,
