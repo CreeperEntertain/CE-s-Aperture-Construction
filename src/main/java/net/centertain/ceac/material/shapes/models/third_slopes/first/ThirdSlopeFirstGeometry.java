@@ -37,9 +37,9 @@ public class ThirdSlopeFirstGeometry implements IUnbakedGeometry<ThirdSlopeFirst
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
                 ModelHelper.vertex(0f, 0f, 0f, 0f, 1f),
-                ModelHelper.vertex(0f, 0f, 1f, 0f, 0f),
+                ModelHelper.vertex(1f, 0f, 0f, 1f, 1f),
                 ModelHelper.vertex(1f, 0f, 1f, 1f, 0f),
-                ModelHelper.vertex(1f, 0f, 0f, 1f, 1f)
+                ModelHelper.vertex(0f, 0f, 1f, 0f, 0f)
         ));
 
         builder.addUnculledFace(ModelHelper.quad(
