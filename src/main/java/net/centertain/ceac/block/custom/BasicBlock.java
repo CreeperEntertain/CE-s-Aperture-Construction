@@ -1,32 +1,32 @@
-package net.centertain.ceac.item.custom;
+package net.centertain.ceac.block.custom;
 
 import net.centertain.ceac.constants.CategoryConstants;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class BasicItem extends Item {
+public abstract class BasicBlock extends Block {
     private final String category;
     private final @Nullable String subcategory;
     private final double price;
 
-    public BasicItem(Properties properties, double price) {
+    public BasicBlock(Properties properties, double price) {
         super(properties);
         this.category = CategoryConstants.Main.BASICS;
         this.subcategory = null;
         this.price = price;
     }
 
-    public BasicItem(Properties properties, String category, double price) {
+    public BasicBlock(Properties properties, String category, double price) {
         super(properties);
         this.category = category;
         this.subcategory = null;
         this.price = price;
     }
 
-    public BasicItem(Properties properties, String category, @Nullable String subcategory, double price) {
+    public BasicBlock(Properties properties, String category, @Nullable String subcategory, double price) {
         super(properties);
-        this.category = subcategory;
-        this.subcategory = null;
+        this.category = category;
+        this.subcategory = subcategory;
         this.price = price;
     }
 

@@ -1,6 +1,6 @@
 package net.centertain.ceac.item.custom.materials;
 
-import net.centertain.ceac.CategoryConstants;
+import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.item.custom.MatItem;
 import net.centertain.ceac.material.ModMaterials;
 

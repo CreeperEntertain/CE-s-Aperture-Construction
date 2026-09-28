@@ -2,7 +2,8 @@ package net.centertain.ceac.block.custom;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.centertain.ceac.CategoryConstants;
+import net.centertain.ceac.constants.CategoryConstants;
+import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.material.*;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;
 import net.centertain.ceac.material.particle.MaterialParticleOptions;
@@ -25,7 +26,6 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -43,58 +43,46 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public abstract class MaterialShape extends Block implements EntityBlock {
+public abstract class MaterialShape extends BasicBlock implements EntityBlock {
     private final List<MaterialShapeFace> faces;
-    private final String category;
-    private final String subcategory;
-    private final double price;
 
     private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIAL_SHAPES;
-    private static final double DEFAULT_PRICE = 10.0;
+    private static final double DEFAULT_PRICE = PriceConstants.DEFAULT_SHAPE;
 
     protected MaterialShape(
-            @Nullable String category,
-            String subcategory,
-            @Nullable Double price,
-            Properties properties
+            Properties properties,
+            String category,
+            @Nullable String subcategory,
+            @Nullable Double price
     ) {
-        super(properties
-                .sound(SoundType.NETHERITE_BLOCK)
+        super(
+                properties
+                    .sound(SoundType.NETHERITE_BLOCK),
+                category,
+                subcategory,
+                price == null
+                        ? DEFAULT_PRICE
+                        : price
         );
         this.faces = new ArrayList<>();
-        this.category = category == null
-                ? DEFAULT_CATEGORY
-                : category;
-        this.subcategory = subcategory;
-        this.price = price == null
-                ? DEFAULT_PRICE
-                : price;
     }
 
     protected MaterialShape(
             Properties properties,
             String subcategory
     ) {
-        super(properties
-                .sound(SoundType.NETHERITE_BLOCK)
+        super(
+                properties
+                    .sound(SoundType.NETHERITE_BLOCK),
+                DEFAULT_CATEGORY,
+                subcategory,
+                DEFAULT_PRICE
         );
         this.faces = new ArrayList<>();
-        this.category = DEFAULT_CATEGORY;
-        this.subcategory = subcategory;
-        this.price = DEFAULT_PRICE;
     }
 
     public final List<MaterialShapeFace> getFaces() {
         return faces;
-    }
-    public final String getCategory() {
-        return category;
-    }
-    public final String getSubcategory() {
-        return subcategory;
-    }
-    public final double getPrice() {
-        return price;
     }
 
     public Vec3 transformPointToLocal(BlockState state, Vec3 point) {

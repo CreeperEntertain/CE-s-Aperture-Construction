@@ -1,7 +1,8 @@
 package net.centertain.ceac.item.custom;
 
-import net.centertain.ceac.CategoryConstants;
+import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.material.*;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;
 import net.centertain.ceac.material.preview.MaterialPlacement;
@@ -20,7 +21,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -39,13 +39,12 @@ import java.util.function.Supplier;
 
 public abstract class MatItem extends BasicItem {
     private final Supplier<Material> material;
-    private final double price;
 
     private static final String OFFSET_X = "MaterialOffsetX";
     private static final String OFFSET_Y = "MaterialOffsetY";
 
     private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIALS;
-    private static final double DEFAULT_PRICE = 1000.0;
+    private static final double DEFAULT_PRICE = PriceConstants.DEFAULT_MAT_ITEM;
 
     protected MatItem(
             @Nullable String category,
@@ -59,12 +58,12 @@ public abstract class MatItem extends BasicItem {
                 category == null
                         ? DEFAULT_CATEGORY
                         : category,
-                subcategory
+                subcategory,
+                price == null
+                        ? DEFAULT_PRICE
+                        : price
         );
         this.material = material;
-        this.price = price == null
-                ? DEFAULT_PRICE
-                : price;
     }
 
     protected MatItem(
@@ -75,10 +74,10 @@ public abstract class MatItem extends BasicItem {
         super(
                 properties.stacksTo(1),
                 DEFAULT_CATEGORY,
-                subcategory
+                subcategory,
+                DEFAULT_PRICE
         );
         this.material = material;
-        this.price = DEFAULT_PRICE;
     }
 
     public Material getMaterial() {
@@ -107,9 +106,6 @@ public abstract class MatItem extends BasicItem {
                 Math.floorMod(materialCoordinate.x + offset.x, width),
                 Math.floorMod(materialCoordinate.y + offset.y, height)
         );
-    }
-    public final double getPrice() {
-        return price;
     }
 
     public void setMaterialCoordinateOffset(

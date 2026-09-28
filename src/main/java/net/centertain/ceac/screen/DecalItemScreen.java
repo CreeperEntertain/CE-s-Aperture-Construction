@@ -1,6 +1,6 @@
 package net.centertain.ceac.screen;
 
-import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.decal.DecalDefinition;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.DecalPack;

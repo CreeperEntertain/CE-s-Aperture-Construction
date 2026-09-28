@@ -1,6 +1,7 @@
 package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.constants.PriceConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -23,8 +24,10 @@ import java.util.List;
 
 public class WrenchItem extends BasicItem {
     public WrenchItem(Properties properties) {
-        super(properties
-                .durability(250)
+        super(
+                properties
+                        .durability(250),
+                PriceConstants.DEFAULT_TOOL
         );
     }
 

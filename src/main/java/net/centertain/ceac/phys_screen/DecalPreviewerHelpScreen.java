@@ -1,6 +1,6 @@
 package net.centertain.ceac.phys_screen;
 
-import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.phys_screen.elements.*;
 import net.centertain.ceac.phys_screen.framework.PhysElement;
 import net.centertain.ceac.phys_screen.framework.PhysScreen;

@@ -19,16 +19,16 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape {
     public static IntegerProperty ROTATION = IntegerProperty.create("rotation", 0, 3);
 
     protected MaterialShapeRotatable24Way(
+            Properties properties,
             @Nullable String category,
             String subcategory,
-            @Nullable Double price,
-            Properties properties
+            @Nullable Double price
     ) {
         super(
+                properties,
                 category,
                 subcategory,
-                price,
-                properties
+                price
         );
         registerDefaultState(getStateDefinition().any()
                 .setValue(FACING, Direction.WEST)

@@ -1,6 +1,6 @@
 package net.centertain.ceac.block.custom.material_shapes.half_slopes.top;
 
-import net.centertain.ceac.CategoryConstants;
+import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.material.shapes.models.half_slopes.top.HalfSlopeTopGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;

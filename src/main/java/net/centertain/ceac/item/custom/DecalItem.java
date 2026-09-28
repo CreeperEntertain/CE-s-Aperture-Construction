@@ -1,5 +1,6 @@
 package net.centertain.ceac.item.custom;
 
+import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.decal.AbstractDecal;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.DecalDefinition;
@@ -38,7 +39,7 @@ import java.util.UUID;
 
 public class DecalItem extends BasicItem {
     public DecalItem (Properties properties) {
-        super(properties);
+        super(properties, PriceConstants.DECAL);
     }
 
     private @Nullable DecalDefinition decalDefinition = null;
