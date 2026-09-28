@@ -36,6 +36,6 @@ public final class ThirdSlopes {
 
         event.register("material_shape_third_roof_third", ThirdRoofThirdLoader.INSTANCE);
         event.register("material_shape_third_roof_end_third", ThirdRoofEndThirdLoader.INSTANCE);
-        event.register("material_shape_third_pyramic_third", ThirdPyramidThirdLoader.INSTANCE);
+        event.register("material_shape_third_pyramid_third", ThirdPyramidThirdLoader.INSTANCE);
     }
 }

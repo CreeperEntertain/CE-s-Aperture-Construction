@@ -1,5 +1,5 @@
 {
-  "loader": "ceac:material_shape_third_coner_inner_first",
+  "loader": "ceac:material_shape_third_corner_inner_first",
   "textures": {
     "texture": "ceac:block/material_shape"
   }
