@@ -20,8 +20,10 @@ import java.util.*;
 
 public class ScraperItem extends BasicItem {
     public ScraperItem(Properties properties) {
-        super(properties
-                .durability(250)
+        super(
+                properties
+                        .durability(250),
+                500.0
         );
     }
 

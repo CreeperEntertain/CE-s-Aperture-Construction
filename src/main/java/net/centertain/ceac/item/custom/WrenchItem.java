@@ -23,8 +23,10 @@ import java.util.List;
 
 public class WrenchItem extends BasicItem {
     public WrenchItem(Properties properties) {
-        super(properties
-                .durability(250)
+        super(
+                properties
+                        .durability(250),
+                500.0
         );
     }
 

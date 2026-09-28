@@ -45,16 +45,12 @@ import java.util.function.Consumer;
 
 public abstract class MaterialShape extends Block implements EntityBlock {
     private final List<MaterialShapeFace> faces;
-    private final String category;
-    private final String subcategory;
     private final double price;
 
     private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIAL_SHAPES;
     private static final double DEFAULT_PRICE = 10.0;
 
     protected MaterialShape(
-            @Nullable String category,
-            String subcategory,
             @Nullable Double price,
             Properties properties
     ) {
@@ -62,36 +58,23 @@ public abstract class MaterialShape extends Block implements EntityBlock {
                 .sound(SoundType.NETHERITE_BLOCK)
         );
         this.faces = new ArrayList<>();
-        this.category = category == null
-                ? DEFAULT_CATEGORY
-                : category;
-        this.subcategory = subcategory;
         this.price = price == null
                 ? DEFAULT_PRICE
                 : price;
     }
 
     protected MaterialShape(
-            Properties properties,
-            String subcategory
+            Properties properties
     ) {
         super(properties
                 .sound(SoundType.NETHERITE_BLOCK)
         );
         this.faces = new ArrayList<>();
-        this.category = DEFAULT_CATEGORY;
-        this.subcategory = subcategory;
         this.price = DEFAULT_PRICE;
     }
 
     public final List<MaterialShapeFace> getFaces() {
         return faces;
-    }
-    public final String getCategory() {
-        return category;
-    }
-    public final String getSubcategory() {
-        return subcategory;
     }
     public final double getPrice() {
         return price;

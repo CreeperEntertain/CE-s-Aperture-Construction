@@ -38,7 +38,7 @@ import java.util.UUID;
 
 public class DecalItem extends BasicItem {
     public DecalItem (Properties properties) {
-        super(properties);
+        super(properties, 150.0);
     }
 
     private @Nullable DecalDefinition decalDefinition = null;

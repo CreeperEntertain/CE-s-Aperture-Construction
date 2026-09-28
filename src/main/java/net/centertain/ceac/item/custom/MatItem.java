@@ -39,9 +39,12 @@ import java.util.function.Supplier;
 
 public abstract class MatItem extends Item {
     private final Supplier<Material> material;
+<<<<<<< Updated upstream
     private final String category;
     private final String subcategory;
     private final double price;
+=======
+>>>>>>> Stashed changes
 
     private static final String OFFSET_X = "MaterialOffsetX";
     private static final String OFFSET_Y = "MaterialOffsetY";
@@ -56,6 +59,7 @@ public abstract class MatItem extends Item {
             Properties properties,
             Supplier<Material> material
     ) {
+<<<<<<< Updated upstream
         super(properties.stacksTo(1));
         this.material = material;
         this.category = category == null
@@ -65,6 +69,19 @@ public abstract class MatItem extends Item {
         this.price = price == null
                 ? DEFAULT_PRICE
                 : price;
+=======
+        super(
+                properties.stacksTo(1),
+                category == null
+                        ? DEFAULT_CATEGORY
+                        : category,
+                subcategory,
+                price == null
+                        ? DEFAULT_PRICE
+                        : price
+        );
+        this.material = material;
+>>>>>>> Stashed changes
     }
 
     protected MatItem(
@@ -72,11 +89,21 @@ public abstract class MatItem extends Item {
         String subcategory,
         Supplier<Material> material
     ) {
+<<<<<<< Updated upstream
         super(properties.stacksTo(1));
         this.material = material;
         this.category = DEFAULT_CATEGORY;
         this.subcategory = subcategory;
         this.price = DEFAULT_PRICE;
+=======
+        super(
+                properties.stacksTo(1),
+                DEFAULT_CATEGORY,
+                subcategory,
+                DEFAULT_PRICE
+        );
+        this.material = material;
+>>>>>>> Stashed changes
     }
 
     public Material getMaterial() {
@@ -106,6 +133,7 @@ public abstract class MatItem extends Item {
                 Math.floorMod(materialCoordinate.y + offset.y, height)
         );
     }
+<<<<<<< Updated upstream
     public final String getCategory() {
         return category;
     }
@@ -115,6 +143,8 @@ public abstract class MatItem extends Item {
     public final double getPrice() {
         return price;
     }
+=======
+>>>>>>> Stashed changes
 
     public void setMaterialCoordinateOffset(
             ItemStack stack,
