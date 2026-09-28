@@ -1,0 +1,6 @@
+{
+  "loader": "ceac:material_shape_half_corner_inner_bottom",
+  "textures": {
+    "texture": "ceac:block/material_shape"
+  }
+}

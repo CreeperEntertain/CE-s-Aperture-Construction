@@ -1,0 +1,6 @@
+{
+  "loader": "ceac:material_shape_third_roof_end_third",
+  "textures": {
+    "texture": "ceac:block/material_shape"
+  }
+}

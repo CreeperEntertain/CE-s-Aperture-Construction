@@ -1,0 +1,6 @@
+{
+  "loader": "ceac:material_shape_half_pyramid_top",
+  "textures": {
+    "texture": "ceac:block/material_shape"
+  }
+}
