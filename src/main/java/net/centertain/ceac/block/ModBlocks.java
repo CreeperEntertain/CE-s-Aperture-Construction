@@ -31,7 +31,7 @@ public final class ModBlocks {
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("material_shape_block",
-            () -> new Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+            () -> new net.centertain.ceac.block.custom.material_shapes.Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope",
