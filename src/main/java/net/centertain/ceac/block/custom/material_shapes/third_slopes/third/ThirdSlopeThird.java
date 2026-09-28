@@ -1,7 +1,7 @@
-package net.centertain.ceac.block.custom.material_shapes.third_slopes;
+package net.centertain.ceac.block.custom.material_shapes.third_slopes.third;
 
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
-import net.centertain.ceac.material.shapes.models.third_slopes.second.ThirdSlopeSecondGeometry;
+import net.centertain.ceac.material.shapes.models.third_slopes.third.ThirdSlopeThirdGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,11 +13,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public class ThirdSlopeSecond extends MaterialShapeRotatable24Way {
+public class ThirdSlopeThird extends MaterialShapeRotatable24Way {
     private static final Map<Direction, VoxelShape[]> SHAPES =
-            MaterialShapeVoxelHelper24Way.makeShapes(() -> ThirdSlopeSecondGeometry.COLLISION_SHAPE);
+            MaterialShapeVoxelHelper24Way.makeShapes(() -> ThirdSlopeThirdGeometry.COLLISION_SHAPE);
 
-    public ThirdSlopeSecond(Properties properties) {
+    public ThirdSlopeThird(Properties properties) {
         super(properties);
     }
 
