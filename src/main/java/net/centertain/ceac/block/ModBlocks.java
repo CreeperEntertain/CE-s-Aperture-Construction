@@ -1,6 +1,5 @@
 package net.centertain.ceac.block;
 
-import net.centertain.ceac.block.custom.material_shapes.*;
 import net.centertain.ceac.block.custom.material_shapes.full_slopes.*;
 import net.centertain.ceac.block.custom.material_shapes.half_slopes.bottom.*;
 import net.centertain.ceac.block.custom.material_shapes.half_slopes.top.*;
@@ -31,7 +30,7 @@ public final class ModBlocks {
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("material_shape_block",
-            () -> new net.centertain.ceac.block.custom.material_shapes.Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+            () -> new net.centertain.ceac.block.custom.material_shapes.basic_shapes.Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope",

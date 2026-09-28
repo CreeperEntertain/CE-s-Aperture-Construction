@@ -1,5 +1,6 @@
 package net.centertain.ceac.block.custom.material_shapes.quarter_slopes.second;
 
+import net.centertain.ceac.CategoryConstants;
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.material.shapes.models.quarter_slopes.second.QuarterCornerInnerSecondGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
@@ -18,7 +19,7 @@ public class QuarterCornerInnerSecond extends MaterialShapeRotatable24Way {
             MaterialShapeVoxelHelper24Way.makeShapes(() -> QuarterCornerInnerSecondGeometry.COLLISION_SHAPE);
 
     public QuarterCornerInnerSecond(Properties properties) {
-        super(properties);
+        super(properties, CategoryConstants.Sub.Shapes.SLOPES_QUARTER);
     }
 
     @SuppressWarnings("deprecation") // Literally what the docs told me to use. Why would you deprecate something that's

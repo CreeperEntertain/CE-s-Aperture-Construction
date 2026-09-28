@@ -1,5 +1,6 @@
 package net.centertain.ceac.item.custom;
 
+import net.centertain.ceac.CategoryConstants;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.material.*;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;
@@ -39,16 +40,18 @@ import java.util.function.Supplier;
 public abstract class MatItem extends Item {
     private final Supplier<Material> material;
     private final String category;
+    private final String subcategory;
     private final double price;
 
     private static final String OFFSET_X = "MaterialOffsetX";
     private static final String OFFSET_Y = "MaterialOffsetY";
 
-    private static final String DEFAULT_CATEGORY = "Materials";
+    private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIALS;
     private static final double DEFAULT_PRICE = 1000.0;
 
     protected MatItem(
             @Nullable String category,
+            String subcategory,
             @Nullable Double price,
             Properties properties,
             Supplier<Material> material
@@ -58,6 +61,7 @@ public abstract class MatItem extends Item {
         this.category = category == null
                 ? DEFAULT_CATEGORY
                 : category;
+        this.subcategory = subcategory;
         this.price = price == null
                 ? DEFAULT_PRICE
                 : price;
@@ -65,11 +69,13 @@ public abstract class MatItem extends Item {
 
     protected MatItem(
         Properties properties,
+        String subcategory,
         Supplier<Material> material
     ) {
         super(properties.stacksTo(1));
         this.material = material;
         this.category = DEFAULT_CATEGORY;
+        this.subcategory = subcategory;
         this.price = DEFAULT_PRICE;
     }
 
@@ -102,6 +108,9 @@ public abstract class MatItem extends Item {
     }
     public final String getCategory() {
         return category;
+    }
+    public final String getSubcategory() {
+        return subcategory;
     }
     public final double getPrice() {
         return price;

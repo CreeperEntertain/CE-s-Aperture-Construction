@@ -20,11 +20,13 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape {
 
     protected MaterialShapeRotatable24Way(
             @Nullable String category,
+            String subcategory,
             @Nullable Double price,
             Properties properties
     ) {
         super(
                 category,
+                subcategory,
                 price,
                 properties
         );
@@ -34,8 +36,11 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape {
         );
     }
 
-    protected MaterialShapeRotatable24Way(Properties properties) {
-        super(properties);
+    protected MaterialShapeRotatable24Way(
+            Properties properties,
+            String subcategory
+    ) {
+        super(properties, subcategory);
         registerDefaultState(getStateDefinition().any()
                 .setValue(FACING, Direction.WEST)
                 .setValue(ROTATION, 0)

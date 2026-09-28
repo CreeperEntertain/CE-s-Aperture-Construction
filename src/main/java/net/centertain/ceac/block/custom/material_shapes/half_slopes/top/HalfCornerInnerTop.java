@@ -1,5 +1,6 @@
 package net.centertain.ceac.block.custom.material_shapes.half_slopes.top;
 
+import net.centertain.ceac.CategoryConstants;
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.material.shapes.models.half_slopes.top.HalfCornerInnerTopGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
@@ -18,7 +19,7 @@ public class HalfCornerInnerTop extends MaterialShapeRotatable24Way {
             MaterialShapeVoxelHelper24Way.makeShapes(() -> HalfCornerInnerTopGeometry.COLLISION_SHAPE);
 
     public HalfCornerInnerTop(Properties properties) {
-        super(properties);
+        super(properties, CategoryConstants.Sub.Shapes.SLOPES_HALF);
     }
 
     @SuppressWarnings("deprecation") // Literally what the docs told me to use. Why would you deprecate something that's

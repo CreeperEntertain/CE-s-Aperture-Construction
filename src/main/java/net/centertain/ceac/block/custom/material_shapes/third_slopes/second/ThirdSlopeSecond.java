@@ -1,5 +1,6 @@
 package net.centertain.ceac.block.custom.material_shapes.third_slopes.second;
 
+import net.centertain.ceac.CategoryConstants;
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.material.shapes.models.third_slopes.second.ThirdSlopeSecondGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
@@ -18,7 +19,7 @@ public class ThirdSlopeSecond extends MaterialShapeRotatable24Way {
             MaterialShapeVoxelHelper24Way.makeShapes(() -> ThirdSlopeSecondGeometry.COLLISION_SHAPE);
 
     public ThirdSlopeSecond(Properties properties) {
-        super(properties);
+        super(properties, CategoryConstants.Sub.Shapes.SLOPES_THIRD);
     }
 
     @SuppressWarnings("deprecation") // Literally what the docs told me to use. Why would you deprecate something that's

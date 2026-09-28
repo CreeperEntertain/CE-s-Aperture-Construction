@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class WrenchItem extends Item {
+public class WrenchItem extends BasicItem {
     public WrenchItem(Properties properties) {
         super(properties
                 .durability(250)

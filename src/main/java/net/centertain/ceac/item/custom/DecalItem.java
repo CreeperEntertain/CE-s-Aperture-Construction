@@ -36,7 +36,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-public class DecalItem extends Item {
+public class DecalItem extends BasicItem {
     public DecalItem (Properties properties) {
         super(properties);
     }
