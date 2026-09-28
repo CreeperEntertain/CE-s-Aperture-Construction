@@ -25,8 +25,8 @@ public abstract class BasicBlock extends Block {
 
     public BasicBlock(Properties properties, String category, @Nullable String subcategory, double price) {
         super(properties);
-        this.category = subcategory;
-        this.subcategory = null;
+        this.category = category;
+        this.subcategory = subcategory;
         this.price = price;
     }
 
