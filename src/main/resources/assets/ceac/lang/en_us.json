@@ -28,29 +28,74 @@
   "block.ceac.material_shape_full_corner_outer": "Material Shape: Full Corner (Outer)",
   "block.ceac.material_shape_full_corner_inner": "Material Shape: Full Corner (Inner)",
   "block.ceac.material_shape_full_roof": "Material Shape: Full Roof",
-  "block.ceac.material_shape_full_roof_end": "Material Shape: Full Roof (end)",
+  "block.ceac.material_shape_full_roof_end": "Material Shape: Full Roof (End)",
   "block.ceac.material_shape_full_pyramid": "Material Shape: Full Pyramid",
 
 
   "block.ceac.material_shape_half_slope_bottom": "Material Shape: Half Slope (Bottom)",
+  "block.ceac.material_shape_half_corner_outer_bottom": "Material Shape: Half Corner (Bottom, Outer)",
+  "block.ceac.material_shape_half_corner_inner_bottom": "Material Shape: Half Corner (Bottom, Inner)",
+  "block.ceac.material_shape_half_roof_bottom": "Material Shape: Half Roof (Bottom)",
+  "block.ceac.material_shape_half_roof_end_bottom": "Material Shape: Half Roof (Bottom, End)",
+  "block.ceac.material_shape_half_pyramid_bottom": "Material Shape: Half Pyramid (Bottom)",
 
   "block.ceac.material_shape_half_slope_top": "Material Shape: Half Slope (Top)",
+  "block.ceac.material_shape_half_corner_outer_top": "Material Shape: Half Corner (Top, Outer)",
+  "block.ceac.material_shape_half_corner_inner_top": "Material Shape: Half Corner (Top, Inner)",
+  "block.ceac.material_shape_half_roof_top": "Material Shape: Half Roof (Top)",
+  "block.ceac.material_shape_half_roof_end_top": "Material Shape: Half Roof (Top, End)",
+  "block.ceac.material_shape_half_pyramid_top": "Material Shape: Half Pyramid (Top)",
 
 
   "block.ceac.material_shape_third_slope_first": "Material Shape: Third Slope (1st)",
+  "block.ceac.material_shape_third_corner_outer_first": "Material Shape: Third Corner (1st, Outer)",
+  "block.ceac.material_shape_third_corner_inner_first": "Material Shape: Third Corner (1st, Inner)",
+  "block.ceac.material_shape_third_roof_first": "Material Shape: Third Roof (1st)",
+  "block.ceac.material_shape_third_roof_end_first": "Material Shape: Third Roof (1st, End)",
+  "block.ceac.material_shape_third_pyramid_first": "Material Shape: Third Pyramid (1st)",
 
   "block.ceac.material_shape_third_slope_second": "Material Shape: Third Slope (2nd)",
+  "block.ceac.material_shape_third_corner_outer_second": "Material Shape: Third Corner (2nd, Outer)",
+  "block.ceac.material_shape_third_corner_inner_second": "Material Shape: Third Corner (2nd, Inner)",
+  "block.ceac.material_shape_third_roof_second": "Material Shape: Third Roof (2nd)",
+  "block.ceac.material_shape_third_roof_end_second": "Material Shape: Third Roof (2nd, End)",
+  "block.ceac.material_shape_third_pyramid_second": "Material Shape: Third Pyramid (2nd)",
 
   "block.ceac.material_shape_third_slope_third": "Material Shape: Third Slope (3rd)",
+  "block.ceac.material_shape_third_corner_outer_third": "Material Shape: Third Corner (3rd, Outer)",
+  "block.ceac.material_shape_third_corner_inner_third": "Material Shape: Third Corner (3rd, Inner)",
+  "block.ceac.material_shape_third_roof_third": "Material Shape: Third Roof (3rd)",
+  "block.ceac.material_shape_third_roof_end_third": "Material Shape: Third Roof (3rd, End)",
+  "block.ceac.material_shape_third_pyramid_third": "Material Shape: Third Pyramid (3rd)",
 
 
   "block.ceac.material_shape_quarter_slope_first": "Material Shape: Quarter Slope (1st)",
+  "block.ceac.material_shape_quarter_corner_outer_first": "Material Shape: Quarter Corner (1st, Outer)",
+  "block.ceac.material_shape_quarter_corner_inner_first": "Material Shape: Quarter Corner (1st, Inner)",
+  "block.ceac.material_shape_quarter_roof_first": "Material Shape: Quarter Roof (1st)",
+  "block.ceac.material_shape_quarter_roof_end_first": "Material Shape: Quarter Roof (1st, End)",
+  "block.ceac.material_shape_quarter_pyramid_first": "Material Shape: Quarter Pyramid (1st)",
 
   "block.ceac.material_shape_quarter_slope_second": "Material Shape: Quarter Slope (2nd)",
+  "block.ceac.material_shape_quarter_corner_outer_second": "Material Shape: Quarter Corner (2nd, Outer)",
+  "block.ceac.material_shape_quarter_corner_inner_second": "Material Shape: Quarter Corner (2nd, Inner)",
+  "block.ceac.material_shape_quarter_roof_second": "Material Shape: Quarter Roof (2nd)",
+  "block.ceac.material_shape_quarter_roof_end_second": "Material Shape: Quarter Roof (2nd, End)",
+  "block.ceac.material_shape_quarter_pyramid_second": "Material Shape: Quarter Pyramid (2nd)",
 
   "block.ceac.material_shape_quarter_slope_third": "Material Shape: Quarter Slope (3rd)",
+  "block.ceac.material_shape_quarter_corner_outer_third": "Material Shape: Quarter Corner (3rd, Outer)",
+  "block.ceac.material_shape_quarter_corner_inner_third": "Material Shape: Quarter Corner (3rd, Inner)",
+  "block.ceac.material_shape_quarter_roof_third": "Material Shape: Quarter Roof (3rd)",
+  "block.ceac.material_shape_quarter_roof_end_third": "Material Shape: Quarter Roof (3rd, End)",
+  "block.ceac.material_shape_quarter_pyramid_third": "Material Shape: Quarter Pyramid (3rd)",
 
   "block.ceac.material_shape_quarter_slope_fourth": "Material Shape: Quarter Slope (4th)",
+  "block.ceac.material_shape_quarter_corner_outer_fourth": "Material Shape: Quarter Corner (4th, Outer)",
+  "block.ceac.material_shape_quarter_corner_inner_fourth": "Material Shape: Quarter Corner (4th, Inner)",
+  "block.ceac.material_shape_quarter_roof_fourth": "Material Shape: Quarter Roof (4th)",
+  "block.ceac.material_shape_quarter_roof_end_fourth": "Material Shape: Quarter Roof (4th, End)",
+  "block.ceac.material_shape_quarter_pyramid_fourth": "Material Shape: Quarter Pyramid (4th)",
 
 
 
