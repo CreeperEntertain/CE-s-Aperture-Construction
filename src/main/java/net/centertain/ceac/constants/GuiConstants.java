@@ -1,4 +1,4 @@
-package net.centertain.ceac;
+package net.centertain.ceac.constants;
 
 import net.minecraft.world.phys.Vec3;
 

@@ -2,7 +2,8 @@ package net.centertain.ceac.block.custom;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.centertain.ceac.CategoryConstants;
+import net.centertain.ceac.constants.CategoryConstants;
+import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.material.*;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;
 import net.centertain.ceac.material.particle.MaterialParticleOptions;
@@ -25,7 +26,6 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -47,7 +47,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
     private final List<MaterialShapeFace> faces;
 
     private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIAL_SHAPES;
-    private static final double DEFAULT_PRICE = 50.0;
+    private static final double DEFAULT_PRICE = PriceConstants.DEFAULT_SHAPE;
 
     protected MaterialShape(
             Properties properties,

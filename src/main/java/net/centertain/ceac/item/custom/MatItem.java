@@ -1,7 +1,8 @@
 package net.centertain.ceac.item.custom;
 
-import net.centertain.ceac.CategoryConstants;
+import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.material.*;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;
 import net.centertain.ceac.material.preview.MaterialPlacement;
@@ -20,7 +21,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -44,7 +44,7 @@ public abstract class MatItem extends BasicItem {
     private static final String OFFSET_Y = "MaterialOffsetY";
 
     private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIALS;
-    private static final double DEFAULT_PRICE = 1000.0;
+    private static final double DEFAULT_PRICE = PriceConstants.DEFAULT_MAT_ITEM;
 
     protected MatItem(
             @Nullable String category,

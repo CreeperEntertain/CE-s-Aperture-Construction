@@ -1,6 +1,6 @@
 package net.centertain.ceac.block.custom.material_shapes.quarter_slopes.first;
 
-import net.centertain.ceac.CategoryConstants;
+import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.material.shapes.models.quarter_slopes.first.QuarterPyramidFirstGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;

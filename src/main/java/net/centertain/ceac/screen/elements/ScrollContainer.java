@@ -1,6 +1,6 @@
 package net.centertain.ceac.screen.elements;
 
-import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.constants.GuiConstants;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;

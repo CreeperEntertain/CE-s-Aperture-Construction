@@ -1,5 +1,6 @@
 package net.centertain.ceac.item.custom;
 
+import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.client.ClientDecals;
 import net.minecraft.client.Minecraft;
@@ -23,7 +24,7 @@ public class ScraperItem extends BasicItem {
         super(
                 properties
                         .durability(250),
-                500.0
+                PriceConstants.DEFAULT_TOOL
         );
     }
 

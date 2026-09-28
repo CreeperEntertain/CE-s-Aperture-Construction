@@ -1,4 +1,4 @@
-package net.centertain.ceac;
+package net.centertain.ceac.constants;
 
 public final class CategoryConstants {
     private CategoryConstants() {}

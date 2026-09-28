@@ -2,7 +2,7 @@ package net.centertain.ceac.material.preview;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.material.Material;
 import net.centertain.ceac.material.shapes.MaterialShapeFace;

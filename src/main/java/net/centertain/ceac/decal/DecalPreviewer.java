@@ -2,7 +2,7 @@ package net.centertain.ceac.decal;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.centertain.ceac.GuiConstants;
+import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.phys_screen.DecalPreviewerHelpScreen;
 import net.centertain.ceac.phys_screen.utility.PhysRenderer;

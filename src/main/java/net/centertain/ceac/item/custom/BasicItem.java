@@ -1,6 +1,6 @@
 package net.centertain.ceac.item.custom;
 
-import net.centertain.ceac.CategoryConstants;
+import net.centertain.ceac.constants.CategoryConstants;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.Nullable;
 

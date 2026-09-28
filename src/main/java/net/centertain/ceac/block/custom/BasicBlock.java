@@ -1,6 +1,6 @@
 package net.centertain.ceac.block.custom;
 
-import net.centertain.ceac.CategoryConstants;
+import net.centertain.ceac.constants.CategoryConstants;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 
