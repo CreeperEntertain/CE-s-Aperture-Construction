@@ -44,23 +44,23 @@ public class ThirdCornerOuterThirdGeometry implements IUnbakedGeometry<ThirdCorn
 
         builder.addUnculledFace(ModelHelper.triangle(
                 sprite,
-                ModelHelper.vertex(1f, 0.666667f, 0f, 1f, 0.333333f),
+                ModelHelper.vertex(1f, 0.666667f, -0f, 1f, 0.333333f),
                 ModelHelper.vertex(1f, 1f, -0f, 1f, 0f),
                 ModelHelper.vertex(1f, 0.666667f, 1f, 0f, 0.333333f)
         ));
 
         builder.addUnculledFace(ModelHelper.triangle(
                 sprite,
-                ModelHelper.vertex(0f, 0.666667f, 0f, 0f, 1f),
+                ModelHelper.vertex(0f, 0.666667f, -0f, 0f, 1f),
                 ModelHelper.vertex(0f, 0.666667f, 1f, 1f, 1f),
                 ModelHelper.vertex(1f, 1f, -0f, 0f, 0f)
         ));
 
         builder.addUnculledFace(ModelHelper.triangle(
                 sprite,
-                ModelHelper.vertex(0f, 0.666667f, 0f, 1f, 0.333333f),
+                ModelHelper.vertex(0f, 0.666667f, -0f, 1f, 0.333333f),
                 ModelHelper.vertex(1f, 1f, -0f, 0f, 0f),
-                ModelHelper.vertex(1f, 0.666667f, 0f, 0f, 0.333333f)
+                ModelHelper.vertex(1f, 0.666667f, -0f, 0f, 0.333333f)
         ));
 
         builder.addUnculledFace(ModelHelper.triangle(
@@ -72,7 +72,7 @@ public class ThirdCornerOuterThirdGeometry implements IUnbakedGeometry<ThirdCorn
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(1f, 0.333333f, 0f, 1f, 0.666667f),
+                ModelHelper.vertex(1f, 0.333333f, -0f, 1f, 0.666667f),
                 ModelHelper.vertex(1f, 0.333333f, 1f, 0f, 0.666667f),
                 ModelHelper.vertex(1f, 0f, 1f, 0f, 1f),
                 ModelHelper.vertex(1f, 0f, 0f, 1f, 1f)
@@ -80,25 +80,25 @@ public class ThirdCornerOuterThirdGeometry implements IUnbakedGeometry<ThirdCorn
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(0f, 0.666667f, 0f, 1f, 0.333333f),
-                ModelHelper.vertex(1f, 0.666667f, 0f, 0f, 0.333333f),
-                ModelHelper.vertex(1f, 0.333333f, 0f, 0f, 0.666667f),
-                ModelHelper.vertex(0f, 0.333333f, 0f, 1f, 0.666667f)
+                ModelHelper.vertex(0f, 0.666667f, -0f, 1f, 0.333333f),
+                ModelHelper.vertex(1f, 0.666667f, -0f, 0f, 0.333333f),
+                ModelHelper.vertex(1f, 0.333333f, -0f, 0f, 0.666667f),
+                ModelHelper.vertex(0f, 0.333333f, -0f, 1f, 0.666667f)
         ));
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(1f, 0.666667f, 0f, 1f, 0.333333f),
+                ModelHelper.vertex(1f, 0.666667f, -0f, 1f, 0.333333f),
                 ModelHelper.vertex(1f, 0.666667f, 1f, 0f, 0.333333f),
                 ModelHelper.vertex(1f, 0.333333f, 1f, 0f, 0.666667f),
-                ModelHelper.vertex(1f, 0.333333f, 0f, 1f, 0.666667f)
+                ModelHelper.vertex(1f, 0.333333f, -0f, 1f, 0.666667f)
         ));
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
                 ModelHelper.vertex(0f, 0.666667f, 1f, 1f, 0.333333f),
-                ModelHelper.vertex(0f, 0.666667f, 0f, 0f, 0.333333f),
-                ModelHelper.vertex(0f, 0.333333f, 0f, 0f, 0.666667f),
+                ModelHelper.vertex(0f, 0.666667f, -0f, 0f, 0.333333f),
+                ModelHelper.vertex(0f, 0.333333f, -0f, 0f, 0.666667f),
                 ModelHelper.vertex(0f, 0.333333f, 1f, 1f, 0.666667f)
         ));
 
@@ -113,7 +113,7 @@ public class ThirdCornerOuterThirdGeometry implements IUnbakedGeometry<ThirdCorn
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
                 ModelHelper.vertex(0f, 0.333333f, 1f, 1f, 0.666667f),
-                ModelHelper.vertex(0f, 0.333333f, 0f, 0f, 0.666667f),
+                ModelHelper.vertex(0f, 0.333333f, -0f, 0f, 0.666667f),
                 ModelHelper.vertex(0f, 0f, 0f, 0f, 1f),
                 ModelHelper.vertex(0f, 0f, 1f, 1f, 1f)
         ));
@@ -128,10 +128,10 @@ public class ThirdCornerOuterThirdGeometry implements IUnbakedGeometry<ThirdCorn
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(0f, 0.333333f, 0f, 1f, 0.666667f),
-                ModelHelper.vertex(1f, 0.333333f, 0f, 0f, 0.666667f),
-                ModelHelper.vertex(1f, 0f, 0f, 0f, 0.666667f),
-                ModelHelper.vertex(0f, 0f, 0f, 1f, 0.666667f)
+                ModelHelper.vertex(0f, 0.333333f, -0f, 1f, 0.666667f),
+                ModelHelper.vertex(1f, 0.333333f, -0f, 0f, 0.666667f),
+                ModelHelper.vertex(1f, 0f, 0f, 0f, 1f),
+                ModelHelper.vertex(0f, 0f, 0f, 1f, 1f)
         ));
 
         COLLISION_SHAPE = builder.build(context.getRenderType(modelLocation));
