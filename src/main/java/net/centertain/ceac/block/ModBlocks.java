@@ -58,6 +58,8 @@ public final class ModBlocks {
             () -> new HalfRoofBottom(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
     public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_ROOF_END_BOTTOM = registerBlock("material_shape_half_roof_end_bottom",
             () -> new HalfRoofEndBottom(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_PYRAMID_BOTTOM = registerBlock("material_shape_half_pyramid_bottom",
+            () -> new HalfPyramidBottom(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_SLOPE_TOP = registerBlock("material_shape_half_slope_top",
             () -> new HalfSlopeTop(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
