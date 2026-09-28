@@ -37,10 +37,8 @@ import org.joml.Vector2i;
 import java.util.List;
 import java.util.function.Supplier;
 
-public abstract class MatItem extends Item {
+public abstract class MatItem extends BasicItem {
     private final Supplier<Material> material;
-    private final String category;
-    private final String subcategory;
     private final double price;
 
     private static final String OFFSET_X = "MaterialOffsetX";
@@ -56,12 +54,14 @@ public abstract class MatItem extends Item {
             Properties properties,
             Supplier<Material> material
     ) {
-        super(properties.stacksTo(1));
+        super(
+                properties.stacksTo(1),
+                category == null
+                        ? DEFAULT_CATEGORY
+                        : category,
+                subcategory
+        );
         this.material = material;
-        this.category = category == null
-                ? DEFAULT_CATEGORY
-                : category;
-        this.subcategory = subcategory;
         this.price = price == null
                 ? DEFAULT_PRICE
                 : price;
@@ -72,10 +72,12 @@ public abstract class MatItem extends Item {
         String subcategory,
         Supplier<Material> material
     ) {
-        super(properties.stacksTo(1));
+        super(
+                properties.stacksTo(1),
+                DEFAULT_CATEGORY,
+                subcategory
+        );
         this.material = material;
-        this.category = DEFAULT_CATEGORY;
-        this.subcategory = subcategory;
         this.price = DEFAULT_PRICE;
     }
 
@@ -105,12 +107,6 @@ public abstract class MatItem extends Item {
                 Math.floorMod(materialCoordinate.x + offset.x, width),
                 Math.floorMod(materialCoordinate.y + offset.y, height)
         );
-    }
-    public final String getCategory() {
-        return category;
-    }
-    public final String getSubcategory() {
-        return subcategory;
     }
     public final double getPrice() {
         return price;
