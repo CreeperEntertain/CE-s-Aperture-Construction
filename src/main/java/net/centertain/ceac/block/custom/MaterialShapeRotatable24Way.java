@@ -47,7 +47,8 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape {
         );
     }
 
-    @Override protected void createBlockStateDefinition(
+    @Override
+    protected void createBlockStateDefinition(
             @NotNull StateDefinition.Builder<Block, BlockState> builder
     ) {
         builder.add(FACING, ROTATION);
