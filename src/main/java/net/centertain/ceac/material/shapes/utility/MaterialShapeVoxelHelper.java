@@ -180,7 +180,7 @@ public abstract class MaterialShapeVoxelHelper {
         Vec3 origin = polygon.get(0);
         double area = 0.0;
 
-        for (int i = 1; i < polygon.size(); i++)
+        for (int i = 1; i < polygon.size() - 1; i++) // We one-line this shit because we're schizo.
             area += polygon.get(i).subtract(origin).cross(polygon.get(i + 1).subtract(origin)).length() * 0.5;
 
         return area > EPSILON;
