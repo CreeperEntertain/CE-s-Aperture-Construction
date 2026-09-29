@@ -1,5 +1,6 @@
 package net.centertain.ceac.block;
 
+import net.centertain.ceac.block.custom.PurchasingTerminal;
 import net.centertain.ceac.block.custom.material_shapes.full_slopes.*;
 import net.centertain.ceac.block.custom.material_shapes.half_slopes.bottom.*;
 import net.centertain.ceac.block.custom.material_shapes.half_slopes.top.*;
@@ -27,6 +28,10 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
+
+
+    public static final RegistryObject<Block> PURCHASING_TERMINAL = registerBlock("purchasing_terminal",
+            () -> new PurchasingTerminal(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("material_shape_block",
