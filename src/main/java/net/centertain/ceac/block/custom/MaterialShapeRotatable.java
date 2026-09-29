@@ -27,6 +27,11 @@ public interface MaterialShapeRotatable {
             Vec3 point
     );
 
+    Vec3 transformDirectionToWorld(
+            BlockState state,
+            Vec3 point
+    );
+
     boolean rotateFromViewDirection(
             Level level,
             BlockPos pos,

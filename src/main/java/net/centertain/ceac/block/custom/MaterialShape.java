@@ -94,6 +94,9 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
     public Vec3 transformPointToWorld(BlockState state, Vec3 point) {
         return point;
     }
+    public Vec3 transformDirectionToWorld(BlockState state, Vec3 direction) {
+        return direction;
+    }
 
     @Override
     public BlockEntity newBlockEntity(

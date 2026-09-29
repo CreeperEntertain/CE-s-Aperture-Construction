@@ -112,6 +112,18 @@ public abstract class MaterialShapeRotatable6Way extends MaterialShape implement
     }
 
     @Override
+    public Vec3 transformDirectionToWorld(
+            BlockState state,
+            Vec3 direction
+    ) {
+        Basis basis = getBasis(state);
+
+        return basis.x.scale(direction.x)
+                .add(basis.y.scale(direction.y))
+                .add(basis.z.scale(direction.z));
+    }
+
+    @Override
     public boolean rotateFromViewDirection(
             Level level,
             BlockPos pos,

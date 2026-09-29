@@ -3,6 +3,7 @@ package net.centertain.ceac.material.shapes;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.block.custom.MaterialShapeRotatable;
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
@@ -79,30 +80,8 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
             BakedQuad quad,
             BlockState state
     ) {
-        if (!(state.getBlock() instanceof MaterialShapeRotatable24Way))
+        if (!(state.getBlock() instanceof MaterialShapeRotatable rotatable))
             return quad;
-
-        Direction facing = state.getValue(MaterialShapeRotatable24Way.FACING);
-        int rotation = state.getValue(MaterialShapeRotatable24Way.ROTATION);
-
-        Vec3 forward = direction(facing);
-
-        Vec3 baseX = forward.scale(-1.0);
-        Vec3 baseY = switch (facing) {
-            case UP -> new Vec3(0, 0, -1);
-            case DOWN -> new Vec3(0, 0, 1);
-            default -> new Vec3(0, 1, 0);
-        };
-        Vec3 baseZ = baseY.cross(forward).normalize();
-
-        //noinspection UnnecessaryLocalVariable
-        Vec3 x = baseX; // Thanks for the suggestion, compiler, but I like my code readable.
-        Vec3 y = baseY;
-
-        for (int i = 0; i < rotation; i++)
-            y = y.cross(forward).add(forward.scale(y.dot(forward)));
-
-        Vec3 z = y.cross(forward).normalize();
 
         int[] vertices = quad.getVertices().clone();
         VertexFormat format = DefaultVertexFormat.BLOCK;
@@ -125,7 +104,10 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
                     Float.intBitsToFloat(vertices[offset + 2])
             );
 
-            transformed[i] = transformPoint(original[i], x, y, z);
+            transformed[i] = rotatable.transformPointToWorld(
+                    state,
+                    original[i]
+            );
 
             vertices[offset] = Float.floatToRawIntBits((float) transformed[i].x);
             vertices[offset + 1] = Float.floatToRawIntBits((float) transformed[i].y);
@@ -137,12 +119,10 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
                 .cross(original[2].subtract(original[0]))
                 .normalize();
 
-        referenceNormal = transformDirection(
-                referenceNormal,
-                x,
-                y,
-                z
-        ).normalize();
+        referenceNormal = rotatable.transformDirectionToWorld(
+                state,
+                referenceNormal
+        );
 
         Direction projection = Direction.getNearest(
                 referenceNormal.x,
