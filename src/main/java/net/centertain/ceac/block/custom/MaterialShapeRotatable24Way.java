@@ -50,6 +50,9 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape implemen
     public @NotNull DirectionProperty getFacing() {
         return FACING;
     }
+    public @Nullable Direction.Axis getAxis() {
+        return null;
+    }
     public @NotNull IntegerProperty getRotation() {
         return ROTATION;
     }

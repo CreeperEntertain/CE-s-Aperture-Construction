@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +47,9 @@ public abstract class MaterialShapeRotatable6Way extends MaterialShape implement
 
     public @NotNull DirectionProperty getFacing() {
         return FACING;
+    }
+    public @Nullable Direction.Axis getAxis() {
+        return null;
     }
     public @Nullable IntegerProperty getRotation() {
         return null;
