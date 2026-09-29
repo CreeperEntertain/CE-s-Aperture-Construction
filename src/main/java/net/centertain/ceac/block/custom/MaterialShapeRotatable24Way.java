@@ -14,7 +14,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class MaterialShapeRotatable24Way extends MaterialShape {
+public abstract class MaterialShapeRotatable24Way extends MaterialShape implements MaterialShapeRotatable {
     public static DirectionProperty FACING = BlockStateProperties.FACING;
     public static IntegerProperty ROTATION = IntegerProperty.create("rotation", 0, 3);
 
@@ -46,6 +46,15 @@ public abstract class MaterialShapeRotatable24Way extends MaterialShape {
                 .setValue(ROTATION, 0)
         );
     }
+
+    public @NotNull DirectionProperty getFacing() {
+        return FACING;
+    }
+    public @NotNull IntegerProperty getRotation() {
+        return ROTATION;
+    }
+
+
 
     @Override
     protected void createBlockStateDefinition(
