@@ -106,11 +106,25 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             hoverable.updateHover(mouseX, mouseY);
             childHover = hoverable::getIsHovered;
         }
+
+        double childMouseX = mouseX;
+        double childMouseY = mouseY;
+
+        if (element instanceof HoverTransformer transformer)
+            if (!transformer.isMouseOver(mouseX, mouseY)) {
+                childMouseX = Double.NaN;
+                childMouseY = Double.NaN;
+            } else {
+                childMouseX = transformer.transformMouseX(mouseX, mouseY);
+                childMouseY = transformer.transformMouseY(mouseX, mouseY);
+            }
+
         if (element instanceof ElementLister lister)
             for (Element child : lister.getElements())
-                updateHover(child, mouseX, mouseY, childHover, visited);
+                updateHover(child, childMouseX, childMouseY, childHover, visited);
+
         if (element instanceof ElementContainer container)
-            updateHover(container.getElement(), mouseX, mouseY, childHover, visited);
+            updateHover(container.getElement(), childMouseX, childMouseY, childHover, visited);
     }
 
     @Override

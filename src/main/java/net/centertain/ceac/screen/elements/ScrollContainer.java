@@ -4,12 +4,13 @@ import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.element_types.ElementContainer;
 import net.centertain.ceac.screen.framework.element_types.FocusContainer;
+import net.centertain.ceac.screen.framework.element_types.HoverTransformer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-public class ScrollContainer implements Element, ElementContainer, FocusContainer, GuiEventListener {
+public class ScrollContainer implements Element, ElementContainer, FocusContainer, HoverTransformer, GuiEventListener {
     private int x;
     private int y;
     private int width;
@@ -25,6 +26,7 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
     private double scrollOffset;
 
     private GuiEventListener focusedElement;
+    private boolean isHovered;
 
     public enum Alignment {
         HORIZONTAL,
@@ -271,6 +273,26 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
                 mouseY >= y &&
                 mouseX < x + width &&
                 mouseY < y + height;
+    }
+
+    @Override
+    public double transformMouseX(
+            double mouseX,
+            double mouseY
+    ) {
+        if (alignment == Alignment.HORIZONTAL)
+            return mouseX + scrollOffset;
+        return mouseX;
+    }
+
+    @Override
+    public double transformMouseY(
+            double mouseX,
+            double mouseY
+    ) {
+        if (alignment == Alignment.VERTICAL)
+            return mouseY + scrollOffset;
+        return mouseY;
     }
 
     @Override
