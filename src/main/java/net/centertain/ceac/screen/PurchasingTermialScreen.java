@@ -1,5 +1,7 @@
 package net.centertain.ceac.screen;
 
+import net.centertain.ceac.block.ModBlocks;
+import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.item.ModItems;
 import net.centertain.ceac.item.custom.MatItem;
 import net.centertain.ceac.screen.framework.Screen;
@@ -33,7 +35,7 @@ public class PurchasingTermialScreen extends Screen {
         super.init();
 
         addElement(PurchaseButton.create(
-                (MatItem) ModItems.OBSERVATION_CONCRETE_WALL.get(),
+                (MaterialShape) ModBlocks.MATERIAL_SHAPE_FULL_PYRAMID.get(),
                 this::example,
                 width
         ));
