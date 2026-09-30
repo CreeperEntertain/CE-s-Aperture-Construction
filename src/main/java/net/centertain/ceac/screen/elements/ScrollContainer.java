@@ -174,6 +174,12 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
         guiGraphics.pose().popPose();
         guiGraphics.disableScissor();
 
+        contentSize = alignment == Alignment.VERTICAL
+                ? element.getHeight()
+                : element.getWidth();
+
+        clampScroll();
+
         if (!canScroll())
             return;
 
