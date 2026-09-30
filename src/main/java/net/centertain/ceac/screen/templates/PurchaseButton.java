@@ -92,7 +92,7 @@ public final class PurchaseButton {
                 0,
                 StackPanel.Alignment.VERTICAL,
                 canonicalWidth,
-                GuiConstants.ELEMENT_PADDING,
+                3,
                 GuiConstants.COLOR_TRANSPARENT,
                 labels
         );
@@ -104,16 +104,17 @@ public final class PurchaseButton {
                 Component.literal(title),
                 MarqueeLabel.Alignment.LEFT,
                 GuiConstants.COLOR_SOLID_WHITE,
-                1.0f,
+                0.5f,
                 false
         );
     }
 
     private static @NotNull Label getPrice(double price) {
-        String display = String.format("%.2f", price);
+        String display = "$" + String.format("%.2f", price);
         return new Label(
-                GuiConstants.COLOR_SOLID_WHITE,
+                GuiConstants.COLOR_SOLID_GREEN,
                 Component.literal(display),
+                0.5f,
                 false
         );
     }
@@ -121,8 +122,9 @@ public final class PurchaseButton {
     private static @NotNull Label getId(int id) {
         String display = "#" + id;
         return new Label(
-                GuiConstants.COLOR_SOLID_WHITE,
+                GuiConstants.COLOR_SOLID_GRAY,
                 Component.literal(display),
+                0.5f,
                 false
         );
     }

@@ -13,7 +13,7 @@ public final class GuiConstants {
     public static final int STACK_SCROLL_SPEED = 10;
     public static final int FLOW_SCROLL_SPEED = 50;
     public static final int SCROLL_BAR_WIDTH = 1;
-    public static final int PURCHASE_BUTTON_HEIGHT = 50;
+    public static final int PURCHASE_BUTTON_HEIGHT = 30;
 
     public static final Vec3 HELP_SCREEN_OFFSET = new Vec3(1.5, 0.0, 0.0);
 
