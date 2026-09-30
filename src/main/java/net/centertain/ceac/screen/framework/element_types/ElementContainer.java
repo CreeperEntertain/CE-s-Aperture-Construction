@@ -5,4 +5,8 @@ import org.jetbrains.annotations.NotNull;
 
 public interface ElementContainer {
     @NotNull Element getElement();
+
+    default boolean hasElement() {
+        return true;
+    }
 }

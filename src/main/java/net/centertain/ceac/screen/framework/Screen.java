@@ -144,7 +144,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             for (Element child : lister.getElements())
                 updateHover(child, childMouseX, childMouseY, childHover, visited);
 
-        if (element instanceof ElementContainer container)
+        if (element instanceof ElementContainer container && container.hasElement())
             updateHover(container.getElement(), childMouseX, childMouseY, childHover, visited);
     }
 
@@ -331,7 +331,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
                     return result;
             }
         }
-        if (element instanceof ElementContainer container) {
+        if (element instanceof ElementContainer container && container.hasElement()) {
             MouseDispatchResult result = dispatchMouse(
                     container.getElement(),
                     childMouseX,
@@ -423,7 +423,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             for (Element child : lister.getElements())
                 if (containsElement(child, target, visited))
                     return true;
-        if (element instanceof ElementContainer container)
+        if (element instanceof ElementContainer container && container.hasElement())
             return containsElement(container.getElement(), target, visited);
         return false;
     }
@@ -455,7 +455,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             for (Element child : lister.getElements())
                 if (findElementPath(child, target, path, visited))
                     return true;
-        if (element instanceof ElementContainer container)
+        if (element instanceof ElementContainer container && container.hasElement())
             if (findElementPath(container.getElement(), target, path, visited))
                 return true;
         path.remove(path.size() - 1);
