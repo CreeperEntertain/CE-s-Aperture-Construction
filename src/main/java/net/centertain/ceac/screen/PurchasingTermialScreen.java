@@ -52,10 +52,10 @@ public class PurchasingTermialScreen extends Screen {
                 )
         );
 
-        StackPanel stack = new StackPanel(
+        FlowPanel stack = new FlowPanel(
                 0,
                 0,
-                StackPanel.Alignment.VERTICAL,
+                FlowPanel.Alignment.HORIZONTAL,
                 width,
                 0,
                 GuiConstants.COLOR_TRANSPARENT,
