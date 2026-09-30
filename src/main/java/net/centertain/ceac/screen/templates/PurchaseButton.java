@@ -112,7 +112,7 @@ public final class PurchaseButton {
     private static @NotNull Label getPrice(double price) {
         String display = "$" + String.format("%.2f", price);
         return new Label(
-                GuiConstants.COLOR_SOLID_GREEN,
+                GuiConstants.COLOR_MINECRAFT_GREEN,
                 Component.literal(display),
                 0.5f,
                 false
@@ -122,7 +122,7 @@ public final class PurchaseButton {
     private static @NotNull Label getId(int id) {
         String display = "#" + id;
         return new Label(
-                GuiConstants.COLOR_SOLID_GRAY,
+                GuiConstants.COLOR_MINECRAFT_DARK_GRAY,
                 Component.literal(display),
                 0.5f,
                 false
