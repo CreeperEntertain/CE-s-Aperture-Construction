@@ -221,12 +221,10 @@ public class ModelDisplay implements Element {
                 -bounds.center().z
         );
 
-        boolean flatLight = !model.usesBlockLight();
-        if (flatLight)
-            if (flatShading)
-                Lighting.setupForFlatItems();
-            else
-                Lighting.setupForEntityInInventory();
+        if (flatShading)
+            Lighting.setupForFlatItems();
+        else
+            Lighting.setupForEntityInInventory();
 
         BakedModelRenderable.of(model).render(
                 poseStack,
@@ -239,8 +237,7 @@ public class ModelDisplay implements Element {
         );
 
         guiGraphics.flush();
-        if (flatLight)
-            Lighting.setupFor3DItems();
+        Lighting.setupFor3DItems();
 
         poseStack.popPose();
     }
