@@ -131,7 +131,7 @@ public class ModelDisplay implements Element {
 
         PoseStack poseStack = guiGraphics.pose();
 
-        float scale = Math.min(width, height) / 16.0F;
+        float scale = Math.min(width, height);
 
         poseStack.pushPose();
         poseStack.translate(
