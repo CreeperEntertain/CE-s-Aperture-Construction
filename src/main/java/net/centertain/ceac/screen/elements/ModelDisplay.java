@@ -1,16 +1,12 @@
 package net.centertain.ceac.screen.elements;
 
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.screen.framework.Element;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Direction;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.renderable.BakedModelRenderable;
@@ -153,18 +149,22 @@ public class ModelDisplay implements Element {
             float partialTick
     ) {
         PoseStack poseStack = guiGraphics.pose();
-        ModelBounds bounds = getModelBounds();
-
-        double fit = Math.min(
-                width / bounds.width(),
-                height / bounds.height()
-        );
 
         poseStack.pushPose();
         poseStack.translate(
                 x + width / 2.0,
                 y + height / 2.0,
                 100.0
+        );
+        poseStack.scale(
+                (float) (32.0 * scale.x),
+                (float) (-32.0 * scale.y),
+                (float) (32.0 * scale.z)
+        );
+        poseStack.translate(
+                -0.5,
+                -0.5,
+                0.0
         );
         poseStack.mulPose(new Quaternionf(
                 (float) Math.toRadians(rotation.z),
@@ -184,17 +184,6 @@ public class ModelDisplay implements Element {
                 0.0f,
                 0.0f
         ));
-        poseStack.scale(
-                (float) (fit * scale.x()),
-                (float) (-fit * scale.y()),
-                (float) (fit * scale.z())
-        );
-        poseStack.translate(
-                -bounds.center().x,
-                -bounds.center().y,
-                -bounds.center().z
-        );
-
         BakedModelRenderable.of(model).render(
                 poseStack,
                 guiGraphics.bufferSource(),
@@ -204,93 +193,7 @@ public class ModelDisplay implements Element {
                 partialTick,
                 new BakedModelRenderable.Context(ModelData.EMPTY)
         );
-
         guiGraphics.flush();
         poseStack.popPose();
     }
-
-    private ModelBounds getModelBounds() {
-        RandomSource random = RandomSource.create(42);
-
-        double minX = Double.POSITIVE_INFINITY;
-        double minY = Double.POSITIVE_INFINITY;
-        double minZ = Double.POSITIVE_INFINITY;
-        double maxX = Double.NEGATIVE_INFINITY;
-        double maxY = Double.NEGATIVE_INFINITY;
-        double maxZ = Double.NEGATIVE_INFINITY;
-
-        for (Direction direction : Direction.values()) {
-            random.setSeed(42);
-
-            for (BakedQuad quad : model.getQuads(
-                    null,
-                    direction,
-                    random,
-                    ModelData.EMPTY,
-                    null
-            )) {
-                int[] vertices = quad.getVertices();
-
-                for (int i = 0; i < 4; i++) {
-                    int offset = i * DefaultVertexFormat.BLOCK.getIntegerSize();
-
-                    double vertexX = Float.intBitsToFloat(vertices[offset]);
-                    double vertexY = Float.intBitsToFloat(vertices[offset + 1]);
-                    double vertexZ = Float.intBitsToFloat(vertices[offset + 2]);
-
-                    minX = Math.min(minX, vertexX);
-                    minY = Math.min(minY, vertexY);
-                    minZ = Math.min(minZ, vertexZ);
-                    maxX = Math.max(maxX, vertexX);
-                    maxY = Math.max(maxY, vertexY);
-                    maxZ = Math.max(maxZ, vertexZ);
-                }
-            }
-        }
-
-        random.setSeed(42);
-
-        for (BakedQuad quad : model.getQuads(
-                null,
-                null,
-                random,
-                ModelData.EMPTY,
-                null
-        )) {
-            int[] vertices = quad.getVertices();
-
-            for (int i = 0; i < 4; i++) {
-                int offset = i * DefaultVertexFormat.BLOCK.getIntegerSize();
-
-                double vertexX = Float.intBitsToFloat(vertices[offset]);
-                double vertexY = Float.intBitsToFloat(vertices[offset + 1]);
-                double vertexZ = Float.intBitsToFloat(vertices[offset + 2]);
-
-                minX = Math.min(minX, vertexX);
-                minY = Math.min(minY, vertexY);
-                minZ = Math.min(minZ, vertexZ);
-                maxX = Math.max(maxX, vertexX);
-                maxY = Math.max(maxY, vertexY);
-                maxZ = Math.max(maxZ, vertexZ);
-            }
-        }
-
-        Vec3 center = new Vec3(
-                (minX + maxX) / 2.0,
-                (minY + maxY) / 2.0,
-                (minZ + maxZ) / 2.0
-        );
-
-        return new ModelBounds(
-                center,
-                maxX - minX,
-                maxY - minY
-        );
-    }
-
-    private record ModelBounds(
-            Vec3 center,
-            double width,
-            double height
-    ) {}
 }
