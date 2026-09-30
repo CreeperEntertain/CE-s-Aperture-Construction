@@ -46,6 +46,13 @@ public class Button extends AbstractWidget implements Element, ElementContainer,
         this.onPress = onPress;
         this.backgroundColor = backgroundColor;
         this.outlineColor = outlineColor;
+
+        this.width = element instanceof Padder padder
+                ? padder.getRealWidth()
+                : element.getWidth();
+        this.height = element instanceof Padder padder
+                ? padder.getRealHeight()
+                : element.getHeight();
     }
 
     public int getX() {

@@ -136,10 +136,8 @@ public class Padder implements Element, ElementContainer {
             int mouseY,
             float partialTick
     ) {
-        if (element.getX() < x + padding)
-            element.setX(x + padding);
-        if (element.getY() < y + padding)
-            element.setY(y + padding);
+        element.setX(x + padding);
+        element.setY(y + padding);
         if (element.getWidth() > getWidth())
             element.setWidth(getWidth());
         if (element.getHeight() > getHeight())
