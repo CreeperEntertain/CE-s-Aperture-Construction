@@ -162,28 +162,28 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
                 y,
                 x + width,
                 y + 1,
-                GuiConstants.COLOR_MINECRAFT_GRAY
+                GuiConstants.COLOR_SOLID_GRAY
         );
         guiGraphics.fill(
                 x,
                 y + BAR_HEIGHT - 1,
                 x + width,
                 y + BAR_HEIGHT,
-                GuiConstants.COLOR_MINECRAFT_GRAY
+                GuiConstants.COLOR_SOLID_GRAY
         );
         guiGraphics.fill(
                 x,
                 y,
                 x + 1,
                 y + BAR_HEIGHT,
-                GuiConstants.COLOR_MINECRAFT_GRAY
+                GuiConstants.COLOR_SOLID_GRAY
         );
         guiGraphics.fill(
                 x + width - 1,
                 y,
                 x + width,
                 y + BAR_HEIGHT,
-                GuiConstants.COLOR_MINECRAFT_GRAY
+                GuiConstants.COLOR_SOLID_GRAY
         );
     }
 
