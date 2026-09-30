@@ -16,6 +16,7 @@ public class MarqueeLabel implements Element, Reactable {
     private int width;
 
     private Component text;
+    private Alignment alignment;
     private int textColor;
     private float textScale;
     private boolean shadow;
@@ -25,9 +26,16 @@ public class MarqueeLabel implements Element, Reactable {
     private long marqueeStartTime;
     private boolean marqueeActive;
 
+    public enum Alignment {
+        LEFT,
+        CENTER,
+        RIGHT
+    }
+
     public MarqueeLabel(
             int width,
             Component text,
+            Alignment alignment,
             int textColor,
             float textScale,
             boolean shadow
@@ -36,6 +44,7 @@ public class MarqueeLabel implements Element, Reactable {
         this.y = 0;
         this.width = width;
         this.text = text;
+        this.alignment = alignment;
         this.textColor = textColor;
         this.textScale = textScale;
         this.shadow = shadow;
@@ -45,6 +54,7 @@ public class MarqueeLabel implements Element, Reactable {
             @NotNull Element positionSupplier,
             int width,
             Component text,
+            Alignment alignment,
             int textColor,
             float textScale,
             boolean shadow
@@ -53,6 +63,7 @@ public class MarqueeLabel implements Element, Reactable {
         this.y = positionSupplier.getY();
         this.width = width;
         this.text = text;
+        this.alignment = alignment;
         this.textColor = textColor;
         this.textScale = textScale;
         this.shadow = shadow;
@@ -72,6 +83,9 @@ public class MarqueeLabel implements Element, Reactable {
     }
     public Component getText() {
         return text;
+    }
+    public Alignment getAlignment() {
+        return alignment;
     }
     public int getTextColor() {
         return textColor;
@@ -98,6 +112,10 @@ public class MarqueeLabel implements Element, Reactable {
     public void setHeight(int height) {}
     public void setText(Component text) {
         this.text = text;
+        marqueeActive = false;
+    }
+    public void setAlignment(Alignment alignment) {
+        this.alignment = alignment;
         marqueeActive = false;
     }
     public void setTextColor(int textColor) {
@@ -160,7 +178,7 @@ public class MarqueeLabel implements Element, Reactable {
             renderText(
                     guiGraphics,
                     text,
-                    x + (width - textWidth) / 2.0f,
+                    getAlignedTextX(textWidth),
                     y
             );
             return;
@@ -204,6 +222,14 @@ public class MarqueeLabel implements Element, Reactable {
         );
 
         guiGraphics.disableScissor();
+    }
+
+    private float getAlignedTextX(int textWidth) {
+        return switch (alignment) {
+            case LEFT -> x;
+            case CENTER -> x + (width - textWidth) / 2.0f;
+            case RIGHT -> x + width - textWidth;
+        };
     }
 
     private void renderText(

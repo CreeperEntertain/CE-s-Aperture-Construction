@@ -37,6 +37,7 @@ public final class ImageButton {
         MarqueeLabel marquee = new MarqueeLabel(
                 width - GuiConstants.ELEMENT_PADDING * 2,
                 text,
+                MarqueeLabel.Alignment.CENTER,
                 textColor,
                 textScale,
                 false

@@ -102,6 +102,7 @@ public final class PurchaseButton {
         return new MarqueeLabel(
                 width,
                 Component.literal(title),
+                MarqueeLabel.Alignment.LEFT,
                 GuiConstants.COLOR_SOLID_WHITE,
                 1.0f,
                 false
