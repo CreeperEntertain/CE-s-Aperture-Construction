@@ -2,6 +2,8 @@ package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.constants.CategoryConstants;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class BasicItem extends Item {
@@ -38,5 +40,11 @@ public abstract class BasicItem extends Item {
     }
     public final double getPrice() {
         return price;
+    }
+    public @NotNull ItemStack getItemStack() {
+        return getItemStack(1);
+    }
+    public @NotNull ItemStack getItemStack(int amount) {
+        return new ItemStack(this, amount);
     }
 }

@@ -2,7 +2,7 @@ package net.centertain.ceac.screen.templates;
 
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.constants.GuiConstants;
-import net.centertain.ceac.item.custom.MatItem;
+import net.centertain.ceac.item.custom.BasicItem;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.minecraft.network.chat.Component;
@@ -31,17 +31,17 @@ public final class PurchaseButton {
     }
 
     public static Button create(
-            MatItem matItem,
+            BasicItem basicItem,
             Runnable onPress,
             int width
     ) {
         return constructButton(
-                matItem.getItemStack(),
+                basicItem.getItemStack(),
                 onPress,
                 width,
-                matItem.getName(new ItemStack(matItem)).getString(),
-                matItem.getPrice(),
-                matItem.hashCode(),
+                basicItem.getName(new ItemStack(basicItem)).getString(),
+                basicItem.getPrice(),
+                basicItem.hashCode(),
                 true
         );
     }
