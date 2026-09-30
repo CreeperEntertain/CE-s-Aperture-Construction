@@ -156,7 +156,12 @@ public class ModelDisplay implements Element {
         poseStack.translate(
                 x + width / 2.0,
                 y + height / 2.0,
-                0.0
+                100.0
+        );
+        poseStack.scale(
+                (float) (16.0 * scale.x),
+                (float) (-16.0 * scale.y),
+                (float) (16.0 * scale.z)
         );
         poseStack.mulPose(new Quaternionf(
                 (float) Math.toRadians(rotation.z),
@@ -186,6 +191,7 @@ public class ModelDisplay implements Element {
                 OverlayTexture.NO_OVERLAY,
                 model
         );
+        guiGraphics.flush();
         poseStack.popPose();
     }
 }
