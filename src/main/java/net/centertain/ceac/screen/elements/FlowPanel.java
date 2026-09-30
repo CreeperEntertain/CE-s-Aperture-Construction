@@ -2,13 +2,14 @@ package net.centertain.ceac.screen.elements;
 
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.ElementLister;
+import net.centertain.ceac.screen.framework.FocusContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class FlowPanel implements Element, ElementLister, GuiEventListener {
+public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEventListener {
     private int x;
     private int y;
 
@@ -22,6 +23,8 @@ public class FlowPanel implements Element, ElementLister, GuiEventListener {
     private int backgroundColor;
 
     private List<Element> elements;
+
+    private GuiEventListener focusedElement;
 
     public enum Alignment {
         HORIZONTAL,
@@ -111,6 +114,9 @@ public class FlowPanel implements Element, ElementLister, GuiEventListener {
     }
     public List<Element> getElements() {
         return elements;
+    }
+    public GuiEventListener getFocusedElement() {
+        return focusedElement;
     }
 
     public void setX(int x) {
@@ -290,11 +296,10 @@ public class FlowPanel implements Element, ElementLister, GuiEventListener {
             Element element = elements.get(i);
             if (!(element instanceof GuiEventListener listener))
                 continue;
-            if (
-                    listener.isMouseOver(mouseX, mouseY) &&
-                    listener.mouseClicked(mouseX, mouseY, button)
-            )
+            if (listener.isMouseOver(mouseX, mouseY) && listener.mouseClicked(mouseX, mouseY, button)) {
+                focusedElement = listener;
                 return true;
+            }
         }
         return false;
     }

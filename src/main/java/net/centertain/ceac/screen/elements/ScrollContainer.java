@@ -3,12 +3,13 @@ package net.centertain.ceac.screen.elements;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.ElementContainer;
+import net.centertain.ceac.screen.framework.FocusContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-public class ScrollContainer implements Element, ElementContainer, GuiEventListener {
+public class ScrollContainer implements Element, ElementContainer, FocusContainer, GuiEventListener {
     private int x;
     private int y;
     private int width;
@@ -22,6 +23,8 @@ public class ScrollContainer implements Element, ElementContainer, GuiEventListe
     private int scrollSpeed;
 
     private double scrollOffset;
+
+    private GuiEventListener focusedElement;
 
     public enum Alignment {
         HORIZONTAL,
@@ -74,6 +77,9 @@ public class ScrollContainer implements Element, ElementContainer, GuiEventListe
     }
     public double getScrollOffset() {
         return scrollOffset;
+    }
+    public GuiEventListener getFocusedElement() {
+        return focusedElement;
     }
 
     public void setX(int x) {
@@ -248,7 +254,11 @@ public class ScrollContainer implements Element, ElementContainer, GuiEventListe
         else
             contentMouseY += scrollOffset;
 
-        return listener.mouseClicked(contentMouseX, contentMouseY, button);
+        if (!listener.mouseClicked(contentMouseX, contentMouseY, button))
+            return false;
+
+        focusedElement = listener;
+        return true;
     }
 
     @Override

@@ -269,12 +269,24 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
     private void setFocusedElement(
             @NotNull GuiEventListener element
     ) {
-        if (focusedElement == element)
+        GuiEventListener target = resolveFocusedElement(element);
+        if (focusedElement == target)
             return;
         if (focusedElement != null)
             focusedElement.setFocused(false);
-        focusedElement = element;
+        focusedElement = target;
         focusedElement.setFocused(true);
+    }
+
+    private GuiEventListener resolveFocusedElement(
+            @NotNull GuiEventListener element
+    ) {
+        if (!(element instanceof FocusContainer container))
+            return element;
+        GuiEventListener child = container.getFocusedElement();
+        if (child == null)
+            return element;
+        return resolveFocusedElement(child);
     }
 
     @FunctionalInterface
