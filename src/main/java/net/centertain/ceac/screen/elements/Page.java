@@ -17,17 +17,17 @@ public class Page implements Element, ElementContainer, HoverTransformer {
 
     public Page(
             @NotNull String name,
+            int width,
+            int height,
             @NotNull Element element
     ) {
         this.x = 0;
         this.y = 0;
-        this.width = element.getWidth();
-        this.height = element.getHeight();
+        this.width = width;
+        this.height = height;
         this.name = name;
         this.element = element;
 
-        element.setX(x);
-        element.setY(y);
         element.setWidth(width);
         element.setHeight(height);
     }
