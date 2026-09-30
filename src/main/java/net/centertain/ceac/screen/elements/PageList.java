@@ -209,11 +209,7 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
                             ? GuiConstants.TAB_BUTTON_HEIGHT
                             : tabSize,
                     Component.literal(text),
-                    switch (tabPosition) {
-                        case RIGHT -> MarqueeLabel.Alignment.RIGHT;
-                        case LEFT -> MarqueeLabel.Alignment.LEFT;
-                        default -> MarqueeLabel.Alignment.CENTER;
-                    },
+                    MarqueeLabel.Alignment.CENTER,
                     GuiConstants.COLOR_SOLID_WHITE,
                     1.0f,
                     false
