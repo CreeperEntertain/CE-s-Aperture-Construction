@@ -381,8 +381,7 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         if (clickedPage < 0)
             return false;
 
-        pageIndex = clickedPage;
-        focusedElement = null;
+        setPageIndex(clickedPage);
         return true;
     }
 
@@ -390,37 +389,52 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
             double mouseX,
             double mouseY
     ) {
-        if (
-                mouseX < x ||
-                mouseY < y ||
-                mouseX >= x + width ||
-                mouseY >= y + height
-        )
-            return -1;
-
         int count = pages.size();
+
+        if (count == 0)
+            return -1;
 
         switch (tabPosition) {
             case TOP, BOTTOM -> {
                 int tabWidth = width / count;
 
-                if (tabPosition == TabPosition.TOP && mouseY >= y + tabSize)
-                    return -1;
-                if (tabPosition == TabPosition.BOTTOM && mouseY < y + height - tabSize)
+                if (tabWidth <= 0)
                     return -1;
 
-                int index = (int) ((mouseX - x) / tabWidth);
+                int tabY = tabPosition == TabPosition.TOP
+                        ? y
+                        : y + height - tabSize;
+
+                if (
+                        mouseX < x ||
+                        mouseY < tabY ||
+                        mouseX >= x + width ||
+                        mouseY >= tabY + tabSize
+                )
+                    return -1;
+
+                int index = (int) ((mouseX - x) / (double) tabWidth);
                 return Math.min(index, count - 1);
             }
             case LEFT, RIGHT -> {
                 int tabHeight = height / count;
 
-                if (tabPosition == TabPosition.LEFT && mouseX >= x + tabSize)
-                    return -1;
-                if (tabPosition == TabPosition.RIGHT && mouseX < x + width - tabSize)
+                if (tabHeight <= 0)
                     return -1;
 
-                int index = (int) ((mouseY - y) / tabHeight);
+                int tabX = tabPosition == TabPosition.LEFT
+                        ? x
+                        : x + width - tabSize;
+
+                if (
+                        mouseX < tabX ||
+                        mouseY < y ||
+                        mouseX >= tabX + tabSize ||
+                        mouseY >= y + height
+                )
+                    return -1;
+
+                int index = (int) ((mouseY - y) / (double) tabHeight);
                 return Math.min(index, count - 1);
             }
         }
