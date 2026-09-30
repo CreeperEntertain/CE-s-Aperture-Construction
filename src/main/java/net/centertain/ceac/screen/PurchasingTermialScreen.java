@@ -66,13 +66,6 @@ public class PurchasingTermialScreen extends Screen {
                 GuiConstants.PAGE_TAB_VERTICALLY_ALIGNED_WIDTH,
                 true
         ));
-
-        Label currency = new Label(
-                GuiConstants.COLOR_SOLID_WHITE,
-                Component.literal("Example Text"),
-                1.0f,
-                false
-        );
     }
 
     public static void purchase(BasicItem item) {
