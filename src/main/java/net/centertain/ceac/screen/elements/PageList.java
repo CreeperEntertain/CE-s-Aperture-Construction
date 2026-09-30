@@ -190,6 +190,7 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
     }
 
 
+    @SuppressWarnings("ExtractMethodRecommender")
     private void rebuildTabs() {
         tabButtons.clear();
 
@@ -202,9 +203,18 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
                     ? pages.get(i).getName()
                     : String.valueOf(i + 1);
 
-            Label label = new Label(
-                    GuiConstants.COLOR_MINECRAFT_WHITE,
+            MarqueeLabel label = new MarqueeLabel(
+                    tabPosition == PageList.TabPosition.TOP ||
+                            tabPosition == PageList.TabPosition.BOTTOM
+                            ? GuiConstants.TAB_BUTTON_HEIGHT
+                            : tabSize,
                     Component.literal(text),
+                    switch (tabPosition) {
+                        case RIGHT -> MarqueeLabel.Alignment.RIGHT;
+                        case LEFT -> MarqueeLabel.Alignment.LEFT;
+                        default -> MarqueeLabel.Alignment.CENTER;
+                    },
+                    GuiConstants.COLOR_SOLID_WHITE,
                     1.0f,
                     false
             );
@@ -232,7 +242,7 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
                     aligner,
                     () -> setPageIndex(page),
                     GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
-                    GuiConstants.COLOR_MINECRAFT_GRAY
+                    GuiConstants.COLOR_SOLID_GRAY
             );
 
             button.setWidth(tabWidth);
@@ -324,6 +334,7 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         };
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean isMouseOverTabStrip(
             double mouseX,
             double mouseY
@@ -471,12 +482,13 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
                 tabY,
                 button.getWidth(),
                 button.getHeight(),
-                GuiConstants.COLOR_MINECRAFT_WHITE
+                GuiConstants.COLOR_SOLID_WHITE
         );
 
         guiGraphics.disableScissor();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void renderOutline(
             @NotNull GuiGraphics guiGraphics,
             int tabX,
