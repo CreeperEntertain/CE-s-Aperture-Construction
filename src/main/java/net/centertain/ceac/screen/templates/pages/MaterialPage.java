@@ -1,5 +1,6 @@
 package net.centertain.ceac.screen.templates.pages;
 
+import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.ModItems;
 import net.centertain.ceac.item.custom.MatItem;
@@ -32,6 +33,8 @@ public final class MaterialPage {
         for (RegistryObject<Item> item : ModItems.ITEMS.getEntries())
             if (item.get() instanceof MatItem matItem) {
                 String subcategory = matItem.getSubcategory();
+                if (subcategory == null)
+                    subcategory = CategoryConstants.Sub.Mats.MISC;
                 if (!buttons.containsKey(subcategory))
                     buttons.put(subcategory, new ArrayList<>());
                 buttons.get(subcategory).add(PurchaseButton.create(
