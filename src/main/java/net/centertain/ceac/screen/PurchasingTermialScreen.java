@@ -35,7 +35,7 @@ public class PurchasingTermialScreen extends Screen {
         super.init();
 
         addElement(PurchaseButton.create(
-                (MaterialShape) ModBlocks.MATERIAL_SHAPE_BlOCK.get(),
+                (MatItem) ModItems.OBSERVATION_CONCRETE_WALL.get(),
                 this::example,
                 width
         ));
