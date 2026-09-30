@@ -75,7 +75,7 @@ public final class MaterialPage {
         );
 
         return new Page(
-                "Shapes",
+                "Materials",
                 width,
                 height,
                 new ScrollContainer(

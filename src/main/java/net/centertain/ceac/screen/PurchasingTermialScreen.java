@@ -51,7 +51,7 @@ public class PurchasingTermialScreen extends Screen {
         List<Page> pages = List.of(
                 TradePage.get(x, y, width, height),
                 BasicsPage.get(x, y, width, height),
-                MaterialShapePage.get(x, y, width, height),
+                //MaterialShapePage.get(x, y, width, height),
                 MaterialPage.get(x, y, width, height)
         );
 
