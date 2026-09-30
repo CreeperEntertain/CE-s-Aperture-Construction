@@ -21,19 +21,14 @@ public final class PurchaseButton {
             Runnable onPress,
             int width
     ) {
-        BakedModel model = materialShape.getBakedModel();
-        double scalar = (1.0 / 3.0) * 2.0;
+        ItemStack stack = materialShape.getItemStack(1);
         return constructButton(
-                model,
+                stack,
                 onPress,
                 width,
                 materialShape.getName().getString(),
                 materialShape.getPrice(),
-                materialShape.hashCode(),
-                new Vec3(-30.0, 45.0, 0.0),
-                new Vec3(scalar, scalar, scalar),
-                false,
-                true
+                materialShape.hashCode()
         );
     }
 
@@ -42,41 +37,29 @@ public final class PurchaseButton {
             Runnable onPress,
             int width
     ) {
-        BakedModel model = matItem.getBakedModel();
+        ItemStack stack = matItem.getItemStack(1);
         return constructButton(
-                model,
+                stack,
                 onPress,
                 width,
                 matItem.getName(new ItemStack(matItem)).getString(),
                 matItem.getPrice(),
-                matItem.hashCode(),
-                new Vec3(0.0, 0.0, 0.0),
-                new Vec3(1.0, 1.0, 1.0),
-                true,
-                false
+                matItem.hashCode()
         );
     }
 
     private static Button constructButton(
-            BakedModel model,
+            ItemStack stack,
             Runnable onPress,
             int width,
             String title,
             double price,
-            int id,
-            Vec3 rotation,
-            Vec3 scale,
-            boolean flatShading,
-            boolean flipVertical
+            int id
     ) {
         ModelDisplay display = new ModelDisplay(
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
-                model,
-                rotation,
-                scale,
-                flatShading,
-                flipVertical
+                stack
         );
         List<Element> horizontalElements = List.of(
                 display,

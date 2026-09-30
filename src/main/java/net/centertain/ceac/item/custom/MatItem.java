@@ -93,6 +93,12 @@ public abstract class MatItem extends BasicItem {
                 0
         );
     }
+    public @NotNull ItemStack getItemStack() {
+        return getItemStack(1);
+    }
+    public @NotNull ItemStack getItemStack(int amount) {
+        return new ItemStack(this, amount);
+    }
 
     public Vector2i getMaterialCoordinateOffset(ItemStack stack) {
         CompoundTag tag = stack.getOrCreateTag();

@@ -105,6 +105,12 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         ModelResourceLocation location = BlockModelShaper.stateToModelLocation(state);
         return Minecraft.getInstance().getModelManager().getModel(location);
     }
+    public @NotNull ItemStack getItemStack() {
+        return getItemStack(1);
+    }
+    public @NotNull ItemStack getItemStack(int amount) {
+        return new ItemStack(asItem(), amount);
+    }
 
     @Override
     public BlockEntity newBlockEntity(

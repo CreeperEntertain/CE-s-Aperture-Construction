@@ -1,22 +1,18 @@
 package net.centertain.ceac.screen.elements;
 
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.centertain.ceac.screen.framework.Element;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Direction;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.client.model.renderable.BakedModelRenderable;
+import net.centertain.ceac.screen.framework.Element;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Quaternionf;
 
 public class ModelDisplay implements Element {
     private int x;
@@ -24,32 +20,18 @@ public class ModelDisplay implements Element {
     private int width;
     private int height;
 
-    private BakedModel model;
-
-    private Vec3 rotation;
-    private Vec3 scale;
-
-    private boolean flatShading;
-    private boolean flipVertical;
+    private ItemStack stack;
 
     public ModelDisplay(
             int width,
             int height,
-            @NotNull BakedModel model,
-            @NotNull Vec3 rotation,
-            @NotNull Vec3 scale,
-            boolean flatShading,
-            boolean flipVertical
+            @NotNull ItemStack stack
     ) {
         this.x = 0;
         this.y = 0;
         this.width = width;
         this.height = height;
-        this.model = model;
-        this.rotation = rotation;
-        this.scale = scale;
-        this.flatShading = flatShading;
-        this.flipVertical = flipVertical;
+        this.stack = stack;
     }
 
     public ModelDisplay(
@@ -57,61 +39,37 @@ public class ModelDisplay implements Element {
             int y,
             int width,
             int height,
-            @NotNull BakedModel model,
-            @NotNull Vec3 rotation,
-            @NotNull Vec3 scale,
-            boolean flatShading,
-            boolean flipVertical
+            @NotNull ItemStack stack
     ) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.model = model;
-        this.rotation = rotation;
-        this.scale = scale;
-        this.flatShading = flatShading;
-        this.flipVertical = flipVertical;
+        this.stack = stack;
     }
 
     public ModelDisplay(
             @NotNull Element dimensionSupplier,
-            @NotNull BakedModel model,
-            @NotNull Vec3 rotation,
-            @NotNull Vec3 scale,
-            boolean flatShading,
-            boolean flipVertical
+            @NotNull ItemStack stack
     ) {
         this.x = dimensionSupplier.getX();
         this.y = dimensionSupplier.getY();
         this.width = dimensionSupplier.getWidth();
         this.height = dimensionSupplier.getHeight();
-        this.model = model;
-        this.rotation = rotation;
-        this.scale = scale;
-        this.flatShading = flatShading;
-        this.flipVertical = flipVertical;
+        this.stack = stack;
     }
 
     public ModelDisplay(
             @NotNull Element positionSupplier,
             int width,
             int height,
-            @NotNull BakedModel model,
-            @NotNull Vec3 rotation,
-            @NotNull Vec3 scale,
-            boolean flatShading,
-            boolean flipVertical
+            @NotNull ItemStack stack
     ) {
         this.x = positionSupplier.getX();
         this.y = positionSupplier.getY();
         this.width = width;
         this.height = height;
-        this.model = model;
-        this.rotation = rotation;
-        this.scale = scale;
-        this.flatShading = flatShading;
-        this.flipVertical = flipVertical;
+        this.stack = stack;
     }
 
     public int getX() {
@@ -126,20 +84,8 @@ public class ModelDisplay implements Element {
     public int getHeight() {
         return height;
     }
-    public @NotNull BakedModel getModel() {
-        return model;
-    }
-    public @NotNull Vec3 getRotation() {
-        return rotation;
-    }
-    public @NotNull Vec3 getScale() {
-        return scale;
-    }
-    public boolean getFlatShading() {
-        return flatShading;
-    }
-    public boolean getFlipVertical() {
-        return flipVertical;
+    public @NotNull ItemStack getStack() {
+        return stack;
     }
 
     public void setX(int x) {
@@ -154,20 +100,8 @@ public class ModelDisplay implements Element {
     public void setHeight(int height) {
         this.height = height;
     }
-    public void setModel(@NotNull BakedModel model) {
-        this.model = model;
-    }
-    public void setRotation(@NotNull Vec3 rotation) {
-        this.rotation = rotation;
-    }
-    public void setScale(@NotNull Vec3 scale) {
-        this.scale = scale;
-    }
-    public void setFlatShading(boolean flatShading) {
-        this.flatShading = flatShading;
-    }
-    public void setFlipVertical(boolean flipVertical) {
-        this.flipVertical = flipVertical;
+    public void setStack(@NotNull ItemStack stack) {
+        this.stack = stack;
     }
     public void setDimensions(@NotNull Element dimensionSupplier) {
         this.x = dimensionSupplier.getX();
@@ -176,7 +110,6 @@ public class ModelDisplay implements Element {
         this.height = dimensionSupplier.getHeight();
     }
 
-
     @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
@@ -184,146 +117,53 @@ public class ModelDisplay implements Element {
             int mouseY,
             float partialTick
     ) {
-        PoseStack poseStack = guiGraphics.pose();
-        ModelBounds bounds = getModelBounds();
+        if (stack.isEmpty())
+            return;
 
-        double fit = Math.min(
-                width / bounds.width(),
-                height / bounds.height()
+        Minecraft minecraft = Minecraft.getInstance();
+        ItemRenderer itemRenderer = minecraft.getItemRenderer();
+        BakedModel model = itemRenderer.getModel(
+                stack,
+                minecraft.level,
+                null,
+                0
         );
+
+        PoseStack poseStack = guiGraphics.pose();
+
+        float scale = Math.min(width, height) / 16.0F;
 
         poseStack.pushPose();
         poseStack.translate(
-                x + width / 2.0,
-                y + height / 2.0,
-                100.0
+                x + width / 2.0F,
+                y + height / 2.0F,
+                100.0F
         );
-        poseStack.mulPose(
-                com.mojang.math.Axis.XP.rotationDegrees((float) rotation.x)
-        );
-        poseStack.mulPose(
-                com.mojang.math.Axis.YP.rotationDegrees((float) rotation.y)
-        );
-        poseStack.mulPose(
-                com.mojang.math.Axis.ZP.rotationDegrees((float) rotation.z)
-        );
-        double vertical = flipVertical
-                ? -1.0
-                : 1.0;
         poseStack.scale(
-                (float) (fit * scale.x()),
-                (float) (fit * scale.y() * vertical),
-                (float) (fit * scale.z())
-        );
-        poseStack.translate(
-                -bounds.center().x,
-                -bounds.center().y,
-                -bounds.center().z
+                scale,
+                -scale,
+                scale
         );
 
-        if (flatShading)
+        if (!model.usesBlockLight())
             Lighting.setupForFlatItems();
-        else
-            Lighting.setupForEntityInInventory();
 
-        BakedModelRenderable.of(model).render(
+        itemRenderer.render(
+                stack,
+                ItemDisplayContext.GUI,
+                false,
                 poseStack,
                 guiGraphics.bufferSource(),
-                RenderType::entityTranslucent,
                 LightTexture.FULL_BRIGHT,
                 OverlayTexture.NO_OVERLAY,
-                partialTick,
-                new BakedModelRenderable.Context(ModelData.EMPTY)
+                model
         );
 
         guiGraphics.flush();
-        Lighting.setupFor3DItems();
+
+        if (!model.usesBlockLight())
+            Lighting.setupFor3DItems();
 
         poseStack.popPose();
     }
-
-    private ModelBounds getModelBounds() {
-        RandomSource random = RandomSource.create(42);
-
-        double minX = Double.POSITIVE_INFINITY;
-        double minY = Double.POSITIVE_INFINITY;
-        double minZ = Double.POSITIVE_INFINITY;
-        double maxX = Double.NEGATIVE_INFINITY;
-        double maxY = Double.NEGATIVE_INFINITY;
-        double maxZ = Double.NEGATIVE_INFINITY;
-
-        for (Direction direction : Direction.values()) {
-            random.setSeed(42);
-
-            for (BakedQuad quad : model.getQuads(
-                    null,
-                    direction,
-                    random,
-                    ModelData.EMPTY,
-                    null
-            )) {
-                int[] vertices = quad.getVertices();
-
-                for (int i = 0; i < 4; i++) {
-                    int offset = i * DefaultVertexFormat.BLOCK.getIntegerSize();
-
-                    double vertexX = Float.intBitsToFloat(vertices[offset]);
-                    double vertexY = Float.intBitsToFloat(vertices[offset + 1]);
-                    double vertexZ = Float.intBitsToFloat(vertices[offset + 2]);
-
-                    minX = Math.min(minX, vertexX);
-                    minY = Math.min(minY, vertexY);
-                    minZ = Math.min(minZ, vertexZ);
-                    maxX = Math.max(maxX, vertexX);
-                    maxY = Math.max(maxY, vertexY);
-                    maxZ = Math.max(maxZ, vertexZ);
-                }
-            }
-        }
-
-        random.setSeed(42);
-
-        for (BakedQuad quad : model.getQuads(
-                null,
-                null,
-                random,
-                ModelData.EMPTY,
-                null
-        )) {
-            int[] vertices = quad.getVertices();
-
-            for (int i = 0; i < 4; i++) {
-                int offset = i * DefaultVertexFormat.BLOCK.getIntegerSize();
-
-                double vertexX = Float.intBitsToFloat(vertices[offset]);
-                double vertexY = Float.intBitsToFloat(vertices[offset + 1]);
-                double vertexZ = Float.intBitsToFloat(vertices[offset + 2]);
-
-                minX = Math.min(minX, vertexX);
-                minY = Math.min(minY, vertexY);
-                minZ = Math.min(minZ, vertexZ);
-                maxX = Math.max(maxX, vertexX);
-                maxY = Math.max(maxY, vertexY);
-                maxZ = Math.max(maxZ, vertexZ);
-            }
-        }
-
-        Vec3 center = new Vec3(
-                (minX + maxX) / 2.0,
-                (minY + maxY) / 2.0,
-                (minZ + maxZ) / 2.0
-        );
-
-        return new ModelBounds(
-                center,
-                maxX - minX,
-                maxY - minY
-        );
-    }
-
-    private record ModelBounds(
-            Vec3 center,
-            double width,
-            double height
-    ) {}
 }
