@@ -160,7 +160,7 @@ public class MarqueeLabel implements Element, Reactable {
             renderText(
                     guiGraphics,
                     text,
-                    x + (width - textWidth) / 2,
+                    x + (width - textWidth) / 2.0f,
                     y
             );
             return;
@@ -174,7 +174,7 @@ public class MarqueeLabel implements Element, Reactable {
             renderText(
                     guiGraphics,
                     Component.literal(truncatedText),
-                    x + (width - truncatedTextWidth) / 2,
+                    x + (width - truncatedTextWidth) / 2.0f,
                     y
             );
             return;
@@ -199,7 +199,7 @@ public class MarqueeLabel implements Element, Reactable {
         renderText(
                 guiGraphics,
                 text,
-                Math.round(x - scrollOffset),
+                x - scrollOffset,
                 y
         );
 
@@ -209,7 +209,7 @@ public class MarqueeLabel implements Element, Reactable {
     private void renderText(
             GuiGraphics guiGraphics,
             Component text,
-            int x,
+            float x,
             int y
     ) {
         guiGraphics.pose().pushPose();
