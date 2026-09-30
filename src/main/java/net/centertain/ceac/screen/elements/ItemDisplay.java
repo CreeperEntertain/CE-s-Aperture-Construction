@@ -2,19 +2,12 @@ package net.centertain.ceac.screen.elements;
 
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.model.data.ModelData;
 import net.centertain.ceac.screen.framework.Element;
 import org.jetbrains.annotations.NotNull;
 
-public class ModelDisplay implements Element {
+public class ItemDisplay implements Element {
     private int x;
     private int y;
     private int width;
@@ -24,7 +17,7 @@ public class ModelDisplay implements Element {
 
     private boolean flatLighting;
 
-    public ModelDisplay(
+    public ItemDisplay(
             int width,
             int height,
             @NotNull ItemStack stack,
@@ -38,7 +31,7 @@ public class ModelDisplay implements Element {
         this.flatLighting = flatLighting;
     }
 
-    public ModelDisplay(
+    public ItemDisplay(
             int x,
             int y,
             int width,
@@ -54,7 +47,7 @@ public class ModelDisplay implements Element {
         this.flatLighting = flatLighting;
     }
 
-    public ModelDisplay(
+    public ItemDisplay(
             @NotNull Element dimensionSupplier,
             @NotNull ItemStack stack,
             boolean flatLighting
@@ -67,7 +60,7 @@ public class ModelDisplay implements Element {
         this.flatLighting = flatLighting;
     }
 
-    public ModelDisplay(
+    public ItemDisplay(
             @NotNull Element positionSupplier,
             int width,
             int height,
@@ -136,50 +129,29 @@ public class ModelDisplay implements Element {
         if (stack.isEmpty())
             return;
 
-        Minecraft minecraft = Minecraft.getInstance();
-        ItemRenderer itemRenderer = minecraft.getItemRenderer();
-        BakedModel model = itemRenderer.getModel(
-                stack,
-                minecraft.level,
-                null,
-                0
-        );
-
         PoseStack poseStack = guiGraphics.pose();
 
-        float scale = Math.min(width, height);
+        float scale = Math.min(width, height) / 16.0F;
 
         poseStack.pushPose();
         poseStack.translate(
                 x + width / 2.0F,
                 y + height / 2.0F,
-                100.0F
+                0.0F
         );
         poseStack.scale(
                 scale,
-                -scale,
+                scale,
                 scale
         );
 
         if (flatLighting)
             Lighting.setupForFlatItems();
-        else
+
+        guiGraphics.renderItem(stack, -8, -8);
+
+        if (flatLighting)
             Lighting.setupFor3DItems();
-
-        itemRenderer.render(
-                stack,
-                ItemDisplayContext.GUI,
-                false,
-                poseStack,
-                guiGraphics.bufferSource(),
-                LightTexture.FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY,
-                model
-        );
-
-        guiGraphics.flush();
-
-        Lighting.setupFor3DItems();
 
         poseStack.popPose();
     }

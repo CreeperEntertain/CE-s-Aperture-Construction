@@ -5,10 +5,8 @@ import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.custom.MatItem;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -21,9 +19,8 @@ public final class PurchaseButton {
             Runnable onPress,
             int width
     ) {
-        ItemStack stack = materialShape.getItemStack(1);
         return constructButton(
-                stack,
+                materialShape.getItemStack(),
                 onPress,
                 width,
                 materialShape.getName().getString(),
@@ -38,9 +35,8 @@ public final class PurchaseButton {
             Runnable onPress,
             int width
     ) {
-        ItemStack stack = matItem.getItemStack(1);
         return constructButton(
-                stack,
+                matItem.getItemStack(),
                 onPress,
                 width,
                 matItem.getName(new ItemStack(matItem)).getString(),
@@ -59,7 +55,7 @@ public final class PurchaseButton {
             int id,
             boolean flatLighting
     ) {
-        ModelDisplay display = new ModelDisplay(
+        ItemDisplay display = new ItemDisplay(
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
                 stack,
