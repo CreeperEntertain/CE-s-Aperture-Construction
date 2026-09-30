@@ -57,8 +57,8 @@ public final class PurchaseButton {
             int id
     ) {
         ModelDisplay display = new ModelDisplay(
-                GuiConstants.PURCHASE_BUTTON_HEIGHT - GuiConstants.ELEMENT_PADDING,
-                GuiConstants.PURCHASE_BUTTON_HEIGHT - GuiConstants.ELEMENT_PADDING,
+                GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
+                GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
                 model,
                 new Vec3(0.0, 0.0, 0.0),
                 new Vec3(1.0, 1.0, 1.0)
