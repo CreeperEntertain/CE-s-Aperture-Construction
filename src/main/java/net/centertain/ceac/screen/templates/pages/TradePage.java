@@ -13,6 +13,8 @@ public final class TradePage {
     private TradePage() {}
 
     public static @NotNull Page get(
+            int x,
+            int y,
             int width,
             int height
     ) {
@@ -22,8 +24,8 @@ public final class TradePage {
                 width,
                 height,
                 new ScrollContainer(
-                        0,
-                        0,
+                        x,
+                        y,
                         width,
                         height,
                         ScrollContainer.Alignment.VERTICAL,

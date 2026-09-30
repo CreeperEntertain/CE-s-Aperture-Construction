@@ -20,6 +20,8 @@ public final class BasicsPage {
     private BasicsPage() {}
 
     public static Page get(
+            int x,
+            int y,
             int width,
             int height
     ) {
@@ -35,8 +37,8 @@ public final class BasicsPage {
                     ));
 
         FlowPanel panel = new FlowPanel(
-                0,
-                0,
+                x,
+                y,
                 FlowPanel.Alignment.HORIZONTAL,
                 width,
                 GuiConstants.ELEMENT_PADDING,
@@ -49,8 +51,8 @@ public final class BasicsPage {
                 width,
                 height,
                 new ScrollContainer(
-                        0,
-                        0,
+                        x,
+                        y,
                         width,
                         height,
                         ScrollContainer.Alignment.VERTICAL,

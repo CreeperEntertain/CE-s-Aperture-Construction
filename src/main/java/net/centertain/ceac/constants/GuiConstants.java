@@ -17,6 +17,8 @@ public final class GuiConstants {
     public static final int PURCHASE_BUTTON_HEIGHT = 30;
     public static final int PURCHASE_BUTTON_WIDTH = 70;
     public static final int PAGE_TAB_SPACING = 2;
+    public static final int PAGE_TAB_VERTICALLY_ALIGNED_WIDTH = 100;
+    public static final int PAGE_TAB_HORIZONTALLY_ALIGNED_HEIGHT = 15;
 
     public static final Vec3 HELP_SCREEN_OFFSET = new Vec3(1.5, 0.0, 0.0);
 
