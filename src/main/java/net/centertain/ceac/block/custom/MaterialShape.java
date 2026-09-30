@@ -12,9 +12,11 @@ import net.centertain.ceac.material.shapes.MaterialShapeFace;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -96,6 +98,12 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
     }
     public Vec3 transformDirectionToWorld(BlockState state, Vec3 direction) {
         return direction;
+    }
+
+    public @NotNull BakedModel getBakedModel() {
+        BlockState state = defaultBlockState();
+        ModelResourceLocation location = BlockModelShaper.stateToModelLocation(state);
+        return Minecraft.getInstance().getModelManager().getModel(location);
     }
 
     @Override

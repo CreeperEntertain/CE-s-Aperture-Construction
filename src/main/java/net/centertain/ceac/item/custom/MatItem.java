@@ -12,6 +12,7 @@ import net.centertain.ceac.material.shapes.MaterialShapeFace;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -82,6 +83,15 @@ public abstract class MatItem extends BasicItem {
 
     public Material getMaterial() {
         return material.get();
+    }
+
+    public @NotNull BakedModel getBakedModel() {
+        return Minecraft.getInstance().getItemRenderer().getModel(
+                new ItemStack(this),
+                Minecraft.getInstance().level,
+                null,
+                0
+        );
     }
 
     public Vector2i getMaterialCoordinateOffset(ItemStack stack) {
