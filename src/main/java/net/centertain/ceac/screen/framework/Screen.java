@@ -24,6 +24,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
         super(title);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     protected final <T extends Element> T addElement(@NotNull T element) {
         elements.add(element);
         addRenderableOnly(element);
@@ -46,6 +47,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
         return elements;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     protected final boolean removeElement(@NotNull Element element) {
         if (!elements.remove(element))
             return false;
