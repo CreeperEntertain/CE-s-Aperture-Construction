@@ -2,6 +2,7 @@ package net.centertain.ceac.screen.elements;
 
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.ElementContainer;
+import net.centertain.ceac.screen.framework.Hoverable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -10,7 +11,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
-public class Button extends AbstractWidget implements Element, ElementContainer, GuiEventListener {
+public class Button extends AbstractWidget implements Element, ElementContainer, Hoverable, GuiEventListener {
     private int x;
     private int y;
     private int width;

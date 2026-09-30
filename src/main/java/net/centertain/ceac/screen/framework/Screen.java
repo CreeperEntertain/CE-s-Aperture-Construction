@@ -1,5 +1,6 @@
 package net.centertain.ceac.screen.framework;
 
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
@@ -9,6 +10,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
     private final List<Element> elements = new ArrayList<>();
@@ -56,6 +58,58 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
         clearWidgets();
         for (Element element : elements)
             addRenderableOnly(element);
+    }
+
+    @Override
+    public void render(
+            @NotNull GuiGraphics guiGraphics,
+            int mouseX,
+            int mouseY,
+            float partialTick
+    ) {
+        updateHover(mouseX, mouseY);
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    private void updateHover(
+            double mouseX,
+            double mouseY
+    ) {
+        Set<Element> visited = newIdentitySet();
+
+        for (Element element : elements)
+            updateHover(
+                    element,
+                    mouseX,
+                    mouseY,
+                    null,
+                    visited
+            );
+    }
+
+    private void updateHover(
+            @NotNull Element element,
+            double mouseX,
+            double mouseY,
+            Supplier<Boolean> parentHover,
+            @NotNull Set<Element> visited
+    ) {
+        if (!visited.add(element))
+            return;
+        if (element instanceof Reactable reactable)
+            reactable.parentHover(parentHover != null ? parentHover : () -> false);
+
+        Supplier<Boolean> childHover = parentHover;
+
+        if (element instanceof Hoverable hoverable) {
+            hoverable.updateHover(mouseX, mouseY);
+            childHover = hoverable::getIsHovered;
+        }
+        if (element instanceof ElementLister lister)
+            for (Element child : lister.getElements())
+                updateHover(child, mouseX, mouseY, childHover, visited);
+        if (element instanceof ElementContainer container)
+            updateHover(container.getElement(), mouseX, mouseY, childHover, visited);
     }
 
     @Override

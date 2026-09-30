@@ -1,6 +1,7 @@
 package net.centertain.ceac.screen.elements;
 
 import net.centertain.ceac.screen.framework.Element;
+import net.centertain.ceac.screen.framework.Reactable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -8,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
-public class Marquee implements Element {
+public class Marquee implements Element, Reactable {
     private int x;
     private int y;
     private int width;
