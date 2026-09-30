@@ -47,6 +47,9 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
             @NotNull ModelData data,
             @Nullable RenderType renderType
     ) {
+        if (state == null)
+            state = shape.defaultBlockState();
+
         List<BakedQuad> original = originalModel.getQuads(
                 state,
                 side,
