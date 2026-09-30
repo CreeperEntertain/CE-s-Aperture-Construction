@@ -1,8 +1,8 @@
 package net.centertain.ceac.screen.elements;
 
 import net.centertain.ceac.screen.framework.Element;
-import net.centertain.ceac.screen.framework.ElementLister;
-import net.centertain.ceac.screen.framework.FocusContainer;
+import net.centertain.ceac.screen.framework.element_types.ElementLister;
+import net.centertain.ceac.screen.framework.element_types.FocusContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import org.jetbrains.annotations.NotNull;

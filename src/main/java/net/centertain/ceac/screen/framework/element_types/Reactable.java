@@ -1,4 +1,4 @@
-package net.centertain.ceac.screen.framework;
+package net.centertain.ceac.screen.framework.element_types;
 
 import java.util.function.Supplier;
 
