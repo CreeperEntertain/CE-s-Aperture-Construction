@@ -5,6 +5,8 @@ import net.centertain.ceac.item.custom.BasicItem;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Screen;
 import net.centertain.ceac.screen.templates.pages.BasicsPage;
+import net.centertain.ceac.screen.templates.pages.MaterialPage;
+import net.centertain.ceac.screen.templates.pages.MaterialShapePage;
 import net.centertain.ceac.screen.templates.pages.TradePage;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -48,7 +50,9 @@ public class PurchasingTermialScreen extends Screen {
 
         List<Page> pages = List.of(
                 TradePage.get(x, y, width, height),
-                BasicsPage.get(x, y, width, height)
+                BasicsPage.get(x, y, width, height),
+                MaterialShapePage.get(x, y, width, height),
+                MaterialPage.get(x, y, width, height)
         );
 
         addElement(new PageList(

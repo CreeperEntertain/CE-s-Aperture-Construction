@@ -12,6 +12,7 @@ import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.templates.PurchaseButton;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.RegistryObject;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.List;
 public final class BasicsPage {
     private BasicsPage() {}
 
-    public static Page get(
+    public static @NotNull Page get(
             int x,
             int y,
             int width,
