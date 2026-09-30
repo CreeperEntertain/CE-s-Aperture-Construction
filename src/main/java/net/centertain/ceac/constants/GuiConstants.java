@@ -15,7 +15,7 @@ public final class GuiConstants {
     public static final int FLOW_SCROLL_SPEED = 50;
     public static final int SCROLL_BAR_WIDTH = 1;
     public static final int PURCHASE_BUTTON_HEIGHT = 30;
-    public static final int PURCHASE_BUTTON_WIDTH = 70;
+    public static final int PURCHASE_BUTTON_WIDTH = 100;
     public static final int PAGE_TAB_SPACING = 2;
     public static final int PAGE_TAB_VERTICALLY_ALIGNED_WIDTH = 100;
     public static final int PAGE_TAB_HORIZONTALLY_ALIGNED_HEIGHT = 15;
