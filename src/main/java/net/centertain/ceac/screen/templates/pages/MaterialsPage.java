@@ -13,14 +13,13 @@ import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 
-import java.security.interfaces.ECKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class MaterialPage {
-    private MaterialPage() {}
+public final class MaterialsPage {
+    private MaterialsPage() {}
 
     public static @NotNull Page get(
             int x,
