@@ -25,7 +25,7 @@ public class PurchasingTermialScreen extends Screen {
     }
 
     private void example() {
-        
+
     }
 
     @Override
