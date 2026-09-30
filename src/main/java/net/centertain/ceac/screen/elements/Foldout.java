@@ -50,7 +50,7 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
         return width;
     }
     public int getHeight() {
-        return BAR_HEIGHT + distance + (foldedOut ? element.getHeight() : 0);
+        return BAR_HEIGHT + (foldedOut ? this.distance : 0) + (foldedOut ? element.getHeight() : 0);
     }
     public int getDistance() {
         return distance;

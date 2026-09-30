@@ -59,7 +59,7 @@ public final class MaterialsPage {
                     Component.literal(subcategory),
                     width,
                     GuiConstants.ELEMENT_PADDING,
-                    true,
+                    false,
                     panel
             ));
         }
