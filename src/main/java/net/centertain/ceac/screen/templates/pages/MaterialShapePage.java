@@ -14,7 +14,7 @@ public final class MaterialShapePage {
             int height
     ) {
         return new Page(
-                "Materials",
+                "Shapes",
                 width,
                 height,
                 new Empty()
