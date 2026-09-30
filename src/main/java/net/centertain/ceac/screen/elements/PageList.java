@@ -4,7 +4,6 @@ import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.element_types.ElementContainer;
 import net.centertain.ceac.screen.framework.element_types.FocusContainer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
@@ -28,10 +27,9 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
 
     private ScrollContainer tabScroll;
     private FlowPanel tabPanel;
-    private List<Button> tabButtons;
+    private final List<Button> tabButtons;
 
     private GuiEventListener focusedElement;
-    private boolean isHovered;
 
     public enum TabPosition {
         LEFT,
@@ -187,6 +185,31 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         this.width = dimensionSupplier.getWidth();
         this.height = dimensionSupplier.getHeight();
         layoutTabs();
+    }
+
+
+    public void addPage(@NotNull Page page) {
+        pages.add(page);
+        rebuildTabs();
+    }
+
+    public boolean removePage(int pageIndex) {
+        if (pageIndex < 0 || pageIndex > pages.size() - 1)
+            return false;
+        pages.remove(pageIndex);
+        if (this.pageIndex >= pages.size())
+            this.pageIndex = Math.max(0, pages.size() - 1);
+        rebuildTabs();
+        return true;
+    }
+
+    public boolean removePage(@NotNull Page page) {
+        if (!pages.remove(page))
+            return false;
+        if (pageIndex >= pages.size())
+            pageIndex = Math.max(0, pages.size() - 1);
+        rebuildTabs();
+        return true;
     }
 
 
