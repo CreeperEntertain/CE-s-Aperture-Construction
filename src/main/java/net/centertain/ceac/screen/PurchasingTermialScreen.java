@@ -5,8 +5,7 @@ import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.ModItems;
 import net.centertain.ceac.item.custom.MatItem;
-import net.centertain.ceac.screen.elements.Foldout;
-import net.centertain.ceac.screen.elements.StackPanel;
+import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.Screen;
 import net.centertain.ceac.screen.templates.PurchaseButton;
@@ -63,11 +62,41 @@ public class PurchasingTermialScreen extends Screen {
                 buttons
         );
 
-        addElement(new Foldout(
+        Foldout foldout = new Foldout(
                 Component.literal("HELLO!!"),
                 width,
                 true,
                 stack
+        );
+
+        Rect rect = new Rect(
+                100,
+                100,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+        );
+
+        List<Page> pages = List.of(
+                new Page(
+                        "Elements",
+                        width,
+                        height,
+                        foldout
+                ),
+                new Page(
+                        "Rect",
+                        width,
+                        height,
+                        foldout
+                )
+        );
+
+        addElement(new PageList(
+                width,
+                height,
+                pages,
+                PageList.TabPosition.LEFT,
+                GuiConstants.TAB_BUTTON_HEIGHT,
+                true
         ));
     }
 }
