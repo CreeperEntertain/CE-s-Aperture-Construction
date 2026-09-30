@@ -15,6 +15,7 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     private int x;
     private int y;
     private int width;
+    private int distance;
 
     private Component title;
     private Element element;
@@ -24,12 +25,14 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     public Foldout(
             Component title,
             int width,
+            int distance,
             boolean defaultFoldedOut,
             @NotNull Element element
     ) {
         this.x = 0;
         this.y = 0;
         this.width = width;
+        this.distance = distance;
         this.title = title;
         this.element = element;
         this.foldedOut = defaultFoldedOut;
@@ -47,7 +50,10 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
         return width;
     }
     public int getHeight() {
-        return BAR_HEIGHT + (foldedOut ? element.getHeight() : 0);
+        return BAR_HEIGHT + distance + (foldedOut ? element.getHeight() : 0);
+    }
+    public int getDistance() {
+        return distance;
     }
     public Component getTitle() {
         return title;
@@ -74,6 +80,9 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     public void setWidth(int width) {
         this.width = width;
         element.setWidth(width);
+    }
+    public void setDistance(int distance) {
+        this.distance = distance;
     }
     public void setHeight(int height) {}
     public void setTitle(Component title) {
@@ -145,7 +154,7 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
             return;
 
         element.setX(x);
-        element.setY(y + BAR_HEIGHT);
+        element.setY(y + BAR_HEIGHT + distance);
         element.setWidth(width);
 
         element.render(

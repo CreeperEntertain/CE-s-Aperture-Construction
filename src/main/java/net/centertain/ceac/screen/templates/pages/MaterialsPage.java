@@ -58,6 +58,7 @@ public final class MaterialsPage {
             foldouts.add(new Foldout(
                     Component.literal(subcategory),
                     width,
+                    GuiConstants.ELEMENT_PADDING,
                     true,
                     panel
             ));
