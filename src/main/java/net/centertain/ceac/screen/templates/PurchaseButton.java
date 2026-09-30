@@ -61,7 +61,8 @@ public final class PurchaseButton {
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
                 model,
                 new Vec3(0.0, 0.0, 0.0),
-                new Vec3(1.0, 1.0, 1.0)
+                new Vec3(1.0, 1.0, 1.0),
+                true
         );
         List<Element> horizontalElements = List.of(
                 display,

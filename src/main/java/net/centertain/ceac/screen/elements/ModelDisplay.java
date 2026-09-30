@@ -1,5 +1,6 @@
 package net.centertain.ceac.screen.elements;
 
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.screen.framework.Element;
@@ -28,12 +29,15 @@ public class ModelDisplay implements Element {
     private Vec3 rotation;
     private Vec3 scale;
 
+    private boolean flatShading;
+
     public ModelDisplay(
             int width,
             int height,
             @NotNull BakedModel model,
             @NotNull Vec3 rotation,
-            @NotNull Vec3 scale
+            @NotNull Vec3 scale,
+            boolean flatShading
     ) {
         this.x = 0;
         this.y = 0;
@@ -42,6 +46,7 @@ public class ModelDisplay implements Element {
         this.model = model;
         this.rotation = rotation;
         this.scale = scale;
+        this.flatShading = flatShading;
     }
 
     public ModelDisplay(
@@ -51,7 +56,8 @@ public class ModelDisplay implements Element {
             int height,
             @NotNull BakedModel model,
             @NotNull Vec3 rotation,
-            @NotNull Vec3 scale
+            @NotNull Vec3 scale,
+            boolean flatShading
     ) {
         this.x = x;
         this.y = y;
@@ -60,13 +66,15 @@ public class ModelDisplay implements Element {
         this.model = model;
         this.rotation = rotation;
         this.scale = scale;
+        this.flatShading = flatShading;
     }
 
     public ModelDisplay(
             @NotNull Element dimensionSupplier,
             @NotNull BakedModel model,
             @NotNull Vec3 rotation,
-            @NotNull Vec3 scale
+            @NotNull Vec3 scale,
+            boolean flatShading
     ) {
         this.x = dimensionSupplier.getX();
         this.y = dimensionSupplier.getY();
@@ -75,6 +83,7 @@ public class ModelDisplay implements Element {
         this.model = model;
         this.rotation = rotation;
         this.scale = scale;
+        this.flatShading = flatShading;
     }
 
     public ModelDisplay(
@@ -83,7 +92,8 @@ public class ModelDisplay implements Element {
             int height,
             @NotNull BakedModel model,
             @NotNull Vec3 rotation,
-            @NotNull Vec3 scale
+            @NotNull Vec3 scale,
+            boolean flatShading
     ) {
         this.x = positionSupplier.getX();
         this.y = positionSupplier.getY();
@@ -92,6 +102,7 @@ public class ModelDisplay implements Element {
         this.model = model;
         this.rotation = rotation;
         this.scale = scale;
+        this.flatShading = flatShading;
     }
 
     public int getX() {
@@ -115,6 +126,9 @@ public class ModelDisplay implements Element {
     public @NotNull Vec3 getScale() {
         return scale;
     }
+    public boolean getFlatShading() {
+        return flatShading;
+    }
 
     public void setX(int x) {
         this.x = x;
@@ -136,6 +150,9 @@ public class ModelDisplay implements Element {
     }
     public void setScale(@NotNull Vec3 scale) {
         this.scale = scale;
+    }
+    public void setFlatShading(boolean flatShading) {
+        this.flatShading = flatShading;
     }
     public void setDimensions(@NotNull Element dimensionSupplier) {
         this.x = dimensionSupplier.getX();
@@ -186,7 +203,7 @@ public class ModelDisplay implements Element {
         ));
         poseStack.scale(
                 (float) (fit * scale.x()),
-                (float) (-fit * scale.y()),
+                (float) (fit * scale.y()),
                 (float) (fit * scale.z())
         );
         poseStack.translate(
@@ -194,6 +211,13 @@ public class ModelDisplay implements Element {
                 -bounds.center().y,
                 -bounds.center().z
         );
+
+        boolean flatLight = !model.usesBlockLight();
+        if (flatLight)
+            if (flatShading)
+                Lighting.setupForFlatItems();
+            else
+                Lighting.setupForEntityInInventory();
 
         BakedModelRenderable.of(model).render(
                 poseStack,
@@ -206,6 +230,9 @@ public class ModelDisplay implements Element {
         );
 
         guiGraphics.flush();
+        if (flatLight)
+            Lighting.setupFor3DItems();
+
         poseStack.popPose();
     }
 
