@@ -28,7 +28,10 @@ public final class PurchaseButton {
                 width,
                 materialShape.getName().getString(),
                 materialShape.getPrice(),
-                materialShape.hashCode()
+                materialShape.hashCode(),
+                new Vec3(0.0, 0.0, 0.0),
+                new Vec3(1.0, 1.0, 1.0),
+                false
         );
     }
 
@@ -44,7 +47,10 @@ public final class PurchaseButton {
                 width,
                 matItem.getName(new ItemStack(matItem)).getString(),
                 matItem.getPrice(),
-                matItem.hashCode()
+                matItem.hashCode(),
+                new Vec3(0.0, 0.0, 0.0),
+                new Vec3(1.0, 1.0, 1.0),
+                true
         );
     }
 
@@ -54,15 +60,18 @@ public final class PurchaseButton {
             int width,
             String title,
             double price,
-            int id
+            int id,
+            Vec3 rotation,
+            Vec3 scale,
+            boolean flatShading
     ) {
         ModelDisplay display = new ModelDisplay(
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
                 model,
-                new Vec3(0.0, 0.0, 0.0),
-                new Vec3(1.0, 1.0, 1.0),
-                true
+                rotation,
+                scale,
+                flatShading
         );
         List<Element> horizontalElements = List.of(
                 display,
