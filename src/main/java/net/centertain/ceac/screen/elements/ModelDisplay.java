@@ -1,20 +1,15 @@
 package net.centertain.ceac.screen.elements;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.screen.framework.Element;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.client.model.renderable.BakedModelRenderable;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
@@ -153,7 +148,6 @@ public class ModelDisplay implements Element {
             int mouseY,
             float partialTick
     ) {
-        ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
         PoseStack poseStack = guiGraphics.pose();
 
         poseStack.pushPose();
@@ -163,9 +157,14 @@ public class ModelDisplay implements Element {
                 100.0
         );
         poseStack.scale(
-                (float) (16.0 * scale.x),
-                (float) (-16.0 * scale.y),
-                (float) (16.0 * scale.z)
+                (float) (32.0 * scale.x),
+                (float) (-32.0 * scale.y),
+                (float) (32.0 * scale.z)
+        );
+        poseStack.translate(
+                -0.5,
+                -0.5,
+                0.0
         );
         poseStack.mulPose(new Quaternionf(
                 (float) Math.toRadians(rotation.z),
@@ -185,19 +184,14 @@ public class ModelDisplay implements Element {
                 0.0f,
                 0.0f
         ));
-        VertexConsumer vertexConsumer = guiGraphics.bufferSource().getBuffer(RenderType.translucent());
-        Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(
-                poseStack.last(),
-                vertexConsumer,
-                null,
-                model,
-                1.0f,
-                1.0f,
-                1.0f,
+        BakedModelRenderable.of(model).render(
+                poseStack,
+                guiGraphics.bufferSource(),
+                RenderType::entityTranslucent,
                 LightTexture.FULL_BRIGHT,
                 OverlayTexture.NO_OVERLAY,
-                ModelData.EMPTY,
-                RenderType.translucent()
+                partialTick,
+                new BakedModelRenderable.Context(ModelData.EMPTY)
         );
         guiGraphics.flush();
         poseStack.popPose();
