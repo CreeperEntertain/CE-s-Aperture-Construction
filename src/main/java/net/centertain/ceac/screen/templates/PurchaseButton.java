@@ -22,6 +22,7 @@ public final class PurchaseButton {
             int width
     ) {
         BakedModel model = materialShape.getBakedModel();
+        double scalar = (1.0 / 3.0) * 2.0;
         return constructButton(
                 model,
                 onPress,
@@ -29,9 +30,10 @@ public final class PurchaseButton {
                 materialShape.getName().getString(),
                 materialShape.getPrice(),
                 materialShape.hashCode(),
-                new Vec3(0.0, 0.0, 0.0),
-                new Vec3(1.0, 1.0, 1.0),
-                false
+                new Vec3(-30.0, 45.0, 0.0),
+                new Vec3(scalar, scalar, scalar),
+                false,
+                true
         );
     }
 
@@ -50,7 +52,8 @@ public final class PurchaseButton {
                 matItem.hashCode(),
                 new Vec3(0.0, 0.0, 0.0),
                 new Vec3(1.0, 1.0, 1.0),
-                true
+                true,
+                false
         );
     }
 
@@ -63,7 +66,8 @@ public final class PurchaseButton {
             int id,
             Vec3 rotation,
             Vec3 scale,
-            boolean flatShading
+            boolean flatShading,
+            boolean flipVertical
     ) {
         ModelDisplay display = new ModelDisplay(
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
@@ -71,7 +75,8 @@ public final class PurchaseButton {
                 model,
                 rotation,
                 scale,
-                flatShading
+                flatShading,
+                flipVertical
         );
         List<Element> horizontalElements = List.of(
                 display,

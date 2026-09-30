@@ -30,6 +30,7 @@ public class ModelDisplay implements Element {
     private Vec3 scale;
 
     private boolean flatShading;
+    private boolean flipVertical;
 
     public ModelDisplay(
             int width,
@@ -37,7 +38,8 @@ public class ModelDisplay implements Element {
             @NotNull BakedModel model,
             @NotNull Vec3 rotation,
             @NotNull Vec3 scale,
-            boolean flatShading
+            boolean flatShading,
+            boolean flipVertical
     ) {
         this.x = 0;
         this.y = 0;
@@ -47,6 +49,7 @@ public class ModelDisplay implements Element {
         this.rotation = rotation;
         this.scale = scale;
         this.flatShading = flatShading;
+        this.flipVertical = flipVertical;
     }
 
     public ModelDisplay(
@@ -57,7 +60,8 @@ public class ModelDisplay implements Element {
             @NotNull BakedModel model,
             @NotNull Vec3 rotation,
             @NotNull Vec3 scale,
-            boolean flatShading
+            boolean flatShading,
+            boolean flipVertical
     ) {
         this.x = x;
         this.y = y;
@@ -67,6 +71,7 @@ public class ModelDisplay implements Element {
         this.rotation = rotation;
         this.scale = scale;
         this.flatShading = flatShading;
+        this.flipVertical = flipVertical;
     }
 
     public ModelDisplay(
@@ -74,7 +79,8 @@ public class ModelDisplay implements Element {
             @NotNull BakedModel model,
             @NotNull Vec3 rotation,
             @NotNull Vec3 scale,
-            boolean flatShading
+            boolean flatShading,
+            boolean flipVertical
     ) {
         this.x = dimensionSupplier.getX();
         this.y = dimensionSupplier.getY();
@@ -84,6 +90,7 @@ public class ModelDisplay implements Element {
         this.rotation = rotation;
         this.scale = scale;
         this.flatShading = flatShading;
+        this.flipVertical = flipVertical;
     }
 
     public ModelDisplay(
@@ -93,7 +100,8 @@ public class ModelDisplay implements Element {
             @NotNull BakedModel model,
             @NotNull Vec3 rotation,
             @NotNull Vec3 scale,
-            boolean flatShading
+            boolean flatShading,
+            boolean flipVertical
     ) {
         this.x = positionSupplier.getX();
         this.y = positionSupplier.getY();
@@ -103,6 +111,7 @@ public class ModelDisplay implements Element {
         this.rotation = rotation;
         this.scale = scale;
         this.flatShading = flatShading;
+        this.flipVertical = flipVertical;
     }
 
     public int getX() {
@@ -129,6 +138,9 @@ public class ModelDisplay implements Element {
     public boolean getFlatShading() {
         return flatShading;
     }
+    public boolean getFlipVertical() {
+        return flipVertical;
+    }
 
     public void setX(int x) {
         this.x = x;
@@ -153,6 +165,9 @@ public class ModelDisplay implements Element {
     }
     public void setFlatShading(boolean flatShading) {
         this.flatShading = flatShading;
+    }
+    public void setFlipVertical(boolean flipVertical) {
+        this.flipVertical = flipVertical;
     }
     public void setDimensions(@NotNull Element dimensionSupplier) {
         this.x = dimensionSupplier.getX();
@@ -183,27 +198,21 @@ public class ModelDisplay implements Element {
                 y + height / 2.0,
                 100.0
         );
-        poseStack.mulPose(new Quaternionf(
-                (float) Math.toRadians(rotation.z),
-                0.0f,
-                0.0f,
-                1.0f
-        ));
-        poseStack.mulPose(new Quaternionf(
-                (float) Math.toRadians(rotation.y),
-                0.0f,
-                1.0f,
-                0.0f
-        ));
-        poseStack.mulPose(new Quaternionf(
-                (float) Math.toRadians(rotation.x),
-                1.0f,
-                0.0f,
-                0.0f
-        ));
+        poseStack.mulPose(
+                com.mojang.math.Axis.XP.rotationDegrees((float) rotation.x)
+        );
+        poseStack.mulPose(
+                com.mojang.math.Axis.YP.rotationDegrees((float) rotation.y)
+        );
+        poseStack.mulPose(
+                com.mojang.math.Axis.ZP.rotationDegrees((float) rotation.z)
+        );
+        double vertical = flipVertical
+                ? -1.0
+                : 1.0;
         poseStack.scale(
                 (float) (fit * scale.x()),
-                (float) (fit * scale.y()),
+                (float) (fit * scale.y() * vertical),
                 (float) (fit * scale.z())
         );
         poseStack.translate(
