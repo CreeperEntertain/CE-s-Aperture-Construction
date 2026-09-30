@@ -95,7 +95,7 @@ public class PurchasingTermialScreen extends Screen {
                 height,
                 pages,
                 PageList.TabPosition.LEFT,
-                50,
+                100,
                 true
         ));
     }
