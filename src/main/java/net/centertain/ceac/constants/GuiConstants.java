@@ -50,5 +50,22 @@ public final class GuiConstants {
     public static final int COLOR_SOLID_CYAN = 0xFF00FFFF;
     public static final int COLOR_SOLID_MAGENTA = 0xFFFF00FF;
 
+    public static final int COLOR_MINECRAFT_BLACK = 0xFF000000;
+    public static final int COLOR_MINECRAFT_DARK_BLUE = 0xFF0000AA;
+    public static final int COLOR_MINECRAFT_DARK_GREEN = 0xFF00AA00;
+    public static final int COLOR_MINECRAFT_DARK_AQUA = 0xFF00AAAA;
+    public static final int COLOR_MINECRAFT_DARK_RED = 0xFFAA0000;
+    public static final int COLOR_MINECRAFT_DARK_PURPLE = 0xFFAA00AA;
+    public static final int COLOR_MINECRAFT_GOLD = 0xFFFFAA00;
+    public static final int COLOR_MINECRAFT_GRAY = 0xFFAAAAAA;
+    public static final int COLOR_MINECRAFT_DARK_GRAY = 0xFF555555;
+    public static final int COLOR_MINECRAFT_BLUE = 0xFF5555FF;
+    public static final int COLOR_MINECRAFT_GREEN = 0xFF55FF55;
+    public static final int COLOR_MINECRAFT_AQUA = 0xFF55FFFF;
+    public static final int COLOR_MINECRAFT_RED = 0xFFFF5555;
+    public static final int COLOR_MINECRAFT_LIGHT_PURPLE = 0xFFFF55FF;
+    public static final int COLOR_MINECRAFT_YELLOW = 0xFFFFFF55;
+    public static final int COLOR_MINECRAFT_WHITE = 0xFFFFFFFF;
+
     private GuiConstants() {}
 }
