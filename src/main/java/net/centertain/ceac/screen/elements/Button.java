@@ -1,306 +1,163 @@
 package net.centertain.ceac.screen.elements;
 
-import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.centertain.ceac.constants.GuiConstants;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
+import net.centertain.ceac.screen.framework.Element;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.InputStream;
+public class Button extends AbstractWidget implements Element, GuiEventListener {
+    private int x;
+    private int y;
+    private int width;
+    private int height;
 
-public class Button extends AbstractWidget {
-    protected final int textColor;
-    protected final float textScale;
-    protected final int backgroundColor;
-    protected final int outlineColor;
-    protected final @Nullable ResourceLocation texture;
-    protected final int textureWidth;
-    protected final int textureHeight;
-    protected final Runnable onPress;
+    private Element element;
+    private Runnable onPress;
 
-    protected long marqueeStartTime;
-    protected boolean marqueeActive;
+    private int backgroundColor;
+    private int outlineColor;
+
+    private boolean isHovered;
+    private boolean isFocused;
 
     public Button(
             int x,
             int y,
-            int width,
-            int height,
-            Component text,
-            int textColor,
-            float textScale,
+            @NotNull Element element,
+            @NotNull Runnable onPress,
             int backgroundColor,
-            int outlineColor,
-            @Nullable ResourceLocation texture,
-            Runnable onPress
+            int outlineColor
     ) {
-        super(x, y, width, height, text);
+        super(
+                x,
+                y,
+                element.getWidth(),
+                element.getHeight(),
+                Component.empty()
+        );
 
-        this.textColor = textColor;
-        this.textScale = textScale;
+        this.element = element;
+        this.onPress = onPress;
         this.backgroundColor = backgroundColor;
         this.outlineColor = outlineColor;
-        this.texture = texture;
-        this.onPress = onPress;
-
-        if (texture != null) {
-            try {
-                Resource resource = Minecraft.getInstance()
-                        .getResourceManager()
-                        .getResource(texture)
-                        .orElseThrow();
-                try (InputStream stream = resource.open()) {
-                    NativeImage image = NativeImage.read(stream);
-                    this.textureWidth = image.getWidth();
-                    this.textureHeight = image.getHeight();
-                    image.close();
-                }
-            } catch (IOException exception) {
-                throw new RuntimeException(
-                        "Failed to load button texture " + texture,
-                        exception
-                );
-            }
-        } else {
-            this.textureWidth = 0;
-            this.textureHeight = 0;
-        }
     }
 
-    private String getTruncatedText(Font font, int availableWidth) {
-        String text = getMessage().getString();
-        String ellipsis = "...";
-        if (Math.round(font.width(text) * textScale) <= availableWidth)
-            return text;
-        int ellipsisWidth = Math.round(font.width(ellipsis) * textScale);
-        int availableTextWidth = availableWidth - ellipsisWidth;
-        if (availableTextWidth <= 0)
-            return ellipsis;
-        int characterCount = 0;
-        while (
-                characterCount < text.length() &&
-                Math.round(font.width(text.substring(0, characterCount + 1)) * textScale) <= availableTextWidth
-        )
-            characterCount++;
-        return text.substring(0, characterCount) + ellipsis;
+    public int getX() {
+        return x;
+    }
+    public int getY() {
+        return y;
+    }
+    public int getWidth() {
+        return width;
+    }
+    public int getHeight() {
+        return height;
+    }
+    public @NotNull Element getElement() {
+        return element;
+    }
+    public @NotNull Runnable getOnPress() {
+        return onPress;
+    }
+    public int getBackgroundColor() {
+        return backgroundColor;
+    }
+    public int getOutlineColor() {
+        return outlineColor;
+    }
+    public boolean getIsHovered() {
+        return isHovered;
+    }
+    public boolean getIsFocused() {
+        return isFocused;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+    public void setY(int y) {
+        this.y = y;
+    }
+    public void setWidth(int width) {
+        this.width = width;
+    }
+    public void setHeight(int height) {
+        this.height = height;
+    }
+    public void setElement(@NotNull Element element) {
+        this.element = element;
+    }
+    public void setOnPress(@NotNull Runnable onPress) {
+        this.onPress = onPress;
+    }
+    public void setBackgroundColor(int backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+    public void setOutlineColor(int outlineColor) {
+        this.outlineColor = outlineColor;
+    }
+    public void setDimensions(@NotNull Element dimensionSupplier) {
+        this.x = element.getX();
+        this.y = element.getY();
+        this.width = element.getWidth();
+        this.height = element.getHeight();
     }
 
     @Override
-    protected void renderWidget(
+    public void renderWidget(
             @NotNull GuiGraphics guiGraphics,
             int mouseX,
             int mouseY,
             float partialTick
     ) {
         guiGraphics.fill(
-                getX(),
-                getY(),
-                getX() + getWidth(),
-                getY() + getHeight(),
+                x,
+                y,
+                x + width,
+                y + height,
                 backgroundColor
         );
 
-        Font font = Minecraft.getInstance().font;
+        element.setX(x);
+        element.setY(y);
+        element.render(guiGraphics, mouseX, mouseY, partialTick);
 
-        int textWidth = font.width(getMessage());
-        int textHeight = 8;
+        if (!isHovered)
+            return;
 
-        int scaledTextWidth = Math.round(textWidth * textScale);
-        int scaledTextHeight = Math.round(textHeight * textScale);
-
-        int drawTextureWidth = 0;
-        int drawTextureHeight = 0;
-
-        if (texture != null) {
-            int availableTextureWidth = getWidth();
-            int availableTextureHeight = getHeight() - scaledTextHeight - GuiConstants.ELEMENT_PADDING;
-
-            if (availableTextureWidth > 0 && availableTextureHeight > 0) {
-                float scale = Math.min(
-                        (float) availableTextureWidth / textureWidth,
-                        (float) availableTextureHeight / textureHeight
-                );
-
-                drawTextureWidth = Math.max(1, Math.round(textureWidth * scale));
-                drawTextureHeight = Math.max(1, Math.round(textureHeight * scale));
-            }
-        }
-
-        int contentHeight = drawTextureHeight;
-
-        if (drawTextureHeight > 0)
-            contentHeight += GuiConstants.ELEMENT_PADDING;
-
-        contentHeight += scaledTextHeight;
-
-        int contentTop = getY() + (getHeight() - contentHeight) / 2;
-
-        if (drawTextureHeight > 0) {
-            float textureScale = (float) drawTextureWidth / textureWidth;
-            int textureX = getX() + (getWidth() - drawTextureWidth) / 2;
-
-            RenderSystem.enableBlend();
-
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(textureX, contentTop, 0.0);
-            guiGraphics.pose().scale(textureScale, textureScale, 1.0f);
-            guiGraphics.blit(
-                    texture,
-                    0,
-                    0,
-                    0,
-                    0,
-                    textureWidth,
-                    textureHeight,
-                    textureWidth,
-                    textureHeight
-            );
-            guiGraphics.pose().popPose();
-
-            RenderSystem.disableBlend();
-
-            contentTop += drawTextureHeight + GuiConstants.ELEMENT_PADDING;
-        }
-
-        int textAreaLeft = getX() + GuiConstants.ELEMENT_PADDING;
-        int textAreaRight = getX() + getWidth() - GuiConstants.ELEMENT_PADDING;
-        int textAreaWidth = textAreaRight - textAreaLeft;
-
-        if (scaledTextWidth <= textAreaWidth) {
-            int textX = textAreaLeft + (textAreaWidth - scaledTextWidth) / 2;
-
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(textX, contentTop, 0.0);
-            guiGraphics.pose().scale(textScale, textScale, 1.0f);
-            guiGraphics.drawString(
-                    font,
-                    getMessage(),
-                    0,
-                    0,
-                    textColor,
-                    false
-            );
-            guiGraphics.pose().popPose();
-        } else if (!isHovered()) {
-            String truncatedText = getTruncatedText(font, textAreaWidth);
-            int truncatedTextWidth = Math.round(font.width(truncatedText) * textScale);
-            int textX = textAreaLeft + (textAreaWidth - truncatedTextWidth) / 2;
-
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(textX, contentTop, 0.0);
-            guiGraphics.pose().scale(textScale, textScale, 1.0f);
-            guiGraphics.drawString(
-                    font,
-                    truncatedText,
-                    0,
-                    0,
-                    textColor,
-                    false
-            );
-            guiGraphics.pose().popPose();
-        } else {
-            long elapsed = System.currentTimeMillis() - marqueeStartTime;
-
-            if (!marqueeActive) {
-                marqueeActive = true;
-                marqueeStartTime = System.currentTimeMillis();
-                elapsed = 0;
-            }
-
-            float scrollOffset = getScrollOffset(elapsed, scaledTextWidth, textAreaWidth);
-
-            guiGraphics.enableScissor(
-                    textAreaLeft,
-                    contentTop,
-                    textAreaRight,
-                    contentTop + scaledTextHeight
-            );
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(textAreaLeft - scrollOffset, contentTop, 0.0);
-            guiGraphics.pose().scale(textScale, textScale, 1.0f);
-            guiGraphics.drawString(
-                    font,
-                    getMessage(),
-                    0,
-                    0,
-                    textColor,
-                    false
-            );
-            guiGraphics.pose().popPose();
-            guiGraphics.disableScissor();
-        }
-
-        if (!isHovered())
-            marqueeActive = false;
-
-        if (isHovered()) {
-            guiGraphics.fill(
-                    getX(),
-                    getY(),
-                    getX() + getWidth(),
-                    getY() + 1,
-                    outlineColor
-            );
-            guiGraphics.fill(
-                    getX(),
-                    getY() + getHeight() - 1,
-                    getX() + getWidth(),
-                    getY() + getHeight(),
-                    outlineColor
-            );
-            guiGraphics.fill(
-                    getX(),
-                    getY(),
-                    getX() + 1,
-                    getY() + getHeight(),
-                    outlineColor
-            );
-            guiGraphics.fill(
-                    getX() + getWidth() - 1,
-                    getY(),
-                    getX() + getWidth(),
-                    getY() + getHeight(),
-                    outlineColor
-            );
-        }
-    }
-
-    private static float getScrollOffset(long elapsed, int scaledTextWidth, int textAreaWidth) {
-        float scrollOffset;
-
-        long duration = 2000;
-        long pause = 1000;
-        long cycle = duration + pause + duration + pause;
-        long time = elapsed % cycle;
-
-        int overflow = scaledTextWidth - textAreaWidth;
-
-        if (time <= duration) {
-            float progress = (float) time / duration;
-            scrollOffset = overflow * progress;
-        } else if (time <= duration + pause)
-            scrollOffset = overflow;
-        else if (time <= duration + pause + duration) {
-            float progress = (float) (time - (duration + pause)) / duration;
-            scrollOffset = overflow * (1.0f - progress);
-        } else
-            scrollOffset = 0.0f;
-        return scrollOffset;
-    }
-
-    @Override
-    public void onClick(double mouseX, double mouseY) {
-        onPress.run();
+        guiGraphics.fill(
+                x,
+                y,
+                x + width,
+                y + 1,
+                outlineColor
+        );
+        guiGraphics.fill(
+                x,
+                y + height - 1,
+                x + width,
+                y + height,
+                outlineColor
+        );
+        guiGraphics.fill(
+                x,
+                y,
+                x + 1,
+                y + height,
+                outlineColor
+        );
+        guiGraphics.fill(
+                x + width - 1,
+                y,
+                x + width,
+                y + height,
+                outlineColor
+        );
     }
 
     @Override
@@ -308,5 +165,46 @@ public class Button extends AbstractWidget {
             @NotNull NarrationElementOutput narrationElementOutput
     ) {
         narrationElementOutput.add(NarratedElementType.TITLE, getMessage());
+    }
+
+    @Override
+    public boolean mouseClicked(
+            double mouseX,
+            double mouseY,
+            int button
+    ) {
+        if (!isHovered)
+            return false;
+        onPress.run();
+        return true;
+    }
+
+    @Override
+    public boolean isMouseOver(
+            double mouseX,
+            double mouseY
+    ) {
+        return
+                mouseX >= x &&
+                mouseY >= y &&
+                mouseX < x + width &&
+                mouseY < y + height;
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+        this.isFocused = focused;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return isFocused;
+    }
+
+    public void updateHover(
+            double mouseX,
+            double mouseY
+    ) {
+        isHovered = isMouseOver(mouseX, mouseY);
     }
 }
