@@ -86,7 +86,7 @@ public class PurchasingTermialScreen extends Screen {
                         "Rect",
                         width,
                         height,
-                        foldout
+                        rect
                 )
         );
 
