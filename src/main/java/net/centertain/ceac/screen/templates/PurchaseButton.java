@@ -28,7 +28,8 @@ public final class PurchaseButton {
                 width,
                 materialShape.getName().getString(),
                 materialShape.getPrice(),
-                materialShape.hashCode()
+                materialShape.hashCode(),
+                false
         );
     }
 
@@ -44,7 +45,8 @@ public final class PurchaseButton {
                 width,
                 matItem.getName(new ItemStack(matItem)).getString(),
                 matItem.getPrice(),
-                matItem.hashCode()
+                matItem.hashCode(),
+                true
         );
     }
 
@@ -54,12 +56,14 @@ public final class PurchaseButton {
             int width,
             String title,
             double price,
-            int id
+            int id,
+            boolean flatLighting
     ) {
         ModelDisplay display = new ModelDisplay(
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
-                stack
+                stack,
+                flatLighting
         );
         List<Element> horizontalElements = List.of(
                 display,

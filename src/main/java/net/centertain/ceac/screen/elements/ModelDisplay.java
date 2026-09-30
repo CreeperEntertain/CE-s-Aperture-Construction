@@ -22,16 +22,20 @@ public class ModelDisplay implements Element {
 
     private ItemStack stack;
 
+    private boolean flatLighting;
+
     public ModelDisplay(
             int width,
             int height,
-            @NotNull ItemStack stack
+            @NotNull ItemStack stack,
+            boolean flatLighting
     ) {
         this.x = 0;
         this.y = 0;
         this.width = width;
         this.height = height;
         this.stack = stack;
+        this.flatLighting = flatLighting;
     }
 
     public ModelDisplay(
@@ -39,37 +43,43 @@ public class ModelDisplay implements Element {
             int y,
             int width,
             int height,
-            @NotNull ItemStack stack
+            @NotNull ItemStack stack,
+            boolean flatLighting
     ) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.stack = stack;
+        this.flatLighting = flatLighting;
     }
 
     public ModelDisplay(
             @NotNull Element dimensionSupplier,
-            @NotNull ItemStack stack
+            @NotNull ItemStack stack,
+            boolean flatLighting
     ) {
         this.x = dimensionSupplier.getX();
         this.y = dimensionSupplier.getY();
         this.width = dimensionSupplier.getWidth();
         this.height = dimensionSupplier.getHeight();
         this.stack = stack;
+        this.flatLighting = flatLighting;
     }
 
     public ModelDisplay(
             @NotNull Element positionSupplier,
             int width,
             int height,
-            @NotNull ItemStack stack
+            @NotNull ItemStack stack,
+            boolean flatLighting
     ) {
         this.x = positionSupplier.getX();
         this.y = positionSupplier.getY();
         this.width = width;
         this.height = height;
         this.stack = stack;
+        this.flatLighting = flatLighting;
     }
 
     public int getX() {
@@ -87,6 +97,9 @@ public class ModelDisplay implements Element {
     public @NotNull ItemStack getStack() {
         return stack;
     }
+    public boolean getFlatLighting() {
+        return flatLighting;
+    }
 
     public void setX(int x) {
         this.x = x;
@@ -102,6 +115,9 @@ public class ModelDisplay implements Element {
     }
     public void setStack(@NotNull ItemStack stack) {
         this.stack = stack;
+    }
+    public void setFlatLighting(boolean flatLighting) {
+        this.flatLighting = flatLighting;
     }
     public void setDimensions(@NotNull Element dimensionSupplier) {
         this.x = dimensionSupplier.getX();
@@ -145,8 +161,10 @@ public class ModelDisplay implements Element {
                 scale
         );
 
-        if (!model.usesBlockLight())
+        if (flatLighting)
             Lighting.setupForFlatItems();
+        else
+            Lighting.setupFor3DItems();
 
         itemRenderer.render(
                 stack,
@@ -161,8 +179,7 @@ public class ModelDisplay implements Element {
 
         guiGraphics.flush();
 
-        if (!model.usesBlockLight())
-            Lighting.setupFor3DItems();
+        Lighting.setupFor3DItems();
 
         poseStack.popPose();
     }

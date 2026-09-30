@@ -39,5 +39,10 @@ public class PurchasingTermialScreen extends Screen {
                 this::example,
                 width
         ));
+        addElement(PurchaseButton.create(
+                (MatItem) ModItems.OBSERVATION_CONCRETE_WALL.get(),
+                this::example,
+                width
+        ));
     }
 }
