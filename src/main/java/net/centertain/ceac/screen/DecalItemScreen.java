@@ -8,15 +8,11 @@ import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.DecalPack;
 import net.centertain.ceac.decal.network.SyncDecalItemPacket;
 import net.centertain.ceac.network.ModNetworking;
-import net.centertain.ceac.screen.elements.Button;
-import net.centertain.ceac.screen.elements.FlowPanel;
-import net.centertain.ceac.screen.elements.ScrollContainer;
-import net.centertain.ceac.screen.elements.StackPanel;
+import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.Screen;
-import net.centertain.ceac.screen.framework.element_types.Reactable;
+import net.centertain.ceac.screen.framework.element_types.ElementLister;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -29,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class DecalItemScreen extends Screen {
     private int left;
@@ -112,17 +107,23 @@ public class DecalItemScreen extends Screen {
             @Nullable ResourceLocation texture,
             @NotNull Runnable onPress
     ) {
+        MarqueeLabel marquee = new MarqueeLabel(
+                width - GuiConstants.ELEMENT_PADDING * 2,
+                text,
+                textColor,
+                textScale,
+                false
+        );
+        ButtonContent content = new ButtonContent(
+                width,
+                height,
+                texture,
+                marquee
+        );
         Button button = new Button(
                 0,
                 0,
-                new ButtonContent(
-                        width,
-                        height,
-                        text,
-                        textColor,
-                        textScale,
-                        texture
-                ),
+                content,
                 onPress,
                 backgroundColor,
                 outlineColor
@@ -190,40 +191,32 @@ public class DecalItemScreen extends Screen {
     }
 
 
-    private static class ButtonContent implements Element, Reactable {
+    private static class ButtonContent implements Element, ElementLister {
         private int x;
         private int y;
         private int width;
         private int height;
 
-        private final Component text;
-        private final int textColor;
-        private final float textScale;
+        private Image image;
+        private MarqueeLabel marquee;
+
         private final @Nullable ResourceLocation texture;
         private final int textureWidth;
         private final int textureHeight;
-
-        private Supplier<Boolean> scrollCondition;
-
-        private long marqueeStartTime;
-        private boolean marqueeActive;
+        private final List<Element> elements;
 
         private ButtonContent(
                 int width,
                 int height,
-                Component text,
-                int textColor,
-                float textScale,
-                @Nullable ResourceLocation texture
+                @Nullable ResourceLocation texture,
+                @NotNull MarqueeLabel marquee
         ) {
             this.x = 0;
             this.y = 0;
             this.width = width;
             this.height = height;
-            this.text = text;
-            this.textColor = textColor;
-            this.textScale = textScale;
             this.texture = texture;
+            this.marquee = marquee;
 
             if (texture != null) {
                 try {
@@ -232,18 +225,32 @@ public class DecalItemScreen extends Screen {
                             .getResource(texture)
                             .orElseThrow();
                     try (InputStream stream = resource.open()) {
-                        NativeImage image = NativeImage.read(stream);
-                        this.textureWidth = image.getWidth();
-                        this.textureHeight = image.getHeight();
-                        image.close();
+                        NativeImage nativeImage = NativeImage.read(stream);
+                        this.textureWidth = nativeImage.getWidth();
+                        this.textureHeight = nativeImage.getHeight();
+                        nativeImage.close();
                     }
                 } catch (IOException exception) {
-                    throw new RuntimeException("Failed to load button texture " + texture, exception);
+                    throw new RuntimeException(
+                            "Failed to load button texture " + texture,
+                            exception
+                    );
                 }
+                image = new Image(
+                        textureWidth,
+                        textureHeight,
+                        texture
+                );
+                elements = List.of(image, marquee);
             } else {
                 this.textureWidth = 0;
                 this.textureHeight = 0;
+                elements = List.of(
+                        marquee
+                );
             }
+
+            layout();
         }
 
         public int getX() {
@@ -258,71 +265,42 @@ public class DecalItemScreen extends Screen {
         public int getHeight() {
             return height;
         }
+        public List<Element> getElements() {
+            return elements;
+        }
 
         public void setX(int x) {
             this.x = x;
+            layout();
         }
         public void setY(int y) {
             this.y = y;
+            layout();
         }
         public void setWidth(int width) {
             this.width = width;
+            layout();
         }
         public void setHeight(int height) {
             this.height = height;
+            layout();
         }
         public void setDimensions(@NotNull Element dimensionSupplier) {
             this.x = dimensionSupplier.getX();
             this.y = dimensionSupplier.getY();
             this.width = dimensionSupplier.getWidth();
             this.height = dimensionSupplier.getHeight();
+            layout();
         }
 
-
-        @Override
-        public void parentHover(@NotNull Supplier<Boolean> parentHoverState) {
-            scrollCondition = parentHoverState;
-        }
-
-        private String getTruncatedText(Font font, int availableWidth) {
-            String text = this.text.getString();
-            String ellipsis = "...";
-            if (Math.round(font.width(text) * textScale) <= availableWidth)
-                return text;
-            int ellipsisWidth = Math.round(font.width(ellipsis) * textScale);
-            int availableTextWidth = availableWidth - ellipsisWidth;
-            if (availableTextWidth <= 0)
-                return ellipsis;
-            int characterCount = 0;
-            while (
-                    characterCount < text.length() &&
-                    Math.round(font.width(text.substring(0, characterCount + 1)) * textScale) <= availableTextWidth
-            )
-                characterCount++;
-            return text.substring(0, characterCount) + ellipsis;
-        }
-
-        @Override
-        public void render(
-                @NotNull GuiGraphics guiGraphics,
-                int mouseX,
-                int mouseY,
-                float partialTick
-        ) {
-            Font font = Minecraft.getInstance().font;
-
-            int textWidth = font.width(text);
-            int textHeight = 8;
-
-            int scaledTextWidth = Math.round(textWidth * textScale);
-            int scaledTextHeight = Math.round(textHeight * textScale);
-
+        private void layout() {
+            int contentTop;
             int drawTextureWidth = 0;
             int drawTextureHeight = 0;
 
             if (texture != null) {
                 int availableTextureWidth = width;
-                int availableTextureHeight = height - scaledTextHeight - GuiConstants.ELEMENT_PADDING;
+                int availableTextureHeight = height - marquee.getHeight() - GuiConstants.ELEMENT_PADDING;
 
                 if (availableTextureWidth > 0 && availableTextureHeight > 0) {
                     float scale = Math.min(
@@ -340,151 +318,50 @@ public class DecalItemScreen extends Screen {
             if (drawTextureHeight > 0)
                 contentHeight += GuiConstants.ELEMENT_PADDING;
 
-            contentHeight += scaledTextHeight;
+            contentHeight += marquee.getHeight();
 
-            int contentTop = y + (height - contentHeight) / 2;
+            contentTop = y + (height - contentHeight) / 2;
 
             if (drawTextureHeight > 0) {
-                float textureScale = (float) drawTextureWidth / textureWidth;
                 int textureX = x + (width - drawTextureWidth) / 2;
 
-                RenderSystem.enableBlend();
-
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().translate(textureX, contentTop, 0.0);
-                guiGraphics.pose().scale(textureScale, textureScale, 1.0f);
-                guiGraphics.blit(
-                        texture,
-                        0,
-                        0,
-                        0,
-                        0,
-                        textureWidth,
-                        textureHeight,
-                        textureWidth,
-                        textureHeight
-                );
-                guiGraphics.pose().popPose();
-
-                RenderSystem.disableBlend();
+                image.setX(textureX);
+                image.setY(contentTop);
+                image.setWidth(drawTextureWidth);
+                image.setHeight(drawTextureHeight);
 
                 contentTop += drawTextureHeight + GuiConstants.ELEMENT_PADDING;
             }
 
-            int textAreaLeft = x + GuiConstants.ELEMENT_PADDING;
-            int textAreaRight = x + width - GuiConstants.ELEMENT_PADDING;
-            int textAreaWidth = textAreaRight - textAreaLeft;
-
-            boolean shouldScroll = scrollCondition != null && scrollCondition.get();
-
-            if (scaledTextWidth <= textAreaWidth) {
-                marqueeActive = false;
-
-                int textX = textAreaLeft + (textAreaWidth - scaledTextWidth) / 2;
-
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().translate(textX, contentTop, 0.0);
-                guiGraphics.pose().scale(textScale, textScale, 1.0f);
-                guiGraphics.drawString(
-                        font,
-                        text,
-                        0,
-                        0,
-                        textColor,
-                        false
-                );
-                guiGraphics.pose().popPose();
-            } else if (!shouldScroll) {
-                marqueeActive = false;
-
-                String truncatedText = getTruncatedText(
-                        font,
-                        textAreaWidth
-                );
-                int truncatedTextWidth = Math.round(font.width(truncatedText) * textScale);
-                int textX = textAreaLeft + (textAreaWidth - truncatedTextWidth) / 2;
-
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().translate(textX, contentTop, 0.0);
-                guiGraphics.pose().scale(textScale, textScale, 1.0f);
-                guiGraphics.drawString(
-                        font,
-                        truncatedText,
-                        0,
-                        0,
-                        textColor,
-                        false
-                );
-                guiGraphics.pose().popPose();
-            } else {
-                long elapsed = System.currentTimeMillis() - marqueeStartTime;
-
-                if (!marqueeActive) {
-                    marqueeActive = true;
-                    marqueeStartTime = System.currentTimeMillis();
-                    elapsed = 0;
-                }
-
-                float scrollOffset = getScrollOffset(
-                        elapsed,
-                        scaledTextWidth,
-                        textAreaWidth
-                );
-
-                guiGraphics.enableScissor(
-                        textAreaLeft,
-                        contentTop,
-                        textAreaRight,
-                        contentTop + scaledTextHeight
-                );
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().translate(
-                        textAreaLeft - scrollOffset,
-                        contentTop,
-                        0.0
-                );
-                guiGraphics.pose().scale(textScale, textScale, 1.0f);
-                guiGraphics.drawString(
-                        font,
-                        text,
-                        0,
-                        0,
-                        textColor,
-                        false
-                );
-                guiGraphics.pose().popPose();
-                guiGraphics.disableScissor();
-            }
-
-            if (!shouldScroll)
-                marqueeActive = false;
+            marquee.setX(x + GuiConstants.ELEMENT_PADDING);
+            marquee.setY(contentTop);
+            marquee.setWidth(width - GuiConstants.ELEMENT_PADDING * 2);
         }
 
-        private static float getScrollOffset(
-                long elapsed,
-                int scaledTextWidth,
-                int textAreaWidth
+        @Override
+        public void render(
+                @NotNull GuiGraphics guiGraphics,
+                int mouseX,
+                int mouseY,
+                float partialTick
         ) {
-            float scrollOffset;
+            if (image != null) {
+                RenderSystem.enableBlend();
+                image.render(
+                        guiGraphics,
+                        mouseX,
+                        mouseY,
+                        partialTick
+                );
+                RenderSystem.disableBlend();
+            }
 
-            long duration = 2000;
-            long pause = 1000;
-            long cycle = duration + pause + duration + pause;
-            long time = elapsed % cycle;
-
-            int overflow = scaledTextWidth - textAreaWidth;
-
-            if (time <= duration) {
-                float progress = (float) time / duration;
-                scrollOffset = overflow * progress;
-            } else if (time <= duration + pause)
-                scrollOffset = overflow;
-            else if (time <= duration + pause + duration) {
-                float progress = (float) (time - (duration + pause)) / duration;
-                scrollOffset = overflow * (1.0f - progress);
-            } else
-                scrollOffset = 0.0f;
-            return scrollOffset;
+            marquee.render(
+                    guiGraphics,
+                    mouseX,
+                    mouseY,
+                    partialTick
+            );
         }
     }
 }

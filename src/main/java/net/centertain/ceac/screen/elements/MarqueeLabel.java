@@ -5,52 +5,57 @@ import net.centertain.ceac.screen.framework.element_types.Reactable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
-public class Marquee implements Element, Reactable {
+public class MarqueeLabel implements Element, Reactable {
     private int x;
     private int y;
     private int width;
 
-    private Label label;
+    private Component text;
+    private int textColor;
+    private float textScale;
+    private boolean shadow;
+
     private Supplier<Boolean> scrollCondition;
 
     private long marqueeStartTime;
     private boolean marqueeActive;
 
-    public Marquee(
+    public MarqueeLabel(
             int width,
-            @NotNull Label label
+            Component text,
+            int textColor,
+            float textScale,
+            boolean shadow
     ) {
         this.x = 0;
         this.y = 0;
         this.width = width;
-        this.label = label;
+        this.text = text;
+        this.textColor = textColor;
+        this.textScale = textScale;
+        this.shadow = shadow;
     }
 
-    public Marquee(
+    public MarqueeLabel(
             @NotNull Element positionSupplier,
             int width,
-            @NotNull Label label
+            Component text,
+            int textColor,
+            float textScale,
+            boolean shadow
     ) {
         this.x = positionSupplier.getX();
         this.y = positionSupplier.getY();
         this.width = width;
-        this.label = label;
-    }
-
-    public Marquee(
-            int x,
-            int y,
-            int width,
-            @NotNull Label label
-    ) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.label = label;
+        this.text = text;
+        this.textColor = textColor;
+        this.textScale = textScale;
+        this.shadow = shadow;
     }
 
     public int getX() {
@@ -63,10 +68,19 @@ public class Marquee implements Element, Reactable {
         return width;
     }
     public int getHeight() {
-        return label.getHeight();
+        return Math.round(8 * textScale);
     }
-    public @NotNull Label getLabel() {
-        return label;
+    public Component getText() {
+        return text;
+    }
+    public int getTextColor() {
+        return textColor;
+    }
+    public float getTextScale() {
+        return textScale;
+    }
+    public boolean getShadow() {
+        return shadow;
     }
     public Supplier<Boolean> getScrollCondition() {
         return scrollCondition;
@@ -82,9 +96,19 @@ public class Marquee implements Element, Reactable {
         this.width = width;
     }
     public void setHeight(int height) {}
-    public void setLabel(@NotNull Label label) {
-        this.label = label;
+    public void setText(Component text) {
+        this.text = text;
         marqueeActive = false;
+    }
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
+    }
+    public void setTextScale(float textScale) {
+        this.textScale = textScale;
+        marqueeActive = false;
+    }
+    public void setShadow(boolean shadow) {
+        this.shadow = shadow;
     }
     public void setScrollCondition(@NotNull Supplier<Boolean> scrollCondition) {
         this.scrollCondition = scrollCondition;
@@ -100,6 +124,27 @@ public class Marquee implements Element, Reactable {
         this.scrollCondition = parentHoverState;
     }
 
+    private String getTruncatedText(
+            Font font,
+            int availableWidth
+    ) {
+        String text = this.text.getString();
+        String ellipsis = "...";
+        if (Math.round(font.width(text) * textScale) <= availableWidth)
+            return text;
+        int ellipsisWidth = Math.round(font.width(ellipsis) * textScale);
+        int availableTextWidth = availableWidth - ellipsisWidth;
+        if (availableTextWidth <= 0)
+            return ellipsis;
+        int characterCount = 0;
+        while (
+                characterCount < text.length() &&
+                Math.round(font.width(text.substring(0, characterCount + 1)) * textScale) <= availableTextWidth
+        )
+            characterCount++;
+        return text.substring(0, characterCount) + ellipsis;
+    }
+
     @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
@@ -107,45 +152,31 @@ public class Marquee implements Element, Reactable {
             int mouseY,
             float partialTick
     ) {
-        label.setX(x);
-        label.setY(y);
-
         Font font = Minecraft.getInstance().font;
-        int textWidth = label.getWidth();
+        int textWidth = Math.round(font.width(text) * textScale);
 
         if (textWidth <= width) {
             marqueeActive = false;
-
-            label.render(
+            renderText(
                     guiGraphics,
-                    mouseX,
-                    mouseY,
-                    partialTick
+                    text,
+                    x + (width - textWidth) / 2,
+                    y
             );
-
             return;
         }
 
         boolean shouldScroll = scrollCondition != null && scrollCondition.get();
         if (!shouldScroll) {
             marqueeActive = false;
-
-            guiGraphics.enableScissor(
-                    x,
-                    y,
-                    x + width,
-                    y + label.getHeight()
-            );
-
-            label.render(
+            String truncatedText = getTruncatedText(font, width);
+            int truncatedTextWidth = Math.round(font.width(truncatedText) * textScale);
+            renderText(
                     guiGraphics,
-                    mouseX,
-                    mouseY,
-                    partialTick
+                    Component.literal(truncatedText),
+                    x + (width - truncatedTextWidth) / 2,
+                    y
             );
-
-            guiGraphics.disableScissor();
-
             return;
         }
 
@@ -157,29 +188,42 @@ public class Marquee implements Element, Reactable {
             elapsed = 0;
         }
 
-        float scrollOffset = getScrollOffset(
-                elapsed,
-                textWidth,
-                width
-        );
+        float scrollOffset = getScrollOffset(elapsed, textWidth, width);
 
         guiGraphics.enableScissor(
                 x,
                 y,
                 x + width,
-                y + label.getHeight()
+                y + getHeight()
         );
-
-        guiGraphics.drawString(
-                font,
-                label.getText(),
+        renderText(
+                guiGraphics,
+                text,
                 Math.round(x - scrollOffset),
-                y,
-                label.getColor(),
-                label.getShadow()
+                y
         );
 
         guiGraphics.disableScissor();
+    }
+
+    private void renderText(
+            GuiGraphics guiGraphics,
+            Component text,
+            int x,
+            int y
+    ) {
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(x, y, 0.0);
+        guiGraphics.pose().scale(textScale, textScale, 1.0f);
+        guiGraphics.drawString(
+                Minecraft.getInstance().font,
+                text,
+                0,
+                0,
+                textColor,
+                shadow
+        );
+        guiGraphics.pose().popPose();
     }
 
     private static float getScrollOffset(
