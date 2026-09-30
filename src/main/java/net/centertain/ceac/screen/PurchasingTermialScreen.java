@@ -95,7 +95,7 @@ public class PurchasingTermialScreen extends Screen {
                 height,
                 pages,
                 PageList.TabPosition.LEFT,
-                GuiConstants.TAB_BUTTON_HEIGHT,
+                50,
                 true
         ));
     }
