@@ -7,6 +7,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 
 import java.util.function.Supplier;
 
@@ -208,11 +209,16 @@ public class MarqueeLabel implements Element, Reactable {
 
         float scrollOffset = getScrollOffset(elapsed, textWidth, width);
 
+        Matrix4f pose = guiGraphics.pose().last().pose();
+
+        int scissorX = Math.round(x + pose.m30());
+        int scissorY = Math.round(y + pose.m31());
+
         guiGraphics.enableScissor(
-                x,
-                y,
-                x + width,
-                y + getHeight()
+                scissorX,
+                scissorY,
+                scissorX + width,
+                scissorY + getHeight()
         );
         renderText(
                 guiGraphics,

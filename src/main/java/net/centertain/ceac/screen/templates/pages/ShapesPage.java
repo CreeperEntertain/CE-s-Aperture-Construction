@@ -59,7 +59,7 @@ public final class ShapesPage {
                     Component.literal(subcategory),
                     width,
                     GuiConstants.ELEMENT_PADDING,
-                    false,
+                    true,
                     panel
             ));
         }
