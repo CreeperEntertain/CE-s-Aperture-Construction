@@ -81,7 +81,7 @@ public final class PurchaseButton {
             int id,
             int width
     ) {
-        int canonicalWidth = width - GuiConstants.PURCHASE_BUTTON_HEIGHT + GuiConstants.ELEMENT_PADDING;
+        int canonicalWidth = width - GuiConstants.PURCHASE_BUTTON_HEIGHT - GuiConstants.ELEMENT_PADDING;
         List<Element> labels = List.of(
                 getTitle(title, canonicalWidth),
                 getPrice(price),
