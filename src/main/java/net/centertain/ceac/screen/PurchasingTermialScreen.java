@@ -73,34 +73,6 @@ public class PurchasingTermialScreen extends Screen {
                 1.0f,
                 false
         );
-
-        int currencyLabelWidth = currency.getWidth() + (GuiConstants.ELEMENT_PADDING * 2);
-        int currencyLabelHeight = currency.getHeight() + (GuiConstants.ELEMENT_PADDING * 2);
-
-        Rect textBackground = new Rect(
-                currencyLabelWidth,
-                currencyLabelHeight,
-                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
-        );
-        Aligner textAlign = new Aligner(
-                currencyLabelWidth,
-                currencyLabelHeight,
-                Aligner.Alignment.CENTER,
-                currency
-        );
-
-        addElement(new Aligner(
-                this.width,
-                this.height,
-                Aligner.Alignment.TOP_RIGHT,
-                textBackground
-        ));
-        addElement(new Aligner(
-                this.width,
-                this.height,
-                Aligner.Alignment.TOP_RIGHT,
-                textAlign
-        ));
     }
 
     public static void purchase(BasicItem item) {
