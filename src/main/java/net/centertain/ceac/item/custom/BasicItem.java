@@ -27,8 +27,8 @@ public abstract class BasicItem extends Item {
 
     public BasicItem(Properties properties, String category, @Nullable String subcategory, double price) {
         super(properties);
-        this.category = subcategory;
-        this.subcategory = null;
+        this.category = category;
+        this.subcategory = subcategory;
         this.price = price;
     }
 
