@@ -1,24 +1,30 @@
 package net.centertain.ceac.screen;
 
-import net.centertain.ceac.block.ModBlocks;
-import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.constants.GuiConstants;
-import net.centertain.ceac.item.ModItems;
-import net.centertain.ceac.item.custom.MatItem;
+import net.centertain.ceac.item.custom.BasicItem;
 import net.centertain.ceac.screen.elements.*;
-import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.Screen;
-import net.centertain.ceac.screen.templates.PurchaseButton;
+import net.centertain.ceac.screen.templates.pages.BasicsPage;
+import net.centertain.ceac.screen.templates.pages.TradePage;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public class PurchasingTermialScreen extends Screen {
-    public PurchasingTermialScreen() {
+    private final Player player;
+
+    public PurchasingTermialScreen(@NotNull Player player) {
         super(Component.empty());
+        this.player = player;
     }
+
+    public @NotNull Player getPlayer() {
+        return player;
+    }
+
 
     @Override
     public void render(
@@ -31,63 +37,13 @@ public class PurchasingTermialScreen extends Screen {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
-    private void example() {
-
-    }
-
     @Override
     protected void init() {
         super.init();
 
-        List<Element> buttons = List.of(
-                PurchaseButton.create(
-                        (MaterialShape) ModBlocks.MATERIAL_SHAPE_BlOCK.get(),
-                        this::example,
-                        width
-                ),
-                PurchaseButton.create(
-                        (MatItem) ModItems.OBSERVATION_CONCRETE_WALL.get(),
-                        this::example,
-                        width
-                )
-        );
-
-        FlowPanel stack = new FlowPanel(
-                0,
-                0,
-                FlowPanel.Alignment.HORIZONTAL,
-                width,
-                0,
-                GuiConstants.COLOR_TRANSPARENT,
-                buttons
-        );
-
-        Foldout foldout = new Foldout(
-                Component.literal("HELLO!!"),
-                width,
-                true,
-                stack
-        );
-
-        Rect rect = new Rect(
-                100,
-                100,
-                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
-        );
-
         List<Page> pages = List.of(
-                new Page(
-                        "Elements",
-                        width,
-                        height,
-                        foldout
-                ),
-                new Page(
-                        "Rect",
-                        width,
-                        height,
-                        rect
-                )
+                TradePage.get(width, height),
+                BasicsPage.get(width, height)
         );
 
         addElement(new PageList(
@@ -98,5 +54,44 @@ public class PurchasingTermialScreen extends Screen {
                 100,
                 true
         ));
+
+        Label currency = new Label(
+                GuiConstants.COLOR_SOLID_WHITE,
+                Component.literal("Example Text"),
+                1.0f,
+                false
+        );
+
+        int currencyLabelWidth = currency.getWidth() + (GuiConstants.ELEMENT_PADDING * 2);
+        int currencyLabelHeight = currency.getHeight() + (GuiConstants.ELEMENT_PADDING * 2);
+
+        Rect textBackground = new Rect(
+                currencyLabelWidth,
+                currencyLabelHeight,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+        );
+        Aligner textAlign = new Aligner(
+                currencyLabelWidth,
+                currencyLabelHeight,
+                Aligner.Alignment.CENTER,
+                currency
+        );
+
+        addElement(new Aligner(
+                width,
+                height,
+                Aligner.Alignment.TOP_RIGHT,
+                textBackground
+        ));
+        addElement(new Aligner(
+                width,
+                height,
+                Aligner.Alignment.TOP_RIGHT,
+                textAlign
+        ));
+    }
+
+    public static void purchase(BasicItem item) {
+
     }
 }
