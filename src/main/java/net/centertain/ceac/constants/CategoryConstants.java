@@ -23,6 +23,8 @@ public final class CategoryConstants {
         public static final class Shapes {
             private Shapes() {}
 
+            public static final String MISC = "Miscellaneous";
+
             public static final String BASIC = "Basic Shapes";
             public static final String SLOPES_FULL = "Full Slopes";
             public static final String SLOPES_HALF = "Half Slopes";

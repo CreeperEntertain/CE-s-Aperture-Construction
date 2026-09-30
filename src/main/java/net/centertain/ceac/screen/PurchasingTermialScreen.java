@@ -1,5 +1,6 @@
 package net.centertain.ceac.screen;
 
+import net.centertain.ceac.block.custom.BasicBlock;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.custom.BasicItem;
 import net.centertain.ceac.screen.elements.*;
@@ -103,6 +104,10 @@ public class PurchasingTermialScreen extends Screen {
     }
 
     public static void purchase(BasicItem item) {
+
+    }
+
+    public static void purchase(BasicBlock block) {
 
     }
 }
