@@ -1,13 +1,14 @@
 package net.centertain.ceac.screen.elements;
 
 import net.centertain.ceac.screen.framework.Element;
+import net.centertain.ceac.screen.framework.ElementLister;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class FlowPanel implements Element, GuiEventListener {
+public class FlowPanel implements Element, ElementLister, GuiEventListener {
     private int x;
     private int y;
 

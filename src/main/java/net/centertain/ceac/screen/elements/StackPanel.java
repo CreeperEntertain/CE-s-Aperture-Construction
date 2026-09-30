@@ -1,12 +1,13 @@
 package net.centertain.ceac.screen.elements;
 
 import net.centertain.ceac.screen.framework.Element;
+import net.centertain.ceac.screen.framework.ElementLister;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class StackPanel implements Element {
+public class StackPanel implements Element, ElementLister {
     private int x;
     private int y;
 

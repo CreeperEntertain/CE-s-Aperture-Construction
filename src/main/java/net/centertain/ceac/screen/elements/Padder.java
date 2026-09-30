@@ -1,10 +1,11 @@
 package net.centertain.ceac.screen.elements;
 
 import net.centertain.ceac.screen.framework.Element;
+import net.centertain.ceac.screen.framework.ElementContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 
-public class Padder implements Element {
+public class Padder implements Element, ElementContainer {
     private int x;
     private int y;
     private int width;
