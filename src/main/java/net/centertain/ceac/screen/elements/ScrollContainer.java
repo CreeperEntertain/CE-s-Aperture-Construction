@@ -141,7 +141,7 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
                 x,
                 y,
                 x + width,
-                y + width
+                y + height
         );
         guiGraphics.pose().pushPose();
 
