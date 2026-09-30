@@ -11,11 +11,6 @@ public class PurchasingTermialScreen extends Screen {
     }
 
     @Override
-    protected void init() {
-        super.init();
-    }
-
-    @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
             int mouseX,
@@ -23,5 +18,11 @@ public class PurchasingTermialScreen extends Screen {
             float partialTick
     ) {
         renderBackground(guiGraphics);
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
     }
 }
