@@ -18,6 +18,8 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
 
     private GuiEventListener focusedElement;
 
+    private MouseDispatchResult mouseCapture;
+
     protected Screen(Component title) {
         super(title);
     }
@@ -32,6 +34,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
         if (focusedElement != null)
             focusedElement.setFocused(false);
         focusedElement = null;
+        mouseCapture = null;
         elements.clear();
         rebuildRenderables();
     }
@@ -46,10 +49,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
     protected final boolean removeElement(@NotNull Element element) {
         if (!elements.remove(element))
             return false;
-        if (focusedElement == element) {
-            focusedElement.setFocused(false);
-            focusedElement = null;
-        }
+        validateInputState();
         rebuildRenderables();
         return true;
     }
@@ -61,6 +61,24 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             addRenderableOnly(element);
     }
 
+    protected void build() {}
+
+    @Override
+    protected void init() {
+        super.init();
+        clearElements();
+        build();
+    }
+
+    @Override
+    public void removed() {
+        if (focusedElement != null)
+            focusedElement.setFocused(false);
+        focusedElement = null;
+        mouseCapture = null;
+        super.removed();
+    }
+
     @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
@@ -68,6 +86,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             int mouseY,
             float partialTick
     ) {
+        validateInputState();
         updateHover(mouseX, mouseY);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
@@ -133,12 +152,19 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             double mouseY,
             int button
     ) {
-        if (dispatchMouse(
+        validateInputState();
+        mouseCapture = null;
+        MouseDispatchResult result = dispatchMouse(
                 elements,
-                listener -> listener.mouseClicked(mouseX, mouseY, button),
-                true
-        ))
+                mouseX,
+                mouseY,
+                (listener, x, y) -> listener.mouseClicked(x, y, button)
+        );
+        if (result != null) {
+            setFocusedElement((GuiEventListener) result.element());
+            mouseCapture = createMouseCapture(result);
             return true;
+        }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -148,12 +174,18 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             double mouseY,
             int button
     ) {
-        if (dispatchMouse(
-                elements,
-                listener -> listener.mouseReleased(mouseX, mouseY, button),
-                false
-        ))
-            return true;
+        if (isMouseCaptureValid()) {
+            MouseDispatchResult result = dispatchCapturedMouse(
+                    mouseCapture,
+                    mouseX,
+                    mouseY,
+                    (listener, x, y) -> listener.mouseReleased(x, y, button)
+            );
+            mouseCapture = null;
+            if (result != null)
+                return true;
+        } else
+            mouseCapture = null;
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
@@ -165,12 +197,16 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             double dragX,
             double dragY
     ) {
-        if (dispatchMouse(
-                elements,
-                listener ->
-                        listener.mouseDragged(mouseX, mouseY, button, dragX, dragY),
-                false
-        ))
+        if (
+                isMouseCaptureValid() &&
+                dispatchCapturedMouse(
+                        mouseCapture,
+                        mouseX,
+                        mouseY,
+                        (listener, x, y) ->
+                                listener.mouseDragged(x, y, button, dragX, dragY)
+                ) != null
+        )
             return true;
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
@@ -181,11 +217,13 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             double mouseY,
             double scrollDelta
     ) {
-        if (dispatchMouse(
+        MouseDispatchResult result = dispatchMouse(
                 elements,
-                listener -> listener.mouseScrolled(mouseX, mouseY, scrollDelta),
-                false
-        ))
+                mouseX,
+                mouseY,
+                (listener, x, y) -> listener.mouseScrolled(x, y, scrollDelta)
+        );
+        if (result != null)
             return true;
         return super.mouseScrolled(mouseX, mouseY, scrollDelta);
     }
@@ -222,63 +260,89 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
         return super.charTyped(codePoint, modifiers);
     }
 
-    private boolean dispatchMouse(
+    private MouseDispatchResult dispatchMouse(
             @NotNull List<Element> elements,
-            @NotNull MouseEvent event,
-            boolean focusOnSuccess
+            double mouseX,
+            double mouseY,
+            @NotNull MouseEvent event
     ) {
         Set<Element> visited = newIdentitySet();
+        List<Element> path = new ArrayList<>();
+
         for (int i = elements.size() - 1; i >= 0; i--) {
-            Element element = elements.get(i);
-            if (dispatchMouse(
-                    element,
+            MouseDispatchResult result = dispatchMouse(
+                    elements.get(i),
+                    mouseX,
+                    mouseY,
                     event,
-                    focusOnSuccess,
+                    path,
                     visited
-            ))
-                return true;
+            );
+
+            if (result != null)
+                return result;
         }
-        return false;
+
+        return null;
     }
 
-    private boolean dispatchMouse(
+    private MouseDispatchResult dispatchMouse(
             @NotNull Element element,
+            double mouseX,
+            double mouseY,
             @NotNull MouseEvent event,
-            boolean focusOnSuccess,
+            @NotNull List<Element> path,
             @NotNull Set<Element> visited
     ) {
         if (!visited.add(element))
-            return false;
+            return null;
+        path.add(element);
+        if (element instanceof HoverTransformer transformer)
+            if (!transformer.isMouseOver(mouseX, mouseY)) {
+                path.remove(path.size() - 1);
+                return null;
+            }
+        if (element instanceof GuiEventListener listener)
+            if (event.invoke(listener, mouseX, mouseY))
+                return new MouseDispatchResult(element, List.copyOf(path));
 
-        if (element instanceof GuiEventListener listener) {
-            if (!event.invoke(listener))
-                return false;
-            if (focusOnSuccess)
-                setFocusedElement(listener);
-            return true;
+        double childMouseX = mouseX;
+        double childMouseY = mouseY;
+
+        if (element instanceof HoverTransformer transformer) {
+            childMouseX = transformer.transformMouseX(mouseX, mouseY);
+            childMouseY = transformer.transformMouseY(mouseX, mouseY);
         }
 
         if (element instanceof ElementLister lister) {
             List<Element> children = lister.getElements();
-            for (int i = children.size() - 1; i >= 0; i--)
-                if (dispatchMouse(
+            for (int i = children.size() - 1; i >= 0; i--) {
+                MouseDispatchResult result = dispatchMouse(
                         children.get(i),
+                        childMouseX,
+                        childMouseY,
                         event,
-                        focusOnSuccess,
+                        path,
                         visited
-                ))
-                    return true;
+                );
+                if (result != null)
+                    return result;
+            }
         }
-
-        if (element instanceof ElementContainer container)
-            return dispatchMouse(
+        if (element instanceof ElementContainer container) {
+            MouseDispatchResult result = dispatchMouse(
                     container.getElement(),
+                    childMouseX,
+                    childMouseY,
                     event,
-                    focusOnSuccess,
+                    path,
                     visited
             );
-
-        return false;
+            if (result != null)
+                return result;
+        }
+        path.remove(path.size() - 1);
+        return null;
     }
 
     private void setFocusedElement(
@@ -296,18 +360,155 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
     private GuiEventListener resolveFocusedElement(
             @NotNull GuiEventListener element
     ) {
+        return resolveFocusedElement(element, Collections.newSetFromMap(new IdentityHashMap<>()));
+    }
+
+    private GuiEventListener resolveFocusedElement(
+            @NotNull GuiEventListener element,
+            @NotNull Set<GuiEventListener> visited
+    ) {
+        if (!visited.add(element))
+            return element;
         if (!(element instanceof FocusContainer container))
             return element;
         GuiEventListener child = container.getFocusedElement();
         if (child == null)
             return element;
-        return resolveFocusedElement(child);
+        return resolveFocusedElement(child, visited);
+    }
+
+    private void validateInputState() {
+        if (focusedElement instanceof Element focused && !containsElement(elements, focused, newIdentitySet())) {
+            focusedElement.setFocused(false);
+            focusedElement = null;
+        }
+        if (mouseCapture != null && !containsElement(elements, mouseCapture.element(), newIdentitySet()))
+            mouseCapture = null;
+    }
+
+    private boolean isMouseCaptureValid() {
+        if (mouseCapture == null)
+            return false;
+        if (!containsElement(elements, mouseCapture.element(), newIdentitySet())) {
+            mouseCapture = null;
+            return false;
+        }
+        return true;
+    }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    private boolean containsElement(
+            @NotNull List<Element> elements,
+            @NotNull Element target,
+            @NotNull Set<Element> visited
+    ) {
+        for (Element element : elements)
+            if (containsElement(element, target, visited))
+                return true;
+        return false;
+    }
+
+    private boolean containsElement(
+            @NotNull Element element,
+            @NotNull Element target,
+            @NotNull Set<Element> visited
+    ) {
+        if (!visited.add(element))
+            return false;
+        if (element == target)
+            return true;
+        if (element instanceof ElementLister lister)
+            for (Element child : lister.getElements())
+                if (containsElement(child, target, visited))
+                    return true;
+        if (element instanceof ElementContainer container)
+            return containsElement(container.getElement(), target, visited);
+        return false;
+    }
+
+    private List<Element> findElementPath(
+            @NotNull Element target
+    ) {
+        Set<Element> visited = newIdentitySet();
+        for (Element element : elements) {
+            List<Element> path = new ArrayList<>();
+            if (findElementPath(element, target, path, visited))
+                return List.copyOf(path);
+        }
+        return null;
+    }
+
+    private boolean findElementPath(
+            @NotNull Element element,
+            @NotNull Element target,
+            @NotNull List<Element> path,
+            @NotNull Set<Element> visited
+    ) {
+        if (!visited.add(element))
+            return false;
+        path.add(element);
+        if (element == target)
+            return true;
+        if (element instanceof ElementLister lister)
+            for (Element child : lister.getElements())
+                if (findElementPath(child, target, path, visited))
+                    return true;
+        if (element instanceof ElementContainer container)
+            if (findElementPath(container.getElement(), target, path, visited))
+                return true;
+        path.remove(path.size() - 1);
+        return false;
+    }
+
+    private MouseDispatchResult createMouseCapture(
+            @NotNull MouseDispatchResult result
+    ) {
+        List<Element> path = findElementPath(result.element());
+        if (path == null)
+            return result;
+        return new MouseDispatchResult(result.element(), path);
+    }
+
+    private MouseDispatchResult dispatchCapturedMouse(
+            @NotNull MouseDispatchResult capture,
+            double mouseX,
+            double mouseY,
+            @NotNull MouseEvent event
+    ) {
+        double currentMouseX = mouseX;
+        double currentMouseY = mouseY;
+
+        for (Element element : capture.path()) {
+            if (element == capture.element()) {
+                if (!event.invoke((GuiEventListener) capture.element(), currentMouseX, currentMouseY))
+                    return null;
+                return capture;
+            }
+            if (element instanceof HoverTransformer transformer) {
+                double nextMouseX = transformer.transformMouseX(currentMouseX, currentMouseY);
+                double nextMouseY = transformer.transformMouseY(currentMouseX, currentMouseY);
+
+                currentMouseX = nextMouseX;
+                currentMouseY = nextMouseY;
+            }
+        }
+
+        return null;
     }
 
     @FunctionalInterface
     private interface MouseEvent {
-        boolean invoke(@NotNull GuiEventListener listener);
+        boolean invoke(
+                @NotNull GuiEventListener listener,
+                double mouseX,
+                double mouseY
+        );
     }
+
+    private record MouseDispatchResult(
+            @NotNull Element element,
+            @NotNull List<Element> path
+    ) {}
 
     private static Set<Element> newIdentitySet() {
         return Collections.newSetFromMap(new IdentityHashMap<>());
