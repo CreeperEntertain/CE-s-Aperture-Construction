@@ -56,8 +56,8 @@ public class PurchasingTermialScreen extends Screen {
         );
 
         addElement(new PageList(
-                width,
-                height,
+                this.width,
+                this.height,
                 pages,
                 PageList.TabPosition.LEFT,
                 GuiConstants.PAGE_TAB_VERTICALLY_ALIGNED_WIDTH,
