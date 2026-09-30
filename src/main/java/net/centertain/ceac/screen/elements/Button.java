@@ -129,6 +129,14 @@ public class Button extends AbstractWidget implements Element, ElementContainer,
         element.setY(y);
         element.render(guiGraphics, mouseX, mouseY, partialTick);
 
+        if (element instanceof Padder padder) {
+            width = padder.getRealWidth();
+            height = padder.getRealHeight();
+        } else {
+            width = element.getWidth();
+            height = element.getHeight();
+        }
+
         if (!isHovered)
             return;
 
