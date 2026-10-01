@@ -13,6 +13,8 @@ import net.centertain.ceac.screen.templates.pages.TradePage;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -94,10 +96,13 @@ public class PurchasingTermialScreen extends Screen {
     }
 
     public static void purchase(BasicItem item) {
-
+        processItemPurchase(item);
+    }
+    public static void purchase(BasicBlock block) {
+        processItemPurchase(block.asItem());
     }
 
-    public static void purchase(BasicBlock block) {
+    private static void processItemPurchase(Item item) {
 
     }
 }

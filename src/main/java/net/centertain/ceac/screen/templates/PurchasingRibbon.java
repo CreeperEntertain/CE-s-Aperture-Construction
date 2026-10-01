@@ -74,7 +74,7 @@ public final class PurchasingRibbon {
             int callbackParam
     ) {
         Label label = new Label(
-                GuiConstants.COLOR_SOLID_WHITE,
+                GuiConstants.COLOR_SOLID_GRAY,
                 Component.literal(text),
                 1.0f,
                 false

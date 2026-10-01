@@ -3,6 +3,7 @@ package net.centertain.ceac.screen.templates;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.custom.BasicItem;
+import net.centertain.ceac.screen.PurchasingTermialScreen;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.minecraft.network.chat.Component;
@@ -110,13 +111,17 @@ public final class PurchaseButton {
     }
 
     private static @NotNull Label getPrice(double price) {
-        String display = "$" + String.format("%.2f", price);
-        return new Label(
+        String display = "$" + String.format("%.2f", price * PurchasingTermialScreen.getPurchaseMultiplier());
+        Label label = new Label(
                 GuiConstants.COLOR_MINECRAFT_GREEN,
                 Component.literal(display),
                 0.5f,
                 false
         );
+        label.setDynamicText(() -> Component.literal(
+                "$" + String.format("%.2f", price * PurchasingTermialScreen.getPurchaseMultiplier())
+        ));
+        return label;
     }
 
     private static @NotNull Label getId(int id) {
