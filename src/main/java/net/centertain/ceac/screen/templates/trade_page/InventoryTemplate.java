@@ -1,4 +1,4 @@
-package net.centertain.ceac.screen.templates.inventory;
+package net.centertain.ceac.screen.templates.trade_page;
 
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.elements.Container;
@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class InventoryTemplate {
@@ -42,7 +43,7 @@ public final class InventoryTemplate {
             int width,
             int height,
             Supplier<Player> playerSupplier,
-            Runnable onSlotPress
+            Consumer<ItemStack> onSlotPress
     ) {
         List<Element> hotbar = new ArrayList<>();
         for (int i = 0; i < ROW; i++) {

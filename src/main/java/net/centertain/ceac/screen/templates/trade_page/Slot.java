@@ -1,4 +1,4 @@
-package net.centertain.ceac.screen.templates.inventory;
+package net.centertain.ceac.screen.templates.trade_page;
 
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.elements.*;
@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class Slot {
@@ -23,7 +24,7 @@ public final class Slot {
             int width,
             int height,
             Supplier<ItemStack> stackSupplier,
-            Runnable onPress
+            Consumer<ItemStack> onPress
     ) {
         ItemDisplay display = new ItemDisplay(
                 width,
@@ -59,7 +60,7 @@ public final class Slot {
                 x,
                 y,
                 slotContainer,
-                onPress,
+                () -> onPress.accept(stackSupplier.get()),
                 GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
                 GuiConstants.COLOR_SOLID_WHITE
         );
