@@ -50,6 +50,7 @@ public class Aligner implements Element, ElementContainer {
         this.height = height;
         this.alignment = alignment;
         this.element = element;
+        runnables[alignment.ordinal()].run();
     }
 
     public Aligner(
@@ -66,6 +67,7 @@ public class Aligner implements Element, ElementContainer {
         this.height = height;
         this.alignment = alignment;
         this.element = element;
+        runnables[alignment.ordinal()].run();
     }
 
     public Aligner(
@@ -79,6 +81,7 @@ public class Aligner implements Element, ElementContainer {
         this.height = dimensionSupplier.getHeight();
         this.alignment = alignment;
         this.element = element;
+        runnables[alignment.ordinal()].run();
     }
 
     public Aligner(
@@ -94,6 +97,7 @@ public class Aligner implements Element, ElementContainer {
         this.height = height;
         this.alignment = alignment;
         this.element = element;
+        runnables[alignment.ordinal()].run();
     }
 
     public int getX() {
@@ -130,27 +134,34 @@ public class Aligner implements Element, ElementContainer {
 
     public void setX(int x) {
         this.x = x;
+        runnables[alignment.ordinal()].run();
     }
     public void setY(int y) {
         this.y = y;
+        runnables[alignment.ordinal()].run();
     }
     public void setWidth(int width) {
         this.width = width;
+        runnables[alignment.ordinal()].run();
     }
     public void setHeight(int height) {
         this.height = height;
+        runnables[alignment.ordinal()].run();
     }
     public void setAlignment(Alignment alignment) {
         this.alignment = alignment;
+        runnables[alignment.ordinal()].run();
     }
     public void setElement(@NotNull Element element) {
         this.element = element;
+        runnables[alignment.ordinal()].run();
     }
     public void setDimensions(@NotNull Element dimensionSupplier) {
         this.x = dimensionSupplier.getX();
         this.y = dimensionSupplier.getY();
         this.width = dimensionSupplier.getWidth();
         this.height = dimensionSupplier.getHeight();
+        runnables[alignment.ordinal()].run();
     }
 
 
@@ -161,7 +172,6 @@ public class Aligner implements Element, ElementContainer {
             int mouseY,
             float partialTick
     ) {
-        runnables[alignment.ordinal()].run();
         element.render(
                 guiGraphics,
                 mouseX,
