@@ -12,13 +12,17 @@ import java.util.function.Supplier;
 public class Label implements Element {
     private int x;
     private int y;
-
     private int color;
     private Component text;
     private float textScale;
     private boolean shadow;
 
+    private @Nullable Supplier<Integer> dynamicX = null;
+    private @Nullable Supplier<Integer> dynamicY = null;
+    private @Nullable Supplier<Integer> dynamicColor = null;
     private @Nullable Supplier<Component> dynamicText = null;
+    private @Nullable Supplier<Float> dynamicTextScale = null;
+    private @Nullable Supplier<Boolean> dynamicShadow = null;
 
     public Label(
             int color,
@@ -89,8 +93,24 @@ public class Label implements Element {
     public boolean getShadow() {
         return shadow;
     }
+
+    public @Nullable Supplier<Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<Integer> getDynamicColor() {
+        return dynamicColor;
+    }
     public @Nullable Supplier<Component> getDynamicText() {
         return dynamicText;
+    }
+    public @Nullable Supplier<Float> getDynamicTextScale() {
+        return dynamicTextScale;
+    }
+    public @Nullable Supplier<Boolean> getDynamicShadow() {
+        return dynamicShadow;
     }
 
     public void setX(int x) {
@@ -113,14 +133,39 @@ public class Label implements Element {
     public void setShadow(boolean shadow) {
         this.shadow = shadow;
     }
-    public void setDynamicText(@Nullable Supplier<Component> dynamicText) {
-        this.dynamicText = dynamicText;
-    }
     public void setDimensions(@NotNull Element positionSupplier) {
         this.x = positionSupplier.getX();
         this.y = positionSupplier.getY();
     }
 
+    public void setDynamicX(@Nullable Supplier<Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicColor(@Nullable Supplier<Integer> dynamicColor) {
+        this.dynamicColor = dynamicColor;
+    }
+    public void setDynamicText(@Nullable Supplier<Component> dynamicText) {
+        this.dynamicText = dynamicText;
+    }
+    public void setDynamicTextScale(@Nullable Supplier<Float> dynamicTextScale) {
+        this.dynamicTextScale = dynamicTextScale;
+    }
+    public void setDynamicShadow(@Nullable Supplier<Boolean> dynamicShadow) {
+        this.dynamicShadow = dynamicShadow;
+    }
+
+
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicColor != null) setColor(dynamicColor.get());
+        if (dynamicText != null) setText(dynamicText.get());
+        if (dynamicTextScale != null) setTextScale(dynamicTextScale.get());
+        if (dynamicShadow != null) setShadow(dynamicShadow.get());
+    }
 
     @Override
     public void render(
@@ -129,8 +174,7 @@ public class Label implements Element {
             int mouseY,
             float partialTick
     ) {
-        if (dynamicText != null)
-            this.text = dynamicText.get();
+        applyDynamics();
 
         guiGraphics.pose().pushPose();
 
