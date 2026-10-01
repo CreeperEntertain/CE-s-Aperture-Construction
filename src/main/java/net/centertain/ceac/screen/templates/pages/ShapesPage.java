@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public final class ShapesPage {
     private ShapesPage() {}
@@ -25,7 +26,8 @@ public final class ShapesPage {
             int x,
             int y,
             int width,
-            int height
+            int height,
+            Supplier<Integer> purchaseMultiplier
     ) {
         Map<String, List<Element>> buttons = new HashMap<>();
 
@@ -39,7 +41,8 @@ public final class ShapesPage {
                 buttons.get(subcategory).add(PurchaseButton.create(
                         shape,
                         () -> PurchasingTermialScreen.purchase(shape),
-                        GuiConstants.PURCHASE_BUTTON_WIDTH
+                        GuiConstants.PURCHASE_BUTTON_WIDTH,
+                        purchaseMultiplier
                 ));
             }
 

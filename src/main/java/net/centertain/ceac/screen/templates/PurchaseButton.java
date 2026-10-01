@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public final class PurchaseButton {
     private PurchaseButton() {}
@@ -18,7 +19,8 @@ public final class PurchaseButton {
     public static Button create(
             MaterialShape materialShape,
             Runnable onPress,
-            int width
+            int width,
+            Supplier<Integer> purchaseMultiplier
     ) {
         return constructButton(
                 materialShape.getItemStack(),
@@ -27,14 +29,16 @@ public final class PurchaseButton {
                 materialShape.getName().getString(),
                 materialShape.getPrice(),
                 materialShape.hashCode(),
-                false
+                false,
+                purchaseMultiplier
         );
     }
 
     public static Button create(
             BasicItem basicItem,
             Runnable onPress,
-            int width
+            int width,
+            Supplier<Integer> purchaseMultiplier
     ) {
         return constructButton(
                 basicItem.getItemStack(),
@@ -43,7 +47,8 @@ public final class PurchaseButton {
                 basicItem.getName(new ItemStack(basicItem)).getString(),
                 basicItem.getPrice(),
                 basicItem.hashCode(),
-                true
+                true,
+                purchaseMultiplier
         );
     }
 
@@ -54,7 +59,8 @@ public final class PurchaseButton {
             String title,
             double price,
             int id,
-            boolean flatLighting
+            boolean flatLighting,
+            Supplier<Integer> purchaseMultiplier
     ) {
         ItemDisplay display = new ItemDisplay(
                 GuiConstants.PURCHASE_BUTTON_HEIGHT - (GuiConstants.ELEMENT_PADDING * 2),
@@ -64,7 +70,7 @@ public final class PurchaseButton {
         );
         List<Element> horizontalElements = List.of(
                 display,
-                getDisplay(title, price, id, width)
+                getDisplay(title, price, id, width, purchaseMultiplier)
         );
         return new Button(
                 0,
@@ -80,12 +86,13 @@ public final class PurchaseButton {
             String title,
             double price,
             int id,
-            int width
+            int width,
+            Supplier<Integer> purchaseMultiplier
     ) {
         int canonicalWidth = width - GuiConstants.PURCHASE_BUTTON_HEIGHT - GuiConstants.ELEMENT_PADDING;
         List<Element> labels = List.of(
                 getTitle(title, canonicalWidth),
-                getPrice(price),
+                getPrice(price, purchaseMultiplier),
                 getId(id)
         );
         return new StackPanel(
@@ -110,8 +117,8 @@ public final class PurchaseButton {
         );
     }
 
-    private static @NotNull Label getPrice(double price) {
-        String display = "$" + String.format("%.2f", price * PurchasingTermialScreen.getPurchaseMultiplier());
+    private static @NotNull Label getPrice(double price, Supplier<Integer> purchaseMultiplier) {
+        String display = "$" + String.format("%.2f", price * purchaseMultiplier.get());
         Label label = new Label(
                 GuiConstants.COLOR_MINECRAFT_GREEN,
                 Component.literal(display),
@@ -119,7 +126,7 @@ public final class PurchaseButton {
                 false
         );
         label.setDynamicText(() -> Component.literal(
-                "$" + String.format("%.2f", price * PurchasingTermialScreen.getPurchaseMultiplier())
+                "$" + String.format("%.2f", price * purchaseMultiplier.get())
         ));
         return label;
     }

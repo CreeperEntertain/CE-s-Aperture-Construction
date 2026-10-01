@@ -25,7 +25,7 @@ public class PurchasingTermialScreen extends Screen {
     private final static String CURRENCY_TAG = "ceac_currency";
 
     private final Player player;
-    private static int purchaseMultiplier = 1;
+    private int purchaseMultiplier = 1;
 
     public PurchasingTermialScreen(@NotNull Player player) {
         super(Component.empty());
@@ -35,7 +35,7 @@ public class PurchasingTermialScreen extends Screen {
     public @NotNull Player getPlayer() {
         return player;
     }
-    public static int getPurchaseMultiplier() {
+    public int getPurchaseMultiplier() {
         return purchaseMultiplier;
     }
 
@@ -86,7 +86,7 @@ public class PurchasingTermialScreen extends Screen {
                 ribbonHeight,
                 this::increasePurchaseMultiplier,
                 this::decreasePurchaseMultiplier,
-                purchaseMultiplier
+                this::getPurchaseMultiplier
         ));
 
         int x = GuiConstants.PAGE_TAB_VERTICALLY_ALIGNED_WIDTH + GuiConstants.PAGE_TAB_SPACING + GuiConstants.SCREEN_PADDING;
@@ -96,9 +96,9 @@ public class PurchasingTermialScreen extends Screen {
 
         List<Page> pages = List.of(
                 TradePage.get(x, y, width, height),
-                BasicsPage.get(x, y, width, height),
-                ShapesPage.get(x, y, width, height),
-                MaterialsPage.get(x, y, width, height)
+                BasicsPage.get(x, y, width, height, this::getPurchaseMultiplier),
+                ShapesPage.get(x, y, width, height, this::getPurchaseMultiplier),
+                MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier)
         );
 
         addElement(new PageList(

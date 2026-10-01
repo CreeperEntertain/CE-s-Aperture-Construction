@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public final class BasicsPage {
     private BasicsPage() {}
@@ -24,7 +25,8 @@ public final class BasicsPage {
             int x,
             int y,
             int width,
-            int height
+            int height,
+            Supplier<Integer> purchaseMultiplier
     ) {
         List<Element> buttons = new ArrayList<>();
 
@@ -34,7 +36,8 @@ public final class BasicsPage {
                     buttons.add(PurchaseButton.create(
                             basicItem,
                             () -> PurchasingTermialScreen.purchase(basicItem),
-                            GuiConstants.PURCHASE_BUTTON_WIDTH
+                            GuiConstants.PURCHASE_BUTTON_WIDTH,
+                            purchaseMultiplier
                     ));
 
         FlowPanel panel = new FlowPanel(

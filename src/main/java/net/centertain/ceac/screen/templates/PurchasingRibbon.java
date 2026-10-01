@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class PurchasingRibbon {
     private PurchasingRibbon() {}
@@ -22,19 +23,19 @@ public final class PurchasingRibbon {
             int height,
             Consumer<Integer> increasePurchaseMultiplier,
             Consumer<Integer> decreasePurchaseMultiplier,
-            int purchaseMultipler
+            Supplier<Integer> purchaseMultipler
     ) {
         int multiplierHeight = 20;
         int buttonWidth = 15;
-        alignedLabel = getAlignedLabel(purchaseMultipler + "x", multiplierHeight);
+        alignedLabel = getAlignedLabel(purchaseMultipler.get() + "x", multiplierHeight);
         List<Element> multiplierContents = List.of(
-                getTextButton("<<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 10),
-                getTextButton("<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 1),
+                getTextButton("<<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 10, purchaseMultipler),
+                getTextButton("<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 1, purchaseMultipler),
                 new Spacer(GuiConstants.ELEMENT_PADDING, multiplierHeight),
                 alignedLabel,
                 new Spacer(GuiConstants.ELEMENT_PADDING, multiplierHeight),
-                getTextButton(">", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 1),
-                getTextButton(">>", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 10)
+                getTextButton(">", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 1, purchaseMultipler),
+                getTextButton(">>", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 10, purchaseMultipler)
         );
         StackPanel multiplier = new StackPanel(
                 0,
@@ -71,7 +72,8 @@ public final class PurchasingRibbon {
             int width,
             int height,
             Consumer<Integer> callback,
-            int callbackParam
+            int callbackParam,
+            Supplier<Integer> purchaseMultiplier
     ) {
         Label label = new Label(
                 GuiConstants.COLOR_SOLID_GRAY,
@@ -92,7 +94,7 @@ public final class PurchasingRibbon {
                 () -> {
                     callback.accept(callbackParam);
                     if (alignedLabel.getElement() instanceof Label multiplier)
-                        multiplier.setText(Component.literal(PurchasingTermialScreen.getPurchaseMultiplier() + "x"));
+                        multiplier.setText(Component.literal(purchaseMultiplier.get() + "x"));
                 },
                 GuiConstants.COLOR_TRANSPARENT,
                 GuiConstants.COLOR_SOLID_GRAY
