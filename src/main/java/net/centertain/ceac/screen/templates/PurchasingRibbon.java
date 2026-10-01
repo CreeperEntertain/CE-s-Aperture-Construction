@@ -1,5 +1,7 @@
 package net.centertain.ceac.screen.templates;
 
+import net.centertain.ceac.constants.GuiConstants;
+import net.centertain.ceac.screen.elements.Container;
 import net.centertain.ceac.screen.elements.Empty;
 import net.centertain.ceac.screen.framework.Element;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +20,13 @@ public final class PurchasingRibbon {
             Consumer<Integer> decreasePurchaseMultiplier,
             int purchaseMultipler
     ) {
-        return new Empty();
+        return new Container(
+                x,
+                y,
+                width,
+                height,
+                new Empty(),
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+        );
     }
 }
