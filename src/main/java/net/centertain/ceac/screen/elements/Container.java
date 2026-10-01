@@ -5,25 +5,32 @@ import net.centertain.ceac.screen.framework.element_types.ElementLister;
 import net.centertain.ceac.screen.framework.element_types.HoverTransformer;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class Container implements Element, ElementLister, HoverTransformer {
     private int x;
     private int y;
     private int width;
     private int height;
-
-    private List<Element> elements;
-
+    private @NotNull List<@NotNull Element> elements;
     private int backgroundColor;
+
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWidth = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicHeight = null;
+    private @Nullable Supplier<@NotNull List<@NotNull Element>> dynamicElements = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicBackgroundColor = null;
 
     public Container(
             int x,
             int y,
             int width,
             int height,
-            @NotNull List<Element> elements
+            @NotNull List<@NotNull Element> elements
     ) {
         this.x = x;
         this.y = y;
@@ -38,7 +45,7 @@ public class Container implements Element, ElementLister, HoverTransformer {
             int y,
             int width,
             int height,
-            @NotNull List<Element> elements,
+            @NotNull List<@NotNull Element> elements,
             int backgroundColor
     ) {
         this.x = x;
@@ -92,11 +99,30 @@ public class Container implements Element, ElementLister, HoverTransformer {
     public int getHeight() {
         return height;
     }
-    public List<Element> getElements() {
+    public @NotNull List<@NotNull Element> getElements() {
         return elements;
     }
     public int getBackgroundColor() {
         return backgroundColor;
+    }
+
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicWidth() {
+        return dynamicWidth;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicHeight() {
+        return dynamicHeight;
+    }
+    public @Nullable Supplier<@NotNull List<@NotNull Element>> getDynamicElements() {
+        return dynamicElements;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicBackgroundColor() {
+        return dynamicBackgroundColor;
     }
 
     public void setX(int x) {
@@ -111,13 +137,41 @@ public class Container implements Element, ElementLister, HoverTransformer {
     public void setHeight(int height) {
         this.height = height;
     }
-    public void setElements(@NotNull List<Element> elements) {
+    public void setElements(@NotNull List<@NotNull Element> elements) {
         this.elements = elements;
     }
     public void setBackgroundColor(int backgroundColor) {
         this.backgroundColor = backgroundColor;
     }
 
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicWidth(@Nullable Supplier<@NotNull Integer> dynamicWidth) {
+        this.dynamicWidth = dynamicWidth;
+    }
+    public void setDynamicHeight(@Nullable Supplier<@NotNull Integer> dynamicHeight) {
+        this.dynamicHeight = dynamicHeight;
+    }
+    public void setDynamicElements(@Nullable Supplier<@NotNull List<@NotNull Element>> dynamicElements) {
+        this.dynamicElements = dynamicElements;
+    }
+    public void setDynamicBackgroundColor(@Nullable Supplier<@NotNull Integer> dynamicBackgroundColor) {
+        this.dynamicBackgroundColor = dynamicBackgroundColor;
+    }
+
+
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicWidth != null) setWidth(dynamicWidth.get());
+        if (dynamicHeight != null) setHeight(dynamicHeight.get());
+        if (dynamicElements != null) setElements(dynamicElements.get());
+        if (dynamicBackgroundColor != null) setBackgroundColor(dynamicBackgroundColor.get());
+    }
 
     @Override
     public void render(
@@ -126,6 +180,8 @@ public class Container implements Element, ElementLister, HoverTransformer {
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
+
         guiGraphics.fill(
                 x,
                 y,
