@@ -55,6 +55,11 @@ public class PurchasingTermialScreen extends Screen {
 
 
     @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
+    @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
             int mouseX,
