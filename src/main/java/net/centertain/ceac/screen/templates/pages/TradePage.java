@@ -2,74 +2,66 @@ package net.centertain.ceac.screen.templates.pages;
 
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.elements.*;
+import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.templates.trade_page.InventoryTemplate;
+import net.centertain.ceac.screen.templates.trade_page.LeftContainer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Supplier;
 
-public final class TradePage {
-    private TradePage() {}
+public class TradePage extends Page {
+    private @Nullable ItemStack stack;
 
-    private static @Nullable ItemStack stack = null;
-
-    private static void setStack(@Nullable ItemStack stack) {
-        TradePage.stack = stack;
+    public void setStack(@Nullable ItemStack stack) {
+        this.stack = stack == null || stack.getItem() == Items.AIR ? null : stack;
     }
-    private static @Nullable ItemStack getStack() {
+    private void shrinkStack(int amount) {
+        if (stack == null)
+            return;
+        stack.shrink(amount);
+    }
+    private void growStack(int amount) {
+        if (stack == null)
+            return;
+        stack.grow(amount);
+    }
+    private @Nullable ItemStack getStack() {
         return stack;
     }
 
-    public static @NotNull Page get(
+    public TradePage(
             int x,
             int y,
             int width,
             int height,
             Supplier<Player> playerSupplier
     ) {
+        super("Trade", width, height, new Empty());
+
         int inventoryWidth = InventoryTemplate.getInventoryWidth();
         int inventoryHeight = InventoryTemplate.getInventoryHeight();
 
         int leftHeight = height - inventoryHeight - GuiConstants.ELEMENT_PADDING;
 
-        Container inventory = InventoryTemplate.get(
+        Element leftStack = LeftContainer.get(
                 x,
                 y,
                 inventoryWidth,
                 inventoryHeight,
-                playerSupplier,
-                TradePage::setStack
-        );
-        Container leftContainer = new Container(
-                0,
-                0,
-                inventoryWidth,
                 leftHeight,
-                new Rect(
-                        inventoryWidth,
-                        leftHeight,
-                        GuiConstants.COLOR_TRANSLUCENT_BLACK_75
-                )
-        );
-        StackPanel leftStack = new StackPanel(
-                0,
-                0,
-                StackPanel.Alignment.VERTICAL,
-                inventoryWidth,
-                GuiConstants.ELEMENT_PADDING,
-                GuiConstants.COLOR_TRANSPARENT,
-                List.of(inventory, leftContainer)
+                playerSupplier,
+                this::setStack,
+                this::getStack
         );
 
-
-        return new Page(
-                "Trade",
-                width,
-                height,
-                leftStack
-        );
+        setX(x);
+        setY(y);
+        setElement(leftStack);
     }
 }
