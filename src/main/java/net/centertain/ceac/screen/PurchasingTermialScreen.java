@@ -11,10 +11,12 @@ import net.centertain.ceac.screen.templates.pages.MaterialsPage;
 import net.centertain.ceac.screen.templates.pages.ShapesPage;
 import net.centertain.ceac.screen.templates.pages.TradePage;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -33,6 +35,17 @@ public class PurchasingTermialScreen extends Screen {
     }
     public static int getPurchaseMultiplier() {
         return purchaseMultiplier;
+    }
+
+
+    public static void setupPlayerCurrency(PlayerEvent.PlayerLoggedInEvent event) {
+        CompoundTag data = event.getEntity().getPersistentData();
+        CompoundTag persisted = data.getCompound(Player.PERSISTED_NBT_TAG);
+
+        if (!persisted.contains("ceac_currency"))
+            persisted.putDouble("ceac_currency", 0.0);
+
+        data.put(Player.PERSISTED_NBT_TAG, persisted);
     }
 
 
