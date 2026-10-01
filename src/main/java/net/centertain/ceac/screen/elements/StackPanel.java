@@ -4,23 +4,29 @@ import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.element_types.ElementLister;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class StackPanel implements Element, ElementLister {
     private int x;
     private int y;
-
-    private Alignment alignment;
+    private @NotNull Alignment alignment;
     private int wideness;
     private int spacing;
-
     private int width;
     private int height;
-
     private int backgroundColor;
+    private @NotNull List<@NotNull Element> elements;
 
-    private List<Element> elements;
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Alignment> dynamicAlignment = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWideness = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicSpacing = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicBackgroundColor = null;
+    private @Nullable Supplier<@NotNull List<@NotNull Element>> dynamicElements = null;
 
     public enum Alignment {
         HORIZONTAL,
@@ -30,11 +36,11 @@ public class StackPanel implements Element, ElementLister {
     public StackPanel(
             int x,
             int y,
-            Alignment alignment,
+            @NotNull Alignment alignment,
             int wideness,
             int spacing,
             int backgroundColor,
-            List<Element> elements
+            @NotNull List<@NotNull Element> elements
     ) {
         this.x = x;
         this.y = y;
@@ -53,7 +59,7 @@ public class StackPanel implements Element, ElementLister {
     public int getY() {
         return y;
     }
-    public Alignment getAlignment() {
+    public @NotNull Alignment getAlignment() {
         return alignment;
     }
     public int getWideness() {
@@ -71,8 +77,30 @@ public class StackPanel implements Element, ElementLister {
     public int getBackgroundColor() {
         return backgroundColor;
     }
-    public List<Element> getElements() {
+    public @NotNull List<@NotNull Element> getElements() {
         return elements;
+    }
+
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<@NotNull Alignment> getDynamicAlignment() {
+        return dynamicAlignment;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicWideness() {
+        return dynamicWideness;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicSpacing() {
+        return dynamicSpacing;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicBackgroundColor() {
+        return dynamicBackgroundColor;
+    }
+    public @Nullable Supplier<@NotNull List<@NotNull Element>> getDynamicElements() {
+        return dynamicElements;
     }
 
     public void setX(int x) {
@@ -108,6 +136,28 @@ public class StackPanel implements Element, ElementLister {
         this.x = dimensionSupplier.getX();
         this.y = dimensionSupplier.getY();
         layout();
+    }
+
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicAlignment(@Nullable Supplier<@NotNull Alignment> dynamicAlignment) {
+        this.dynamicAlignment = dynamicAlignment;
+    }
+    public void setDynamicWideness(@Nullable Supplier<@NotNull Integer> dynamicWideness) {
+        this.dynamicWideness = dynamicWideness;
+    }
+    public void setDynamicSpacing(@Nullable Supplier<@NotNull Integer> dynamicSpacing) {
+        this.dynamicSpacing = dynamicSpacing;
+    }
+    public void setDynamicBackgroundColor(@Nullable Supplier<@NotNull Integer> dynamicBackgroundColor) {
+        this.dynamicBackgroundColor = dynamicBackgroundColor;
+    }
+    public void setDynamicElements(@Nullable Supplier<@NotNull List<@NotNull Element>> dynamicElements) {
+        this.dynamicElements = dynamicElements;
     }
 
 
@@ -176,6 +226,16 @@ public class StackPanel implements Element, ElementLister {
         return height;
     }
 
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicAlignment != null) setAlignment(dynamicAlignment.get());
+        if (dynamicWideness != null) setWideness(dynamicWideness.get());
+        if (dynamicSpacing != null) setSpacing(dynamicSpacing.get());
+        if (dynamicBackgroundColor != null) setBackgroundColor(dynamicBackgroundColor.get());
+        if (dynamicElements != null) setElements(dynamicElements.get());
+    }
+
     @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
@@ -183,6 +243,7 @@ public class StackPanel implements Element, ElementLister {
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
         layout();
 
         guiGraphics.fill(
