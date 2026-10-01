@@ -26,7 +26,9 @@ public final class PurchasingRibbon {
         List<Element> multiplierContents = List.of(
                 getTextButton("<<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 10),
                 getTextButton("<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 1),
+                new Spacer(GuiConstants.ELEMENT_PADDING, multiplierHeight),
                 getAlignedLabel(purchaseMultipler + "x", multiplierHeight),
+                new Spacer(GuiConstants.ELEMENT_PADDING, multiplierHeight),
                 getTextButton(">", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 1),
                 getTextButton(">>", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 10)
         );
@@ -35,7 +37,7 @@ public final class PurchasingRibbon {
                 0,
                 StackPanel.Alignment.HORIZONTAL,
                 multiplierHeight,
-                GuiConstants.ELEMENT_PADDING,
+                0,
                 GuiConstants.COLOR_TRANSPARENT,
                 multiplierContents
         );
@@ -85,7 +87,7 @@ public final class PurchasingRibbon {
                 aligner,
                 () -> callback.accept(callbackParam),
                 GuiConstants.COLOR_TRANSPARENT,
-                GuiConstants.COLOR_SOLID_WHITE
+                GuiConstants.COLOR_SOLID_GRAY
         );
     }
 
