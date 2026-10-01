@@ -1,6 +1,7 @@
 package net.centertain.ceac.screen.templates;
 
 import net.centertain.ceac.constants.GuiConstants;
+import net.centertain.ceac.screen.PurchasingTermialScreen;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.minecraft.network.chat.Component;
@@ -27,13 +28,13 @@ public final class PurchasingRibbon {
         int buttonWidth = 15;
         alignedLabel = getAlignedLabel(purchaseMultipler + "x", multiplierHeight);
         List<Element> multiplierContents = List.of(
-                getTextButton("<<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 10, purchaseMultipler),
-                getTextButton("<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 1, purchaseMultipler),
+                getTextButton("<<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 10),
+                getTextButton("<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 1),
                 new Spacer(GuiConstants.ELEMENT_PADDING, multiplierHeight),
                 alignedLabel,
                 new Spacer(GuiConstants.ELEMENT_PADDING, multiplierHeight),
-                getTextButton(">", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 1, purchaseMultipler),
-                getTextButton(">>", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 10, purchaseMultipler)
+                getTextButton(">", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 1),
+                getTextButton(">>", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 10)
         );
         StackPanel multiplier = new StackPanel(
                 0,
@@ -70,8 +71,7 @@ public final class PurchasingRibbon {
             int width,
             int height,
             Consumer<Integer> callback,
-            int callbackParam,
-            int purchaseMultiplier
+            int callbackParam
     ) {
         Label label = new Label(
                 GuiConstants.COLOR_SOLID_WHITE,
@@ -92,7 +92,7 @@ public final class PurchasingRibbon {
                 () -> {
                     callback.accept(callbackParam);
                     if (alignedLabel.getElement() instanceof Label multiplier)
-                        multiplier.setText(Component.literal(purchaseMultiplier + "x"));
+                        multiplier.setText(Component.literal(PurchasingTermialScreen.getPurchaseMultiplier() + "x"));
                 },
                 GuiConstants.COLOR_TRANSPARENT,
                 GuiConstants.COLOR_SOLID_GRAY

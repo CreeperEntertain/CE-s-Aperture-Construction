@@ -19,7 +19,7 @@ import java.util.List;
 
 public class PurchasingTermialScreen extends Screen {
     private final Player player;
-    private int purchaseMultiplier = 1;
+    private static int purchaseMultiplier = 1;
 
     public PurchasingTermialScreen(@NotNull Player player) {
         super(Component.empty());
@@ -29,7 +29,7 @@ public class PurchasingTermialScreen extends Screen {
     public @NotNull Player getPlayer() {
         return player;
     }
-    public int getPurchaseMultiplier() {
+    public static int getPurchaseMultiplier() {
         return purchaseMultiplier;
     }
 
@@ -46,7 +46,7 @@ public class PurchasingTermialScreen extends Screen {
     }
 
     private void increasePurchaseMultiplier(int amount) {
-        purchaseMultiplier += Math.min(64, purchaseMultiplier + amount);
+        purchaseMultiplier = Math.min(64, purchaseMultiplier + amount);
     }
 
     private void decreasePurchaseMultiplier(int amount) {
