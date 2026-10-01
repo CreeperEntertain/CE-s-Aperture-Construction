@@ -9,24 +9,32 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Supplier;
 
 public class ScrollContainer implements Element, ElementContainer, FocusContainer, HoverTransformer, GuiEventListener {
     private int x;
     private int y;
     private int width;
     private int height;
-
-    private Alignment alignment;
-
-    private Element element;
-
+    private @NotNull Alignment alignment;
+    private @NotNull Element element;
     private int contentSize;
     private int scrollSpeed;
-
     private double scrollOffset;
-
-    private GuiEventListener focusedElement;
+    private @Nullable GuiEventListener focusedElement;
     private boolean isHovered;
+
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWidth = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicHeight = null;
+    private @Nullable Supplier<@NotNull Alignment> dynamicAlignment = null;
+    private @Nullable Supplier<@NotNull Element> dynamicElement = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicContentSize = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicScrollSpeed = null;
+    private @Nullable Supplier<@NotNull Double> dynamicScrollOffset = null;
 
     public enum Alignment {
         HORIZONTAL,
@@ -38,7 +46,7 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
             int y,
             int width,
             int height,
-            Alignment alignment,
+            @NotNull Alignment alignment,
             @NotNull Element element,
             int contentSize,
             int scrollSpeed
@@ -65,7 +73,7 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
     public int getHeight() {
         return height;
     }
-    public Alignment getAlignment() {
+    public @NotNull Alignment getAlignment() {
         return alignment;
     }
     public @NotNull Element getElement() {
@@ -80,8 +88,36 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
     public double getScrollOffset() {
         return scrollOffset;
     }
-    public GuiEventListener getFocusedElement() {
+    public @Nullable GuiEventListener getFocusedElement() {
         return focusedElement;
+    }
+
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicWidth() {
+        return dynamicWidth;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicHeight() {
+        return dynamicHeight;
+    }
+    public @Nullable Supplier<@NotNull Alignment> getDynamicAlignment() {
+        return dynamicAlignment;
+    }
+    public @Nullable Supplier<@NotNull Element> getDynamicElement() {
+        return dynamicElement;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicContentSize() {
+        return dynamicContentSize;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicScrollSpeed() {
+        return dynamicScrollSpeed;
+    }
+    public @Nullable Supplier<@NotNull Double> getDynamicScrollOffset() {
+        return dynamicScrollOffset;
     }
 
     public void setX(int x) {
@@ -96,7 +132,7 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
     public void setHeight(int height) {
         this.height = height;
     }
-    public void setAlignment(Alignment alignment) {
+    public void setAlignment(@NotNull Alignment alignment) {
         this.alignment = alignment;
     }
     public void setElement(@NotNull Element element) {
@@ -110,6 +146,34 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
     }
     public void setScrollOffset(double scrollOffset) {
         this.scrollOffset = Mth.clamp(scrollOffset, 0.0, getMaxScroll());
+    }
+
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicWidth(@Nullable Supplier<@NotNull Integer> dynamicWidth) {
+        this.dynamicWidth = dynamicWidth;
+    }
+    public void setDynamicHeight(@Nullable Supplier<@NotNull Integer> dynamicHeight) {
+        this.dynamicHeight = dynamicHeight;
+    }
+    public void setDynamicAlignment(@Nullable Supplier<@NotNull Alignment> dynamicAlignment) {
+        this.dynamicAlignment = dynamicAlignment;
+    }
+    public void setDynamicElement(@Nullable Supplier<@NotNull Element> dynamicElement) {
+        this.dynamicElement = dynamicElement;
+    }
+    public void setDynamicContentSize(@Nullable Supplier<@NotNull Integer> dynamicContentSize) {
+        this.dynamicContentSize = dynamicContentSize;
+    }
+    public void setDynamicScrollSpeed(@Nullable Supplier<@NotNull Integer> dynamicScrollSpeed) {
+        this.dynamicScrollSpeed = dynamicScrollSpeed;
+    }
+    public void setDynamicScrollOffset(@Nullable Supplier<@NotNull Double> dynamicScrollOffset) {
+        this.dynamicScrollOffset = dynamicScrollOffset;
     }
 
 
@@ -130,6 +194,18 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
         return contentSize > getViewportSize();
     }
 
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicWidth != null) setWidth(dynamicWidth.get());
+        if (dynamicHeight != null) setHeight(dynamicHeight.get());
+        if (dynamicAlignment != null) setAlignment(dynamicAlignment.get());
+        if (dynamicElement != null) setElement(dynamicElement.get());
+        if (dynamicContentSize != null) setContentSize(dynamicContentSize.get());
+        if (dynamicScrollSpeed != null) setScrollSpeed(dynamicScrollSpeed.get());
+        if (dynamicScrollOffset != null) setScrollOffset(dynamicScrollOffset.get());
+    }
+
     @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
@@ -137,6 +213,8 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
+
         guiGraphics.enableScissor(
                 x,
                 y,
