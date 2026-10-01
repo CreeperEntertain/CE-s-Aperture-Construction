@@ -8,6 +8,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Supplier;
 
 public class Foldout implements Element, ElementContainer, GuiEventListener {
     private static final int BAR_HEIGHT = GuiConstants.FOLDOUT_TOP_HEIGHT;
@@ -16,14 +19,21 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     private int y;
     private int width;
     private int distance;
-
-    private Component title;
-    private Element element;
+    private @NotNull Component title;
+    private @NotNull Element element;
     private boolean foldedOut;
     private boolean focused;
 
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWidth = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicDistance = null;
+    private @Nullable Supplier<@NotNull Component> dynamicTitle = null;
+    private @Nullable Supplier<@NotNull Element> dynamicElement = null;
+    private @Nullable Supplier<@NotNull Boolean> dynamicFoldedOut = null;
+
     public Foldout(
-            Component title,
+            @NotNull Component title,
             int width,
             int distance,
             boolean defaultFoldedOut,
@@ -55,10 +65,10 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     public int getDistance() {
         return distance;
     }
-    public Component getTitle() {
+    public @NotNull Component getTitle() {
         return title;
     }
-    public String getTitleString() {
+    public @NotNull String getTitleString() {
         return title.getString();
     }
     public @NotNull Element getElement() {
@@ -69,6 +79,28 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     }
     public boolean getIsFocused() {
         return focused;
+    }
+
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicWidth() {
+        return dynamicWidth;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicDistance() {
+        return dynamicDistance;
+    }
+    public @Nullable Supplier<@NotNull Component> getDynamicTitle() {
+        return dynamicTitle;
+    }
+    public @Nullable Supplier<@NotNull Element> getDynamicElement() {
+        return dynamicElement;
+    }
+    public @Nullable Supplier<@NotNull Boolean> getDynamicFoldedOut() {
+        return dynamicFoldedOut;
     }
 
     public void setX(int x) {
@@ -85,10 +117,10 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
         this.distance = distance;
     }
     public void setHeight(int height) {}
-    public void setTitle(Component title) {
+    public void setTitle(@NotNull Component title) {
         this.title = title;
     }
-    public void setTitle(String title) {
+    public void setTitle(@NotNull String title) {
         this.title = Component.literal(title);
     }
     public void setElement(@NotNull Element element) {
@@ -98,9 +130,6 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     public void setFoldedOut(boolean foldedOut) {
         this.foldedOut = foldedOut;
     }
-    public void toggle() {
-        foldedOut = !foldedOut;
-    }
     public void setDimensions(@NotNull Element dimensionSupplier) {
         this.x = dimensionSupplier.getX();
         this.y = dimensionSupplier.getY();
@@ -108,10 +137,46 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
         element.setWidth(width);
     }
 
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicWidth(@Nullable Supplier<@NotNull Integer> dynamicWidth) {
+        this.dynamicWidth = dynamicWidth;
+    }
+    public void setDynamicDistance(@Nullable Supplier<@NotNull Integer> dynamicDistance) {
+        this.dynamicDistance = dynamicDistance;
+    }
+    public void setDynamicTitle(@Nullable Supplier<@NotNull Component> dynamicTitle) {
+        this.dynamicTitle = dynamicTitle;
+    }
+    public void setDynamicElement(@Nullable Supplier<@NotNull Element> dynamicElement) {
+        this.dynamicElement = dynamicElement;
+    }
+    public void setDynamicFoldedOut(@Nullable Supplier<@NotNull Boolean> dynamicFoldedOut) {
+        this.dynamicFoldedOut = dynamicFoldedOut;
+    }
+
+
+    public void toggle() {
+        foldedOut = !foldedOut;
+    }
 
     @Override
     public boolean hasElement() {
         return foldedOut;
+    }
+
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicWidth != null) setWidth(dynamicWidth.get());
+        if (dynamicDistance != null) setDistance(dynamicDistance.get());
+        if (dynamicTitle != null) setTitle(dynamicTitle.get());
+        if (dynamicFoldedOut != null) setFoldedOut(dynamicFoldedOut.get());
+        if (dynamicElement != null) setElement(dynamicElement.get());
     }
 
     @Override
@@ -121,6 +186,8 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
+
         boolean hovered = isMouseOver(mouseX, mouseY);
 
         guiGraphics.fill(
