@@ -13,14 +13,14 @@ public class Aligner implements Element, ElementContainer {
     private int y;
     private int width;
     private int height;
-    private Alignment alignment;
-    private Element element;
+    private @NotNull Alignment alignment;
+    private @NotNull Element element;
 
-    private @Nullable Supplier<Integer> dynamicX = null;
-    private @Nullable Supplier<Integer> dynamicY = null;
-    private @Nullable Supplier<Integer> dynamicWidth = null;
-    private @Nullable Supplier<Integer> dynamicHeight = null;
-    private @Nullable Supplier<Alignment> dynamicAlignment = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWidth = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicHeight = null;
+    private @Nullable Supplier<@NotNull Alignment> dynamicAlignment = null;
     private @Nullable Supplier<@NotNull Element> dynamicElement = null;
 
     public enum Alignment {
@@ -50,7 +50,7 @@ public class Aligner implements Element, ElementContainer {
     public Aligner(
             int width,
             int height,
-            Alignment alignment,
+            @NotNull Alignment alignment,
             @NotNull Element element
     ) {
         this.x = 0;
@@ -67,7 +67,7 @@ public class Aligner implements Element, ElementContainer {
             int y,
             int width,
             int height,
-            Alignment alignment,
+            @NotNull Alignment alignment,
             @NotNull Element element
     ) {
         this.x = x;
@@ -81,7 +81,7 @@ public class Aligner implements Element, ElementContainer {
 
     public Aligner(
             @NotNull Element dimensionSupplier,
-            Alignment alignment,
+            @NotNull Alignment alignment,
             @NotNull Element element
     ) {
         this.x = dimensionSupplier.getX();
@@ -97,7 +97,7 @@ public class Aligner implements Element, ElementContainer {
             @NotNull Element positionSupplier,
             int width,
             int height,
-            Alignment alignment,
+            @NotNull Alignment alignment,
             @NotNull Element element
     ) {
         this.x = positionSupplier.getX();
@@ -121,26 +121,26 @@ public class Aligner implements Element, ElementContainer {
     public int getHeight() {
         return height;
     }
-    public Alignment getAlignment() {
+    public @NotNull Alignment getAlignment() {
         return alignment;
     }
     public @NotNull Element getElement() {
         return element;
     }
 
-    public @Nullable Supplier<Integer> getDynamicX() {
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
         return dynamicX;
     }
-    public @Nullable Supplier<Integer> getDynamicY() {
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
         return dynamicY;
     }
-    public @Nullable Supplier<Integer> getDynamicWidth() {
+    public @Nullable Supplier<@NotNull Integer> getDynamicWidth() {
         return dynamicWidth;
     }
-    public @Nullable Supplier<Integer> getDynamicHeight() {
+    public @Nullable Supplier<@NotNull Integer> getDynamicHeight() {
         return dynamicHeight;
     }
-    public @Nullable Supplier<Alignment> getDynamicAlignment() {
+    public @Nullable Supplier<@NotNull Alignment> getDynamicAlignment() {
         return dynamicAlignment;
     }
     public @Nullable Supplier<@NotNull Element> getDynamicElement() {
@@ -176,7 +176,7 @@ public class Aligner implements Element, ElementContainer {
         this.height = height;
         runnables[alignment.ordinal()].run();
     }
-    public void setAlignment(Alignment alignment) {
+    public void setAlignment(@NotNull Alignment alignment) {
         this.alignment = alignment;
         runnables[alignment.ordinal()].run();
     }
@@ -192,19 +192,19 @@ public class Aligner implements Element, ElementContainer {
         runnables[alignment.ordinal()].run();
     }
 
-    public void setDynamicX(@Nullable Supplier<Integer> dynamicX) {
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
         this.dynamicX = dynamicX;
     }
-    public void setDynamicY(@Nullable Supplier<Integer> dynamicY) {
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
         this.dynamicY = dynamicY;
     }
-    public void setDynamicWidth(@Nullable Supplier<Integer> dynamicWidth) {
+    public void setDynamicWidth(@Nullable Supplier<@NotNull Integer> dynamicWidth) {
         this.dynamicWidth = dynamicWidth;
     }
-    public void setDynamicHeight(@Nullable Supplier<Integer> dynamicHeight) {
+    public void setDynamicHeight(@Nullable Supplier<@NotNull Integer> dynamicHeight) {
         this.dynamicHeight = dynamicHeight;
     }
-    public void setDynamicAlignment(@Nullable Supplier<Alignment> dynamicAlignment) {
+    public void setDynamicAlignment(@Nullable Supplier<@NotNull Alignment> dynamicAlignment) {
         this.dynamicAlignment = dynamicAlignment;
     }
     public void setDynamicElement(@Nullable Supplier<@NotNull Element> dynamicElement) {

@@ -10,21 +10,30 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Supplier;
 
 public class Button extends AbstractWidget implements Element, ElementContainer, Hoverable, GuiEventListener {
     private int x;
     private int y;
     private int width;
     private int height;
-
     private Element element;
     private Runnable onPress;
-
     private int backgroundColor;
     private int outlineColor;
-
     private boolean isHovered;
     private boolean isFocused;
+
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWidth = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicHeight = null;
+    private @Nullable Supplier<@NotNull Element> dynamicElement = null;
+    private @Nullable Supplier<@NotNull Runnable> dynamicOnPress = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicBackgroundColor = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicOutlineColor = null;
 
     public Button(
             int x,
@@ -86,6 +95,25 @@ public class Button extends AbstractWidget implements Element, ElementContainer,
         return isFocused;
     }
 
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicWidth() {
+        return dynamicWidth;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicHeight() {
+        return dynamicHeight;
+    }
+    public @Nullable Supplier<@NotNull Element> getDynamicElement() {
+        return dynamicElement;
+    }
+    public @Nullable Supplier<@NotNull Runnable> getDynamicOnPress() {
+        return dynamicOnPress;
+    }
+
     public void setX(int x) {
         this.x = x;
     }
@@ -117,6 +145,43 @@ public class Button extends AbstractWidget implements Element, ElementContainer,
         this.height = element.getHeight();
     }
 
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicWidth(@Nullable Supplier<@NotNull Integer> dynamicWidth) {
+        this.dynamicWidth = dynamicWidth;
+    }
+    public void setDynamicHeight(@Nullable Supplier<@NotNull Integer> dynamicHeight) {
+        this.dynamicHeight = dynamicHeight;
+    }
+    public void setDynamicElement(@Nullable Supplier<@NotNull Element> dynamicElement) {
+        this.dynamicElement = dynamicElement;
+    }
+    public void setDynamicOnPress(@Nullable Supplier<@NotNull Runnable> dynamicOnPress) {
+        this.dynamicOnPress = dynamicOnPress;
+    }
+    public void setDynamicBackgroundColor(@Nullable Supplier<@NotNull Integer> dynamicBackgroundColor) {
+        this.dynamicBackgroundColor = dynamicBackgroundColor;
+    }
+    public void setDynamicOutlineColor(@Nullable Supplier<@NotNull Integer> dynamicOutlineColor) {
+        this.dynamicOutlineColor = dynamicOutlineColor;
+    }
+
+
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicWidth != null) setWidth(dynamicWidth.get());
+        if (dynamicHeight != null) setHeight(dynamicHeight.get());
+        if (dynamicElement != null) setElement(dynamicElement.get());
+        if (dynamicOnPress != null) setOnPress(dynamicOnPress.get());
+        if (dynamicBackgroundColor != null) setBackgroundColor(dynamicBackgroundColor.get());
+        if (dynamicOutlineColor != null) setOutlineColor(dynamicOutlineColor.get());
+    }
+
     @Override
     public void renderWidget(
             @NotNull GuiGraphics guiGraphics,
@@ -124,6 +189,8 @@ public class Button extends AbstractWidget implements Element, ElementContainer,
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
+
         guiGraphics.fill(
                 x,
                 y,

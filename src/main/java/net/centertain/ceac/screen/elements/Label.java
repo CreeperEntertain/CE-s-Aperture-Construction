@@ -13,20 +13,20 @@ public class Label implements Element {
     private int x;
     private int y;
     private int color;
-    private Component text;
+    private @NotNull Component text;
     private float textScale;
     private boolean shadow;
 
-    private @Nullable Supplier<Integer> dynamicX = null;
-    private @Nullable Supplier<Integer> dynamicY = null;
-    private @Nullable Supplier<Integer> dynamicColor = null;
-    private @Nullable Supplier<Component> dynamicText = null;
-    private @Nullable Supplier<Float> dynamicTextScale = null;
-    private @Nullable Supplier<Boolean> dynamicShadow = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicColor = null;
+    private @Nullable Supplier<@NotNull Component> dynamicText = null;
+    private @Nullable Supplier<@NotNull Float> dynamicTextScale = null;
+    private @Nullable Supplier<@NotNull Boolean> dynamicShadow = null;
 
     public Label(
             int color,
-            Component text,
+            @NotNull Component text,
             float textScale,
             boolean shadow
     ) {
@@ -42,7 +42,7 @@ public class Label implements Element {
             int x,
             int y,
             int color,
-            Component text,
+            @NotNull Component text,
             float textScale,
             boolean shadow
     ) {
@@ -57,7 +57,7 @@ public class Label implements Element {
     public Label(
             @NotNull Element positionSupplier,
             int color,
-            Component text,
+            @NotNull Component text,
             float textScale,
             boolean shadow
     ) {
@@ -84,7 +84,7 @@ public class Label implements Element {
     public int getColor() {
         return color;
     }
-    public Component getText() {
+    public @NotNull Component getText() {
         return text;
     }
     public float getTextScale() {
@@ -94,22 +94,22 @@ public class Label implements Element {
         return shadow;
     }
 
-    public @Nullable Supplier<Integer> getDynamicX() {
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
         return dynamicX;
     }
-    public @Nullable Supplier<Integer> getDynamicY() {
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
         return dynamicY;
     }
-    public @Nullable Supplier<Integer> getDynamicColor() {
+    public @Nullable Supplier<@NotNull Integer> getDynamicColor() {
         return dynamicColor;
     }
-    public @Nullable Supplier<Component> getDynamicText() {
+    public @Nullable Supplier<@NotNull Component> getDynamicText() {
         return dynamicText;
     }
-    public @Nullable Supplier<Float> getDynamicTextScale() {
+    public @Nullable Supplier<@NotNull Float> getDynamicTextScale() {
         return dynamicTextScale;
     }
-    public @Nullable Supplier<Boolean> getDynamicShadow() {
+    public @Nullable Supplier<@NotNull Boolean> getDynamicShadow() {
         return dynamicShadow;
     }
 
@@ -124,7 +124,7 @@ public class Label implements Element {
     public void setColor(int color) {
         this.color = color;
     }
-    public void setText(Component text) {
+    public void setText(@NotNull Component text) {
         this.text = text;
     }
     public void setTextScale(float textScale) {
@@ -138,22 +138,22 @@ public class Label implements Element {
         this.y = positionSupplier.getY();
     }
 
-    public void setDynamicX(@Nullable Supplier<Integer> dynamicX) {
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
         this.dynamicX = dynamicX;
     }
-    public void setDynamicY(@Nullable Supplier<Integer> dynamicY) {
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
         this.dynamicY = dynamicY;
     }
-    public void setDynamicColor(@Nullable Supplier<Integer> dynamicColor) {
+    public void setDynamicColor(@Nullable Supplier<@NotNull Integer> dynamicColor) {
         this.dynamicColor = dynamicColor;
     }
-    public void setDynamicText(@Nullable Supplier<Component> dynamicText) {
+    public void setDynamicText(@Nullable Supplier<@NotNull Component> dynamicText) {
         this.dynamicText = dynamicText;
     }
-    public void setDynamicTextScale(@Nullable Supplier<Float> dynamicTextScale) {
+    public void setDynamicTextScale(@Nullable Supplier<@NotNull Float> dynamicTextScale) {
         this.dynamicTextScale = dynamicTextScale;
     }
-    public void setDynamicShadow(@Nullable Supplier<Boolean> dynamicShadow) {
+    public void setDynamicShadow(@Nullable Supplier<@NotNull Boolean> dynamicShadow) {
         this.dynamicShadow = dynamicShadow;
     }
 
