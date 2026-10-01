@@ -29,6 +29,9 @@ public class PurchasingTermialScreen extends Screen {
     public @NotNull Player getPlayer() {
         return player;
     }
+    public int getPurchaseMultiplier() {
+        return purchaseMultiplier;
+    }
 
 
     @Override
@@ -43,11 +46,11 @@ public class PurchasingTermialScreen extends Screen {
     }
 
     private void increasePurchaseMultiplier(int amount) {
-
+        purchaseMultiplier += Math.min(64, purchaseMultiplier + amount);
     }
 
     private void decreasePurchaseMultiplier(int amount) {
-
+        purchaseMultiplier = Math.max(1, purchaseMultiplier - amount);
     }
 
     @Override
@@ -60,7 +63,10 @@ public class PurchasingTermialScreen extends Screen {
                 GuiConstants.SCREEN_PADDING,
                 GuiConstants.SCREEN_PADDING,
                 width - (GuiConstants.SCREEN_PADDING * 2),
-                ribbonHeight
+                ribbonHeight,
+                this::increasePurchaseMultiplier,
+                this::decreasePurchaseMultiplier,
+                purchaseMultiplier
         ));
 
         int x = GuiConstants.PAGE_TAB_VERTICALLY_ALIGNED_WIDTH + GuiConstants.PAGE_TAB_SPACING + GuiConstants.SCREEN_PADDING;
