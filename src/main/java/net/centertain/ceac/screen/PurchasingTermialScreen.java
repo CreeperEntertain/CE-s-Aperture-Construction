@@ -101,7 +101,7 @@ public class PurchasingTermialScreen extends Screen {
         int height = this.height - y - GuiConstants.SCREEN_PADDING;
 
         List<Page> pages = List.of(
-                TradePage.get(x, y, width, height),
+                TradePage.get(x, y, width, height, this::getPlayer),
                 BasicsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency),
                 ShapesPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency),
                 MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency)
