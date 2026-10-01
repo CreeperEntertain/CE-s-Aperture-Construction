@@ -18,7 +18,7 @@ public class Label implements Element {
     private float textScale;
     private boolean shadow;
 
-    private @Nullable Supplier<Component> dynamicText;
+    private @Nullable Supplier<Component> dynamicText = null;
 
     public Label(
             int color,
@@ -32,7 +32,6 @@ public class Label implements Element {
         this.text = text;
         this.textScale = textScale;
         this.shadow = shadow;
-        this.dynamicText = null;
     }
 
     public Label(
@@ -49,7 +48,6 @@ public class Label implements Element {
         this.text = text;
         this.textScale = textScale;
         this.shadow = shadow;
-        this.dynamicText = null;
     }
 
     public Label(
@@ -65,7 +63,6 @@ public class Label implements Element {
         this.text = text;
         this.textScale = textScale;
         this.shadow = shadow;
-        this.dynamicText = null;
     }
 
     public int getX() {
