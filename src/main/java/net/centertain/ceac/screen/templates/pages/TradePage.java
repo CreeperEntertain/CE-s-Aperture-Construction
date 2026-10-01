@@ -21,16 +21,6 @@ public class TradePage extends Page {
     public void setStack(@Nullable ItemStack stack) {
         this.stack = stack == null || stack.getItem() == Items.AIR ? null : stack;
     }
-    private void shrinkStack(int amount) {
-        if (stack == null)
-            return;
-        stack.shrink(amount);
-    }
-    private void growStack(int amount) {
-        if (stack == null)
-            return;
-        stack.grow(amount);
-    }
     private @Nullable ItemStack getStack() {
         return stack;
     }
