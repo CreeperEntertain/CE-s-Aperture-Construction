@@ -91,7 +91,8 @@ public class PurchasingTermialScreen extends Screen {
                 ribbonHeight,
                 this::increasePurchaseMultiplier,
                 this::decreasePurchaseMultiplier,
-                this::getPurchaseMultiplier
+                this::getPurchaseMultiplier,
+                this::getCurrency
         ));
 
         int x = GuiConstants.PAGE_TAB_VERTICALLY_ALIGNED_WIDTH + GuiConstants.PAGE_TAB_SPACING + GuiConstants.SCREEN_PADDING;
