@@ -19,7 +19,7 @@ import java.util.List;
 
 public class PurchasingTermialScreen extends Screen {
     private final Player player;
-    private int purchaseMultiplier;
+    private int purchaseMultiplier = 1;
 
     public PurchasingTermialScreen(@NotNull Player player) {
         super(Component.empty());

@@ -26,7 +26,7 @@ public final class PurchasingRibbon {
         List<Element> multiplierContents = List.of(
                 getTextButton("<<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 10),
                 getTextButton("<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 1),
-                getAlignedLabel(Integer.toString(purchaseMultipler), multiplierHeight),
+                getAlignedLabel(purchaseMultipler + "x", multiplierHeight),
                 getTextButton(">", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 1),
                 getTextButton(">>", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 10)
         );
