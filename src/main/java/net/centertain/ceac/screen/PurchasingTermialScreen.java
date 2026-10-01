@@ -5,6 +5,7 @@ import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.custom.BasicItem;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Screen;
+import net.centertain.ceac.screen.templates.PurchasingRibbon;
 import net.centertain.ceac.screen.templates.pages.BasicsPage;
 import net.centertain.ceac.screen.templates.pages.MaterialsPage;
 import net.centertain.ceac.screen.templates.pages.ShapesPage;
@@ -18,6 +19,7 @@ import java.util.List;
 
 public class PurchasingTermialScreen extends Screen {
     private final Player player;
+    private int purchaseMultiplier;
 
     public PurchasingTermialScreen(@NotNull Player player) {
         super(Component.empty());
@@ -40,13 +42,26 @@ public class PurchasingTermialScreen extends Screen {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
+    private void increasePurchaseMultiplier(int amount) {
+
+    }
+
+    private void decreasePurchaseMultiplier(int amount) {
+
+    }
+
     @Override
     protected void init() {
         super.init();
 
         int ribbonHeight = 30;
 
-
+        addElement(PurchasingRibbon.get(
+                GuiConstants.SCREEN_PADDING,
+                GuiConstants.SCREEN_PADDING,
+                width - (GuiConstants.SCREEN_PADDING * 2),
+                ribbonHeight
+        ));
 
         int x = GuiConstants.PAGE_TAB_VERTICALLY_ALIGNED_WIDTH + GuiConstants.PAGE_TAB_SPACING + GuiConstants.SCREEN_PADDING;
         int y = GuiConstants.SCREEN_PADDING + ribbonHeight + GuiConstants.ELEMENT_PADDING;
