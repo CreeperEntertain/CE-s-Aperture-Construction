@@ -22,6 +22,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class PurchasingTermialScreen extends Screen {
+    private final static String CURRENCY_TAG = "ceac_currency";
+
     private final Player player;
     private static int purchaseMultiplier = 1;
 
@@ -42,8 +44,8 @@ public class PurchasingTermialScreen extends Screen {
         CompoundTag data = event.getEntity().getPersistentData();
         CompoundTag persisted = data.getCompound(Player.PERSISTED_NBT_TAG);
 
-        if (!persisted.contains("ceac_currency"))
-            persisted.putDouble("ceac_currency", 0.0);
+        if (!persisted.contains(CURRENCY_TAG))
+            persisted.putDouble(CURRENCY_TAG, 0.0);
 
         data.put(Player.PERSISTED_NBT_TAG, persisted);
     }
