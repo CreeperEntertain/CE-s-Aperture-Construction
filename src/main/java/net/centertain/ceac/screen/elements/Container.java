@@ -29,6 +29,20 @@ public class Container implements Element, ElementLister {
         this.elements = elements;
     }
 
+    public Container(
+            int x,
+            int y,
+            int width,
+            int height,
+            @NotNull Element element
+    ) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.elements = List.of(element);
+    }
+
     public int getX() {
         return x;
     }
