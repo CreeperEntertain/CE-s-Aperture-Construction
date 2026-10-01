@@ -49,6 +49,9 @@ public class PurchasingTermialScreen extends Screen {
 
         data.put(Player.PERSISTED_NBT_TAG, persisted);
     }
+    public double getCurrency() {
+        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getDouble(CURRENCY_TAG);
+    }
 
 
     @Override
