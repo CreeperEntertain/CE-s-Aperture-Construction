@@ -18,7 +18,7 @@ public class Label implements Element {
     private float textScale;
     private boolean shadow;
 
-    private @Nullable Supplier<String> dynamicText;
+    private @Nullable Supplier<Component> dynamicText;
 
     public Label(
             int color,
@@ -92,7 +92,7 @@ public class Label implements Element {
     public boolean getShadow() {
         return shadow;
     }
-    public @Nullable Supplier<String> getDynamicText() {
+    public @Nullable Supplier<Component> getDynamicText() {
         return dynamicText;
     }
 
@@ -116,7 +116,7 @@ public class Label implements Element {
     public void setShadow(boolean shadow) {
         this.shadow = shadow;
     }
-    public void setDynamicText(@Nullable Supplier<String> dynamicText) {
+    public void setDynamicText(@Nullable Supplier<Component> dynamicText) {
         this.dynamicText = dynamicText;
     }
     public void setDimensions(@NotNull Element positionSupplier) {
@@ -133,7 +133,7 @@ public class Label implements Element {
             float partialTick
     ) {
         if (dynamicText != null)
-            this.text = Component.literal(dynamicText.get());
+            this.text = dynamicText.get();
 
         guiGraphics.pose().pushPose();
 
