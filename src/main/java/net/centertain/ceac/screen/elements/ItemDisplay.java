@@ -6,16 +6,24 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
 import net.centertain.ceac.screen.framework.Element;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Supplier;
 
 public class ItemDisplay implements Element {
     private int x;
     private int y;
     private int width;
     private int height;
-
-    private ItemStack stack;
-
+    private @NotNull ItemStack stack;
     private boolean flatLighting;
+
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWidth = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicHeight = null;
+    private @Nullable Supplier<@NotNull ItemStack> dynamicStack = null;
+    private @Nullable Supplier<@NotNull Boolean> dynamicFlatLighting = null;
 
     public ItemDisplay(
             int width,
@@ -94,6 +102,25 @@ public class ItemDisplay implements Element {
         return flatLighting;
     }
 
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicWidth() {
+        return dynamicWidth;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicHeight() {
+        return dynamicHeight;
+    }
+    public @Nullable Supplier<@NotNull ItemStack> getDynamicStack() {
+        return dynamicStack;
+    }
+    public @Nullable Supplier<@NotNull Boolean> getDynamicFlatLighting() {
+        return dynamicFlatLighting;
+    }
+
     public void setX(int x) {
         this.x = x;
     }
@@ -119,6 +146,35 @@ public class ItemDisplay implements Element {
         this.height = dimensionSupplier.getHeight();
     }
 
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicWidth(@Nullable Supplier<@NotNull Integer> dynamicWidth) {
+        this.dynamicWidth = dynamicWidth;
+    }
+    public void setDynamicHeight(@Nullable Supplier<@NotNull Integer> dynamicHeight) {
+        this.dynamicHeight = dynamicHeight;
+    }
+    public void setDynamicStack(@Nullable Supplier<@NotNull ItemStack> dynamicStack) {
+        this.dynamicStack = dynamicStack;
+    }
+    public void setDynamicFlatLighting(@Nullable Supplier<@NotNull Boolean> dynamicFlatLighting) {
+        this.dynamicFlatLighting = dynamicFlatLighting;
+    }
+
+
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicWidth != null) setWidth(dynamicWidth.get());
+        if (dynamicHeight != null) setHeight(dynamicHeight.get());
+        if (dynamicStack != null) setStack(dynamicStack.get());
+        if (dynamicFlatLighting != null) setFlatLighting(dynamicFlatLighting.get());
+    }
+
     @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
@@ -126,6 +182,8 @@ public class ItemDisplay implements Element {
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
+
         if (stack.isEmpty())
             return;
 
