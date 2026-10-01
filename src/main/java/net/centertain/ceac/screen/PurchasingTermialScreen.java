@@ -44,8 +44,12 @@ public class PurchasingTermialScreen extends Screen {
     protected void init() {
         super.init();
 
+        int ribbonHeight = 30;
+
+
+
         int x = GuiConstants.PAGE_TAB_VERTICALLY_ALIGNED_WIDTH + GuiConstants.PAGE_TAB_SPACING + GuiConstants.SCREEN_PADDING;
-        int y = GuiConstants.SCREEN_PADDING;
+        int y = GuiConstants.SCREEN_PADDING + ribbonHeight + GuiConstants.ELEMENT_PADDING;
         int width = this.width - x - GuiConstants.SCREEN_PADDING;
         int height = this.height - y - GuiConstants.SCREEN_PADDING;
 
@@ -58,9 +62,9 @@ public class PurchasingTermialScreen extends Screen {
 
         addElement(new PageList(
                 GuiConstants.SCREEN_PADDING,
-                GuiConstants.SCREEN_PADDING,
+                y,
                 this.width - GuiConstants.SCREEN_PADDING,
-                this.height - GuiConstants.SCREEN_PADDING,
+                this.height - y - GuiConstants.SCREEN_PADDING,
                 pages,
                 PageList.TabPosition.LEFT,
                 GuiConstants.PAGE_TAB_VERTICALLY_ALIGNED_WIDTH,
