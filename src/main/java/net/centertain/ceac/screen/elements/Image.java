@@ -4,19 +4,27 @@ import net.centertain.ceac.screen.framework.Element;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Supplier;
 
 public class Image implements Element {
     private int x;
     private int y;
     private int width;
     private int height;
+    private @NotNull ResourceLocation texture;
 
-    private ResourceLocation texture;
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWidth = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicHeight = null;
+    private @Nullable Supplier<@NotNull ResourceLocation> dynamicTexture = null;
 
     public Image(
             int width,
             int height,
-            ResourceLocation texture
+            @NotNull ResourceLocation texture
     ) {
         this.x = 0;
         this.y = 0;
@@ -30,7 +38,7 @@ public class Image implements Element {
             int y,
             int width,
             int height,
-            ResourceLocation texture
+            @NotNull ResourceLocation texture
     ) {
         this.x = x;
         this.y = y;
@@ -41,7 +49,7 @@ public class Image implements Element {
 
     public Image(
             @NotNull Element dimensionSupplier,
-            ResourceLocation texture
+            @NotNull ResourceLocation texture
     ) {
         this.x = dimensionSupplier.getX();
         this.y = dimensionSupplier.getY();
@@ -54,7 +62,7 @@ public class Image implements Element {
             @NotNull Element positionSupplier,
             int width,
             int height,
-            ResourceLocation texture
+            @NotNull ResourceLocation texture
     ) {
         this.x = positionSupplier.getX();
         this.y = positionSupplier.getY();
@@ -75,8 +83,24 @@ public class Image implements Element {
     public int getHeight() {
         return height;
     }
-    public ResourceLocation getTexture() {
+    public @NotNull ResourceLocation getTexture() {
         return texture;
+    }
+
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicWidth() {
+        return dynamicWidth;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicHeight() {
+        return dynamicHeight;
+    }
+    public @Nullable Supplier<@NotNull ResourceLocation> getDynamicTexture() {
+        return dynamicTexture;
     }
 
     public void setX(int x) {
@@ -91,7 +115,7 @@ public class Image implements Element {
     public void setHeight(int height) {
         this.height = height;
     }
-    public void setTexture(ResourceLocation texture) {
+    public void setTexture(@NotNull ResourceLocation texture) {
         this.texture = texture;
     }
     public void setDimensions(@NotNull Element dimensionSupplier) {
@@ -101,6 +125,30 @@ public class Image implements Element {
         this.height = dimensionSupplier.getHeight();
     }
 
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicWidth(@Nullable Supplier<@NotNull Integer> dynamicWidth) {
+        this.dynamicWidth = dynamicWidth;
+    }
+    public void setDynamicHeight(@Nullable Supplier<@NotNull Integer> dynamicHeight) {
+        this.dynamicHeight = dynamicHeight;
+    }
+    public void setDynamicTexture(@Nullable Supplier<@NotNull ResourceLocation> dynamicTexture) {
+        this.dynamicTexture = dynamicTexture;
+    }
+
+
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicWidth != null) setWidth(dynamicWidth.get());
+        if (dynamicHeight != null) setHeight(dynamicHeight.get());
+        if (dynamicTexture != null) setTexture(dynamicTexture.get());
+    }
 
     @Override
     public void render(
@@ -109,6 +157,8 @@ public class Image implements Element {
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
+
         guiGraphics.blit(
                 texture,
                 x,
