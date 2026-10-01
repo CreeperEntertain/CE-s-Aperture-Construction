@@ -15,6 +15,8 @@ public class Container implements Element, ElementLister {
 
     private List<Element> elements;
 
+    private int backgroundColor;
+
     public Container(
             int x,
             int y,
@@ -27,6 +29,23 @@ public class Container implements Element, ElementLister {
         this.width = width;
         this.height = height;
         this.elements = elements;
+        this.backgroundColor = 0x00000000;
+    }
+
+    public Container(
+            int x,
+            int y,
+            int width,
+            int height,
+            @NotNull List<Element> elements,
+            int backgroundColor
+    ) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.elements = elements;
+        this.backgroundColor = backgroundColor;
     }
 
     public Container(
@@ -41,6 +60,23 @@ public class Container implements Element, ElementLister {
         this.width = width;
         this.height = height;
         this.elements = List.of(element);
+        this.backgroundColor = 0x00000000;
+    }
+
+    public Container(
+            int x,
+            int y,
+            int width,
+            int height,
+            @NotNull Element element,
+            int backgroundColor
+    ) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.elements = List.of(element);
+        this.backgroundColor = backgroundColor;
     }
 
     public int getX() {
@@ -58,6 +94,9 @@ public class Container implements Element, ElementLister {
     public List<Element> getElements() {
         return elements;
     }
+    public int getBackgroundColor() {
+        return backgroundColor;
+    }
 
     public void setX(int x) {
         this.x = x;
@@ -74,6 +113,9 @@ public class Container implements Element, ElementLister {
     public void setElements(@NotNull List<Element> elements) {
         this.elements = elements;
     }
+    public void setBackgroundColor(int backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
 
 
     @Override
@@ -83,6 +125,14 @@ public class Container implements Element, ElementLister {
             int mouseY,
             float partialTick
     ) {
+        guiGraphics.fill(
+                x,
+                y,
+                x + width,
+                y + height,
+                backgroundColor
+        );
+
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(x, y, 0.0);
 
