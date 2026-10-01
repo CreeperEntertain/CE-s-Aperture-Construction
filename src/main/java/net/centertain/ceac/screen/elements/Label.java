@@ -5,6 +5,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Supplier;
 
 public class Label implements Element {
     private int x;
@@ -14,6 +17,8 @@ public class Label implements Element {
     private Component text;
     private float textScale;
     private boolean shadow;
+
+    private @Nullable Supplier<String> dynamicText;
 
     public Label(
             int color,
@@ -27,6 +32,7 @@ public class Label implements Element {
         this.text = text;
         this.textScale = textScale;
         this.shadow = shadow;
+        this.dynamicText = null;
     }
 
     public Label(
@@ -43,6 +49,7 @@ public class Label implements Element {
         this.text = text;
         this.textScale = textScale;
         this.shadow = shadow;
+        this.dynamicText = null;
     }
 
     public Label(
@@ -58,6 +65,7 @@ public class Label implements Element {
         this.text = text;
         this.textScale = textScale;
         this.shadow = shadow;
+        this.dynamicText = null;
     }
 
     public int getX() {
@@ -84,6 +92,9 @@ public class Label implements Element {
     public boolean getShadow() {
         return shadow;
     }
+    public @Nullable Supplier<String> getDynamicText() {
+        return dynamicText;
+    }
 
     public void setX(int x) {
         this.x = x;
@@ -105,6 +116,9 @@ public class Label implements Element {
     public void setShadow(boolean shadow) {
         this.shadow = shadow;
     }
+    public void setDynamicText(@Nullable Supplier<String> dynamicText) {
+        this.dynamicText = dynamicText;
+    }
     public void setDimensions(@NotNull Element positionSupplier) {
         this.x = positionSupplier.getX();
         this.y = positionSupplier.getY();
@@ -118,6 +132,9 @@ public class Label implements Element {
             int mouseY,
             float partialTick
     ) {
+        if (dynamicText != null)
+            this.text = Component.literal(dynamicText.get());
+
         guiGraphics.pose().pushPose();
 
         guiGraphics.pose().translate(x, y, 0.0);
