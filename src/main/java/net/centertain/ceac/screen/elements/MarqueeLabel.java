@@ -7,6 +7,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 import java.util.function.Supplier;
@@ -15,17 +16,24 @@ public class MarqueeLabel implements Element, Reactable {
     private int x;
     private int y;
     private int width;
-
-    private Component text;
-    private Alignment alignment;
+    private @NotNull Component text;
+    private @NotNull Alignment alignment;
     private int textColor;
     private float textScale;
     private boolean shadow;
-
-    private Supplier<Boolean> scrollCondition;
-
+    private @Nullable Supplier<@NotNull Boolean> scrollCondition;
     private long marqueeStartTime;
     private boolean marqueeActive;
+
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWidth = null;
+    private @Nullable Supplier<@NotNull Component> dynamicText = null;
+    private @Nullable Supplier<@NotNull Alignment> dynamicAlignment = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicTextColor = null;
+    private @Nullable Supplier<@NotNull Float> dynamicTextScale = null;
+    private @Nullable Supplier<@NotNull Boolean> dynamicShadow = null;
+    private @Nullable Supplier<@Nullable Supplier<@NotNull Boolean>> dynamicScrollCondition = null;
 
     public enum Alignment {
         LEFT,
@@ -35,8 +43,8 @@ public class MarqueeLabel implements Element, Reactable {
 
     public MarqueeLabel(
             int width,
-            Component text,
-            Alignment alignment,
+            @NotNull Component text,
+            @NotNull Alignment alignment,
             int textColor,
             float textScale,
             boolean shadow
@@ -54,8 +62,8 @@ public class MarqueeLabel implements Element, Reactable {
     public MarqueeLabel(
             @NotNull Element positionSupplier,
             int width,
-            Component text,
-            Alignment alignment,
+            @NotNull Component text,
+            @NotNull Alignment alignment,
             int textColor,
             float textScale,
             boolean shadow
@@ -82,10 +90,10 @@ public class MarqueeLabel implements Element, Reactable {
     public int getHeight() {
         return Math.round(8 * textScale);
     }
-    public Component getText() {
+    public @NotNull Component getText() {
         return text;
     }
-    public Alignment getAlignment() {
+    public @NotNull Alignment getAlignment() {
         return alignment;
     }
     public int getTextColor() {
@@ -97,8 +105,36 @@ public class MarqueeLabel implements Element, Reactable {
     public boolean getShadow() {
         return shadow;
     }
-    public Supplier<Boolean> getScrollCondition() {
+    public @Nullable Supplier<@NotNull Boolean> getScrollCondition() {
         return scrollCondition;
+    }
+
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicWidth() {
+        return dynamicWidth;
+    }
+    public @Nullable Supplier<@NotNull Component> getDynamicText() {
+        return dynamicText;
+    }
+    public @Nullable Supplier<@NotNull Alignment> getDynamicAlignment() {
+        return dynamicAlignment;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicTextColor() {
+        return dynamicTextColor;
+    }
+    public @Nullable Supplier<@NotNull Float> getDynamicTextScale() {
+        return dynamicTextScale;
+    }
+    public @Nullable Supplier<@NotNull Boolean> getDynamicShadow() {
+        return dynamicShadow;
+    }
+    public @Nullable Supplier<@Nullable Supplier<@NotNull Boolean>> getDynamicScrollCondition() {
+        return dynamicScrollCondition;
     }
 
     public void setX(int x) {
@@ -129,13 +165,41 @@ public class MarqueeLabel implements Element, Reactable {
     public void setShadow(boolean shadow) {
         this.shadow = shadow;
     }
-    public void setScrollCondition(@NotNull Supplier<Boolean> scrollCondition) {
+    public void setScrollCondition(@Nullable Supplier<@NotNull Boolean> scrollCondition) {
         this.scrollCondition = scrollCondition;
     }
     public void setDimensions(@NotNull Element dimensionSupplier) {
         this.x = dimensionSupplier.getX();
         this.y = dimensionSupplier.getY();
         this.width = dimensionSupplier.getWidth();
+    }
+
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicWidth(@Nullable Supplier<@NotNull Integer> dynamicWidth) {
+        this.dynamicWidth = dynamicWidth;
+    }
+    public void setDynamicText(@Nullable Supplier<@NotNull Component> dynamicText) {
+        this.dynamicText = dynamicText;
+    }
+    public void setDynamicAlignment(@Nullable Supplier<@NotNull Alignment> dynamicAlignment) {
+        this.dynamicAlignment = dynamicAlignment;
+    }
+    public void setDynamicTextColor(@Nullable Supplier<@NotNull Integer> dynamicTextColor) {
+        this.dynamicTextColor = dynamicTextColor;
+    }
+    public void setDynamicTextScale(@Nullable Supplier<@NotNull Float> dynamicTextScale) {
+        this.dynamicTextScale = dynamicTextScale;
+    }
+    public void setDynamicShadow(@Nullable Supplier<@NotNull Boolean> dynamicShadow) {
+        this.dynamicShadow = dynamicShadow;
+    }
+    public void setDynamicScrollCondition(@Nullable Supplier<@Nullable Supplier<@NotNull Boolean>> dynamicScrollCondition) {
+        this.dynamicScrollCondition = dynamicScrollCondition;
     }
 
 
@@ -164,6 +228,18 @@ public class MarqueeLabel implements Element, Reactable {
         return text.substring(0, characterCount) + ellipsis;
     }
 
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicWidth != null) setWidth(dynamicWidth.get());
+        if (dynamicText != null) setText(dynamicText.get());
+        if (dynamicTextScale != null) setTextScale(dynamicTextScale.get());
+        if (dynamicTextColor != null) setTextColor(dynamicTextColor.get());
+        if (dynamicShadow != null) setShadow(dynamicShadow.get());
+        if (dynamicScrollCondition != null) setScrollCondition(dynamicScrollCondition.get());
+        if (dynamicAlignment != null) setAlignment(dynamicAlignment.get());
+    }
+
     @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
@@ -171,6 +247,8 @@ public class MarqueeLabel implements Element, Reactable {
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
+
         Font font = Minecraft.getInstance().font;
         int textWidth = Math.round(font.width(text) * textScale);
 
