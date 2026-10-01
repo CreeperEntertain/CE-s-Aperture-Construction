@@ -12,6 +12,8 @@ import java.util.function.Consumer;
 public final class PurchasingRibbon {
     private PurchasingRibbon() {}
 
+    private static Aligner alignedLabel;
+
     public static @NotNull Element get(
             int x,
             int y,
@@ -23,14 +25,15 @@ public final class PurchasingRibbon {
     ) {
         int multiplierHeight = 20;
         int buttonWidth = 15;
+        alignedLabel = getAlignedLabel(purchaseMultipler + "x", multiplierHeight);
         List<Element> multiplierContents = List.of(
-                getTextButton("<<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 10),
-                getTextButton("<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 1),
+                getTextButton("<<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 10, purchaseMultipler),
+                getTextButton("<", buttonWidth, multiplierHeight, decreasePurchaseMultiplier, 1, purchaseMultipler),
                 new Spacer(GuiConstants.ELEMENT_PADDING, multiplierHeight),
-                getAlignedLabel(purchaseMultipler + "x", multiplierHeight),
+                alignedLabel,
                 new Spacer(GuiConstants.ELEMENT_PADDING, multiplierHeight),
-                getTextButton(">", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 1),
-                getTextButton(">>", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 10)
+                getTextButton(">", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 1, purchaseMultipler),
+                getTextButton(">>", buttonWidth, multiplierHeight, increasePurchaseMultiplier, 10, purchaseMultipler)
         );
         StackPanel multiplier = new StackPanel(
                 0,
@@ -67,7 +70,8 @@ public final class PurchasingRibbon {
             int width,
             int height,
             Consumer<Integer> callback,
-            int callbackParam
+            int callbackParam,
+            int purchaseMultiplier
     ) {
         Label label = new Label(
                 GuiConstants.COLOR_SOLID_WHITE,
@@ -85,13 +89,17 @@ public final class PurchasingRibbon {
                 0,
                 0,
                 aligner,
-                () -> callback.accept(callbackParam),
+                () -> {
+                    callback.accept(callbackParam);
+                    if (alignedLabel.getElement() instanceof Label multiplier)
+                        multiplier.setText(Component.literal(purchaseMultiplier + "x"));
+                },
                 GuiConstants.COLOR_TRANSPARENT,
                 GuiConstants.COLOR_SOLID_GRAY
         );
     }
 
-    private static @NotNull Element getAlignedLabel(String text, int height) {
+    private static @NotNull Aligner getAlignedLabel(String text, int height) {
         Label label = new Label(
                 GuiConstants.COLOR_SOLID_WHITE,
                 Component.literal(text),
