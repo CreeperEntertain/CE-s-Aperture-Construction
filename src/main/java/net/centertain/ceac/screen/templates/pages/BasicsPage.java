@@ -26,7 +26,8 @@ public final class BasicsPage {
             int y,
             int width,
             int height,
-            Supplier<Integer> purchaseMultiplier
+            Supplier<Integer> purchaseMultiplier,
+            Supplier<Double> availableCurrency
     ) {
         List<Element> buttons = new ArrayList<>();
 
@@ -37,7 +38,8 @@ public final class BasicsPage {
                             basicItem,
                             () -> PurchasingTermialScreen.purchase(basicItem),
                             GuiConstants.PURCHASE_BUTTON_WIDTH,
-                            purchaseMultiplier
+                            purchaseMultiplier,
+                            availableCurrency
                     ));
 
         FlowPanel panel = new FlowPanel(

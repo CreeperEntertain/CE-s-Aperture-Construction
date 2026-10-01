@@ -27,7 +27,8 @@ public final class ShapesPage {
             int y,
             int width,
             int height,
-            Supplier<Integer> purchaseMultiplier
+            Supplier<Integer> purchaseMultiplier,
+            Supplier<Double> availableCurrency
     ) {
         Map<String, List<Element>> buttons = new HashMap<>();
 
@@ -42,7 +43,8 @@ public final class ShapesPage {
                         shape,
                         () -> PurchasingTermialScreen.purchase(shape),
                         GuiConstants.PURCHASE_BUTTON_WIDTH,
-                        purchaseMultiplier
+                        purchaseMultiplier,
+                        availableCurrency
                 ));
             }
 

@@ -96,9 +96,9 @@ public class PurchasingTermialScreen extends Screen {
 
         List<Page> pages = List.of(
                 TradePage.get(x, y, width, height),
-                BasicsPage.get(x, y, width, height, this::getPurchaseMultiplier),
-                ShapesPage.get(x, y, width, height, this::getPurchaseMultiplier),
-                MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier)
+                BasicsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency),
+                ShapesPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency),
+                MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency)
         );
 
         addElement(new PageList(
