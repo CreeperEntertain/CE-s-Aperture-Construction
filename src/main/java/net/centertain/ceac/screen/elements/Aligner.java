@@ -115,6 +115,19 @@ public class Aligner implements Element, ElementContainer {
         return element;
     }
 
+    public int getLeftSpan() {
+        return element.getX() - x;
+    }
+    public int getTopSpan() {
+        return element.getY() - y;
+    }
+    public int getRightSpan() {
+        return (width - element.getWidth()) - getLeftSpan();
+    }
+    public int getBottomSpan() {
+        return (height - element.getHeight() - getTopSpan());
+    }
+
     public void setX(int x) {
         this.x = x;
     }
