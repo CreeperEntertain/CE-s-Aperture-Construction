@@ -4,15 +4,24 @@ import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.element_types.ElementContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Supplier;
 
 public class Aligner implements Element, ElementContainer {
     private int x;
     private int y;
     private int width;
     private int height;
-
     private Alignment alignment;
     private Element element;
+
+    private @Nullable Supplier<Integer> dynamicX = null;
+    private @Nullable Supplier<Integer> dynamicY = null;
+    private @Nullable Supplier<Integer> dynamicWidth = null;
+    private @Nullable Supplier<Integer> dynamicHeight = null;
+    private @Nullable Supplier<Alignment> dynamicAlignment = null;
+    private @Nullable Supplier<@NotNull Element> dynamicElement = null;
 
     public enum Alignment {
         TOP_LEFT,
@@ -119,6 +128,25 @@ public class Aligner implements Element, ElementContainer {
         return element;
     }
 
+    public @Nullable Supplier<Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<Integer> getDynamicWidth() {
+        return dynamicWidth;
+    }
+    public @Nullable Supplier<Integer> getDynamicHeight() {
+        return dynamicHeight;
+    }
+    public @Nullable Supplier<Alignment> getDynamicAlignment() {
+        return dynamicAlignment;
+    }
+    public @Nullable Supplier<@NotNull Element> getDynamicElement() {
+        return dynamicElement;
+    }
+
     public int getLeftSpan() {
         return element.getX() - x;
     }
@@ -164,6 +192,34 @@ public class Aligner implements Element, ElementContainer {
         runnables[alignment.ordinal()].run();
     }
 
+    public void setDynamicX(@Nullable Supplier<Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicWidth(@Nullable Supplier<Integer> dynamicWidth) {
+        this.dynamicWidth = dynamicWidth;
+    }
+    public void setDynamicHeight(@Nullable Supplier<Integer> dynamicHeight) {
+        this.dynamicHeight = dynamicHeight;
+    }
+    public void setDynamicAlignment(@Nullable Supplier<Alignment> dynamicAlignment) {
+        this.dynamicAlignment = dynamicAlignment;
+    }
+    public void setDynamicElement(@Nullable Supplier<@NotNull Element> dynamicElement) {
+        this.dynamicElement = dynamicElement;
+    }
+
+
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicWidth != null) setWidth(dynamicWidth.get());
+        if (dynamicHeight != null) setHeight(dynamicHeight.get());
+        if (dynamicAlignment != null) setAlignment(dynamicAlignment.get());
+        if (dynamicElement != null) setElement(dynamicElement.get());
+    }
 
     @Override
     public void render(
@@ -172,6 +228,7 @@ public class Aligner implements Element, ElementContainer {
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
         element.render(
                 guiGraphics,
                 mouseX,
