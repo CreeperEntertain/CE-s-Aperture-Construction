@@ -6,25 +6,30 @@ import net.centertain.ceac.screen.framework.element_types.FocusContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEventListener {
     private int x;
     private int y;
-
-    private Alignment alignment;
+    private @NotNull Alignment alignment;
     private int wideness;
     private int spacing;
-
     private int width;
     private int height;
-
     private int backgroundColor;
-
-    private List<Element> elements;
-
+    private @NotNull List<@NotNull Element> elements;
     private GuiEventListener focusedElement;
+
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Alignment> dynamicAlignment = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWideness = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicSpacing = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicBackgroundColor = null;
+    private @Nullable Supplier<@NotNull List<@NotNull Element>> dynamicElements = null;
 
     public enum Alignment {
         HORIZONTAL,
@@ -34,11 +39,11 @@ public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEve
     public FlowPanel(
             int x,
             int y,
-            Alignment alignment,
+            @NotNull Alignment alignment,
             int wideness,
             int spacing,
             int backgroundColor,
-            List<Element> elements
+            @NotNull List<@NotNull Element> elements
     ) {
         this.x = x;
         this.y = y;
@@ -53,11 +58,11 @@ public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEve
 
     public FlowPanel(
             @NotNull Element positionSupplier,
-            Alignment alignment,
+            @NotNull Alignment alignment,
             int wideness,
             int spacing,
             int backgroundColor,
-            List<Element> elements
+            @NotNull List<@NotNull Element> elements
     ) {
         this(
                 positionSupplier.getX(),
@@ -71,11 +76,11 @@ public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEve
     }
 
     public FlowPanel(
-            Alignment alignment,
+            @NotNull Alignment alignment,
             int wideness,
             int spacing,
             int backgroundColor,
-            List<Element> elements
+            @NotNull List<@NotNull Element> elements
     ) {
         this(
                 0,
@@ -94,7 +99,7 @@ public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEve
     public int getY() {
         return y;
     }
-    public Alignment getAlignment() {
+    public @NotNull Alignment getAlignment() {
         return alignment;
     }
     public int getWideness() {
@@ -112,11 +117,33 @@ public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEve
     public int getBackgroundColor() {
         return backgroundColor;
     }
-    public List<Element> getElements() {
+    public @NotNull List<@NotNull Element> getElements() {
         return elements;
     }
     public GuiEventListener getFocusedElement() {
         return focusedElement;
+    }
+
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<@NotNull Alignment> getDynamicAlignment() {
+        return dynamicAlignment;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicWideness() {
+        return dynamicWideness;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicSpacing() {
+        return dynamicSpacing;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicBackgroundColor() {
+        return dynamicBackgroundColor;
+    }
+    public @Nullable Supplier<@NotNull List<@NotNull Element>> getDynamicElements() {
+        return dynamicElements;
     }
 
     public void setX(int x) {
@@ -152,6 +179,28 @@ public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEve
         this.x = positionSupplier.getX();
         this.y = positionSupplier.getY();
         layout();
+    }
+
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicAlignment(@Nullable Supplier<@NotNull Alignment> dynamicAlignment) {
+        this.dynamicAlignment = dynamicAlignment;
+    }
+    public void setDynamicWideness(@Nullable Supplier<@NotNull Integer> dynamicWideness) {
+        this.dynamicWideness = dynamicWideness;
+    }
+    public void setDynamicSpacing(@Nullable Supplier<@NotNull Integer> dynamicSpacing) {
+        this.dynamicSpacing = dynamicSpacing;
+    }
+    public void setDynamicBackgroundColor(@Nullable Supplier<@NotNull Integer> dynamicBackgroundColor) {
+        this.dynamicBackgroundColor = dynamicBackgroundColor;
+    }
+    public void setDynamicElements(@Nullable Supplier<@NotNull List<@NotNull Element>> dynamicElements) {
+        this.dynamicElements = dynamicElements;
     }
 
 
@@ -260,6 +309,16 @@ public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEve
         width = totalWidth;
     }
 
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicAlignment != null) setAlignment(dynamicAlignment.get());
+        if (dynamicWideness != null) setWideness(dynamicWideness.get());
+        if (dynamicSpacing != null) setSpacing(dynamicSpacing.get());
+        if (dynamicElements != null) setElements(dynamicElements.get());
+        if (dynamicBackgroundColor != null) setBackgroundColor(dynamicBackgroundColor.get());
+    }
+
     @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
@@ -267,6 +326,7 @@ public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEve
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
         layout();
 
         guiGraphics.fill(
