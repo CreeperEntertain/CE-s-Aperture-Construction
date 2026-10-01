@@ -8,28 +8,36 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class PageList implements Element, ElementContainer, FocusContainer, GuiEventListener {
     private int x;
     private int y;
     private int width;
     private int height;
-
-    private List<Page> pages;
+    private @NotNull List<@NotNull Page> pages;
     private int pageIndex;
-
-    private TabPosition tabPosition;
-    private int tabSize;
+    private @NotNull TabPosition tabPosition;
+    private int tabRibbonWidth;
     private boolean showPageNames;
+    private @Nullable ScrollContainer tabScroll;
+    private @Nullable FlowPanel tabPanel;
+    private final @NotNull List<@NotNull Button> tabButtons;
+    private @Nullable GuiEventListener focusedElement;
 
-    private ScrollContainer tabScroll;
-    private FlowPanel tabPanel;
-    private final List<Button> tabButtons;
-
-    private GuiEventListener focusedElement;
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWidth = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicHeight = null;
+    private @Nullable Supplier<@NotNull List<@NotNull Page>> dynamicPages = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicPageIndex = null;
+    private @Nullable Supplier<@NotNull TabPosition> dynamicTabPosition = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicTabRibbonWidth = null;
+    private @Nullable Supplier<@NotNull Boolean> dynamicShowPageNames = null;
 
     public enum TabPosition {
         LEFT,
@@ -41,8 +49,8 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
     public PageList(
             int width,
             int height,
-            @NotNull List<Page> pages,
-            TabPosition tabPosition,
+            @NotNull List<@NotNull Page> pages,
+            @NotNull TabPosition tabPosition,
             int tabSize,
             boolean showPageNames
     ) {
@@ -52,7 +60,7 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         this.height = height;
         this.pages = pages;
         this.tabPosition = tabPosition;
-        this.tabSize = tabSize;
+        this.tabRibbonWidth = tabSize;
         this.showPageNames = showPageNames;
         this.tabButtons = new ArrayList<>();
         rebuildTabs();
@@ -63,8 +71,8 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
             int y,
             int width,
             int height,
-            @NotNull List<Page> pages,
-            TabPosition tabPosition,
+            @NotNull List<@NotNull Page> pages,
+            @NotNull TabPosition tabPosition,
             int tabSize,
             boolean showPageNames
     ) {
@@ -74,7 +82,7 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         this.height = height;
         this.pages = pages;
         this.tabPosition = tabPosition;
-        this.tabSize = tabSize;
+        this.tabRibbonWidth = tabSize;
         this.showPageNames = showPageNames;
         this.tabButtons = new ArrayList<>();
         rebuildTabs();
@@ -84,8 +92,8 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
             @NotNull Element positionSupplier,
             int width,
             int height,
-            @NotNull List<Page> pages,
-            TabPosition tabPosition,
+            @NotNull List<@NotNull Page> pages,
+            @NotNull TabPosition tabPosition,
             int tabSize,
             boolean showPageNames
     ) {
@@ -95,7 +103,7 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         this.height = height;
         this.pages = pages;
         this.tabPosition = tabPosition;
-        this.tabSize = tabSize;
+        this.tabRibbonWidth = tabSize;
         this.showPageNames = showPageNames;
         this.tabButtons = new ArrayList<>();
         rebuildTabs();
@@ -113,28 +121,56 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
     public int getHeight() {
         return height;
     }
-    public @NotNull List<Page> getPages() {
+    public @NotNull List<@NotNull Page> getPages() {
         return pages;
     }
     public int getPageIndex() {
         return pageIndex;
     }
-    public TabPosition getTabPosition() {
+    public @NotNull TabPosition getTabPosition() {
         return tabPosition;
     }
-    public int getTabSize() {
-        return tabSize;
+    public int getTabRibbonWidth() {
+        return tabRibbonWidth;
     }
     public boolean getShowPageNames() {
         return showPageNames;
     }
-    public GuiEventListener getFocusedElement() {
+    public @Nullable GuiEventListener getFocusedElement() {
         return focusedElement;
     }
     public @NotNull Element getElement() {
         if (pages.isEmpty())
             return new Dimensions(0, 0, 0, 0);
         return pages.get(pageIndex);
+    }
+
+    private @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    private @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    private @Nullable Supplier<@NotNull Integer> getDynamicWidth() {
+        return dynamicWidth;
+    }
+    private @Nullable Supplier<@NotNull Integer> getDynamicHeight() {
+        return dynamicHeight;
+    }
+    private @Nullable Supplier<@NotNull List<@NotNull Page>> getDynamicPages() {
+        return dynamicPages;
+    }
+    private @Nullable Supplier<@NotNull Integer> getDynamicPageIndex() {
+        return dynamicPageIndex;
+    }
+    private @Nullable Supplier<@NotNull TabPosition> getDynamicTabPosition() {
+        return dynamicTabPosition;
+    }
+    private @Nullable Supplier<@NotNull Integer> getDynamicTabRibbonWidth() {
+        return dynamicTabRibbonWidth;
+    }
+    private @Nullable Supplier<@NotNull Boolean> getDynamicShowPageNames() {
+        return dynamicShowPageNames;
     }
 
     public void setX(int x) {
@@ -153,7 +189,7 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         this.height = height;
         layoutTabs();
     }
-    public void setPages(@NotNull List<Page> pages) {
+    public void setPages(@NotNull List<@NotNull Page> pages) {
         this.pages = pages;
         if (pageIndex >= pages.size())
             pageIndex = Math.max(0, pages.size() - 1);
@@ -171,8 +207,8 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         this.tabPosition = tabPosition;
         rebuildTabs();
     }
-    public void setTabSize(int tabSize) {
-        this.tabSize = tabSize;
+    public void setTabRibbonWidth(int tabRibbonWidth) {
+        this.tabRibbonWidth = tabRibbonWidth;
         rebuildTabs();
     }
     public void setShowPageNames(boolean showPageNames) {
@@ -185,6 +221,34 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         this.width = dimensionSupplier.getWidth();
         this.height = dimensionSupplier.getHeight();
         layoutTabs();
+    }
+
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicWidth(@Nullable Supplier<@NotNull Integer> dynamicWidth) {
+        this.dynamicWidth = dynamicWidth;
+    }
+    public void setDynamicHeight(@Nullable Supplier<@NotNull Integer> dynamicHeight) {
+        this.dynamicHeight = dynamicHeight;
+    }
+    public void setDynamicPages(@Nullable Supplier<@NotNull List<@NotNull Page>> dynamicPages) {
+        this.dynamicPages = dynamicPages;
+    }
+    public void setDynamicPageIndex(@Nullable Supplier<@NotNull Integer> dynamicPageIndex) {
+        this.dynamicPageIndex = dynamicPageIndex;
+    }
+    public void setDynamicTabPosition(@Nullable Supplier<@NotNull TabPosition> dynamicTabPosition) {
+        this.dynamicTabPosition = dynamicTabPosition;
+    }
+    public void setDynamicTabRibbonWidth(@Nullable Supplier<@NotNull Integer> dynamicTabRibbonWidth) {
+        this.dynamicTabRibbonWidth = dynamicTabRibbonWidth;
+    }
+    public void setDynamicShowPageNames(@Nullable Supplier<@NotNull Boolean> dynamicShowPageNames) {
+        this.dynamicShowPageNames = dynamicShowPageNames;
     }
 
 
@@ -230,7 +294,7 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
                     tabPosition == PageList.TabPosition.TOP ||
                             tabPosition == PageList.TabPosition.BOTTOM
                             ? GuiConstants.TAB_BUTTON_HEIGHT
-                            : tabSize,
+                            : tabRibbonWidth,
                     Component.literal(text),
                     MarqueeLabel.Alignment.CENTER,
                     GuiConstants.COLOR_SOLID_WHITE,
@@ -239,13 +303,13 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
             );
 
             int tabWidth = switch (tabPosition) {
-                case LEFT, RIGHT -> tabSize;
+                case LEFT, RIGHT -> tabRibbonWidth;
                 case TOP, BOTTOM -> GuiConstants.TAB_BUTTON_HEIGHT;
             };
 
             int tabHeight = switch (tabPosition) {
                 case LEFT, RIGHT -> GuiConstants.TAB_BUTTON_HEIGHT;
-                case TOP, BOTTOM -> tabSize;
+                case TOP, BOTTOM -> tabRibbonWidth;
             };
 
             Aligner aligner = new Aligner(
@@ -342,14 +406,14 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
     private int getTabPanelX() {
         return switch (tabPosition) {
             case LEFT, TOP, BOTTOM -> x;
-            case RIGHT -> x + width - tabSize;
+            case RIGHT -> x + width - tabRibbonWidth;
         };
     }
 
     private int getTabPanelY() {
         return switch (tabPosition) {
             case LEFT, TOP, RIGHT -> y;
-            case BOTTOM -> y + height - tabSize;
+            case BOTTOM -> y + height - tabRibbonWidth;
         };
     }
 
@@ -362,21 +426,21 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
             case LEFT ->
                     mouseX >= x &&
                     mouseY >= y &&
-                    mouseX < x + tabSize &&
+                    mouseX < x + tabRibbonWidth &&
                     mouseY < y + height;
             case TOP ->
                     mouseX >= x &&
                     mouseY >= y &&
                     mouseX < x + width &&
-                    mouseY < y + tabSize;
+                    mouseY < y + tabRibbonWidth;
             case RIGHT ->
-                    mouseX >= x + width - tabSize &&
+                    mouseX >= x + width - tabRibbonWidth &&
                     mouseY >= y &&
                     mouseX < x + width &&
                     mouseY < y + height;
             case BOTTOM ->
                     mouseX >= x &&
-                    mouseY >= y + height - tabSize &&
+                    mouseY >= y + height - tabRibbonWidth &&
                     mouseX < x + width &&
                     mouseY < y + height;
         };
@@ -393,10 +457,12 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         double contentMouseX = mouseX;
         double contentMouseY = mouseY;
 
-        if (horizontal)
-            contentMouseX += tabScroll.getScrollOffset();
-        else
-            contentMouseY += tabScroll.getScrollOffset();
+        if (tabScroll != null) {
+            if (horizontal)
+                contentMouseX += tabScroll.getScrollOffset();
+            else
+                contentMouseY += tabScroll.getScrollOffset();
+        }
 
         if (!isMouseOverTabStrip(mouseX, mouseY)) {
             contentMouseX = -1;
@@ -408,6 +474,18 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
     }
 
 
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicWidth != null) setWidth(dynamicWidth.get());
+        if (dynamicHeight != null) setHeight(dynamicHeight.get());
+        if (dynamicTabRibbonWidth != null) setTabRibbonWidth(dynamicTabRibbonWidth.get());
+        if (dynamicTabPosition != null) setTabPosition(dynamicTabPosition.get());
+        if (dynamicPages != null) setPages(dynamicPages.get());
+        if (dynamicPageIndex != null) setPageIndex(dynamicPageIndex.get());
+        if (dynamicShowPageNames != null) setShowPageNames(dynamicShowPageNames.get());
+    }
+
     @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
@@ -415,18 +493,21 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
+
         if (pages.isEmpty())
             return;
 
         layoutTabs();
         updateTabHover(mouseX, mouseY);
 
-        tabScroll.render(
-                guiGraphics,
-                mouseX,
-                mouseY,
-                partialTick
-        );
+        if (tabScroll != null)
+            tabScroll.render(
+                    guiGraphics,
+                    mouseX,
+                    mouseY,
+                    partialTick
+            );
 
         Page page = pages.get(pageIndex);
 
@@ -437,15 +518,15 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
 
         switch (tabPosition) {
             case LEFT -> {
-                contentX += tabSize + GuiConstants.PAGE_TAB_SPACING;
-                contentWidth -= tabSize + GuiConstants.PAGE_TAB_SPACING;
+                contentX += tabRibbonWidth + GuiConstants.PAGE_TAB_SPACING;
+                contentWidth -= tabRibbonWidth + GuiConstants.PAGE_TAB_SPACING;
             }
             case TOP -> {
-                contentY += tabSize + GuiConstants.PAGE_TAB_SPACING;
-                contentHeight -= tabSize + GuiConstants.PAGE_TAB_SPACING;
+                contentY += tabRibbonWidth + GuiConstants.PAGE_TAB_SPACING;
+                contentHeight -= tabRibbonWidth + GuiConstants.PAGE_TAB_SPACING;
             }
-            case RIGHT -> contentWidth -= tabSize + GuiConstants.PAGE_TAB_SPACING;
-            case BOTTOM -> contentHeight -= tabSize + GuiConstants.PAGE_TAB_SPACING;
+            case RIGHT -> contentWidth -= tabRibbonWidth + GuiConstants.PAGE_TAB_SPACING;
+            case BOTTOM -> contentHeight -= tabRibbonWidth + GuiConstants.PAGE_TAB_SPACING;
         }
 
         contentWidth = Math.max(0, contentWidth);
@@ -479,14 +560,14 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
         int tabX = button.getX();
         int tabY = button.getY();
 
-        boolean horizontal =
-                tabPosition == TabPosition.TOP ||
-                        tabPosition == TabPosition.BOTTOM;
+        boolean horizontal = tabPosition == TabPosition.TOP || tabPosition == TabPosition.BOTTOM;
 
-        if (horizontal)
-            tabX -= (int) tabScroll.getScrollOffset();
-        else
-            tabY -= (int) tabScroll.getScrollOffset();
+        if (tabScroll != null) {
+            if (horizontal)
+                tabX -= (int) tabScroll.getScrollOffset();
+            else
+                tabY -= (int) tabScroll.getScrollOffset();
+        }
 
         guiGraphics.enableScissor(
                 x,
@@ -561,8 +642,9 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
 
         updateTabHover(mouseX, mouseY);
 
-        if (!tabScroll.mouseClicked(mouseX, mouseY, button))
-            return false;
+        if (tabScroll != null)
+            if (!tabScroll.mouseClicked(mouseX, mouseY, button))
+                return false;
 
         focusedElement = null;
         return true;
@@ -576,7 +658,8 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
     ) {
         if (!isMouseOverTabStrip(mouseX, mouseY))
             return false;
-
+        if (tabScroll == null)
+            return false;
         return tabScroll.mouseScrolled(
                 mouseX,
                 mouseY,
