@@ -33,33 +33,10 @@ public final class Slot {
                 true
         );
         display.setDynamicStack(stackSupplier);
-
-        Label amount = new Label(
-                GuiConstants.COLOR_MINECRAFT_WHITE,
-                Component.literal(getStackAmount(stackSupplier.get())),
-                0.5f,
-                true
-        );
-        amount.setDynamicText(() -> Component.literal(getStackAmount(stackSupplier.get())));
-        Aligner amountAligner = new Aligner(
-                width,
-                height,
-                Aligner.Alignment.BOTTOM_RIGHT,
-                amount
-        );
-
-        Container slotContainer = new Container(
-                x,
-                y,
-                width,
-                height,
-                List.of(display, amountAligner),
-                GuiConstants.COLOR_TRANSPARENT
-        );
         return new Button(
                 x,
                 y,
-                slotContainer,
+                display,
                 () -> onPress.accept(stackSupplier.get()),
                 GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
                 GuiConstants.COLOR_SOLID_WHITE
