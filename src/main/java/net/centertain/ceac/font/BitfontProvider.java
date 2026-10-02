@@ -45,7 +45,7 @@ public final class BitfontProvider implements GlyphProvider {
                 glyph.getWidth(),
                 glyph.getHeight(),
                 glyph.getAdvance(),
-                10 - glyph.getBearingY()
+                -glyph.getBearingY()
         );
     }
 
