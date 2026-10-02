@@ -142,7 +142,8 @@ public final class LeftContainer {
                 GuiConstants.COLOR_TRANSPARENT,
                 List.of(
                         itemName,
-                        itemCount
+                        itemCount,
+                        triangle
                 )
         );
     }
