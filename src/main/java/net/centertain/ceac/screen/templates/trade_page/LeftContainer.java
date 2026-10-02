@@ -5,14 +5,10 @@ import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.templates.DynamicLabel;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -123,20 +119,51 @@ public final class LeftContainer {
         int white = GuiConstants.COLOR_MINECRAFT_WHITE;
         int green = GuiConstants.COLOR_MINECRAFT_GREEN;
         int gray = GuiConstants.COLOR_MINECRAFT_GRAY;
+        int darkGray = GuiConstants.COLOR_MINECRAFT_DARK_GRAY;
+        int darkRed = GuiConstants.COLOR_MINECRAFT_DARK_RED;
 
         float scale = 0.5f;
+
+        Spacer spacer = new Spacer(0, GuiConstants.ELEMENT_PADDING);
+
 
         Label itemName = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
                 "Name: " + stack.get().getHoverName().getString()
         );
+
         Label itemCount = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
                 "In possession: " + player.get().getInventory().countItem(stack.get().getItem())
         );
+
         Label itemWorth = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
                 "Sells for: ▲" + (PriceConstants.get(stack.get()) == null
                         ? 0 : String.format("%.2f", PriceConstants.get(stack.get())))
         );
         itemWorth.setDynamicColor(() -> PriceConstants.get(stack.get()) == null ? gray : green);
+
+        Label itemHash = DynamicLabel.get(gray, scale, () -> stack.get() == null ? "" :
+                "Code: #" + stack.get().getItem().hashCode()
+        );
+
+        @SuppressWarnings("DataFlowIssue")
+        Label itemSellTen = DynamicLabel.get(gray, scale, () -> PriceConstants.get(stack.get()) == null
+                ? "" : "If sold x10: ▲" + String.format("%.2f", PriceConstants.get(stack.get()) * 10.0)
+        );
+        itemSellTen.setDynamicColor(() -> stack.get() == null ? gray :
+                player.get().getInventory().countItem(stack.get().getItem()) >= 10 ? gray : darkRed
+        );
+
+        @SuppressWarnings("DataFlowIssue")
+        Label itemSellHundred = DynamicLabel.get(gray, scale, () -> PriceConstants.get(stack.get()) == null
+                ? "" : "If sold x100: ▲" + String.format("%.2f", PriceConstants.get(stack.get()) * 100.0)
+        );
+        itemSellHundred.setDynamicColor(() -> stack.get() == null ? gray :
+                player.get().getInventory().countItem(stack.get().getItem()) >= 100 ? gray : darkRed
+        );
+
+        Label itemRefundable = DynamicLabel.get(darkGray, scale, () -> PriceConstants.get(stack.get()) == null
+                ? "" : "* No refunds."
+        );
 
         return new StackPanel(
                 0,
@@ -148,7 +175,13 @@ public final class LeftContainer {
                 List.of(
                         itemName,
                         itemCount,
-                        itemWorth
+                        itemWorth,
+                        itemHash,
+                        spacer,
+                        itemSellTen,
+                        itemSellHundred,
+                        spacer,
+                        itemRefundable
                 )
         );
     }
