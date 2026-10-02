@@ -131,7 +131,6 @@ public final class LeftContainer {
         Label itemCount = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
                 "In possession: " + player.get().getInventory().countItem(stack.get().getItem())
         );
-        Label triangle = new Label(white, Component.literal("▲"), scale, false);
 
         return new StackPanel(
                 0,
@@ -142,8 +141,7 @@ public final class LeftContainer {
                 GuiConstants.COLOR_TRANSPARENT,
                 List.of(
                         itemName,
-                        itemCount,
-                        triangle
+                        itemCount
                 )
         );
     }
