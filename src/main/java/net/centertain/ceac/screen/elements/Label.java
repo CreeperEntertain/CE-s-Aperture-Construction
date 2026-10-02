@@ -1,5 +1,6 @@
 package net.centertain.ceac.screen.elements;
 
+import net.centertain.ceac.font.BitfontManager;
 import net.centertain.ceac.screen.framework.Element;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -182,7 +183,7 @@ public class Label implements Element {
         guiGraphics.pose().scale(textScale, textScale, 1.0f);
 
         guiGraphics.drawString(
-                Minecraft.getInstance().font,
+                BitfontManager.FONT,
                 text,
                 0,
                 0,
