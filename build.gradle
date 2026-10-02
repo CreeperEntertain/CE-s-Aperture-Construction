@@ -166,6 +166,7 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     jarJar minecraftLibrary(group: "dev.thecodewarrior", name: "bitfont", version: "0.4.0-beta.3") {
+        exclude group: "org.jetbrains", module: "annotations"
         jarJar.ranged(it, "[0.4.0-beta.3,)")
     }
 }
