@@ -134,6 +134,11 @@ repositories {
     // flatDir {
     //     dir 'libs'
     // }
+
+    mavenCentral()
+    maven {
+        url = uri("https://maven.wso2.org/nexus/content/repositories/public/")
+    }
 }
 
 dependencies {
