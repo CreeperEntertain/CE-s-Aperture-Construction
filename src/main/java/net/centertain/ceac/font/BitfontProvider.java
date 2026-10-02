@@ -40,12 +40,12 @@ public final class BitfontProvider implements GlyphProvider {
         return new BitmapProvider.Glyph(
                 1.0f,
                 image,
-                glyph.getBearingX(),
-                glyph.getBearingY(),
+                0,
+                0,
                 glyph.getWidth(),
                 glyph.getHeight(),
                 glyph.getAdvance(),
-                font.getAscent()
+                10 - glyph.getBearingY()
         );
     }
 
