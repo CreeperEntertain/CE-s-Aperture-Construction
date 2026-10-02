@@ -3,10 +3,13 @@ package net.centertain.ceac.screen.templates.trade_page;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
+import net.centertain.ceac.screen.templates.DynamicLabel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,17 +93,6 @@ public final class LeftContainer {
                 : getStack.get()
         );
 
-        Label itemCount = new Label(
-                GuiConstants.COLOR_MINECRAFT_WHITE,
-                Component.literal(""),
-                0.5f,
-                false
-        );
-        itemCount.setDynamicText(() -> Component.literal(getStack.get() == null
-                ? ""
-                : "In possession: " + playerSupplier.get().getInventory().countItem(getStack.get().getItem()
-        )));
-
         StackPanel horizontal = new StackPanel(
                 0,
                 0,
@@ -108,13 +100,50 @@ public final class LeftContainer {
                 height - (GuiConstants.ELEMENT_PADDING * 2),
                 GuiConstants.ELEMENT_PADDING * 2,
                 GuiConstants.COLOR_TRANSPARENT,
-                List.of(item, itemCount)
+                List.of(item, getVertical(
+                        width - (ITEM_BOUNDS + (GuiConstants.ELEMENT_PADDING * 2)),
+                        playerSupplier,
+                        getStack
+                ))
         );
         return new Padder(
                 width,
                 height,
                 GuiConstants.ELEMENT_PADDING,
                 horizontal
+        );
+    }
+
+    private static StackPanel getVertical(
+            int width,
+            Supplier<Player> player,
+            Supplier<ItemStack> stack
+    ) {
+        int white = GuiConstants.COLOR_MINECRAFT_WHITE;
+        int green = GuiConstants.COLOR_MINECRAFT_GREEN;
+        int gray = GuiConstants.COLOR_MINECRAFT_GRAY;
+
+        float scale = 0.5f;
+
+        Label itemName = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
+                "Name: " + stack.get().getHoverName().getString()
+        );
+        Label itemCount = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
+                "In possession: " + player.get().getInventory().countItem(stack.get().getItem())
+        );
+        Label triangle = new Label(white, Component.literal("▲"), scale, false);
+
+        return new StackPanel(
+                0,
+                0,
+                StackPanel.Alignment.VERTICAL,
+                width,
+                GuiConstants.ELEMENT_PADDING,
+                GuiConstants.COLOR_TRANSPARENT,
+                List.of(
+                        itemName,
+                        itemCount
+                )
         );
     }
 }
