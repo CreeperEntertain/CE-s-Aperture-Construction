@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class TradePage extends Page {
@@ -30,7 +31,8 @@ public class TradePage extends Page {
             int y,
             int width,
             int height,
-            Supplier<Player> playerSupplier
+            Supplier<Player> playerSupplier,
+            Consumer<Double> increaseCurrency
     ) {
         super("Trade", width, height, new Empty());
 
@@ -47,7 +49,8 @@ public class TradePage extends Page {
                 leftHeight,
                 playerSupplier,
                 this::setStack,
-                this::getStack
+                this::getStack,
+                increaseCurrency
         );
 
         setX(x);

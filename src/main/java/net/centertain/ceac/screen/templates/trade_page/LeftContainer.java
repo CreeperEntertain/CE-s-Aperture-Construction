@@ -4,6 +4,7 @@ import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
+import net.centertain.ceac.screen.templates.AlignedLabel;
 import net.centertain.ceac.screen.templates.DynamicLabel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,6 +17,7 @@ import java.util.function.Supplier;
 public final class LeftContainer {
     private LeftContainer() {}
 
+    private static final int PADDING = 2;
     private static final int ITEM_DISPLAY_SIZE = 32;
     private static final int ITEM_BOUNDS = ITEM_DISPLAY_SIZE + (GuiConstants.ELEMENT_PADDING * 2);
 
@@ -27,7 +29,8 @@ public final class LeftContainer {
             int leftHeight,
             Supplier<Player> playerSupplier,
             Consumer<ItemStack> setStack,
-            Supplier<ItemStack> getStack
+            Supplier<ItemStack> getStack,
+            Consumer<Double> increaseCurrency
     ) {
         Container inventory = InventoryTemplate.get(
                 x,
@@ -50,7 +53,7 @@ public final class LeftContainer {
                         ITEM_BOUNDS,
                         GuiConstants.COLOR_TRANSLUCENT_BLACK_75
                 ),
-                getDisplay(inventoryWidth, leftHeight, getStack, playerSupplier)
+                getDisplay(inventoryWidth, leftHeight, getStack, playerSupplier, increaseCurrency)
         );
 
         Container leftContainer = new Container(
@@ -75,7 +78,8 @@ public final class LeftContainer {
             int width,
             int height,
             Supplier<ItemStack> getStack,
-            Supplier<Player> playerSupplier
+            Supplier<Player> playerSupplier,
+            Consumer<Double> increaseCurrency
     ) {
         ItemDisplay item = new ItemDisplay(
                 ITEM_DISPLAY_SIZE,
@@ -97,11 +101,20 @@ public final class LeftContainer {
                 height - (GuiConstants.ELEMENT_PADDING * 2),
                 GuiConstants.ELEMENT_PADDING * 2,
                 GuiConstants.COLOR_TRANSPARENT,
-                List.of(item, getVertical(
-                        width - (ITEM_BOUNDS + (GuiConstants.ELEMENT_PADDING * 2)),
-                        playerSupplier,
-                        getStack
-                ))
+                List.of(
+                        getItemAndButtons(
+                                ITEM_DISPLAY_SIZE,
+                                height,
+                                playerSupplier,
+                                getStack,
+                                increaseCurrency
+                        ),
+                        getDescription(
+                                width - (ITEM_BOUNDS + (GuiConstants.ELEMENT_PADDING * 2)),
+                                playerSupplier,
+                                getStack
+                        )
+                )
         );
         return new Padder(
                 width,
@@ -111,7 +124,107 @@ public final class LeftContainer {
         );
     }
 
-    private static StackPanel getVertical(
+    @SuppressWarnings("SameParameterValue")
+    private static Container getItemAndButtons(
+            int width,
+            int height,
+            Supplier<Player> player,
+            Supplier<ItemStack> stack,
+            Consumer<Double> increaseCurrency
+    ) {
+        ItemDisplay item = new ItemDisplay(
+                ITEM_DISPLAY_SIZE,
+                ITEM_DISPLAY_SIZE,
+                stack.get() == null
+                        ? new ItemStack(Items.AIR)
+                        : stack.get(),
+                true
+        );
+        item.setDynamicStack(() -> stack.get() == null
+                ? new ItemStack(Items.AIR)
+                : stack.get()
+        );
+
+        Button sellOne = getSalesButton("Sell", 1, player, stack, () ->
+                sellItem(1, player, stack, increaseCurrency)
+        );
+        Button sellTen = getSalesButton("Sell 10", 10, player, stack, () ->
+                sellItem(10, player, stack, increaseCurrency)
+        );
+        Button sellHundred = getSalesButton("Sell 100", 100, player, stack, () ->
+                sellItem(100, player, stack, increaseCurrency)
+        );
+        StackPanel buttonStack = new StackPanel(
+                0,
+                0,
+                StackPanel.Alignment.VERTICAL,
+                width - GuiConstants.ELEMENT_PADDING,
+                GuiConstants.COLOR_TRANSPARENT,
+                PADDING,
+                List.of(sellOne, sellTen, sellHundred)
+        );
+        Aligner buttonAligner = new Aligner(
+                width,
+                height,
+                Aligner.Alignment.BOTTOM_LEFT,
+                buttonStack
+        );
+
+        return new Container(
+                0,
+                0,
+                width,
+                height,
+                List.of(item, buttonAligner)
+        );
+    }
+
+    private static void sellItem(
+            int amount,
+            Supplier<Player> player,
+            Supplier<ItemStack> stack,
+            Consumer<Double> increaseCurrency
+    ) {
+        if (player.get().getInventory().countItem(stack.get().getItem()) < amount)
+            return;
+        Double worth = PriceConstants.get(stack.get());
+        if (worth == null)
+            return;
+
+        player.get().getInventory().clearOrCountMatchingItems(
+                clear -> clear.is(stack.get().getItem()),
+                amount,
+                player.get().getInventory()
+        );
+        increaseCurrency.accept(worth * amount);
+    }
+
+    private static Button getSalesButton(
+            String text,
+            int multiplier,
+            Supplier<Player> player,
+            Supplier<ItemStack> stack,
+            Runnable onPress
+    ) {
+        Aligner alignedLabel = AlignedLabel.get(
+                text ,
+                GuiConstants.TAB_BUTTON_HEIGHT
+        );
+        if (alignedLabel.getElement() instanceof Label label)
+            label.setDynamicColor(() -> player.get().getInventory().countItem(stack.get().getItem()) >= multiplier
+                    ? GuiConstants.COLOR_MINECRAFT_GREEN : GuiConstants.COLOR_MINECRAFT_RED
+            );
+        return new Button(
+                0,
+                0,
+                new Empty(),
+                onPress,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
+                GuiConstants.COLOR_SOLID_WHITE
+        );
+    }
+
+    private static StackPanel getDescription(
             int width,
             Supplier<Player> player,
             Supplier<ItemStack> stack

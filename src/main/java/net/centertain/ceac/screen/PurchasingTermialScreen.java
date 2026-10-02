@@ -52,6 +52,15 @@ public class PurchasingTermialScreen extends Screen {
     public double getCurrency() {
         return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getDouble(CURRENCY_TAG);
     }
+    public void setCurrency(double amount) {
+
+    }
+    public void increaseCurrency(double amount) {
+
+    }
+    public void decreaseCurrency(double amount) {
+
+    }
 
 
     @Override
@@ -101,7 +110,7 @@ public class PurchasingTermialScreen extends Screen {
         int height = this.height - y - GuiConstants.SCREEN_PADDING;
 
         List<Page> pages = List.of(
-                new TradePage(x, y, width, height, this::getPlayer),
+                new TradePage(x, y, width, height, this::getPlayer, this::increaseCurrency),
                 BasicsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency),
                 ShapesPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency),
                 MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency)
