@@ -129,7 +129,7 @@ public final class PurchaseButton {
             Supplier<Double> availableCurrency
     ) {
 
-        String display = "$" + String.format("%.2f", price * purchaseMultiplier.get());
+        String display = "▲" + String.format("%.2f", price * purchaseMultiplier.get());
         Label label = new Label(
                 GuiConstants.COLOR_MINECRAFT_GREEN,
                 Component.literal(display),
@@ -137,7 +137,7 @@ public final class PurchaseButton {
                 false
         );
         label.setDynamicText(() -> Component.literal(
-                "$" + String.format("%.2f", price * purchaseMultiplier.get())
+                "▲" + String.format("%.2f", price * purchaseMultiplier.get())
         ));
         label.setDynamicColor(() -> availableCurrency.get() >= purchaseMultiplier.get() * price
                 ? GuiConstants.COLOR_MINECRAFT_GREEN

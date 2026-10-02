@@ -1,6 +1,7 @@
 package net.centertain.ceac.screen.templates.trade_page;
 
 import net.centertain.ceac.constants.GuiConstants;
+import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.templates.DynamicLabel;
@@ -131,6 +132,11 @@ public final class LeftContainer {
         Label itemCount = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
                 "In possession: " + player.get().getInventory().countItem(stack.get().getItem())
         );
+        Label itemWorth = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
+                "Sells for: ▲" + (PriceConstants.get(stack.get()) == null
+                        ? 0 : String.format("%.2f", PriceConstants.get(stack.get())))
+        );
+        itemWorth.setDynamicColor(() -> PriceConstants.get(stack.get()) == null ? gray : green);
 
         return new StackPanel(
                 0,
@@ -141,7 +147,8 @@ public final class LeftContainer {
                 GuiConstants.COLOR_TRANSPARENT,
                 List.of(
                         itemName,
-                        itemCount
+                        itemCount,
+                        itemWorth
                 )
         );
     }

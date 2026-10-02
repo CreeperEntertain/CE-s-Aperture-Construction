@@ -36,7 +36,7 @@ public final class RightTab {
         alignedLabel = AlignedLabel.get("$" + String.format("%.2f", availableCurrency.get()), textHeight);
         if (alignedLabel.getElement() instanceof Label label) {
             label.setDynamicText(() -> Component.literal(
-                    "$" + String.format("%.2f", availableCurrency.get())
+                    "▲" + String.format("%.2f", availableCurrency.get())
             ));
             label.setDynamicColor(() -> availableCurrency.get() > EPSILON
                     ? GuiConstants.COLOR_MINECRAFT_GREEN

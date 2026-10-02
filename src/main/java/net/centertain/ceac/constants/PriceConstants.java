@@ -35,11 +35,13 @@ public final class PriceConstants {
         PRICES.put(Items.NETHERITE_INGOT, 3000.0);
     }
 
-    public static @Nullable Double get(Item item) {
+    public static @Nullable Double get(@Nullable Item item) {
         return PRICES.get(item);
     }
 
-    public static @Nullable Double get(ItemStack stack) {
+    public static @Nullable Double get(@Nullable ItemStack stack) {
+        if (stack == null)
+            return null;
         return get(stack.getItem());
     }
 }
