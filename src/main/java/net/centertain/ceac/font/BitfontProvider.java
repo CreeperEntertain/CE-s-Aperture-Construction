@@ -18,7 +18,6 @@ public final class BitfontProvider implements GlyphProvider {
         this.font = font;
     }
 
-    @SuppressWarnings("resource")
     @Override
     public @Nullable GlyphInfo getGlyph(int codePoint) {
         Glyph glyph = font.getGlyphs().get(codePoint);
