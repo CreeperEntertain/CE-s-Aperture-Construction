@@ -21,7 +21,7 @@ public final class BitfontManager {
     private BitfontManager() {}
 
     private static final ResourceLocation FONT_RESOURCE =
-            ResourceLocation.fromNamespaceAndPath("ceac", "font/MCClassicPlus.bitfont");
+            ResourceLocation.fromNamespaceAndPath("ceac", "font/mc_classic_plus.bitfont");
     private static final ResourceLocation FONT_ID =
             ResourceLocation.fromNamespaceAndPath("ceac", "bitfont");
 
