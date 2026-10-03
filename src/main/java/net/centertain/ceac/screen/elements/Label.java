@@ -3,6 +3,7 @@ package net.centertain.ceac.screen.elements;
 import net.centertain.ceac.font.BitfontManager;
 import net.centertain.ceac.screen.framework.Element;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +18,7 @@ public class Label implements Element {
     private @NotNull Component text;
     private float textScale;
     private boolean shadow;
+    private @NotNull Font font = BitfontManager.FONT;
 
     private @Nullable Supplier<@NotNull Integer> dynamicX = null;
     private @Nullable Supplier<@NotNull Integer> dynamicY = null;
@@ -24,6 +26,7 @@ public class Label implements Element {
     private @Nullable Supplier<@NotNull Component> dynamicText = null;
     private @Nullable Supplier<@NotNull Float> dynamicTextScale = null;
     private @Nullable Supplier<@NotNull Boolean> dynamicShadow = null;
+    private @Nullable Supplier<@NotNull Font> dynamicFont = null;
 
     public Label(
             int color,
@@ -37,6 +40,22 @@ public class Label implements Element {
         this.text = text;
         this.textScale = textScale;
         this.shadow = shadow;
+    }
+
+    public Label(
+            int color,
+            @NotNull Component text,
+            float textScale,
+            boolean shadow,
+            @NotNull Font font
+    ) {
+        this.x = 0;
+        this.y = 0;
+        this.color = color;
+        this.text = text;
+        this.textScale = textScale;
+        this.shadow = shadow;
+        this.font = font;
     }
 
     public Label(
@@ -56,6 +75,24 @@ public class Label implements Element {
     }
 
     public Label(
+            int x,
+            int y,
+            int color,
+            @NotNull Component text,
+            float textScale,
+            boolean shadow,
+            @NotNull Font font
+    ) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.text = text;
+        this.textScale = textScale;
+        this.shadow = shadow;
+        this.font = font;
+    }
+
+    public Label(
             @NotNull Element positionSupplier,
             int color,
             @NotNull Component text,
@@ -70,6 +107,23 @@ public class Label implements Element {
         this.shadow = shadow;
     }
 
+    public Label(
+            @NotNull Element positionSupplier,
+            int color,
+            @NotNull Component text,
+            float textScale,
+            boolean shadow,
+            @NotNull Font font
+    ) {
+        this.x = positionSupplier.getX();
+        this.y = positionSupplier.getY();
+        this.color = color;
+        this.text = text;
+        this.textScale = textScale;
+        this.shadow = shadow;
+        this.font = font;
+    }
+
     public int getX() {
         return x;
     }
@@ -77,10 +131,10 @@ public class Label implements Element {
         return y;
     }
     public int getWidth() {
-        return Math.round(Minecraft.getInstance().font.width(text) * textScale);
+        return Math.round(font.width(text) * textScale);
     }
     public int getHeight() {
-        return Math.round(Minecraft.getInstance().font.lineHeight * textScale);
+        return Math.round(font.lineHeight * textScale);
     }
     public int getColor() {
         return color;
@@ -93,6 +147,9 @@ public class Label implements Element {
     }
     public boolean getShadow() {
         return shadow;
+    }
+    public @NotNull Font getFont() {
+        return font;
     }
 
     public @Nullable Supplier<@NotNull Integer> getDynamicX() {
@@ -112,6 +169,9 @@ public class Label implements Element {
     }
     public @Nullable Supplier<@NotNull Boolean> getDynamicShadow() {
         return dynamicShadow;
+    }
+    public @Nullable Supplier<@NotNull Font> getDynamicFont() {
+        return dynamicFont;
     }
 
     public void setX(int x) {
@@ -133,6 +193,9 @@ public class Label implements Element {
     }
     public void setShadow(boolean shadow) {
         this.shadow = shadow;
+    }
+    public void setFont(@NotNull Font font) {
+        this.font = font;
     }
     public void setDimensions(@NotNull Element positionSupplier) {
         this.x = positionSupplier.getX();
@@ -157,6 +220,9 @@ public class Label implements Element {
     public void setDynamicShadow(@Nullable Supplier<@NotNull Boolean> dynamicShadow) {
         this.dynamicShadow = dynamicShadow;
     }
+    public void setDynamicFont(@Nullable Supplier<@NotNull Font> dynamicFont) {
+        this.dynamicFont = dynamicFont;
+    }
 
 
     private void applyDynamics() {
@@ -166,6 +232,7 @@ public class Label implements Element {
         if (dynamicText != null) setText(dynamicText.get());
         if (dynamicTextScale != null) setTextScale(dynamicTextScale.get());
         if (dynamicShadow != null) setShadow(dynamicShadow.get());
+        if (dynamicFont != null) setFont(dynamicFont.get());
     }
 
     @Override
@@ -183,7 +250,7 @@ public class Label implements Element {
         guiGraphics.pose().scale(textScale, textScale, 1.0f);
 
         guiGraphics.drawString(
-                BitfontManager.FONT,
+                font,
                 text,
                 0,
                 0,
