@@ -24,10 +24,10 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     private static final long DOUBLE_CLICK_TIME = 250L;
     private static final double DOUBLE_CLICK_DISTANCE = 4.0;
 
-    private static final int OUTLINE_COLOR = GuiConstants.COLOR_SOLID_WHITE;
+    private static final int OUTLINE_COLOR = GuiConstants.COLOR_SOLID_LIGHT_GRAY;
     private static final int PLACEHOLDER_COLOR = GuiConstants.COLOR_SOLID_DARK_GRAY;
     private static final int SELECTION_COLOR = GuiConstants.COLOR_TEXT_SELECTION;
-    private static final int CURSOR_COLOR = GuiConstants.COLOR_SOLID_LIGHT_GRAY;
+    private static final int CURSOR_COLOR = GuiConstants.COLOR_SOLID_WHITE;
 
     private int x;
     private int y;

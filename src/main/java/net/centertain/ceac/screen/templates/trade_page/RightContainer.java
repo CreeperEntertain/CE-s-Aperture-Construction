@@ -21,7 +21,7 @@ public final class RightContainer {
                 width - (GuiConstants.ELEMENT_PADDING * 2),
                 25,
                 "Placeholder",
-                GuiConstants.COLOR_SOLID_WHITE,
+                GuiConstants.COLOR_SOLID_LIGHT_GRAY,
                 1.0f,
                 false,
                 () -> {}
