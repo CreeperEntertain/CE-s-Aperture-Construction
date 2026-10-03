@@ -19,7 +19,7 @@ public final class InfoPage {
             int height
     ) {
         Aligner title = AlignedLabel.get(
-                "About This Terminal",
+                "About This Mod",
                 GuiConstants.TAB_BUTTON_HEIGHT + GuiConstants.ELEMENT_PADDING
         );
         title.setX(title.getTopSpan());
@@ -74,7 +74,12 @@ public final class InfoPage {
                         getSection(width, "Basics", "basics.txt"),
                         getSection(width, "Trading", "trading.txt"),
                         getSection(width, "Purchasing", "purchasing.txt"),
-                        getSection(width, "Interest Loss", "interest_loss.txt")
+                        getSection(width, "Selling Back", "selling_back.txt"),
+                        getSection(width, "Decals", "decals.txt"),
+                        getSection(width, "Shapes", "shapes.txt"),
+                        getSection(width, "Materials", "materials.txt"),
+                        getSection(width, "Tools", "tools.txt"),
+                        getSection(width, "Attribution", "attribution.txt")
                 )
         );
     }
