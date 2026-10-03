@@ -312,10 +312,7 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
             return true;
         }
 
-        if (Screen.hasShiftDown())
-            textHelper.setCursorPos(cursorPosition, true);
-        else
-            textHelper.setCursorPos(cursorPosition);
+        textHelper.setCursorPos(cursorPosition, Screen.hasShiftDown());
 
         dragging = true;
         dragMode = DragMode.NORMAL;
