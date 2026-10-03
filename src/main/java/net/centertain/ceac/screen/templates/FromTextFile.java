@@ -22,14 +22,13 @@ public final class FromTextFile {
                 .useDelimiter("\\A")
                 .next()
                 .replace("\r\n", "\n")
-                .replace("\r", "\n")
-                .replace("\n", "\\n");
+                .replace("\r", "\n");
 
         return new TextBox(
                 width,
                 text,
                 0.75f,
-                0,
+                2,
                 GuiConstants.COLOR_SOLID_GRAY,
                 false
         );
