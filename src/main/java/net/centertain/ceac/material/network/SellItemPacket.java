@@ -1,6 +1,8 @@
 package net.centertain.ceac.material.network;
 
 import net.centertain.ceac.constants.PriceConstants;
+import net.centertain.ceac.material.PlayerCurrency;
+import net.centertain.ceac.network.ModNetworking;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -8,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.function.Supplier;
@@ -73,6 +76,10 @@ public class SellItemPacket {
             );
             if (removed != packet.amount)
                 return;
+
+            PlayerCurrency.increase(player, worth * packet.amount);
+
+            ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SyncCurrencyPacket(PlayerCurrency.get(player)));
 
             player.inventoryMenu.broadcastChanges();
         });
