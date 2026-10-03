@@ -29,7 +29,7 @@ public final class FromTextFile {
                 text,
                 0.75f,
                 2,
-                GuiConstants.COLOR_SOLID_GRAY,
+                GuiConstants.COLOR_SOLID_LIGHT_GRAY,
                 false
         );
     }

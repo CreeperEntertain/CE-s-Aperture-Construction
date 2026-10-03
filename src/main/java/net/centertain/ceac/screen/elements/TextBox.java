@@ -321,7 +321,7 @@ public class TextBox implements Element {
                     font,
                     lines.get(i),
                     0,
-                    (i * font.lineHeight) + ((i - 1) * lineSpacing),
+                    (i * font.lineHeight) + (i * lineSpacing),
                     color,
                     shadow
             );
