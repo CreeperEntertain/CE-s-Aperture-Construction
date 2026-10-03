@@ -1,6 +1,7 @@
 package net.centertain.ceac.material;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
 
 public class PlayerCurrency {
@@ -31,6 +32,11 @@ public class PlayerCurrency {
     }
 
     private static CompoundTag getPersisted(Player player) {
-        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+        CompoundTag data = player.getPersistentData();
+
+        if (!data.contains(Player.PERSISTED_NBT_TAG, Tag.TAG_COMPOUND))
+            data.put(Player.PERSISTED_NBT_TAG, new CompoundTag());
+
+        return data.getCompound(Player.PERSISTED_NBT_TAG);
     }
 }

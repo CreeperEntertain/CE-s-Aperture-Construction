@@ -3,6 +3,7 @@ package net.centertain.ceac.screen;
 import net.centertain.ceac.block.custom.BasicBlock;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.custom.BasicItem;
+import net.centertain.ceac.material.PlayerCurrency;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Screen;
 import net.centertain.ceac.screen.templates.PurchasingRibbon;
@@ -11,18 +12,14 @@ import net.centertain.ceac.screen.templates.pages.MaterialsPage;
 import net.centertain.ceac.screen.templates.pages.ShapesPage;
 import net.centertain.ceac.screen.templates.pages.TradePage;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public class PurchasingTermialScreen extends Screen {
-    public final static String CURRENCY_TAG = "ceac_currency";
 
     private final Player player;
     private int purchaseMultiplier = 1;
@@ -39,27 +36,8 @@ public class PurchasingTermialScreen extends Screen {
         return purchaseMultiplier;
     }
 
-
-    public static void setupPlayerCurrency(PlayerEvent.PlayerLoggedInEvent event) {
-        CompoundTag data = event.getEntity().getPersistentData();
-        CompoundTag persisted = data.getCompound(Player.PERSISTED_NBT_TAG);
-
-        if (!persisted.contains(CURRENCY_TAG))
-            persisted.putDouble(CURRENCY_TAG, 0.0);
-
-        data.put(Player.PERSISTED_NBT_TAG, persisted);
-    }
     public double getCurrency() {
-        return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).getDouble(CURRENCY_TAG);
-    }
-    public void setCurrency(double amount) {
-
-    }
-    public void increaseCurrency(double amount) {
-
-    }
-    public void decreaseCurrency(double amount) {
-
+        return PlayerCurrency.get(player);
     }
 
 
