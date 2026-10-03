@@ -84,7 +84,14 @@ public final class InfoPage {
             int y,
             int width
     ) {
-        TextBox first = FromTextFile.get(width, "assets/ceac/textboxes/info_page/1.txt");
+        int white = GuiConstants.COLOR_SOLID_WHITE;
+        String files = "assets/ceac/textboxes/info_page/";
+        Spacer spacer = new Spacer(0, 0);
+
+        Label firstTitle = new Label(white, Component.literal(
+                "Basics"
+        ), 1.0f, false);
+        TextBox first = FromTextFile.get(width, files + "1.txt");
 
         return new StackPanel(
                 x,
@@ -94,7 +101,9 @@ public final class InfoPage {
                 GuiConstants.ELEMENT_PADDING,
                 GuiConstants.COLOR_TRANSPARENT,
                 List.of(
-                        first
+                        firstTitle,
+                        first,
+                        spacer
                 )
         );
     }
