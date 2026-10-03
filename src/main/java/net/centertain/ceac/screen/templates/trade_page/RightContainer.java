@@ -32,7 +32,7 @@ public final class RightContainer {
 
         Label title = new Label(
                 GuiConstants.COLOR_MINECRAFT_WHITE,
-                Component.literal("Item Values:"),
+                Component.literal("Item Values"),
                 1.0f,
                 false
         );
