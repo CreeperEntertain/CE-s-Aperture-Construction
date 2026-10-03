@@ -1,6 +1,7 @@
 package net.centertain.ceac.screen.templates.pages;
 
 import net.centertain.ceac.block.ModBlocks;
+import net.centertain.ceac.block.custom.BasicBlock;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.constants.GuiConstants;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class ShapesPage {
@@ -28,7 +30,8 @@ public final class ShapesPage {
             int width,
             int height,
             Supplier<Integer> purchaseMultiplier,
-            Supplier<Double> availableCurrency
+            Supplier<Double> availableCurrency,
+            Consumer<BasicBlock> purchase
     ) {
         Map<String, List<Element>> buttons = new HashMap<>();
 
@@ -41,7 +44,7 @@ public final class ShapesPage {
                     buttons.put(subcategory, new ArrayList<>());
                 buttons.get(subcategory).add(PurchaseButton.create(
                         shape,
-                        () -> PurchasingTermialScreen.purchase(shape),
+                        () -> purchase.accept(shape),
                         GuiConstants.PURCHASE_BUTTON_WIDTH,
                         purchaseMultiplier,
                         availableCurrency

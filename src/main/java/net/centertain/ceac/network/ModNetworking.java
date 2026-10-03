@@ -2,6 +2,7 @@ package net.centertain.ceac.network;
 
 import net.centertain.ceac.decal.network.SyncDecalItemPacket;
 import net.centertain.ceac.decal.network.SyncDecalPacket;
+import net.centertain.ceac.material.network.BuyItemPacket;
 import net.centertain.ceac.material.network.MaterialOffsetPacket;
 import net.centertain.ceac.material.network.SellItemPacket;
 import net.centertain.ceac.material.network.SyncCurrencyPacket;
@@ -58,6 +59,13 @@ public final class ModNetworking {
                 SyncCurrencyPacket::encode,
                 SyncCurrencyPacket::decode,
                 SyncCurrencyPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                BuyItemPacket.class,
+                BuyItemPacket::encode,
+                BuyItemPacket::decode,
+                BuyItemPacket::handle
         );
     }
 }

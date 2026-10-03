@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class BasicsPage {
@@ -27,7 +28,8 @@ public final class BasicsPage {
             int width,
             int height,
             Supplier<Integer> purchaseMultiplier,
-            Supplier<Double> availableCurrency
+            Supplier<Double> availableCurrency,
+            Consumer<BasicItem> purchase
     ) {
         List<Element> buttons = new ArrayList<>();
 
@@ -36,7 +38,7 @@ public final class BasicsPage {
                 if (!(basicItem instanceof MatItem))
                     buttons.add(PurchaseButton.create(
                             basicItem,
-                            () -> PurchasingTermialScreen.purchase(basicItem),
+                            () -> purchase.accept(basicItem),
                             GuiConstants.PURCHASE_BUTTON_WIDTH,
                             purchaseMultiplier,
                             availableCurrency

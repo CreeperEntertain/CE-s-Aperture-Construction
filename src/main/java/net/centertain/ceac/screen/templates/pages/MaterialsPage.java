@@ -3,6 +3,7 @@ package net.centertain.ceac.screen.templates.pages;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.ModItems;
+import net.centertain.ceac.item.custom.BasicItem;
 import net.centertain.ceac.item.custom.MatItem;
 import net.centertain.ceac.screen.PurchasingTermialScreen;
 import net.centertain.ceac.screen.elements.*;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class MaterialsPage {
@@ -28,7 +30,8 @@ public final class MaterialsPage {
             int width,
             int height,
             Supplier<Integer> purchaseMultiplier,
-            Supplier<Double> availableCurrency
+            Supplier<Double> availableCurrency,
+            Consumer<BasicItem> purchase
     ) {
         Map<String, List<Element>> buttons = new HashMap<>();
 
@@ -41,7 +44,7 @@ public final class MaterialsPage {
                     buttons.put(subcategory, new ArrayList<>());
                 buttons.get(subcategory).add(PurchaseButton.create(
                         matItem,
-                        () -> PurchasingTermialScreen.purchase(matItem),
+                        () -> purchase.accept(matItem),
                         GuiConstants.PURCHASE_BUTTON_WIDTH,
                         purchaseMultiplier,
                         availableCurrency

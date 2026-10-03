@@ -4,6 +4,8 @@ import net.centertain.ceac.block.custom.BasicBlock;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.custom.BasicItem;
 import net.centertain.ceac.material.PlayerCurrency;
+import net.centertain.ceac.material.network.BuyItemPacket;
+import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Screen;
 import net.centertain.ceac.screen.templates.PurchasingRibbon;
@@ -89,9 +91,9 @@ public class PurchasingTermialScreen extends Screen {
 
         List<Page> pages = List.of(
                 new TradePage(x, y, width, height, this::getPlayer),
-                BasicsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency),
-                ShapesPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency),
-                MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency)
+                BasicsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency, this::purchase),
+                ShapesPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency, this::purchase),
+                MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency, this::purchase)
         );
 
         addElement(new PageList(
@@ -106,14 +108,14 @@ public class PurchasingTermialScreen extends Screen {
         ));
     }
 
-    public static void purchase(BasicItem item) {
+    public void purchase(BasicItem item) {
         processItemPurchase(item);
     }
-    public static void purchase(BasicBlock block) {
+    public void purchase(BasicBlock block) {
         processItemPurchase(block.asItem());
     }
 
-    private static void processItemPurchase(Item item) {
-
+    private void processItemPurchase(Item item) {
+        ModNetworking.CHANNEL.sendToServer(new BuyItemPacket(item, purchaseMultiplier));
     }
 }
