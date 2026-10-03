@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -94,33 +95,43 @@ public final class LeftContainer {
                 : getStack.get()
         );
 
-        StackPanel horizontal = new StackPanel(
+        List<Element> panelContents = new ArrayList<>();
+        panelContents.add(getItemAndButtons(
+                ITEM_DISPLAY_SIZE,
+                height,
+                playerSupplier,
+                getStack,
+                increaseCurrency
+        ));
+        StackPanel description = getDescription(
+                width - ITEM_BOUNDS,
+                playerSupplier,
+                getStack
+        );
+        Padder descriptionPadder = new Padder(
+                width - ITEM_BOUNDS,
+                description.getHeight() + (GuiConstants.ELEMENT_PADDING * 2),
+                GuiConstants.ELEMENT_PADDING,
+                description
+        );
+        panelContents.add(new ScrollContainer(
+                0,
+                0,
+                descriptionPadder.getRealWidth(),
+                height,
+                ScrollContainer.Alignment.VERTICAL,
+                descriptionPadder,
+                descriptionPadder.getRealHeight(),
+                GuiConstants.STACK_SCROLL_SPEED
+        ));
+        return new StackPanel(
                 0,
                 0,
                 StackPanel.Alignment.HORIZONTAL,
                 height - (GuiConstants.ELEMENT_PADDING * 2),
                 GuiConstants.ELEMENT_PADDING * 2,
                 GuiConstants.COLOR_TRANSPARENT,
-                List.of(
-                        getItemAndButtons(
-                                ITEM_DISPLAY_SIZE,
-                                height,
-                                playerSupplier,
-                                getStack,
-                                increaseCurrency
-                        ),
-                        getDescription(
-                                width - (ITEM_BOUNDS + (GuiConstants.ELEMENT_PADDING * 2)),
-                                playerSupplier,
-                                getStack
-                        )
-                )
-        );
-        return new Padder(
-                width,
-                height,
-                GuiConstants.ELEMENT_PADDING,
-                horizontal
+                panelContents
         );
     }
 
@@ -144,23 +155,29 @@ public final class LeftContainer {
                 ? new ItemStack(Items.AIR)
                 : stack.get()
         );
+        Padder padder = new Padder(
+                ITEM_BOUNDS,
+                ITEM_BOUNDS,
+                GuiConstants.ELEMENT_PADDING,
+                item
+        );
 
-        Button sellOne = getSalesButton("Sell", 1, player, stack, () ->
+        Button sellOne = getSalesButton(ITEM_BOUNDS, "Sell", 1, player, stack, () ->
                 sellItem(1, player, stack, increaseCurrency)
         );
-        Button sellTen = getSalesButton("Sell 10", 10, player, stack, () ->
+        Button sellTen = getSalesButton(ITEM_BOUNDS, "Sell 10", 10, player, stack, () ->
                 sellItem(10, player, stack, increaseCurrency)
         );
-        Button sellHundred = getSalesButton("Sell 100", 100, player, stack, () ->
+        Button sellHundred = getSalesButton(ITEM_BOUNDS, "Sell 100", 100, player, stack, () ->
                 sellItem(100, player, stack, increaseCurrency)
         );
         StackPanel buttonStack = new StackPanel(
                 0,
                 0,
                 StackPanel.Alignment.VERTICAL,
-                width - GuiConstants.ELEMENT_PADDING,
-                GuiConstants.COLOR_TRANSPARENT,
+                width,
                 PADDING,
+                GuiConstants.COLOR_TRANSPARENT,
                 List.of(sellOne, sellTen, sellHundred)
         );
         Aligner buttonAligner = new Aligner(
@@ -175,7 +192,7 @@ public final class LeftContainer {
                 0,
                 width,
                 height,
-                List.of(item, buttonAligner)
+                List.of(padder, buttonAligner)
         );
     }
 
@@ -199,25 +216,30 @@ public final class LeftContainer {
         increaseCurrency.accept(worth * amount);
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static Button getSalesButton(
+            int width,
             String text,
             int multiplier,
             Supplier<Player> player,
             Supplier<ItemStack> stack,
             Runnable onPress
     ) {
-        Aligner alignedLabel = AlignedLabel.get(
-                text ,
-                GuiConstants.TAB_BUTTON_HEIGHT
-        );
-        if (alignedLabel.getElement() instanceof Label label)
-            label.setDynamicColor(() -> player.get().getInventory().countItem(stack.get().getItem()) >= multiplier
-                    ? GuiConstants.COLOR_MINECRAFT_GREEN : GuiConstants.COLOR_MINECRAFT_RED
+        Aligner alignedLabel = AlignedLabel.get(text, GuiConstants.TAB_BUTTON_HEIGHT);
+        if (alignedLabel.getElement() instanceof Label label) {
+            label.setDynamicColor(() -> stack.get() == null
+                    ? GuiConstants.COLOR_MINECRAFT_DARK_GRAY
+                    : player.get().getInventory().countItem(stack.get().getItem()) >= multiplier
+                            ? GuiConstants.COLOR_MINECRAFT_GREEN
+                            : GuiConstants.COLOR_MINECRAFT_GRAY
             );
+            label.setTextScale(0.75f);
+        }
+        alignedLabel.setWidth(width - PADDING);
         return new Button(
                 0,
                 0,
-                new Empty(),
+                alignedLabel,
                 onPress,
                 GuiConstants.COLOR_TRANSLUCENT_BLACK_75,
                 GuiConstants.COLOR_SOLID_WHITE
