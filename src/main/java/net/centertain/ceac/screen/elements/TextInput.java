@@ -653,19 +653,6 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
             int mouseY,
             float partialTick
     ) {
-        if (dragging) {
-            lastMouseX = mouseX;
-            autoScroll(lastMouseX);
-
-            switch (dragMode) {
-                case NORMAL -> textHelper.setSelectionPos(getCursorPosition(lastMouseX));
-                case WORD -> updateWordSelection(getCursorPosition(lastMouseX));
-                case NONE -> {}
-            }
-
-            ensureCursorVisible();
-        }
-
         if (hovered)
             ClientEvents.setIBeamCursor();
         if (hovered || focused)
