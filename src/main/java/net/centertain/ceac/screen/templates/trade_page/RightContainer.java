@@ -23,8 +23,8 @@ public final class RightContainer {
             int width,
             int height
     ) {
-        int innerX = x + GuiConstants.ELEMENT_PADDING;
-        int innerY = y + GuiConstants.ELEMENT_PADDING;
+        int innerX = GuiConstants.ELEMENT_PADDING; // Container local space
+        int innerY = GuiConstants.ELEMENT_PADDING;
         int innerWidth = width - (GuiConstants.ELEMENT_PADDING * 2);
         int innerHeight = height - (GuiConstants.ELEMENT_PADDING * 2);
 
