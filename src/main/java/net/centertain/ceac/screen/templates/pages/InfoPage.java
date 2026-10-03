@@ -51,17 +51,29 @@ public final class InfoPage {
                 GuiConstants.COLOR_TRANSPARENT,
                 List.of(title, mainScroll)
         );
+
+        Container panel = new Container(
+                x,
+                y,
+                width,
+                height,
+                main,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+        );
+
         return new Page(
                 "Information",
                 width,
                 height,
-                new Container(
+                new ScrollContainer(
                         x,
                         y,
                         width,
                         height,
-                        main,
-                        GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+                        ScrollContainer.Alignment.VERTICAL,
+                        panel,
+                        height,
+                        GuiConstants.STACK_SCROLL_SPEED
                 )
         );
     }
