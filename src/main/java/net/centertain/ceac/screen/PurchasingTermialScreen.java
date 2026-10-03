@@ -9,10 +9,7 @@ import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Screen;
 import net.centertain.ceac.screen.templates.PurchasingRibbon;
-import net.centertain.ceac.screen.templates.pages.BasicsPage;
-import net.centertain.ceac.screen.templates.pages.MaterialsPage;
-import net.centertain.ceac.screen.templates.pages.ShapesPage;
-import net.centertain.ceac.screen.templates.pages.TradePage;
+import net.centertain.ceac.screen.templates.pages.*;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -93,7 +90,8 @@ public class PurchasingTermialScreen extends Screen {
                 new TradePage(x, y, width, height, this::getPlayer),
                 BasicsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency, this::purchase),
                 ShapesPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency, this::purchase),
-                MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency, this::purchase)
+                MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency, this::purchase),
+                InfoPage.get(x, y, width, height)
         );
 
         addElement(new PageList(
