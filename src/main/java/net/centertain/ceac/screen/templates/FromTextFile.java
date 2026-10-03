@@ -15,12 +15,12 @@ public final class FromTextFile {
             int width,
             String file
     ) {
-        String text = new Scanner(
+        Scanner scanner = new Scanner(
                 Objects.requireNonNull(FromTextFile.class.getResourceAsStream("/" + file)),
                 StandardCharsets.UTF_8
-        )
-                .useDelimiter("\\A")
-                .next()
+        ).useDelimiter("\\A");
+        String text = scanner.hasNext() ? scanner.next() : "";
+        text = text
                 .replace("\r\n", "\n")
                 .replace("\r", "\n");
 

@@ -2,6 +2,7 @@ package net.centertain.ceac.screen.templates.pages;
 
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.elements.*;
+import net.centertain.ceac.screen.templates.AlignedLabel;
 import net.centertain.ceac.screen.templates.FromTextFile;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
@@ -17,116 +18,96 @@ public final class InfoPage {
             int width,
             int height
     ) {
-        int innerX = GuiConstants.ELEMENT_PADDING; // Container local space
-        int innerY = GuiConstants.ELEMENT_PADDING;
-        int innerWidth = width - (GuiConstants.ELEMENT_PADDING * 2);
-        int innerHeight = height - (GuiConstants.ELEMENT_PADDING * 2);
-
-        Label title = new Label(
-                innerX,
-                innerY,
-                GuiConstants.COLOR_MINECRAFT_WHITE,
-                Component.literal("About This Terminal"),
-                1.0f,
-                false
+        Aligner title = AlignedLabel.get(
+                "About This Terminal",
+                GuiConstants.TAB_BUTTON_HEIGHT + GuiConstants.ELEMENT_PADDING
+        );
+        title.setX(title.getTopSpan());
+        Container titleContainer = new Container(
+                x,
+                y,
+                width,
+                title.getHeight(),
+                title,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
         );
 
-        StackPanel contents = getContents(innerX, innerY, innerWidth);
+        StackPanel contents = getContents(width);
 
         ScrollContainer mainScroll = new ScrollContainer(
-                innerX,
-                innerY,
-                innerWidth,
-                innerHeight,
+                0,
+                0,
+                width,
+                height - titleContainer.getHeight() - GuiConstants.ELEMENT_PADDING,
                 ScrollContainer.Alignment.VERTICAL,
                 contents,
                 contents.getHeight(),
                 GuiConstants.STACK_SCROLL_SPEED
         );
         StackPanel main = new StackPanel(
-                innerX,
-                innerY,
+                0,
+                0,
                 StackPanel.Alignment.VERTICAL,
-                innerWidth,
+                width,
                 GuiConstants.ELEMENT_PADDING,
                 GuiConstants.COLOR_TRANSPARENT,
-                List.of(title, mainScroll)
-        );
-
-        Container panel = new Container(
-                x,
-                y,
-                width,
-                height,
-                main,
-                GuiConstants.COLOR_TRANSPARENT
+                List.of(titleContainer, mainScroll)
         );
 
         return new Page(
                 "Information",
                 width,
                 height,
-                new ScrollContainer(
-                        x,
-                        y,
-                        width,
-                        height,
-                        ScrollContainer.Alignment.VERTICAL,
-                        panel,
-                        height,
-                        GuiConstants.STACK_SCROLL_SPEED
-                )
+                main
         );
     }
 
-    private static StackPanel getContents(
-            int x,
-            int y,
-            int width
-    ) {
+    private static StackPanel getContents(int width) {
         return new StackPanel(
-                x,
-                y,
+                0,
+                0,
                 StackPanel.Alignment.VERTICAL,
                 width,
-                GuiConstants.ELEMENT_PADDING,
+                2,
                 GuiConstants.COLOR_TRANSPARENT,
                 List.of(
-                        getSection(width, "Basics", "basics.txt")
+                        getSection(width, "Basics", "basics.txt"),
+                        getSection(width, "Trading", "trading.txt"),
+                        getSection(width, "Purchasing", "purchasing.txt"),
+                        getSection(width, "Interest Loss", "interest_loss.txt")
                 )
         );
     }
 
-    private static StackPanel getSection(
+    private static Foldout getSection(
             int width,
             String title,
             String filename
     ) {
-        TextBox text = FromTextFile.get(width, "assets/ceac/textboxes/info_page/" + filename);
+        TextBox text = FromTextFile.get(
+                width - (GuiConstants.ELEMENT_PADDING * 2),
+                "assets/ceac/textboxes/info_page/" + filename
+        );
+        Padder textPadder = new Padder(
+                width,
+                text.getHeight() + (GuiConstants.ELEMENT_PADDING * 2),
+                GuiConstants.ELEMENT_PADDING,
+                text
+        );
         Container textWrapper = new Container(
                 0,
                 0,
                 width,
-                text.getHeight(),
-                text,
+                textPadder.getRealHeight(),
+                textPadder,
                 GuiConstants.COLOR_TRANSLUCENT_BLACK_75
         );
-        Foldout foldout = new Foldout(
+        return new Foldout(
                 Component.literal(title),
                 width,
-                2,
-                true,
+                1,
+                false,
                 textWrapper
-        );
-        Spacer spacer = new Spacer(0,0);
-        return new StackPanel(
-                0,
-                0,
-                StackPanel.Alignment.VERTICAL,
-                width,
-                GuiConstants.ELEMENT_PADDING,
-                GuiConstants.COLOR_TRANSPARENT,
-                List.of(foldout, spacer)
         );
     }
 }
