@@ -5,6 +5,7 @@ import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.templates.trade_page.InventoryTemplate;
 import net.centertain.ceac.screen.templates.trade_page.LeftContainer;
+import net.centertain.ceac.screen.templates.trade_page.RightContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -40,7 +41,7 @@ public class TradePage extends Page {
 
         int leftHeight = height - inventoryHeight - GuiConstants.ELEMENT_PADDING;
 
-        Element leftStack = LeftContainer.get(
+        Element left = LeftContainer.get(
                 x,
                 y,
                 inventoryWidth,
@@ -50,9 +51,26 @@ public class TradePage extends Page {
                 this::setStack,
                 this::getStack
         );
+        Element right = RightContainer.get(
+                x + left.getWidth() + GuiConstants.ELEMENT_PADDING,
+                y,
+                width - left.getWidth() - GuiConstants.ELEMENT_PADDING,
+                height
+        );
 
         setX(x);
         setY(y);
-        setElement(leftStack);
+        setElement(new StackPanel(
+                x,
+                y,
+                StackPanel.Alignment.HORIZONTAL,
+                height,
+                GuiConstants.ELEMENT_PADDING,
+                GuiConstants.COLOR_TRANSPARENT,
+                List.of(
+                        left,
+                        right
+                )
+        ));
     }
 }
