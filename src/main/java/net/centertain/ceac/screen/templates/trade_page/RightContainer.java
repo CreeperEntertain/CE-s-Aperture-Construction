@@ -30,15 +30,29 @@ public final class RightContainer {
 
         Spacer spacer = new Spacer(innerWidth, GuiConstants.ELEMENT_PADDING);
 
+        Label title = new Label(
+                GuiConstants.COLOR_MINECRAFT_WHITE,
+                Component.literal("Item Values:"),
+                1.0f,
+                false
+        );
+
+        Element listings = getItemListings(innerWidth);
+        ScrollContainer listingScroll = new ScrollContainer(
+                innerX,
+                innerY,
+                innerWidth,
+                innerHeight - spacer.getHeight() - title.getHeight(),
+                ScrollContainer.Alignment.VERTICAL,
+                listings,
+                listings.getHeight(),
+                GuiConstants.STACK_SCROLL_SPEED
+        );
+
         List<Element> displayElements = List.of(
-                new Label(
-                        GuiConstants.COLOR_MINECRAFT_WHITE,
-                        Component.literal("Item Values:"),
-                        1.0f,
-                        false
-                ),
+                title,
                 spacer,
-                getItemListings(innerWidth)
+                listingScroll
         );
 
         StackPanel display = new StackPanel(
@@ -50,21 +64,11 @@ public final class RightContainer {
                 GuiConstants.COLOR_TRANSPARENT,
                 displayElements
         );
-        ScrollContainer scroll = new ScrollContainer(
-                innerX,
-                innerY,
-                innerWidth,
-                innerHeight,
-                ScrollContainer.Alignment.VERTICAL,
-                display,
-                display.getHeight(),
-                GuiConstants.STACK_SCROLL_SPEED
-        );
         Padder mainPadder = new Padder(
                 width,
                 height,
                 GuiConstants.ELEMENT_PADDING,
-                scroll
+                display
         );
         Rect background = new Rect(
                 width,
@@ -90,17 +94,18 @@ public final class RightContainer {
 
         for (var entry : prices)
             entries.add(getItemListing(
+                    32,
                     16,
                     entry.getKey(),
                     entry.getValue()
             ));
 
-        return new StackPanel(
+        return new FlowPanel(
                 0,
                 0,
-                StackPanel.Alignment.VERTICAL,
+                FlowPanel.Alignment.HORIZONTAL,
                 width,
-                PADDING,
+                GuiConstants.ELEMENT_PADDING,
                 GuiConstants.COLOR_TRANSPARENT,
                 entries
         );
@@ -108,6 +113,7 @@ public final class RightContainer {
 
     @SuppressWarnings("SameParameterValue")
     private static Element getItemListing(
+            int width,
             int height,
             Item item,
             double value
@@ -121,15 +127,19 @@ public final class RightContainer {
         );
 
         Aligner valueDisplay = AlignedLabel.get("▲" + String.format("%.2f", value), height);
-        if (valueDisplay.getElement() instanceof Label label)
+        if (valueDisplay.getElement() instanceof Label label) {
             label.setColor(GuiConstants.COLOR_SOLID_GRAY);
+            label.setTextScale(0.75f);
+        }
+        valueDisplay.setWidth(width);
+        valueDisplay.setAlignment(Aligner.Alignment.LEFT);
 
         return new StackPanel(
                 0,
                 0,
                 StackPanel.Alignment.HORIZONTAL,
                 height,
-                PADDING,
+                GuiConstants.ELEMENT_PADDING,
                 GuiConstants.COLOR_TRANSPARENT,
                 List.of(itemDisplay, valueDisplay)
         );
