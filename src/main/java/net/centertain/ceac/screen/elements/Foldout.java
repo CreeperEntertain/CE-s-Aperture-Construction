@@ -3,6 +3,7 @@ package net.centertain.ceac.screen.elements;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.framework.element_types.ElementContainer;
+import net.centertain.ceac.screen.framework.element_types.Hoverable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -12,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public class Foldout implements Element, ElementContainer, GuiEventListener {
+public class Foldout implements Element, ElementContainer, Hoverable, GuiEventListener {
     private static final int BAR_HEIGHT = GuiConstants.FOLDOUT_TOP_HEIGHT;
 
     private int x;
@@ -23,6 +24,7 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     private @NotNull Element element;
     private boolean foldedOut;
     private boolean focused;
+    private boolean isHovered;
 
     private @Nullable Supplier<@NotNull Integer> dynamicX = null;
     private @Nullable Supplier<@NotNull Integer> dynamicY = null;
@@ -79,6 +81,9 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     }
     public boolean getIsFocused() {
         return focused;
+    }
+    public boolean getIsHovered() {
+        return isHovered;
     }
 
     public @Nullable Supplier<@NotNull Integer> getDynamicX() {
@@ -188,7 +193,7 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     ) {
         applyDynamics();
 
-        boolean hovered = isMouseOver(mouseX, mouseY);
+        boolean hovered = isHovered;
 
         guiGraphics.fill(
                 x,
@@ -295,5 +300,13 @@ public class Foldout implements Element, ElementContainer, GuiEventListener {
     @Override
     public boolean isFocused() {
         return focused;
+    }
+
+    @Override
+    public void updateHover(
+            double mouseX,
+            double mouseY
+    ) {
+        isHovered = isMouseOver(mouseX, mouseY);
     }
 }
