@@ -3,9 +3,12 @@ package net.centertain.ceac.constants;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class PriceConstants {
@@ -43,5 +46,15 @@ public final class PriceConstants {
         if (stack == null)
             return null;
         return get(stack.getItem());
+    }
+
+    public static @NotNull List<Map.Entry<@NotNull Item, @NotNull Double>> getEntries() {
+        return new ArrayList<>(PRICES.entrySet());
+    }
+
+    public static @NotNull List<Map.Entry<@NotNull Item, @NotNull Double>> getSortedEntries() {
+        var entries = getEntries();
+        entries.sort(Map.Entry.comparingByValue());
+        return entries;
     }
 }
