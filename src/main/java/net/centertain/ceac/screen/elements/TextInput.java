@@ -722,6 +722,8 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
                     textColor
             );
 
+        guiGraphics.disableScissor();
+
         if (isCursorVisible())
             renderCursor(
                     guiGraphics,
@@ -729,8 +731,6 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
                     textY,
                     textHeight
             );
-
-        guiGraphics.disableScissor();
     }
 
     private void renderOutline(@NotNull GuiGraphics guiGraphics) {
