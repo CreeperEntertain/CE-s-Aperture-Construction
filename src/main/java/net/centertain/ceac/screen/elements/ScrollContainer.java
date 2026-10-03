@@ -215,6 +215,9 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
     ) {
         applyDynamics();
 
+        element.setX(x);
+        element.setY(y);
+
         var pose = guiGraphics.pose().last().pose();
 
         int scissorX = Math.round(x + pose.m30());
