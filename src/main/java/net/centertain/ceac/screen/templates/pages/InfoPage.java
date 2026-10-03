@@ -84,7 +84,7 @@ public final class InfoPage {
             int y,
             int width
     ) {
-        TextBox first = FromTextFile.get(width, "net/centertain/ceac/screen/templates/info_page/1.txt");
+        TextBox first = FromTextFile.get(width, "assets/ceac/textboxes/info_page/1.txt");
 
         return new StackPanel(
                 x,
