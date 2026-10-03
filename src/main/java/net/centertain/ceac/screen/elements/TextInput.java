@@ -1092,6 +1092,7 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         if (dynamicOnEnter != null) setOnEnter(dynamicOnEnter.get());
         if (dynamicOutlineColor != null) setOutlineColor(dynamicOutlineColor.get());
         if (dynamicPlaceholderColor != null) setPlaceholderColor(dynamicPlaceholderColor.get());
+        if (dynamicSelectionColor != null) setSelectionColor(dynamicSelectionColor.get());
         if (dynamicCursorColor != null) setCursorColor(dynamicCursorColor.get());
     }
 
