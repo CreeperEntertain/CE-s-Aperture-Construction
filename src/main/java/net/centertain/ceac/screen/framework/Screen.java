@@ -167,6 +167,10 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             mouseCapture = createMouseCapture(result);
             return true;
         }
+        if (focusedElement != null) {
+            focusedElement.setFocused(false);
+            focusedElement = null;
+        }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 

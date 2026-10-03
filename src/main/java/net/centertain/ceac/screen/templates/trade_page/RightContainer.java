@@ -20,7 +20,6 @@ public final class RightContainer {
         TextInput input = new TextInput(
                 width - (GuiConstants.ELEMENT_PADDING * 2),
                 25,
-                5,
                 "Placeholder",
                 GuiConstants.COLOR_SOLID_WHITE,
                 1.0f,

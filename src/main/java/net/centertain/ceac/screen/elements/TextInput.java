@@ -33,7 +33,6 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     private int y;
     private int width;
     private int height;
-    private final int padding;
 
     private @NotNull String text;
     private @Nullable String placeholder;
@@ -76,7 +75,6 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     public TextInput(
             int width,
             int height,
-            int padding,
             @Nullable String placeholder,
             int textColor,
             float textScale,
@@ -86,7 +84,6 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         this(
                 width,
                 height,
-                padding,
                 placeholder,
                 textColor,
                 textScale,
@@ -99,7 +96,6 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     public TextInput(
             int width,
             int height,
-            int padding,
             @Nullable String placeholder,
             int textColor,
             float textScale,
@@ -109,14 +105,11 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     ) {
         if (textScale <= 0.0f)
             throw new IllegalArgumentException("textScale must be greater than zero");
-        if (padding < 0)
-            throw new IllegalArgumentException("padding must not be negative");
 
         this.x = 0;
         this.y = 0;
         this.width = width;
         this.height = height;
-        this.padding = padding;
 
         this.text = "";
         this.placeholder = placeholder;
@@ -610,20 +603,24 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         displayOffset = Math.max(0.0, Math.min(displayOffset, maxOffset));
     }
 
+    private int getPadding() {
+        return Math.max(0, (height - getTextHeight()) / 2);
+    }
+
     private int getContentX() {
-        return x + padding;
+        return x + getPadding();
     }
 
     private int getContentY() {
-        return y + padding;
+        return y + getPadding();
     }
 
     private int getContentWidth() {
-        return Math.max(0, width - padding * 2);
+        return Math.max(0, width - getPadding() * 2);
     }
 
     private int getContentHeight() {
-        return Math.max(0, height - padding * 2);
+        return Math.max(0, height - getPadding() * 2);
     }
 
     private int getTextHeight() {
@@ -684,11 +681,16 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         int textY = getTextY();
         int textHeight = getTextHeight();
 
+        var pose = guiGraphics.pose().last().pose();
+
+        int scissorX = Math.round(contentX + pose.m30());
+        int scissorY = Math.round(contentY + pose.m31());
+
         guiGraphics.enableScissor(
-                contentX,
-                contentY,
-                contentX + contentWidth,
-                contentY + contentHeight
+                scissorX,
+                scissorY,
+                scissorX + contentWidth,
+                scissorY + contentHeight
         );
 
         int selectionStart = Math.min(textHelper.getCursorPos(), textHelper.getSelectionPos());
