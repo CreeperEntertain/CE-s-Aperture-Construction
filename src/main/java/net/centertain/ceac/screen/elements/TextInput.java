@@ -434,7 +434,7 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         int cursorPosition = getCursorPosition(mouseX);
 
         switch (dragMode) {
-            case NORMAL -> textHelper.setSelectionPos(cursorPosition);
+            case NORMAL -> textHelper.setCursorPos(cursorPosition, true);
             case WORD -> updateWordSelection(cursorPosition);
             case NONE -> {}
         }
