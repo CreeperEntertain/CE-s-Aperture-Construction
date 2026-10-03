@@ -264,21 +264,21 @@ public final class LeftContainer {
         Spacer spacer = new Spacer(0, GuiConstants.ELEMENT_PADDING);
 
 
-        Label itemName = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
+        Label itemName = DynamicLabel.get(white, scale, () -> stack.get() == null || stack.get().getItem() == Items.AIR ? "" :
                 "Name: " + stack.get().getHoverName().getString()
         );
 
-        Label itemCount = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
+        Label itemCount = DynamicLabel.get(white, scale, () -> stack.get() == null || stack.get().getItem() == Items.AIR ? "" :
                 "In possession: " + player.get().getInventory().countItem(stack.get().getItem())
         );
 
-        Label itemWorth = DynamicLabel.get(white, scale, () -> stack.get() == null ? "" :
+        Label itemWorth = DynamicLabel.get(white, scale, () -> stack.get() == null || stack.get().getItem() == Items.AIR ? "" :
                 "Sells for: ▲" + (PriceConstants.get(stack.get()) == null
                         ? 0 : String.format("%.2f", PriceConstants.get(stack.get())))
         );
         itemWorth.setDynamicColor(() -> PriceConstants.get(stack.get()) == null ? gray : green);
 
-        Label itemHash = DynamicLabel.get(gray, scale, () -> stack.get() == null ? "" :
+        Label itemHash = DynamicLabel.get(gray, scale, () -> stack.get() == null || stack.get().getItem() == Items.AIR ? "" :
                 "Code: #" + stack.get().getItem().hashCode()
         );
 
