@@ -17,27 +17,6 @@ public final class RightContainer {
             int width,
             int height
     ) {
-        TextInput input = new TextInput(
-                width - (GuiConstants.ELEMENT_PADDING * 2),
-                25,
-                "Placeholder",
-                GuiConstants.COLOR_SOLID_LIGHT_GRAY,
-                1.0f,
-                false,
-                () -> {}
-        );
-        Padder inputPadder = new Padder(
-                width,
-                height,
-                GuiConstants.ELEMENT_PADDING,
-                input
-        );
-        Aligner inputAligner = new Aligner(
-                width,
-                height,
-                Aligner.Alignment.BOTTOM,
-                inputPadder
-        );
 
         Rect background = new Rect(
                 width,
@@ -50,8 +29,7 @@ public final class RightContainer {
                 width,
                 height,
                 List.of(
-                        background,
-                        inputAligner
+                        background
                 )
         );
     }
