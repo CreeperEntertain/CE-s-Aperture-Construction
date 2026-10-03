@@ -54,7 +54,7 @@ public final class LeftContainer {
                         ITEM_BOUNDS,
                         GuiConstants.COLOR_TRANSLUCENT_BLACK_75
                 ),
-                getDisplay(x, y, inventoryWidth, leftHeight, getStack, playerSupplier, increaseCurrency)
+                getDisplay(inventoryWidth, leftHeight, getStack, playerSupplier, increaseCurrency)
         );
 
         Container leftContainer = new Container(
@@ -76,8 +76,6 @@ public final class LeftContainer {
     }
 
     private static Element getDisplay(
-            int x,
-            int y,
             int width,
             int height,
             Supplier<ItemStack> getStack,
@@ -117,8 +115,8 @@ public final class LeftContainer {
                 description
         );
         panelContents.add(new ScrollContainer(
-                x,
-                y,
+                0,
+                0,
                 descriptionPadder.getRealWidth(),
                 height,
                 ScrollContainer.Alignment.VERTICAL,
