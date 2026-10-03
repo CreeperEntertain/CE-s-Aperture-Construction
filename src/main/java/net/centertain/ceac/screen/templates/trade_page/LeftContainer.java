@@ -2,6 +2,8 @@ package net.centertain.ceac.screen.templates.trade_page;
 
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.constants.PriceConstants;
+import net.centertain.ceac.material.network.SellItemPacket;
+import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.templates.AlignedLabel;
@@ -30,8 +32,7 @@ public final class LeftContainer {
             int leftHeight,
             Supplier<Player> playerSupplier,
             Consumer<ItemStack> setStack,
-            Supplier<ItemStack> getStack,
-            Consumer<Double> increaseCurrency
+            Supplier<ItemStack> getStack
     ) {
         Container inventory = InventoryTemplate.get(
                 x,
@@ -54,7 +55,7 @@ public final class LeftContainer {
                         ITEM_BOUNDS,
                         GuiConstants.COLOR_TRANSLUCENT_BLACK_75
                 ),
-                getDisplay(inventoryWidth, leftHeight, getStack, playerSupplier, increaseCurrency)
+                getDisplay(inventoryWidth, leftHeight, getStack, playerSupplier)
         );
 
         Container leftContainer = new Container(
@@ -79,8 +80,7 @@ public final class LeftContainer {
             int width,
             int height,
             Supplier<ItemStack> getStack,
-            Supplier<Player> playerSupplier,
-            Consumer<Double> increaseCurrency
+            Supplier<Player> playerSupplier
     ) {
         ItemDisplay item = new ItemDisplay(
                 ITEM_DISPLAY_SIZE,
@@ -100,8 +100,7 @@ public final class LeftContainer {
                 ITEM_DISPLAY_SIZE,
                 height,
                 playerSupplier,
-                getStack,
-                increaseCurrency
+                getStack
         ));
         StackPanel description = getDescription(
                 width - ITEM_BOUNDS,
@@ -140,8 +139,7 @@ public final class LeftContainer {
             int width,
             int height,
             Supplier<Player> player,
-            Supplier<ItemStack> stack,
-            Consumer<Double> increaseCurrency
+            Supplier<ItemStack> stack
     ) {
         ItemDisplay item = new ItemDisplay(
                 ITEM_DISPLAY_SIZE,
@@ -163,13 +161,13 @@ public final class LeftContainer {
         );
 
         Button sellOne = getSalesButton(ITEM_BOUNDS, "Sell", 1, player, stack, () ->
-                sellItem(1, player, stack, increaseCurrency)
+                sellItem(1, player, stack)
         );
         Button sellTen = getSalesButton(ITEM_BOUNDS, "Sell 10", 10, player, stack, () ->
-                sellItem(10, player, stack, increaseCurrency)
+                sellItem(10, player, stack)
         );
         Button sellHundred = getSalesButton(ITEM_BOUNDS, "Sell 100", 100, player, stack, () ->
-                sellItem(100, player, stack, increaseCurrency)
+                sellItem(100, player, stack)
         );
         StackPanel buttonStack = new StackPanel(
                 0,
@@ -199,23 +197,19 @@ public final class LeftContainer {
     private static void sellItem(
             int amount,
             Supplier<Player> player,
-            Supplier<ItemStack> stack,
-            Consumer<Double> increaseCurrency
+            Supplier<ItemStack> stack
     ) {
-        if (stack.get() == null)
+        ItemStack selected = stack.get();
+
+        if (selected == null)
             return;
-        if (player.get().getInventory().countItem(stack.get().getItem()) < amount)
+        if (player.get().getInventory().countItem(selected.getItem()) < amount)
             return;
-        Double worth = PriceConstants.get(stack.get());
+        Double worth = PriceConstants.get(selected);
         if (worth == null)
             return;
 
-        player.get().getInventory().clearOrCountMatchingItems(
-                clear -> clear.is(stack.get().getItem()),
-                amount,
-                player.get().getInventory()
-        );
-        increaseCurrency.accept(worth * amount);
+        ModNetworking.CHANNEL.sendToServer(new SellItemPacket(selected.getItem(), amount));
     }
 
     @SuppressWarnings("SameParameterValue")

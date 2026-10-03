@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class PurchasingTermialScreen extends Screen {
-    private final static String CURRENCY_TAG = "ceac_currency";
+    public final static String CURRENCY_TAG = "ceac_currency";
 
     private final Player player;
     private int purchaseMultiplier = 1;
@@ -110,7 +110,7 @@ public class PurchasingTermialScreen extends Screen {
         int height = this.height - y - GuiConstants.SCREEN_PADDING;
 
         List<Page> pages = List.of(
-                new TradePage(x, y, width, height, this::getPlayer, this::increaseCurrency),
+                new TradePage(x, y, width, height, this::getPlayer),
                 BasicsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency),
                 ShapesPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency),
                 MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency)

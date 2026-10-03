@@ -31,8 +31,7 @@ public class TradePage extends Page {
             int y,
             int width,
             int height,
-            Supplier<Player> playerSupplier,
-            Consumer<Double> increaseCurrency
+            Supplier<Player> playerSupplier
     ) {
         super("Trade", width, height, new Empty());
 
@@ -49,8 +48,7 @@ public class TradePage extends Page {
                 leftHeight,
                 playerSupplier,
                 this::setStack,
-                this::getStack,
-                increaseCurrency
+                this::getStack
         );
 
         setX(x);
