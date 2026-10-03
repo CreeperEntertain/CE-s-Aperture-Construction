@@ -2,6 +2,7 @@ package net.centertain.ceac.screen.templates.pages;
 
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.elements.*;
+import net.centertain.ceac.screen.templates.FromTextFile;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -83,6 +84,8 @@ public final class InfoPage {
             int y,
             int width
     ) {
+        TextBox first = FromTextFile.get(width, "net/centertain/ceac/screen/templates/info_page/1.txt");
+
         return new StackPanel(
                 x,
                 y,
@@ -90,7 +93,9 @@ public final class InfoPage {
                 width,
                 GuiConstants.ELEMENT_PADDING,
                 GuiConstants.COLOR_TRANSPARENT,
-                List.of()
+                List.of(
+                        first
+                )
         );
     }
 }
