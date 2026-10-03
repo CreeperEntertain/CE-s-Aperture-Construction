@@ -3,7 +3,6 @@ package net.centertain.ceac.material.network;
 import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.material.PlayerCurrency;
 import net.centertain.ceac.network.ModNetworking;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
