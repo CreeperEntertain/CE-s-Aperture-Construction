@@ -22,6 +22,8 @@ public final class GuiConstants {
 
     public static final Vec3 HELP_SCREEN_OFFSET = new Vec3(1.5, 0.0, 0.0);
 
+    public static final int COLOR_TEXT_SELECTION = 0x805555FF;
+
     public static final int COLOR_SOLID_BLACK = 0xFF000000;
     public static final int COLOR_TRANSLUCENT_BLACK_25 = 0x40000000;
     public static final int COLOR_TRANSLUCENT_BLACK_50 = 0x80000000;
