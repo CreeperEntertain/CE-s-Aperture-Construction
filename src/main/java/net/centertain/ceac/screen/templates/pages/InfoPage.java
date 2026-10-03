@@ -59,7 +59,7 @@ public final class InfoPage {
                 width,
                 height,
                 main,
-                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+                GuiConstants.COLOR_TRANSPARENT
         );
 
         return new Page(
@@ -84,15 +84,6 @@ public final class InfoPage {
             int y,
             int width
     ) {
-        int white = GuiConstants.COLOR_SOLID_WHITE;
-        String files = "assets/ceac/textboxes/info_page/";
-        Spacer spacer = new Spacer(0, 0);
-
-        Label firstTitle = new Label(white, Component.literal(
-                "Basics"
-        ), 1.0f, false);
-        TextBox first = FromTextFile.get(width, files + "1.txt");
-
         return new StackPanel(
                 x,
                 y,
@@ -101,10 +92,41 @@ public final class InfoPage {
                 GuiConstants.ELEMENT_PADDING,
                 GuiConstants.COLOR_TRANSPARENT,
                 List.of(
-                        firstTitle,
-                        first,
-                        spacer
+                        getSection(width, "Basics", "basics.txt")
                 )
+        );
+    }
+
+    private static StackPanel getSection(
+            int width,
+            String title,
+            String filename
+    ) {
+        TextBox text = FromTextFile.get(width, "assets/ceac/textboxes/info_page/" + filename);
+        Container textWrapper = new Container(
+                0,
+                0,
+                width,
+                text.getHeight(),
+                text,
+                GuiConstants.COLOR_TRANSLUCENT_BLACK_75
+        );
+        Foldout foldout = new Foldout(
+                Component.literal(title),
+                width,
+                2,
+                true,
+                textWrapper
+        );
+        Spacer spacer = new Spacer(0,0);
+        return new StackPanel(
+                0,
+                0,
+                StackPanel.Alignment.VERTICAL,
+                width,
+                GuiConstants.ELEMENT_PADDING,
+                GuiConstants.COLOR_TRANSPARENT,
+                List.of(foldout, spacer)
         );
     }
 }
