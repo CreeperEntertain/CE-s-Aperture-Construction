@@ -50,6 +50,7 @@ public class TextBox implements Element {
         this.lineSpacing = lineSpacing;
         this.color = color;
         this.shadow = shadow;
+        rebuildLines();
     }
 
     public TextBox(
@@ -70,6 +71,7 @@ public class TextBox implements Element {
         this.color = color;
         this.shadow = shadow;
         this.font = font;
+        rebuildLines();
     }
 
     public TextBox(
@@ -90,6 +92,7 @@ public class TextBox implements Element {
         this.lineSpacing = lineSpacing;
         this.color = color;
         this.shadow = shadow;
+        rebuildLines();
     }
 
     public TextBox(
@@ -112,6 +115,7 @@ public class TextBox implements Element {
         this.color = color;
         this.shadow = shadow;
         this.font = font;
+        rebuildLines();
     }
 
     public TextBox(
@@ -131,6 +135,7 @@ public class TextBox implements Element {
         this.lineSpacing = lineSpacing;
         this.color = color;
         this.shadow = shadow;
+        rebuildLines();
     }
 
     public TextBox(
@@ -152,6 +157,7 @@ public class TextBox implements Element {
         this.color = color;
         this.shadow = shadow;
         this.font = font;
+        rebuildLines();
     }
 
     public int getX() {
