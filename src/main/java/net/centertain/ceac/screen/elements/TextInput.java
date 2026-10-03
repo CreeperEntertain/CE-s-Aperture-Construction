@@ -18,16 +18,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.function.Supplier;
+
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public class TextInput implements Element, Hoverable, GuiEventListener {
     private static final long DOUBLE_CLICK_TIME = 250L;
     private static final double DOUBLE_CLICK_DISTANCE = 4.0;
-
-    private static final int OUTLINE_COLOR = GuiConstants.COLOR_SOLID_LIGHT_GRAY;
-    private static final int PLACEHOLDER_COLOR = GuiConstants.COLOR_SOLID_DARK_GRAY;
-    private static final int SELECTION_COLOR = GuiConstants.COLOR_TEXT_SELECTION;
-    private static final int CURSOR_COLOR = GuiConstants.COLOR_SOLID_WHITE;
 
     private int x;
     private int y;
@@ -37,12 +34,17 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     private @NotNull String text;
     private @Nullable String placeholder;
 
-    private final int textColor;
-    private final float textScale;
-    private final boolean shadow;
+    private int textColor;
+    private float textScale;
+    private boolean shadow;
     private @NotNull Font font;
 
-    private final @NotNull Runnable onEnter;
+    private @NotNull Runnable onEnter;
+
+    private int outlineColor = GuiConstants.COLOR_SOLID_LIGHT_GRAY;
+    private int placeholderColor = GuiConstants.COLOR_SOLID_DARK_GRAY;
+    private int selectionColor = GuiConstants.COLOR_TEXT_SELECTION;
+    private int cursorColor = GuiConstants.COLOR_SOLID_WHITE;
 
     private final @NotNull TextFieldHelper textHelper;
 
@@ -64,7 +66,22 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
 
     private long lastCursorActivity;
     private long lastAutoScrollTime;
-    private double lastMouseX;
+
+    private @Nullable Supplier<@NotNull Integer> dynamicX = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicY = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicWidth = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicHeight = null;
+    private @Nullable Supplier<@NotNull String> dynamicText = null;
+    private @Nullable Supplier<@Nullable String> dynamicPlaceholder = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicTextColor = null;
+    private @Nullable Supplier<@NotNull Float> dynamicTextScale = null;
+    private @Nullable Supplier<@NotNull Boolean> dynamicShadow = null;
+    private @Nullable Supplier<@NotNull Font> dynamicFont = null;
+    private @Nullable Supplier<@NotNull Runnable> dynamicOnEnter = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicOutlineColor = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicPlaceholderColor = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicSelectionColor = null;
+    private @Nullable Supplier<@NotNull Integer> dynamicCursorColor = null;
 
     private enum DragMode {
         NONE,
@@ -73,6 +90,29 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     }
 
     public TextInput(
+            @NotNull Element dimensionSupplier,
+            @Nullable String placeholder,
+            int textColor,
+            float textScale,
+            boolean shadow,
+            @NotNull Runnable onEnter
+    ) {
+        this(
+                dimensionSupplier.getX(),
+                dimensionSupplier.getY(),
+                dimensionSupplier.getWidth(),
+                dimensionSupplier.getHeight(),
+                placeholder,
+                textColor,
+                textScale,
+                shadow,
+                BitfontManager.FONT,
+                onEnter
+        );
+    }
+
+    public TextInput(
+            @NotNull Element positionSupplier,
             int width,
             int height,
             @Nullable String placeholder,
@@ -82,6 +122,8 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
             @NotNull Runnable onEnter
     ) {
         this(
+                positionSupplier.getX(),
+                positionSupplier.getY(),
                 width,
                 height,
                 placeholder,
@@ -94,6 +136,268 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     }
 
     public TextInput(
+            int x,
+            int y,
+            int width,
+            int height,
+            @Nullable String placeholder,
+            int textColor,
+            float textScale,
+            boolean shadow,
+            @NotNull Runnable onEnter
+    ) {
+        this(
+                x,
+                y,
+                width,
+                height,
+                placeholder,
+                textColor,
+                textScale,
+                shadow,
+                BitfontManager.FONT,
+                onEnter
+        );
+    }
+
+    public TextInput(
+            @NotNull Element dimensionSupplier,
+            @Nullable String placeholder,
+            int textColor,
+            float textScale,
+            boolean shadow,
+            @NotNull Font font,
+            @NotNull Runnable onEnter
+    ) {
+        this(
+                dimensionSupplier.getX(),
+                dimensionSupplier.getY(),
+                dimensionSupplier.getWidth(),
+                dimensionSupplier.getHeight(),
+                placeholder,
+                textColor,
+                textScale,
+                shadow,
+                font,
+                onEnter
+        );
+    }
+
+    public TextInput(
+            @NotNull Element positionSupplier,
+            int width,
+            int height,
+            @Nullable String placeholder,
+            int textColor,
+            float textScale,
+            boolean shadow,
+            @NotNull Font font,
+            @NotNull Runnable onEnter
+    ) {
+        this(
+                positionSupplier.getX(),
+                positionSupplier.getY(),
+                width,
+                height,
+                placeholder,
+                textColor,
+                textScale,
+                shadow,
+                font,
+                onEnter
+        );
+    }
+
+    public TextInput(
+            @NotNull Element dimensionSupplier,
+            @Nullable String placeholder,
+            int textColor,
+            float textScale,
+            boolean shadow,
+            @NotNull Runnable onEnter,
+            int outlineColor,
+            int placeholderColor,
+            int selectionColor,
+            int cursorColor
+    ) {
+        this(
+                dimensionSupplier.getX(),
+                dimensionSupplier.getY(),
+                dimensionSupplier.getWidth(),
+                dimensionSupplier.getHeight(),
+                placeholder,
+                textColor,
+                textScale,
+                shadow,
+                BitfontManager.FONT,
+                onEnter
+        );
+        setAdditionalColors(outlineColor, placeholderColor, selectionColor, cursorColor);
+    }
+
+    public TextInput(
+            @NotNull Element positionSupplier,
+            int width,
+            int height,
+            @Nullable String placeholder,
+            int textColor,
+            float textScale,
+            boolean shadow,
+            @NotNull Runnable onEnter,
+            int outlineColor,
+            int placeholderColor,
+            int selectionColor,
+            int cursorColor
+    ) {
+        this(
+                positionSupplier.getX(),
+                positionSupplier.getY(),
+                width,
+                height,
+                placeholder,
+                textColor,
+                textScale,
+                shadow,
+                BitfontManager.FONT,
+                onEnter
+        );
+        setAdditionalColors(outlineColor, placeholderColor, selectionColor, cursorColor);
+    }
+
+    public TextInput(
+            int x,
+            int y,
+            int width,
+            int height,
+            @Nullable String placeholder,
+            int textColor,
+            float textScale,
+            boolean shadow,
+            @NotNull Runnable onEnter,
+            int outlineColor,
+            int placeholderColor,
+            int selectionColor,
+            int cursorColor
+    ) {
+        this(
+                x,
+                y,
+                width,
+                height,
+                placeholder,
+                textColor,
+                textScale,
+                shadow,
+                BitfontManager.FONT,
+                onEnter
+        );
+        setAdditionalColors(outlineColor, placeholderColor, selectionColor, cursorColor);
+    }
+
+    public TextInput(
+            @NotNull Element dimensionSupplier,
+            @Nullable String placeholder,
+            int textColor,
+            float textScale,
+            boolean shadow,
+            @NotNull Font font,
+            @NotNull Runnable onEnter,
+            int outlineColor,
+            int placeholderColor,
+            int selectionColor,
+            int cursorColor
+    ) {
+        this(
+                dimensionSupplier.getX(),
+                dimensionSupplier.getY(),
+                dimensionSupplier.getWidth(),
+                dimensionSupplier.getHeight(),
+                placeholder,
+                textColor,
+                textScale,
+                shadow,
+                font,
+                onEnter
+        );
+        setAdditionalColors(outlineColor, placeholderColor, selectionColor, cursorColor);
+    }
+
+    public TextInput(
+            @NotNull Element positionSupplier,
+            int width,
+            int height,
+            @Nullable String placeholder,
+            int textColor,
+            float textScale,
+            boolean shadow,
+            @NotNull Font font,
+            @NotNull Runnable onEnter,
+            int outlineColor,
+            int placeholderColor,
+            int selectionColor,
+            int cursorColor
+    ) {
+        this(
+                positionSupplier.getX(),
+                positionSupplier.getY(),
+                width,
+                height,
+                placeholder,
+                textColor,
+                textScale,
+                shadow,
+                font,
+                onEnter
+        );
+        setAdditionalColors(outlineColor, placeholderColor, selectionColor, cursorColor);
+    }
+
+    public TextInput(
+            int x,
+            int y,
+            int width,
+            int height,
+            @Nullable String placeholder,
+            int textColor,
+            float textScale,
+            boolean shadow,
+            @NotNull Font font,
+            @NotNull Runnable onEnter,
+            int outlineColor,
+            int placeholderColor,
+            int selectionColor,
+            int cursorColor
+    ) {
+        this(
+                x,
+                y,
+                width,
+                height,
+                placeholder,
+                textColor,
+                textScale,
+                shadow,
+                font,
+                onEnter
+        );
+        setAdditionalColors(outlineColor, placeholderColor, selectionColor, cursorColor);
+    }
+
+    private void setAdditionalColors(
+            int outlineColor,
+            int placeholderColor,
+            int selectionColor,
+            int cursorColor
+    ) {
+        this.outlineColor = outlineColor;
+        this.placeholderColor = placeholderColor;
+        this.selectionColor = selectionColor;
+        this.cursorColor = cursorColor;
+    }
+
+    public TextInput(
+            int x,
+            int y,
             int width,
             int height,
             @Nullable String placeholder,
@@ -106,8 +410,8 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         if (textScale <= 0.0f)
             throw new IllegalArgumentException("textScale must be greater than zero");
 
-        this.x = 0;
-        this.y = 0;
+        this.x = x;
+        this.y = y;
         this.width = width;
         this.height = height;
 
@@ -165,6 +469,21 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     public @NotNull Font getFont() {
         return font;
     }
+    public @NotNull Runnable getOnEnter() {
+        return onEnter;
+    }
+    public int getOutlineColor() {
+        return outlineColor;
+    }
+    public int getPlaceholderColor() {
+        return placeholderColor;
+    }
+    public int getSelectionColor() {
+        return selectionColor;
+    }
+    public int getCursorColor() {
+        return cursorColor;
+    }
     public int getCursorPosition() {
         return textHelper.getCursorPos();
     }
@@ -180,6 +499,65 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         return text.substring(start, end);
     }
 
+    public @Nullable Supplier<@NotNull Integer> getDynamicX() {
+        return dynamicX;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicY() {
+        return dynamicY;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicWidth() {
+        return dynamicWidth;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicHeight() {
+        return dynamicHeight;
+    }
+    public @Nullable Supplier<@NotNull String> getDynamicText() {
+        return dynamicText;
+    }
+    public @Nullable Supplier<@Nullable String> getDynamicPlaceholder() {
+        return dynamicPlaceholder;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicTextColor() {
+        return dynamicTextColor;
+    }
+    public @Nullable Supplier<@NotNull Float> getDynamicTextScale() {
+        return dynamicTextScale;
+    }
+    public @Nullable Supplier<@NotNull Boolean> getDynamicShadow() {
+        return dynamicShadow;
+    }
+    public @Nullable Supplier<@NotNull Font> getDynamicFont() {
+        return dynamicFont;
+    }
+    public @Nullable Supplier<@NotNull Runnable> getDynamicOnEnter() {
+        return dynamicOnEnter;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicOutlineColor() {
+        return dynamicOutlineColor;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicPlaceholderColor() {
+        return dynamicPlaceholderColor;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicSelectionColor() {
+        return dynamicSelectionColor;
+    }
+    public @Nullable Supplier<@NotNull Integer> getDynamicCursorColor() {
+        return dynamicCursorColor;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+    public void setY(int y) {
+        this.y = y;
+    }
+    public void setWidth(int width) {
+        this.width = width;
+        clampDisplayOffset();
+    }
+    public void setHeight(int height) {
+        this.height = height;
+    }
     public void setText(@NotNull String text) {
         if (!isValidText(text))
             throw new IllegalArgumentException("TextInput does not support line breaks");
@@ -195,22 +573,34 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     public void setPlaceholder(@Nullable String placeholder) {
         this.placeholder = placeholder;
     }
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
+    }
+    public void setTextScale(float textScale) {
+        this.textScale = textScale;
+        clampDisplayOffset();
+    }
+    public void setShadow(boolean shadow) {
+        this.shadow = shadow;
+    }
     public void setFont(@NotNull Font font) {
         this.font = font;
         clampDisplayOffset();
     }
-    public void setX(int x) {
-        this.x = x;
+    public void setOnEnter(@NotNull Runnable onEnter) {
+        this.onEnter = onEnter;
     }
-    public void setY(int y) {
-        this.y = y;
+    public void setOutlineColor(int outlineColor) {
+        this.outlineColor = outlineColor;
     }
-    public void setWidth(int width) {
-        this.width = width;
-        clampDisplayOffset();
+    public void setPlaceholderColor(int placeholderColor) {
+        this.placeholderColor = placeholderColor;
     }
-    public void setHeight(int height) {
-        this.height = height;
+    public void setSelectionColor(int selectionColor) {
+        this.selectionColor = selectionColor;
+    }
+    public void setCursorColor(int cursorColor) {
+        this.cursorColor = cursorColor;
     }
     public void setDimensions(@NotNull Element dimensionSupplier) {
         this.x = dimensionSupplier.getX();
@@ -219,6 +609,52 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         this.height = dimensionSupplier.getHeight();
 
         clampDisplayOffset();
+    }
+
+    public void setDynamicX(@Nullable Supplier<@NotNull Integer> dynamicX) {
+        this.dynamicX = dynamicX;
+    }
+    public void setDynamicY(@Nullable Supplier<@NotNull Integer> dynamicY) {
+        this.dynamicY = dynamicY;
+    }
+    public void setDynamicWidth(@Nullable Supplier<@NotNull Integer> dynamicWidth) {
+        this.dynamicWidth = dynamicWidth;
+    }
+    public void setDynamicHeight(@Nullable Supplier<@NotNull Integer> dynamicHeight) {
+        this.dynamicHeight = dynamicHeight;
+    }
+    public void setDynamicText(@Nullable Supplier<@NotNull String> dynamicText) {
+        this.dynamicText = dynamicText;
+    }
+    public void setDynamicPlaceholder(@Nullable Supplier<@Nullable String> dynamicPlaceholder) {
+        this.dynamicPlaceholder = dynamicPlaceholder;
+    }
+    public void setDynamicTextColor(@Nullable Supplier<@NotNull Integer> dynamicTextColor) {
+        this.dynamicTextColor = dynamicTextColor;
+    }
+    public void setDynamicTextScale(@Nullable Supplier<@NotNull Float> dynamicTextScale) {
+        this.dynamicTextScale = dynamicTextScale;
+    }
+    public void setDynamicShadow(@Nullable Supplier<@NotNull Boolean> dynamicShadow) {
+        this.dynamicShadow = dynamicShadow;
+    }
+    public void setDynamicFont(@Nullable Supplier<@NotNull Font> dynamicFont) {
+        this.dynamicFont = dynamicFont;
+    }
+    public void setDynamicOnEnter(@Nullable Supplier<@NotNull Runnable> dynamicOnEnter) {
+        this.dynamicOnEnter = dynamicOnEnter;
+    }
+    public void setDynamicOutlineColor(@Nullable Supplier<@NotNull Integer> dynamicOutlineColor) {
+        this.dynamicOutlineColor = dynamicOutlineColor;
+    }
+    public void setDynamicPlaceholderColor(@Nullable Supplier<@NotNull Integer> dynamicPlaceholderColor) {
+        this.dynamicPlaceholderColor = dynamicPlaceholderColor;
+    }
+    public void setDynamicSelectionColor(@Nullable Supplier<@NotNull Integer> dynamicSelectionColor) {
+        this.dynamicSelectionColor = dynamicSelectionColor;
+    }
+    public void setDynamicCursorColor(@Nullable Supplier<@NotNull Integer> dynamicCursorColor) {
+        this.dynamicCursorColor = dynamicCursorColor;
     }
 
 
@@ -269,7 +705,6 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         if (!isMouseOver(mouseX, mouseY))
             return false;
 
-        lastMouseX = mouseX;
         long now = System.currentTimeMillis();
 
         if (
@@ -336,7 +771,6 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT)
             return false;
 
-        lastMouseX = mouseX;
         lastAutoScrollTime = 0L;
 
         updateDrag(mouseX);
@@ -355,7 +789,6 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         if (!dragging)
             return false;
 
-        lastMouseX = mouseX;
         dragging = false;
         dragMode = DragMode.NONE;
         lastAutoScrollTime = 0L;
@@ -646,6 +1079,22 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         return (System.currentTimeMillis() - lastCursorActivity) % 1000 < 500;
     }
 
+    private void applyDynamics() {
+        if (dynamicX != null) setX(dynamicX.get());
+        if (dynamicY != null) setY(dynamicY.get());
+        if (dynamicWidth != null) setWidth(dynamicWidth.get());
+        if (dynamicHeight != null) setHeight(dynamicHeight.get());
+        if (dynamicText != null) setText(dynamicText.get());
+        if (dynamicPlaceholder != null) setPlaceholder(dynamicPlaceholder.get());
+        if (dynamicTextColor != null) setTextColor(dynamicTextColor.get());
+        if (dynamicShadow != null) setShadow(dynamicShadow.get());
+        if (dynamicFont != null) setFont(dynamicFont.get());
+        if (dynamicOnEnter != null) setOnEnter(dynamicOnEnter.get());
+        if (dynamicOutlineColor != null) setOutlineColor(dynamicOutlineColor.get());
+        if (dynamicPlaceholderColor != null) setPlaceholderColor(dynamicPlaceholderColor.get());
+        if (dynamicCursorColor != null) setCursorColor(dynamicCursorColor.get());
+    }
+
     @Override
     public void render(
             @NotNull GuiGraphics guiGraphics,
@@ -653,6 +1102,8 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
             int mouseY,
             float partialTick
     ) {
+        applyDynamics();
+
         if (hovered)
             ClientEvents.setIBeamCursor();
         if (hovered || focused)
@@ -695,7 +1146,7 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
                     placeholder,
                     contentX - displayOffset * textScale,
                     textY,
-                    PLACEHOLDER_COLOR
+                    placeholderColor
             );
         else
             renderText(
@@ -723,28 +1174,28 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
                 y,
                 x + width,
                 y + 1,
-                OUTLINE_COLOR
+                outlineColor
         );
         guiGraphics.fill(
                 x,
                 y + height - 1,
                 x + width,
                 y + height,
-                OUTLINE_COLOR
+                outlineColor
         );
         guiGraphics.fill(
                 x,
                 y + 1,
                 x + 1,
                 y + height - 1,
-                OUTLINE_COLOR
+                outlineColor
         );
         guiGraphics.fill(
                 x + width - 1,
                 y + 1,
                 x + width,
                 y + height - 1,
-                OUTLINE_COLOR
+                outlineColor
         );
     }
 
@@ -763,7 +1214,7 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
                 textY,
                 selectionX2,
                 textY + textHeight,
-                SELECTION_COLOR
+                selectionColor
         );
     }
 
@@ -778,7 +1229,7 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
                 textY,
                 cursorX + 1,
                 textY + textHeight,
-                CURSOR_COLOR
+                cursorColor
         );
     }
 
