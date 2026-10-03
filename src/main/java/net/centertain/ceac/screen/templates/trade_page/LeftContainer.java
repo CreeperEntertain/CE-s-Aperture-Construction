@@ -202,6 +202,8 @@ public final class LeftContainer {
             Supplier<ItemStack> stack,
             Consumer<Double> increaseCurrency
     ) {
+        if (stack.get() == null)
+            return;
         if (player.get().getInventory().countItem(stack.get().getItem()) < amount)
             return;
         Double worth = PriceConstants.get(stack.get());
@@ -227,7 +229,7 @@ public final class LeftContainer {
     ) {
         Aligner alignedLabel = AlignedLabel.get(text, GuiConstants.TAB_BUTTON_HEIGHT);
         if (alignedLabel.getElement() instanceof Label label) {
-            label.setDynamicColor(() -> stack.get() == null
+            label.setDynamicColor(() -> stack.get() == null || PriceConstants.get(stack.get()) == null
                     ? GuiConstants.COLOR_MINECRAFT_DARK_GRAY
                     : player.get().getInventory().countItem(stack.get().getItem()) >= multiplier
                             ? GuiConstants.COLOR_MINECRAFT_GREEN
