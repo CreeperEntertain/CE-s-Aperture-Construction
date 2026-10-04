@@ -4,4 +4,4 @@ This project, whilst potentially not appearing that way to some, was very hard t
 
 Another thing that is important to me is to make this project in a way which also generally fits industrial building styles not necessarily related to Portal. Whilst the textures in this mod are my best attempt to faithfully recreate the original extracted resources from the Portal game files, I made certain design decisions that, hopefully, lead to those building materials being fitting with vanilla designs, as well as designs from other mods.
 
-Additionally, I want to express a great thank you to all of the people who supported me throughout the creation of this project, and especially to CerealSniper, who helped out with solving a shader related issue.
+Additionally, I want to express a great thank you to all of the people who supported me throughout the creation of this project, and especially to SerialSniper, who helped out with solving a shader related issue.
