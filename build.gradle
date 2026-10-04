@@ -9,6 +9,27 @@ plugins {
 
 jarJar.enable()
 
+tasks.jarJar.finalizedBy('reobfJarJar')
+tasks.jarJar.archiveClassifier = ''
+
+tasks.named('jar', Jar).configure {
+    archiveClassifier = 'plain'
+
+    manifest {
+        attributes([
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1',
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                        ])
+    }
+
+    finalizedBy 'reobfJar'
+}
+
 version = mod_version
 group = mod_group_id
 
