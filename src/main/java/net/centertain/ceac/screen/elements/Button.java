@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public class Button extends AbstractWidget implements Element, ElementContainer, Hoverable, GuiEventListener {
+public class Button implements Element, ElementContainer, Hoverable, GuiEventListener {
     private int x;
     private int y;
     private int width;
@@ -43,14 +43,8 @@ public class Button extends AbstractWidget implements Element, ElementContainer,
             int backgroundColor,
             int outlineColor
     ) {
-        super(
-                x,
-                y,
-                element.getWidth(),
-                element.getHeight(),
-                Component.empty()
-        );
-
+        this.x = x;
+        this.y = y;
         this.element = element;
         this.onPress = onPress;
         this.backgroundColor = backgroundColor;
@@ -183,7 +177,7 @@ public class Button extends AbstractWidget implements Element, ElementContainer,
     }
 
     @Override
-    public void renderWidget(
+    public void render(
             @NotNull GuiGraphics guiGraphics,
             int mouseX,
             int mouseY,
@@ -242,13 +236,6 @@ public class Button extends AbstractWidget implements Element, ElementContainer,
                 y + height,
                 outlineColor
         );
-    }
-
-    @Override
-    protected void updateWidgetNarration(
-            @NotNull NarrationElementOutput narrationElementOutput
-    ) {
-        narrationElementOutput.add(NarratedElementType.TITLE, getMessage());
     }
 
     @Override
