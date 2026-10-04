@@ -1,0 +1,7 @@
+There are two main tools provided with this mod. The scraper and the wrench.
+
+More specific information about the wrench can be read in the “Shapes” section of this page, but a short explanation is that it’s used to rotate shapes (blocks) based on the direction you look in.
+
+The scraper is used in combination with decals. More about decals can be read in an earlier section. When using a scraper on a block, it will remove the latest decal that was placed which partially covers it. That means a decal can only very slightly cover a block, but it will still be removed when you click it. It also means you will have to remove individual layers of decals if you want to remove one that’s underneath.
+For a quick removal method, you can sneak whilst clicking a block. This will instantly tear off any decal that at least partially covers the block.
+When scraping off decals, they will drop so long as the tile drop game rule is set to true. This is irrelevant for any normal survival playthrough but important to note for creative mode worlds or adventure maps.
