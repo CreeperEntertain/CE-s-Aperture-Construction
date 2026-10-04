@@ -1,11 +1,15 @@
 package net.centertain.ceac.block.custom;
 
 import net.centertain.ceac.screen.PurchasingTermialScreen;
+import net.centertain.ceac.sound.ModSounds;
+import net.centertain.ceac.utility.Mathworks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -13,6 +17,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -31,7 +36,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class PurchasingTerminal extends Block {
+public class PurchasingTerminal extends FallingBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty BROKEN = BooleanProperty.create("broken");
 
@@ -132,5 +137,28 @@ public class PurchasingTerminal extends Block {
                 stack.getOrCreateTagElement(BlockItem.BLOCK_STATE_TAG)
                         .putBoolean("broken", state.getValue(BROKEN));
         return drops;
+    }
+
+    @Override
+    public void onLand(
+            @NotNull Level level,
+            @NotNull BlockPos pos,
+            @NotNull BlockState fallingBlockState,
+            @NotNull BlockState currentState,
+            @NotNull FallingBlockEntity entity
+    ) {
+        level.setBlock(
+                pos,
+                fallingBlockState.setValue(BROKEN, true),
+                Block.UPDATE_ALL
+        );
+        level.playSound(
+                null,
+                pos,
+                ModSounds.PURCHASING_TERMINAL_BREAK.get(),
+                SoundSource.BLOCKS,
+                Mathworks.randomBetween(0.9f, 1.1f),
+                Mathworks.randomBetween(0.9f, 1.1f)
+        );
     }
 }

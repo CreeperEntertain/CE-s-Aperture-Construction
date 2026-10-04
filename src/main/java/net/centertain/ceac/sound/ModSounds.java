@@ -27,6 +27,7 @@ public final class ModSounds {
 
     public static final RegistryObject<SoundEvent> PURCHASING_TERMINAL_PURCHASE = register("purchasing_terminal_purchase");
     public static final RegistryObject<SoundEvent> PURCHASING_TERMINAL_SELL = register("purchasing_terminal_sell");
+    public static final RegistryObject<SoundEvent> PURCHASING_TERMINAL_BREAK = register("purchasing_terminal_break");
 
     public static final RegistryObject<SoundEvent> WRENCH_ROTATE = register("wrench_rotate");
 
