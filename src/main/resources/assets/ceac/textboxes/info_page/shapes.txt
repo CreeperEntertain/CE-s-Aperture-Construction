@@ -1,0 +1,7 @@
+Shapes, also called material shapes, are similar to copycat blocks from Create, with some differences. The way they work is that you can replace any polygon on the block with a new texture by using a material on it. What materials are is explained in a later section.
+
+To use a shape after you purchased it, you simply place it down in the world. Most shapes are rotatable. So, the way you place them matters, but can be changed later by using a specialized tool or mining the block.
+
+The specialized tool used to rotate shapes is the wrench, which can be purchased on the basics page. It will rotate a shape clockwise around the direction you’re looking.
+Important: It does not matter which face you actually click. It only takes into account which direction you look in.
+You may also sneak while rotating to rotate a shape counter-clockwise.
