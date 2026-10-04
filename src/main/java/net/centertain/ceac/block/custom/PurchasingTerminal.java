@@ -122,7 +122,7 @@ public class PurchasingTerminal extends Block {
     @Override
     public @NotNull List<ItemStack> getDrops(
             @NotNull BlockState state,
-            LootParams.@NotNull Builder builder
+            @NotNull LootParams.Builder builder
     ) {
         List<ItemStack> drops = super.getDrops(state, builder);
         for (ItemStack stack : drops)
