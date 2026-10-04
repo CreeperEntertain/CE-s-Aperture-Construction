@@ -1,5 +1,8 @@
 package net.centertain.ceac.constants;
 
+import net.centertain.ceac.block.custom.BasicBlock;
+import net.centertain.ceac.item.custom.BasicItem;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -39,7 +42,10 @@ public final class PriceConstants {
     }
 
     public static @Nullable Double get(@Nullable Item item) {
-        return PRICES.get(item);
+        Double potentialPrice = PRICES.get(item);
+        if (potentialPrice == null)
+            potentialPrice = getOtherPrice(item);
+        return potentialPrice;
     }
 
     public static @Nullable Double get(@Nullable ItemStack stack) {
@@ -47,6 +53,19 @@ public final class PriceConstants {
             return null;
         return get(stack.getItem());
     }
+
+    private static @Nullable Double getOtherPrice(Item item) {
+        Double value = null;
+        if (item instanceof BasicItem basicItem)
+            value = basicItem.getPrice();
+        if (item instanceof BlockItem blockItem)
+            if (blockItem.getBlock() instanceof BasicBlock basicBlock)
+                value = basicBlock.getPrice();
+        if (value == null)
+            return null;
+        return value * 0.85;
+    }
+
 
     public static @NotNull List<Map.Entry<@NotNull Item, @NotNull Double>> getEntries() {
         return new ArrayList<>(PRICES.entrySet());
