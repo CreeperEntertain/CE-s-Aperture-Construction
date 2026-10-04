@@ -1,0 +1,7 @@
+The purpose of this project, as you likely saw in the title or on the mod page, is to be a Portal (2) themed building mod. This project adds a variety of methods to decorate your world in the style of those games through the addition of several building mechanics like decals, shapes, and materials, which are explained in detail in later sections of this page.
+
+This project, whilst potentially not appearing that way to some, was very hard to make as there are a lot of things that go into custom mechanics like the ones this mod uses. To only list a few: Custom volume projection shaders, world geometry management, a full custom UI framework, and more.
+
+Another thing that is important to me is to make this project in a way which also generally fits industrial building styles not necessarily related to Portal. Whilst the textures in this mod are my best attempt to faithfully recreate the original extracted resources from the Portal game files, I made certain design decisions that, hopefully, lead to those building materials being fitting with vanilla designs, as well as designs from other mods.
+
+Additionally, I want to express a great thank you to all of the people who supported me throughout the creation of this project, and especially to CerealSniper, who helped out with solving a shader related issue.
