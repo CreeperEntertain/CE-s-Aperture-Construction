@@ -22,7 +22,7 @@ public final class ModCreativeModeTabs {
                     .icon(() -> new ItemStack(ModItems.DECAL.get()))
                     .title(Component.translatable("creativetab.ceac_tab"))
                     .displayItems((pParameters, pOutput) -> {
-                        pOutput.accept(ModBlocks.PURCHASING_TERMINAL.get());
+                        pOutput.accept(ModBlocks.PURCHASING_TERMINAL.get().asItem().getDefaultInstance());
 
                         pOutput.accept(ModItems.DECAL.get());
                         pOutput.accept(ModItems.SCRAPER.get());
