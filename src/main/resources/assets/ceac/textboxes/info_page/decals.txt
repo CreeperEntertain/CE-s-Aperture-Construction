@@ -1,0 +1,11 @@
+Decals were the first feature ever worked on for this mod. You can imagine them a bit like stickers from LittleBigPlanet or overlays from the Hammer editor. They essentially allow you to place a texture on any surface you want to and it will automatically be cut off at the edge of blocks, which makes them very useful for decoration purposes.
+
+To select a texture, use the item whilst looking away from any surface. It will bring up a menu giving you any available texture with names sorted by category. Clicking either will close the menu and you can start placing it down.
+
+If you want finer controls over how to place them, press middle mouse whilst looking at any surface with a texture selected to access the precise placement mode. It will show you a small menu to help with keybinds, which can be toggled. The keybinds are color coded to match the axes displayed around the decal volume.
+
+
+Technical details / additional information:
+
+Decals use a volume projection shader. That means that any decal placed in a world will generate an invisible cuboid box which uses a GLSL shader to display decals. It’s important to note that, while this rendering method has been incredibly optimized for any regular purpose, stacking tons of decals with textures that have 100% transparent pixels will cause performance issues if viewed up close.
+This may be improved in the future. Contributions to the GitHub repository are also welcome.
