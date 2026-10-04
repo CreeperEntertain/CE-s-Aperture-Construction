@@ -3,6 +3,7 @@ package net.centertain.ceac.block.custom;
 import net.centertain.ceac.screen.PurchasingTermialScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -66,10 +67,11 @@ public class PurchasingTerminal extends Block {
 
     @Override
     public @Nullable BlockState getStateForPlacement(@NotNull BlockPlaceContext context) {
-        return defaultBlockState().setValue(
-                FACING,
-                context.getHorizontalDirection().getOpposite()
-        ).setValue(BROKEN, false);
+        CompoundTag tag = context.getItemInHand().getTagElement(BlockItem.BLOCK_STATE_TAG);
+        boolean broken = tag != null && tag.getBoolean("broken");
+        return defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite())
+                .setValue(BROKEN, broken);
     }
 
     @SuppressWarnings("deprecation")
