@@ -15,8 +15,10 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -160,5 +162,26 @@ public class PurchasingTerminal extends FallingBlock {
                 Mathworks.randomBetween(0.9f, 1.1f),
                 Mathworks.randomBetween(0.9f, 1.1f)
         );
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean dropFromExplosion(@NotNull Explosion explosion) {
+        return false;
+    }
+
+    @Override
+    public void onBlockExploded(
+            @NotNull BlockState state,
+            @NotNull Level level,
+            @NotNull BlockPos pos,
+            @NotNull Explosion explosion
+    ) {
+        Block.dropResources(
+                state.setValue(BROKEN, true),
+                level,
+                pos
+        );
+        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
     }
 }
