@@ -7,7 +7,6 @@ import net.centertain.ceac.screen.framework.element_types.FocusContainer;
 import net.centertain.ceac.screen.framework.element_types.HoverTransformer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -394,10 +393,5 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
     @Override
     public boolean isFocused() {
         return false;
-    }
-
-    @Override
-    public @NotNull ScreenRectangle getRectangle() {
-        return new ScreenRectangle(x, y, width, height);
     }
 }

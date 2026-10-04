@@ -9,7 +9,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.font.TextFieldHelper;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -1256,11 +1255,6 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
         );
 
         guiGraphics.pose().popPose();
-    }
-
-    @Override
-    public @NotNull ScreenRectangle getRectangle() {
-        return new ScreenRectangle(x, y, width, height);
     }
 
 

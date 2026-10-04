@@ -5,7 +5,6 @@ import net.centertain.ceac.screen.framework.element_types.ElementLister;
 import net.centertain.ceac.screen.framework.element_types.FocusContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -383,10 +382,5 @@ public class FlowPanel implements Element, ElementLister, FocusContainer, GuiEve
     @Override
     public boolean isFocused() {
         return false;
-    }
-
-    @Override
-    public @NotNull ScreenRectangle getRectangle() {
-        return new ScreenRectangle(x, y, width, height);
     }
 }

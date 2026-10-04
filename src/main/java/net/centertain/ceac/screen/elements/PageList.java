@@ -6,7 +6,6 @@ import net.centertain.ceac.screen.framework.element_types.ElementContainer;
 import net.centertain.ceac.screen.framework.element_types.FocusContainer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -689,10 +688,5 @@ public class PageList implements Element, ElementContainer, FocusContainer, GuiE
     @Override
     public boolean isFocused() {
         return focusedElement != null;
-    }
-
-    @Override
-    public @NotNull ScreenRectangle getRectangle() {
-        return new ScreenRectangle(x, y, width, height);
     }
 }
