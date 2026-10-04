@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "ceac:block/purchasing_terminal",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "ceac:block/purchasing_terminal",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "ceac:block/purchasing_terminal",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "ceac:block/purchasing_terminal",
+      "y": 270
+    }
+  }
+}

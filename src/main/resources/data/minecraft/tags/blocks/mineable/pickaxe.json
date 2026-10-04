@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
+    "ceac:purchasing_terminal",
+
+
+
     "ceac:material_shape_block",
 
 
