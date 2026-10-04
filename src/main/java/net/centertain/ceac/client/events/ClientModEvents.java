@@ -4,6 +4,7 @@ import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.render.TranslucentRenderTargets;
 import net.centertain.ceac.font.BitfontManager;
+import net.centertain.ceac.item.custom.PurchasingTerminalItem;
 import net.centertain.ceac.material.item.MatItemLoader;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;
 import net.centertain.ceac.material.shapes.MaterialShapeBakedModel;
@@ -50,6 +51,7 @@ public class ClientModEvents
             int height = minecraft.getWindow().getHeight();
 
             TranslucentRenderTargets.init(width, height);
+            PurchasingTerminalItem.registerItemProperties();
         });
     }
 

@@ -1,3 +1,11 @@
 {
-  "parent": "ceac:block/purchasing_terminal"
+  "parent": "ceac:block/purchasing_terminal",
+  "overrides": [
+    {
+      "predicate": {
+        "ceac:broken": 1.0
+      },
+      "model": "ceac:item/purchasing_terminal_broken"
+    }
+  ]
 }
