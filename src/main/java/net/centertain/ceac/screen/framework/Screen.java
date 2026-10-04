@@ -132,7 +132,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
         double childMouseY = mouseY;
 
         if (element instanceof HoverTransformer transformer)
-            if (!transformer.isMouseOver(mouseX, mouseY)) {
+            if (!transformer.canTransformMouse(mouseX, mouseY)) {
                 childMouseX = Double.NaN;
                 childMouseY = Double.NaN;
             } else {
@@ -304,7 +304,7 @@ public abstract class Screen extends net.minecraft.client.gui.screens.Screen {
             return null;
         path.add(element);
         if (element instanceof HoverTransformer transformer)
-            if (!transformer.isMouseOver(mouseX, mouseY)) {
+            if (!transformer.canTransformMouse(mouseX, mouseY)) {
                 path.remove(path.size() - 1);
                 return null;
             }

@@ -205,7 +205,7 @@ public class Container implements Element, ElementLister, HoverTransformer {
     }
 
     @Override
-    public boolean isMouseOver(
+    public boolean canTransformMouse(
             double mouseX,
             double mouseY
     ) {

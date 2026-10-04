@@ -1,7 +1,7 @@
 package net.centertain.ceac.screen.framework.element_types;
 
 public interface HoverTransformer {
-    boolean isMouseOver(
+    boolean canTransformMouse(
             double mouseX,
             double mouseY
     );

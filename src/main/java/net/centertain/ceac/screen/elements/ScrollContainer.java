@@ -319,7 +319,7 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
             double mouseY,
             double scrollDelta
     ) {
-        if (!isMouseOver(mouseX, mouseY))
+        if (!canTransformMouse(mouseX, mouseY))
             return false;
         if (!canScroll())
             return false;
@@ -335,7 +335,7 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
             double mouseY,
             int button
     ) {
-        if (!isMouseOver(mouseX, mouseY))
+        if (!canTransformMouse(mouseX, mouseY))
             return false;
         if (!(element instanceof GuiEventListener listener))
             return false;
@@ -356,7 +356,7 @@ public class ScrollContainer implements Element, ElementContainer, FocusContaine
     }
 
     @Override
-    public boolean isMouseOver(
+    public boolean canTransformMouse(
             double mouseX,
             double mouseY
     ) {

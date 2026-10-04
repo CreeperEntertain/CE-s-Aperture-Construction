@@ -173,7 +173,7 @@ public class Page implements Element, ElementContainer, HoverTransformer {
     }
 
     @Override
-    public boolean isMouseOver(
+    public boolean canTransformMouse(
             double mouseX,
             double mouseY
     ) {
