@@ -12,6 +12,7 @@ import net.centertain.ceac.block.custom.material_shapes.third_slopes.first.*;
 import net.centertain.ceac.block.custom.material_shapes.third_slopes.second.*;
 import net.centertain.ceac.block.custom.material_shapes.third_slopes.third.*;
 import net.centertain.ceac.item.ModItems;
+import net.centertain.ceac.item.custom.PurchasingTerminalItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -22,6 +23,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
@@ -30,7 +32,7 @@ public final class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
 
 
-    public static final RegistryObject<Block> PURCHASING_TERMINAL = registerBlock("purchasing_terminal", () -> new PurchasingTerminal(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> PURCHASING_TERMINAL = registerBlock("purchasing_terminal", () -> new PurchasingTerminal(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)), block -> new PurchasingTerminalItem(block, new Item.Properties()));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("material_shape_block", () -> new net.centertain.ceac.block.custom.material_shapes.basic_shapes.Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
@@ -116,6 +118,16 @@ public final class ModBlocks {
     ) {
         RegistryObject<T> result = BLOCKS.register(name, block);
         registerBlockItem(name, result);
+        return result;
+    }
+    @SuppressWarnings("SameParameterValue")
+    private static <T extends Block> RegistryObject<T> registerBlock(
+            String name,
+            Supplier<T> block,
+            Function<T, Item> item
+    ) {
+        RegistryObject<T> result = BLOCKS.register(name, block);
+        ModItems.ITEMS.register(name, () -> item.apply(result.get()));
         return result;
     }
     @SuppressWarnings("UnusedReturnValue")
