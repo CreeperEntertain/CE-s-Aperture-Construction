@@ -108,5 +108,10 @@
   "sound.ceac.decal.move_normal": "Decal moved",
   "sound.ceac.decal.placement_error": "Decal can't be placed here",
   "sound.ceac.decal.rotate": "Decal rotated",
-  "sound.ceac.decal.tilt": "Decal tilted"
+  "sound.ceac.decal.tilt": "Decal tilted",
+
+  "sound.ceac.purchasing_terminal.purchase": "Item purchased",
+  "sound.ceac.purchasing_terminal.sell": "Item sold",
+
+  "sound.ceac.wrench.rotate": "Wrench used"
 }

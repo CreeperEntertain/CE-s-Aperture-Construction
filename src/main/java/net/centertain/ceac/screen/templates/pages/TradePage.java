@@ -6,6 +6,7 @@ import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.templates.trade_page.InventoryTemplate;
 import net.centertain.ceac.screen.templates.trade_page.LeftContainer;
 import net.centertain.ceac.screen.templates.trade_page.RightContainer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +33,8 @@ public class TradePage extends Page {
             int y,
             int width,
             int height,
-            Supplier<Player> playerSupplier
+            Supplier<Player> playerSupplier,
+            BlockPos pos
     ) {
         super("Trade", width, height, new Empty());
 
@@ -49,7 +51,8 @@ public class TradePage extends Page {
                 leftHeight,
                 playerSupplier,
                 this::setStack,
-                this::getStack
+                this::getStack,
+                pos
         );
         Element right = RightContainer.get(
                 x + left.getWidth() + GuiConstants.ELEMENT_PADDING,

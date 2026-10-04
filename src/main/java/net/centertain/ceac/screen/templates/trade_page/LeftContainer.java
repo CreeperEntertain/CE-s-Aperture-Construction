@@ -8,6 +8,7 @@ import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.templates.AlignedLabel;
 import net.centertain.ceac.screen.templates.DynamicLabel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -32,7 +33,8 @@ public final class LeftContainer {
             int leftHeight,
             Supplier<Player> playerSupplier,
             Consumer<ItemStack> setStack,
-            Supplier<ItemStack> getStack
+            Supplier<ItemStack> getStack,
+            BlockPos pos
     ) {
         Container inventory = InventoryTemplate.get(
                 x,
@@ -55,7 +57,7 @@ public final class LeftContainer {
                         ITEM_BOUNDS,
                         GuiConstants.COLOR_TRANSLUCENT_BLACK_75
                 ),
-                getDisplay(inventoryWidth, leftHeight, getStack, playerSupplier)
+                getDisplay(inventoryWidth, leftHeight, getStack, playerSupplier, pos)
         );
 
         Container leftContainer = new Container(
@@ -80,7 +82,8 @@ public final class LeftContainer {
             int width,
             int height,
             Supplier<ItemStack> getStack,
-            Supplier<Player> playerSupplier
+            Supplier<Player> playerSupplier,
+            BlockPos pos
     ) {
         ItemDisplay item = new ItemDisplay(
                 ITEM_DISPLAY_SIZE,
@@ -100,7 +103,8 @@ public final class LeftContainer {
                 ITEM_DISPLAY_SIZE,
                 height,
                 playerSupplier,
-                getStack
+                getStack,
+                pos
         ));
         StackPanel description = getDescription(
                 width - ITEM_BOUNDS,
@@ -139,7 +143,8 @@ public final class LeftContainer {
             int width,
             int height,
             Supplier<Player> player,
-            Supplier<ItemStack> stack
+            Supplier<ItemStack> stack,
+            BlockPos pos
     ) {
         ItemDisplay item = new ItemDisplay(
                 ITEM_DISPLAY_SIZE,
@@ -161,13 +166,13 @@ public final class LeftContainer {
         );
 
         Button sellOne = getSalesButton(ITEM_BOUNDS, "Sell", 1, player, stack, () ->
-                sellItem(1, player, stack)
+                sellItem(1, player, stack, pos)
         );
         Button sellTen = getSalesButton(ITEM_BOUNDS, "Sell 10", 10, player, stack, () ->
-                sellItem(10, player, stack)
+                sellItem(10, player, stack, pos)
         );
         Button sellHundred = getSalesButton(ITEM_BOUNDS, "Sell 100", 100, player, stack, () ->
-                sellItem(100, player, stack)
+                sellItem(100, player, stack, pos)
         );
         StackPanel buttonStack = new StackPanel(
                 0,
@@ -197,7 +202,8 @@ public final class LeftContainer {
     private static void sellItem(
             int amount,
             Supplier<Player> player,
-            Supplier<ItemStack> stack
+            Supplier<ItemStack> stack,
+            BlockPos pos
     ) {
         ItemStack selected = stack.get();
 
@@ -209,7 +215,7 @@ public final class LeftContainer {
         if (worth == null)
             return;
 
-        ModNetworking.CHANNEL.sendToServer(new SellItemPacket(selected.getItem(), amount));
+        ModNetworking.CHANNEL.sendToServer(new SellItemPacket(selected.getItem(), amount, pos));
     }
 
     @SuppressWarnings("SameParameterValue")

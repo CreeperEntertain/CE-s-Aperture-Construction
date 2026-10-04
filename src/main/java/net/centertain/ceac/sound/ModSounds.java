@@ -25,6 +25,11 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> DECAL_ROTATE = register("decal_rotate");
     public static final RegistryObject<SoundEvent> DECAL_TILT = register("decal_tilt");
 
+    public static final RegistryObject<SoundEvent> PURCHASING_TERMINAL_PURCHASE = register("purchasing_terminal_purchase");
+    public static final RegistryObject<SoundEvent> PURCHASING_TERMINAL_SELL = register("purchasing_terminal_sell");
+
+    public static final RegistryObject<SoundEvent> WRENCH_ROTATE = register("wrench_rotate");
+
 
     private static RegistryObject<SoundEvent> register(String name) {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(MOD_ID, name);

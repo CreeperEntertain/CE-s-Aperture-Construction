@@ -33,7 +33,7 @@ public class PurchasingTerminal extends Block {
             DistExecutor.unsafeRunWhenOn(
                     Dist.CLIENT,
                     () -> () -> Minecraft.getInstance().setScreen(
-                            new PurchasingTermialScreen(player)
+                            new PurchasingTermialScreen(player, pos)
                     )
             );
 

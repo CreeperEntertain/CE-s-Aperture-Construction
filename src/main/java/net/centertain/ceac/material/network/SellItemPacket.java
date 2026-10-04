@@ -3,9 +3,13 @@ package net.centertain.ceac.material.network;
 import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.material.PlayerCurrency;
 import net.centertain.ceac.network.ModNetworking;
+import net.centertain.ceac.sound.ModSounds;
+import net.centertain.ceac.utility.Mathworks;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.network.NetworkEvent;
@@ -17,13 +21,16 @@ import java.util.function.Supplier;
 public class SellItemPacket {
     private final ResourceLocation itemId;
     private final int amount;
+    private final BlockPos pos;
 
     public SellItemPacket(
             Item item,
-            int amount
+            int amount,
+            BlockPos pos
     ) {
         this.itemId = ForgeRegistries.ITEMS.getKey(item);
         this.amount = amount;
+        this.pos = pos;
     }
 
     public static void encode(
@@ -32,6 +39,7 @@ public class SellItemPacket {
     ) {
         buffer.writeResourceLocation(packet.itemId);
         buffer.writeInt(packet.amount);
+        buffer.writeBlockPos(packet.pos);
     }
 
     public static SellItemPacket decode(
@@ -39,7 +47,8 @@ public class SellItemPacket {
     ) {
         return new SellItemPacket(
                 ForgeRegistries.ITEMS.getValue(buffer.readResourceLocation()),
-                buffer.readInt()
+                buffer.readInt(),
+                buffer.readBlockPos()
         );
     }
 
@@ -79,6 +88,15 @@ public class SellItemPacket {
             PlayerCurrency.increase(player, worth * packet.amount);
 
             ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new SyncCurrencyPacket(PlayerCurrency.get(player)));
+
+            player.level().playSound(
+                    null,
+                    packet.pos,
+                    ModSounds.PURCHASING_TERMINAL_SELL.get(),
+                    SoundSource.BLOCKS,
+                    Mathworks.randomBetween(1.8f, 2.2f),
+                    Mathworks.randomBetween(0.9f, 1.1f)
+            );
 
             player.inventoryMenu.broadcastChanges();
         });

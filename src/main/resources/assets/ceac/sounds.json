@@ -118,5 +118,62 @@
         "stream": false
       }
     ]
+  },
+  "purchasing_terminal_purchase": {
+    "subtitle": "sound.ceac.purchasing_terminal.purchase",
+    "sounds": [
+      {
+        "name": "ceac:purchasing_terminal/purchase_1",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      },
+      {
+        "name": "ceac:purchasing_terminal/purchase_2",
+        "volume": 0.25,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  },
+  "purchasing_terminal_sell": {
+    "subtitle": "sound.ceac.purchasing_terminal.sell",
+    "sounds": [
+      {
+        "name": "ceac:purchasing_terminal/sell",
+        "volume": 1.0,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
+  },
+  "wrench_rotate": {
+    "subtitle": "sound.ceac.wrench.rotate",
+    "sounds": [
+      {
+        "name": "ceac:wrench/rotate_1",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      },
+      {
+        "name": "ceac:wrench/rotate_2",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      },
+      {
+        "name": "ceac:wrench/rotate_3",
+        "volume": 0.5,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
   }
 }

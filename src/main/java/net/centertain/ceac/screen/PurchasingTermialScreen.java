@@ -11,6 +11,7 @@ import net.centertain.ceac.screen.framework.Screen;
 import net.centertain.ceac.screen.templates.PurchasingRibbon;
 import net.centertain.ceac.screen.templates.pages.*;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -21,15 +22,23 @@ import java.util.List;
 public class PurchasingTermialScreen extends Screen {
 
     private final Player player;
+    private final BlockPos pos;
     private int purchaseMultiplier = 1;
 
-    public PurchasingTermialScreen(@NotNull Player player) {
+    public PurchasingTermialScreen(
+            @NotNull Player player,
+            @NotNull BlockPos pos
+    ) {
         super(Component.empty());
         this.player = player;
+        this.pos = pos;
     }
 
     public @NotNull Player getPlayer() {
         return player;
+    }
+    public @NotNull BlockPos getPos() {
+        return pos;
     }
     public int getPurchaseMultiplier() {
         return purchaseMultiplier;
@@ -87,7 +96,7 @@ public class PurchasingTermialScreen extends Screen {
         int height = this.height - y - GuiConstants.SCREEN_PADDING;
 
         List<Page> pages = List.of(
-                new TradePage(x, y, width, height, this::getPlayer),
+                new TradePage(x, y, width, height, this::getPlayer, pos),
                 BasicsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency, this::purchase),
                 ShapesPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency, this::purchase),
                 MaterialsPage.get(x, y, width, height, this::getPurchaseMultiplier, this::getCurrency, this::purchase),
@@ -114,6 +123,10 @@ public class PurchasingTermialScreen extends Screen {
     }
 
     private void processItemPurchase(Item item) {
-        ModNetworking.CHANNEL.sendToServer(new BuyItemPacket(item, purchaseMultiplier));
+        ModNetworking.CHANNEL.sendToServer(new BuyItemPacket(
+                item,
+                purchaseMultiplier,
+                pos
+        ));
     }
 }
