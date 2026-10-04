@@ -7,6 +7,7 @@ import net.centertain.ceac.screen.framework.element_types.Hoverable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -308,5 +309,10 @@ public class Foldout implements Element, ElementContainer, Hoverable, GuiEventLi
             double mouseY
     ) {
         isHovered = isMouseOver(mouseX, mouseY);
+    }
+
+    @Override
+    public @NotNull ScreenRectangle getRectangle() {
+        return new ScreenRectangle(x, y, width, getHeight());
     }
 }

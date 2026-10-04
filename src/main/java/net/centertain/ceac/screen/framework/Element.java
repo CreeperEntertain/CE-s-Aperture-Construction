@@ -2,10 +2,14 @@ package net.centertain.ceac.screen.framework;
 
 import net.centertain.ceac.screen.elements.Dimensions;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.layouts.LayoutElement;
 import org.jetbrains.annotations.NotNull;
 
-public interface Element extends Renderable {
+import java.util.function.Consumer;
+
+public interface Element extends Renderable, LayoutElement {
     int getX();
     int getY();
     int getWidth();
@@ -37,4 +41,7 @@ public interface Element extends Renderable {
             int mouseY,
             float partialTick
     );
+
+    @Override
+    default void visitWidgets(@NotNull Consumer<AbstractWidget> consumer) {}
 }
