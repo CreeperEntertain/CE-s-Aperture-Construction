@@ -2,10 +2,13 @@ package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.constants.PriceConstants;
+import net.centertain.ceac.sound.ModSounds;
+import net.centertain.ceac.utility.Mathworks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -76,6 +79,14 @@ public class WrenchItem extends BasicItem {
         );
         if (success) {
             stack.hurtAndBreak(1, serverPlayer, p -> p.broadcastBreakEvent(hand));
+            level.playSound(
+                    null,
+                    pos,
+                    ModSounds.WRENCH_ROTATE.get(),
+                    SoundSource.BLOCKS,
+                    Mathworks.randomBetween(1.8f, 2.2f),
+                    Mathworks.randomBetween(0.9f, 1.1f)
+            );
             return InteractionResultHolder.success(stack);
         }
         return InteractionResultHolder.pass(stack);

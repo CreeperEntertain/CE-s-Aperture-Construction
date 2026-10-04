@@ -155,21 +155,21 @@
     "sounds": [
       {
         "name": "ceac:wrench/rotate_1",
-        "volume": 0.5,
+        "volume": 0.35,
         "pitch": 1.0,
         "weight": 1,
         "stream": false
       },
       {
         "name": "ceac:wrench/rotate_2",
-        "volume": 0.5,
+        "volume": 0.35,
         "pitch": 1.0,
         "weight": 1,
         "stream": false
       },
       {
         "name": "ceac:wrench/rotate_3",
-        "volume": 0.5,
+        "volume": 0.35,
         "pitch": 1.0,
         "weight": 1,
         "stream": false
