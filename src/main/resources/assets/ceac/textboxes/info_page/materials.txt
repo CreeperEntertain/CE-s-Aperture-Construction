@@ -1,0 +1,7 @@
+Materials are used with shapes. More about shapes can be read in an earlier section.
+
+The way they work is that they hold a texture, or multiple, to be used for replacing a shape’s polygon. The interesting thing about materials is that they support multi block tiling textures. What this means is that a material can have a full assembled texture that takes up more than a full block. This is especially useful for building large structures as there is less visible repetition across the surface.
+
+Materials, as you might have noticed, are also much more expensive than anything else in the shop. That is because a material has to only ever be purchased once to be used indefinitely. Using it on a shape will not consume it, so you can decorate to your heart’s content.
+
+As mentioned before, a material’s assembled texture can take up more than a block. For finer control, you can press middle mouse whilst looking at a shape to access the offset menu. You can disable it by pressing middle mouse again or looking away from any shape. It will allow you to shift the texture in any direction so you have control over exactly how it repeats. The displayed help menu can also be toggled.
