@@ -1,5 +1,7 @@
 package net.centertain.ceac.constants;
 
+import java.util.List;
+
 public final class CategoryConstants {
     private CategoryConstants() {}
 
@@ -18,6 +20,12 @@ public final class CategoryConstants {
             private Mats() {}
 
             public static final String MISC = "Miscellaneous";
+
+            public static final String CONCRETE = "Concrete";
+
+            public static final List<String> SORTED = List.of(
+                    CONCRETE
+            );
         }
 
         public static final class Shapes {
@@ -30,6 +38,15 @@ public final class CategoryConstants {
             public static final String SLOPES_HALF = "Half Slopes";
             public static final String SLOPES_THIRD = "Third Slopes";
             public static final String SLOPES_QUARTER = "Quarter Slopes";
+
+            public static final List<String> SORTED = List.of(
+                    MISC,
+                    BASIC,
+                    SLOPES_FULL,
+                    SLOPES_HALF,
+                    SLOPES_THIRD,
+                    SLOPES_QUARTER
+            );
         }
     }
 }

@@ -1,7 +1,5 @@
 package net.centertain.ceac.material;
 
-import net.centertain.ceac.material.materials.ExampleMaterial;
-import net.centertain.ceac.material.materials.MultiExampleMaterial;
 import net.centertain.ceac.material.materials.ObservationConcreteWallMaterial;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -22,12 +20,7 @@ public final class ModMaterials {
             MATERIALS.makeRegistry(RegistryBuilder::new);
 
 
-    public static final RegistryObject<Material> EXAMPLE =
-            MATERIALS.register("example", ExampleMaterial::new);
-    public static final RegistryObject<Material> OBSERVATION_CONCRETE_WALL =
-            MATERIALS.register("observation_concrete_wall", ObservationConcreteWallMaterial::new);
-    public static final RegistryObject<Material> MULTI_EXAMPLE =
-            MATERIALS.register("multi_example", MultiExampleMaterial::new);
+    public static final RegistryObject<Material> OBSERVATION_CONCRETE_WALL = MATERIALS.register("observation_concrete_wall", ObservationConcreteWallMaterial::new);
 
 
     private ModMaterials() {}

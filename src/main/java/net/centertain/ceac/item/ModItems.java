@@ -1,9 +1,7 @@
 package net.centertain.ceac.item;
 
 import net.centertain.ceac.item.custom.*;
-import net.centertain.ceac.item.custom.materials.ExampleMatItem;
-import net.centertain.ceac.item.custom.materials.MultiExampleMatItem;
-import net.centertain.ceac.item.custom.materials.ObservationConcreteWallMatItem;
+import net.centertain.ceac.item.custom.materials.*;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -17,19 +15,11 @@ public final class ModItems {
             DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 
 
-    public static final RegistryObject<Item> DECAL = ITEMS.register("decal",
-            () -> new DecalItem(new Item.Properties()));
-    public static final RegistryObject<Item> SCRAPER = ITEMS.register("scraper",
-            () -> new ScraperItem(new Item.Properties()));
-    public static final RegistryObject<Item> WRENCH = ITEMS.register("wrench",
-            () -> new WrenchItem(new Item.Properties()));
+    public static final RegistryObject<Item> DECAL = ITEMS.register("decal", () -> new DecalItem(new Item.Properties()));
+    public static final RegistryObject<Item> SCRAPER = ITEMS.register("scraper", () -> new ScraperItem(new Item.Properties()));
+    public static final RegistryObject<Item> WRENCH = ITEMS.register("wrench", () -> new WrenchItem(new Item.Properties()));
 
-    public static final RegistryObject<Item> EXAMPLE = ITEMS.register("example",
-            () -> new ExampleMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> OBSERVATION_CONCRETE_WALL = ITEMS.register("observation_concrete_wall",
-            () -> new ObservationConcreteWallMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> MULTI_EXAMPLE = ITEMS.register("multi_example",
-            () -> new MultiExampleMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> OBSERVATION_CONCRETE_WALL = ITEMS.register("observation_concrete_wall", () -> new ObservationConcreteWallMatItem(new Item.Properties()));
 
 
     private ModItems() {}
