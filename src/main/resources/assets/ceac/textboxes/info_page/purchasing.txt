@@ -1,0 +1,5 @@
+▲ can be spent in any of the pages except for “Trade” and “Information”. When on these pages, the button corresponding to any purchaseable item will also show its price in red or green. Green means it can be purchased.
+
+At the top left of this terminal is a small tab titled “Purchase Multiplier”. By default, it’s set to 1x, but can be increased or decreased in steps of 1 or 10 to a limit of 64x. The prices on purchasing buttons will update to respect the change.
+
+When clicking a purchasing button, the displayed item will be added to your inventory in the amount shown by the multiplier, and the displayed amount of currency will be removed from your account.
