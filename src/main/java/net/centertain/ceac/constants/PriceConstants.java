@@ -54,7 +54,7 @@ public final class PriceConstants {
         return get(stack.getItem());
     }
 
-    private static @Nullable Double getOtherPrice(Item item) {
+    private static @Nullable Double getOtherPrice(@Nullable Item item) {
         Double value = null;
         if (item instanceof BasicItem basicItem)
             value = basicItem.getPrice();
