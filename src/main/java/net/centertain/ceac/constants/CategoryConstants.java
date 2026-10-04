@@ -24,6 +24,7 @@ public final class CategoryConstants {
             public static final String CONCRETE = "Concrete";
 
             public static final List<String> SORTED = List.of(
+                    MISC,
                     CONCRETE
             );
         }

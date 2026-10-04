@@ -5,7 +5,6 @@ import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.ModItems;
 import net.centertain.ceac.item.custom.BasicItem;
 import net.centertain.ceac.item.custom.MatItem;
-import net.centertain.ceac.screen.PurchasingTermialScreen;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.templates.PurchaseButton;
@@ -14,10 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -51,9 +47,14 @@ public final class MaterialsPage {
                 ));
             }
 
+        List<Map.Entry<String, List<Element>>> sortedButtons = new ArrayList<>(buttons.entrySet());
+        sortedButtons.sort(Comparator.comparingInt(
+                entry -> CategoryConstants.Sub.Mats.SORTED.indexOf(entry.getKey())
+        ));
+
         List<Element> foldouts = new ArrayList<>();
 
-        for (String subcategory : buttons.keySet()) {
+        for (var entry : sortedButtons) {
             FlowPanel panel = new FlowPanel(
                     x,
                     y,
@@ -61,10 +62,10 @@ public final class MaterialsPage {
                     width,
                     GuiConstants.ELEMENT_PADDING,
                     GuiConstants.COLOR_TRANSPARENT,
-                    buttons.get(subcategory)
+                    entry.getValue()
             );
             foldouts.add(new Foldout(
-                    Component.literal(subcategory),
+                    Component.literal(entry.getKey()),
                     width,
                     GuiConstants.ELEMENT_PADDING,
                     false,
