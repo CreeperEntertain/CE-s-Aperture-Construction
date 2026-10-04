@@ -1,0 +1,5 @@
+One thing this mod adds is a specialized currency system. Seen at the top right of this terminal, a small tab displays your current ▲ (currency symbol) available. These are tied to you personally, are stored per world, and will not disappear or decrease upon death.
+
+You can increase your ▲ by selling certain resources. The resources you can sell are listed on the right side of the trading page. I will not list these resources here as the list is likely to change as time moves on. However, the prices listed are what you will receive at the cost of losing the associated item.
+
+Once you click a resource in the displayed inventory, it will list details about the item in a field below. To the left of this info box are buttons which let you sell the item in sets of 1, 10, and 100 respectively. But sell carefully as sold resources cannot be purchased back.
