@@ -1,0 +1,7 @@
+{
+  "parent": "ceac:block/purchasing_terminal",
+  "textures": {
+    "0": "ceac:block/purchasing_terminal_broken",
+    "particle": "ceac:block/purchasing_terminal_broken"
+  }
+}
