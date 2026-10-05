@@ -9,7 +9,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -55,7 +54,6 @@ public abstract class MaterialShapeRotatable6Way extends MaterialShape implement
         return null;
     }
 
-
     @Override
     protected void createBlockStateDefinition(
             @NotNull StateDefinition.Builder<Block, BlockState> builder
@@ -70,7 +68,6 @@ public abstract class MaterialShapeRotatable6Way extends MaterialShape implement
         return defaultBlockState()
                 .setValue(FACING, context.getNearestLookingDirection().getOpposite());
     }
-
 
     @Override
     public Vec3 transformPointToLocal(
@@ -141,27 +138,24 @@ public abstract class MaterialShapeRotatable6Way extends MaterialShape implement
             return false;
 
         Direction facing = state.getValue(FACING);
-        Direction lookDirection = Direction.getNearest(
-                viewDirection.x,
-                viewDirection.y,
-                viewDirection.z
-        );
-        if (lookDirection.getAxis() == facing.getAxis())
-            return false;
 
-        Vec3 axis = new Vec3(
-                lookDirection.getStepX(),
-                lookDirection.getStepY(),
-                lookDirection.getStepZ()
-        );
-        Vec3 forward = new Vec3(
+        Vec3 axis = viewDirection.normalize();
+
+        Vec3 currentFacing = new Vec3(
                 facing.getStepX(),
                 facing.getStepY(),
                 facing.getStepZ()
         );
-        Vec3 rotated = axis.cross(forward);
-        if (counterclockwise)
-            rotated = rotated.scale(-1.0);
+
+        double angle = counterclockwise
+                ? -Math.PI / 2.0
+                : Math.PI / 2.0;
+
+        Vec3 rotated = rotateVector(
+                currentFacing,
+                axis,
+                angle
+        );
 
         Direction newFacing = Direction.getNearest(
                 rotated.x,
@@ -175,22 +169,33 @@ public abstract class MaterialShapeRotatable6Way extends MaterialShape implement
         return true;
     }
 
+    private static Vec3 rotateVector(
+            Vec3 vector,
+            Vec3 axis,
+            double angle
+    ) {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+
+        return vector
+                .scale(cos)
+                .add(axis.cross(vector).scale(sin))
+                .add(axis.scale(axis.dot(vector) * (1.0 - cos)));
+    }
 
     protected Basis getBasis(BlockState state) {
         Direction facing = state.getValue(FACING);
 
-        Vec3 forward = new Vec3(
+        Vec3 y = new Vec3(
                 facing.getStepX(),
                 facing.getStepY(),
                 facing.getStepZ()
         );
-        Vec3 x = forward.scale(-1.0);
-        Vec3 y = switch (facing) {
-            case UP -> new Vec3(0.0, 0.0, -1.0);
-            case DOWN -> new Vec3(0.0, 0.0, 1.0);
+        Vec3 x = switch (facing) {
+            case UP, DOWN -> new Vec3(1.0, 0.0, 0.0);
             default -> new Vec3(0.0, 1.0, 0.0);
         };
-        Vec3 z = y.cross(forward).normalize();
+        Vec3 z = x.cross(y).normalize();
 
         return new Basis(x, y, z);
     }

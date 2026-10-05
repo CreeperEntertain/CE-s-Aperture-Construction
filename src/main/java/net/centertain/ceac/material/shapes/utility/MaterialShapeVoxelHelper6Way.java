@@ -50,18 +50,16 @@ public final class MaterialShapeVoxelHelper6Way extends MaterialShapeVoxelHelper
     ) {
         boolean[][][] transformed = new boolean[SIZE][SIZE][SIZE];
 
-        Vec3 forward = new Vec3(
+        Vec3 y = new Vec3(
                 facing.getStepX(),
                 facing.getStepY(),
                 facing.getStepZ()
         );
-        Vec3 x = forward.scale(-1.0);
-        Vec3 y = switch (facing) {
-            case UP -> new Vec3(0.0, 0.0, -1.0);
-            case DOWN -> new Vec3(0.0, 0.0, 1.0);
+        Vec3 x = switch (facing) {
+            case UP, DOWN -> new Vec3(1.0, 0.0, 0.0);
             default -> new Vec3(0.0, 1.0, 0.0);
         };
-        Vec3 z = y.cross(forward).normalize();
+        Vec3 z = x.cross(y).normalize();
 
         int xx = (int) Math.round(x.x);
         int xy = (int) Math.round(x.y);
