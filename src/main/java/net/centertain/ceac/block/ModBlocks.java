@@ -1,6 +1,9 @@
 package net.centertain.ceac.block;
 
 import net.centertain.ceac.block.custom.PurchasingTerminal;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.Bit;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.Half;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.Stairs;
 import net.centertain.ceac.block.custom.material_shapes.full_slopes.*;
 import net.centertain.ceac.block.custom.material_shapes.half_slopes.bottom.*;
 import net.centertain.ceac.block.custom.material_shapes.half_slopes.top.*;
@@ -36,7 +39,9 @@ public final class ModBlocks {
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("material_shape_block", () -> new net.centertain.ceac.block.custom.material_shapes.basic_shapes.Block(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
-
+    public static final RegistryObject<Block> MATERIAL_SHAPE_BIT = registerBlock("material_shape_bit", () -> new Bit(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF = registerBlock("material_shape_half", () -> new Half(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_STAIRS = registerBlock("material_shape_stairs", () -> new Stairs(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope", () -> new Slope(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));
     public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_CORNER_OUTER = registerBlock("material_shape_full_corner_outer", () -> new FullCornerOuter(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)));

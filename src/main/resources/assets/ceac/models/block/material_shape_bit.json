@@ -1,0 +1,6 @@
+{
+  "loader": "ceac:material_shape_bit",
+  "textures": {
+    "texture": "ceac:block/material_shape"
+  }
+}

@@ -23,6 +23,9 @@
 
 
   "block.ceac.material_shape_block": "Material Shape: Block",
+  "block.ceac.material_shape_bit": "Material Shape: Bit",
+  "block.ceac.material_shape_half": "Material Shape: Half",
+  "block.ceac.material_shape_stairs": "Material Shape: Stairs",
 
 
   "block.ceac.material_shape_slope": "Material Shape: Slope",

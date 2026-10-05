@@ -1,0 +1,6 @@
+{
+  "loader": "ceac:material_shape_stairs",
+  "textures": {
+    "texture": "ceac:block/material_shape"
+  }
+}

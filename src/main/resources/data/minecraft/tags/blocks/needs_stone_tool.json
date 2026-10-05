@@ -6,6 +6,9 @@
 
 
     "ceac:material_shape_block",
+    "ceac:material_shape_bit",
+    "ceac:material_shape_half",
+    "ceac:material_shape_stairs",
 
 
     "ceac:material_shape_slope",
