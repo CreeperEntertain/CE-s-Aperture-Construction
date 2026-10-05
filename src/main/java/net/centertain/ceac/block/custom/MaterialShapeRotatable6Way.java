@@ -140,19 +140,28 @@ public abstract class MaterialShapeRotatable6Way extends MaterialShape implement
         if (viewDirection.lengthSqr() < 1.0e-8)
             return false;
 
-        Vec3 axis = viewDirection.normalize();
-        double angle = counterclockwise
-                ? -Math.PI / 2.0
-                : Math.PI / 2.0;
-
         Direction facing = state.getValue(FACING);
+        Direction lookDirection = Direction.getNearest(
+                viewDirection.x,
+                viewDirection.y,
+                viewDirection.z
+        );
+        if (lookDirection.getAxis() == facing.getAxis())
+            return false;
+
+        Vec3 axis = new Vec3(
+                lookDirection.getStepX(),
+                lookDirection.getStepY(),
+                lookDirection.getStepZ()
+        );
         Vec3 forward = new Vec3(
                 facing.getStepX(),
                 facing.getStepY(),
                 facing.getStepZ()
         );
-
-        Vec3 rotated = rotateVector(forward, axis, angle);
+        Vec3 rotated = axis.cross(forward);
+        if (counterclockwise)
+            rotated = rotated.scale(-1.0);
 
         Direction newFacing = Direction.getNearest(
                 rotated.x,
@@ -164,17 +173,6 @@ public abstract class MaterialShapeRotatable6Way extends MaterialShape implement
 
         level.setBlock(pos, state.setValue(FACING, newFacing), 3);
         return true;
-    }
-
-    private static Vec3 rotateVector(
-            Vec3 vector,
-            Vec3 axis,
-            double angle
-    ) {
-        return vector
-                .scale(Math.cos(angle))
-                .add(axis.cross(vector).scale(Math.sin(angle)))
-                .add(axis.scale(axis.dot(vector) * (1.0 - Math.cos(angle))));
     }
 
 
