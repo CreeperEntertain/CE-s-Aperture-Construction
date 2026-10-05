@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class Stairs extends MaterialShapeRotatable24Way {
     private static final Map<Direction, VoxelShape[]> SHAPES =
-            MaterialShapeVoxelHelper24Way.makeShapes(() -> StairsGeometry.COLLISION_SHAPE);
+            MaterialShapeVoxelHelper24Way.makeShapes(() -> StairsGeometry.COLLISION_SHAPE, false);
 
     public Stairs(Properties properties) {
         super(properties, CategoryConstants.Sub.Shapes.SLOPES_FULL);

@@ -15,14 +15,28 @@ public final class MaterialShapeVoxelHelper6Way extends MaterialShapeVoxelHelper
     public static Map<Direction, VoxelShape> makeShapes(
             Supplier<BakedModel> source
     ) {
-        return lazyMap(source, MaterialShapeVoxelHelper6Way::makeShapes);
+        return makeShapes(source, true);
+    }
+
+    public static Map<Direction, VoxelShape> makeShapes(
+            Supplier<BakedModel> source,
+            boolean greedyMeshing
+    ) {
+        return lazyMap(source, sourceModel -> makeShapes(sourceModel, greedyMeshing));
     }
 
     private static Map<Direction, VoxelShape> makeShapes(
             BakedModel source
     ) {
+        return makeShapes(source, true);
+    }
+
+    private static Map<Direction, VoxelShape> makeShapes(
+            BakedModel source,
+            boolean greedyMeshing
+    ) {
         Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
-        boolean[][][] canonical = voxelize(source);
+        boolean[][][] canonical = voxelize(source, greedyMeshing);
 
         for (Direction facing : Direction.values())
             shapes.put(facing, compact(transformVoxels(canonical, facing)));

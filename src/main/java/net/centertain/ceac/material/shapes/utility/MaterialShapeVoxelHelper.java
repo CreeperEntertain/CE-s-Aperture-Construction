@@ -23,7 +23,13 @@ public abstract class MaterialShapeVoxelHelper {
     protected static boolean[][][] voxelize(
             BakedModel source
     ) {
-        return rasterize(getTriangles(source));
+        return rasterize(getTriangles(source), true);
+    }
+    protected static boolean[][][] voxelize(
+            BakedModel source,
+            boolean greedyMeshing
+    ) {
+        return rasterize(getTriangles(source), greedyMeshing);
     }
 
     protected static <K, V> Map<K, V> lazyMap(
@@ -76,31 +82,33 @@ public abstract class MaterialShapeVoxelHelper {
     }
 
     protected static boolean[][][] rasterize(
-            List<Triangle> triangles
+            List<Triangle> triangles,
+            boolean greedyMeshing
     ) {
         boolean[][][] voxels = new boolean[SIZE][SIZE][SIZE];
 
-        for (Triangle triangle : triangles) {
-            double minX = Math.min(triangle.a.x(), Math.min(triangle.b.x(), triangle.c.x()));
-            double minY = Math.min(triangle.a.y(), Math.min(triangle.b.y(), triangle.c.y()));
-            double minZ = Math.min(triangle.a.z(), Math.min(triangle.b.z(), triangle.c.z()));
-            double maxX = Math.max(triangle.a.x(), Math.max(triangle.b.x(), triangle.c.x()));
-            double maxY = Math.max(triangle.a.y(), Math.max(triangle.b.y(), triangle.c.y()));
-            double maxZ = Math.max(triangle.a.z(), Math.max(triangle.b.z(), triangle.c.z()));
+        if (greedyMeshing)
+            for (Triangle triangle : triangles) {
+                double minX = Math.min(triangle.a.x(), Math.min(triangle.b.x(), triangle.c.x()));
+                double minY = Math.min(triangle.a.y(), Math.min(triangle.b.y(), triangle.c.y()));
+                double minZ = Math.min(triangle.a.z(), Math.min(triangle.b.z(), triangle.c.z()));
+                double maxX = Math.max(triangle.a.x(), Math.max(triangle.b.x(), triangle.c.x()));
+                double maxY = Math.max(triangle.a.y(), Math.max(triangle.b.y(), triangle.c.y()));
+                double maxZ = Math.max(triangle.a.z(), Math.max(triangle.b.z(), triangle.c.z()));
 
-            int startX = Math.max(0, (int) Math.floor(minX * SIZE));
-            int endX = Math.min(SIZE - 1, (int) Math.ceil(maxX * SIZE));
-            int startY = Math.max(0, (int) Math.floor(minY * SIZE));
-            int endY = Math.min(SIZE - 1, (int) Math.ceil(maxY * SIZE));
-            int startZ = Math.max(0, (int) Math.floor(minZ * SIZE));
-            int endZ = Math.min(SIZE - 1, (int) Math.ceil(maxZ * SIZE));
+                int startX = Math.max(0, (int) Math.floor(minX * SIZE));
+                int endX = Math.min(SIZE - 1, (int) Math.ceil(maxX * SIZE));
+                int startY = Math.max(0, (int) Math.floor(minY * SIZE));
+                int endY = Math.min(SIZE - 1, (int) Math.ceil(maxY * SIZE));
+                int startZ = Math.max(0, (int) Math.floor(minZ * SIZE));
+                int endZ = Math.min(SIZE - 1, (int) Math.ceil(maxZ * SIZE));
 
-            for (int x = startX; x <= endX; x++)
-                for (int y = startY; y <= endY; y++)
-                    for (int z = startZ; z <= endZ; z++)
-                        if (triangleIntersectsVoxel(triangle, x, y, z))
-                            voxels[x][y][z] = true;
-        }
+                for (int x = startX; x <= endX; x++)
+                    for (int y = startY; y <= endY; y++)
+                        for (int z = startZ; z <= endZ; z++)
+                            if (triangleIntersectsVoxel(triangle, x, y, z))
+                                voxels[x][y][z] = true;
+            }
 
         for (int x = 0; x < SIZE; x++)
             for (int y = 0; y < SIZE; y++)
@@ -149,7 +157,7 @@ public abstract class MaterialShapeVoxelHelper {
             solidAngle += 2.0 * Math.atan2(numerator, denominator);
         }
 
-        return Math.abs(solidAngle) > 2.0 * Math.PI;
+        return Math.abs(solidAngle) > 2.0 * Math.PI - EPSILON;
     }
 
     private static boolean triangleIntersectsVoxel(

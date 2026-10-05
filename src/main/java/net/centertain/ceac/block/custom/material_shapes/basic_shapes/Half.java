@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class Half extends MaterialShapeRotatable6Way {
     private static final Map<Direction, VoxelShape> SHAPES =
-            MaterialShapeVoxelHelper6Way.makeShapes(() -> HalfGeometry.COLLISION_SHAPE);
+            MaterialShapeVoxelHelper6Way.makeShapes(() -> HalfGeometry.COLLISION_SHAPE, false);
 
     public Half(Properties properties) {
         super(properties, CategoryConstants.Sub.Shapes.BASIC);

@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class Bit extends MaterialShapeRotatable24Way {
     private static final Map<Direction, VoxelShape[]> SHAPES =
-            MaterialShapeVoxelHelper24Way.makeShapes(() -> BitGeometry.COLLISION_SHAPE);
+            MaterialShapeVoxelHelper24Way.makeShapes(() -> BitGeometry.COLLISION_SHAPE, false);
 
     public Bit(Properties properties) {
         super(properties, CategoryConstants.Sub.Shapes.SLOPES_FULL);
