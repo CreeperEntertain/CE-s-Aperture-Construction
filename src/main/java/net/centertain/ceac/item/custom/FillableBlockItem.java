@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -36,50 +37,75 @@ public class FillableBlockItem extends BlockItem {
         Level level = context.getLevel();
 
         BlockState clickedState = level.getBlockState(clickedPos);
-        if (clickedState.getBlock() == getBlock())
-            return super.useOn(context);
+
+        if (clickedState.getBlock() == getBlock()) {
+            InteractionResult result = tryFill(
+                    fillable,
+                    clickedState,
+                    clickedPos,
+                    clickedFace,
+                    context
+            );
+            if (result != null)
+                return result;
+        }
 
         BlockPos targetPos = clickedPos.relative(clickedFace);
         BlockState targetState = level.getBlockState(targetPos);
-        if (targetState.getBlock() != getBlock())
-            return super.useOn(context);
 
-        Direction targetFace = clickedFace.getOpposite();
+        if (targetState.getBlock() == getBlock()) {
+            InteractionResult result = tryFill(
+                    fillable,
+                    targetState,
+                    targetPos,
+                    clickedFace.getOpposite(),
+                    context
+            );
+            if (result != null)
+                return result;
+        }
 
+        return super.useOn(context);
+    }
+
+    private @Nullable InteractionResult tryFill(
+            FillableBlock fillable,
+            BlockState state,
+            BlockPos pos,
+            Direction face,
+            UseOnContext context
+    ) {
+        Level level = context.getLevel();
         int fillIndex = fillable.getFillIndex(
-                targetState,
+                state,
                 level,
-                targetPos,
+                pos,
                 CollisionContext.empty(),
                 context.getClickLocation(),
-                targetFace
+                face
         );
         if (fillIndex < 0)
-            return super.useOn(context);
+            return null;
 
-        int mask = fillable.getFillMask(targetState);
+        int mask = fillable.getFillMask(state);
         int bit = 1 << fillIndex;
         if ((mask & bit) != 0)
-            return super.useOn(context);
+            return null;
 
-        BlockState newState = fillable.setFillMask(
-                targetState,
-                mask | bit
-        );
+        BlockState newState = fillable.setFillMask(state, mask | bit);
 
         if (!level.isClientSide) {
-            level.setBlock(targetPos, newState, Block.UPDATE_ALL);
+            level.setBlock(pos, newState, Block.UPDATE_ALL);
+            Player player = context.getPlayer();
 
-            ItemStack stack = context.getItemInHand();
-            assert context.getPlayer() != null;
-            if (!context.getPlayer().isCreative())
-                stack.shrink(1);
+            if (player != null && !player.isCreative())
+                context.getItemInHand().shrink(1);
 
-            SoundType soundType = newState.getSoundType(level, targetPos, context.getPlayer());
+            SoundType soundType = newState.getSoundType(level, pos, player);
 
             level.playSound(
                     null,
-                    targetPos,
+                    pos,
                     soundType.getPlaceSound(),
                     SoundSource.BLOCKS,
                     (soundType.getVolume() + 1.0f) / 2.0f,
