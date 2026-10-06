@@ -172,7 +172,7 @@ public interface FillableBlock {
             BlockState state
     );
 
-    default boolean onDestroyedByPlayer(
+    default boolean tryDestroyFilledPiece(
             @NotNull BlockState state,
             @NotNull Level level,
             @NotNull BlockPos pos,
@@ -182,7 +182,7 @@ public interface FillableBlock {
     ) {
         int mask = getFillMask(state);
         if (Integer.bitCount(mask) <= 1)
-            return true;
+            return false;
 
         HitResult hitResult = player.pick(
                 player.getBlockReach(),
@@ -190,33 +190,28 @@ public interface FillableBlock {
                 false
         );
         if (!(hitResult instanceof BlockHitResult hit))
-            return true;
+            return false;
         if (!hit.getBlockPos().equals(pos))
-            return true;
+            return false;
 
-        Vec3 localHit = hit.getLocation().subtract(
-                pos.getX(),
-                pos.getY(),
-                pos.getZ()
-        );
-        int pieceIndex = getFillIndex(
+        int pieceIndex = getBreakFillIndex(
                 state,
                 level,
                 pos,
                 CollisionContext.empty(),
-                localHit,
+                hit.getLocation(),
                 hit.getDirection()
         );
         if (pieceIndex < 0)
-            return true;
+            return false;
 
         int pieceBit = 1 << pieceIndex;
         if ((mask & pieceBit) == 0)
-            return true;
+            return false;
 
         int newMask = mask & ~pieceBit;
         if (newMask == 0)
-            return true;
+            return false;
 
         level.setBlock(
                 pos,
@@ -224,10 +219,32 @@ public interface FillableBlock {
                 BasicBlock.UPDATE_ALL
         );
 
-        if (this instanceof Block block)
-            Block.popResource(level, pos, new ItemStack(block));
+        if (!player.isCreative() && willHarvest && this instanceof Block block)
+            Block.popResource(
+                    level,
+                    pos,
+                    new ItemStack(block)
+            );
 
-        return false;
+        return true;
+    }
+
+    default int getBreakFillIndex(
+            @NotNull BlockState state,
+            @NotNull BlockGetter level,
+            @NotNull BlockPos pos,
+            @NotNull CollisionContext context,
+            @NotNull Vec3 point,
+            @NotNull Direction face
+    ) {
+        return getFillIndex(
+                state,
+                level,
+                pos,
+                context,
+                point,
+                face.getOpposite()
+        );
     }
 
     record FillDefinition(
@@ -295,18 +312,17 @@ public interface FillableBlock {
 
             int[] subdivisions = {x, y, z};
 
-            if (subdivisions[axis] <= 1)
-                return -1;
+            if (subdivisions[axis] > 1) {
+                double surfaceCoordinate = switch (axis) {
+                    case 0 -> point.x;
+                    case 1 -> point.y;
+                    default -> point.z;
+                };
 
-            double surfaceCoordinate = switch (axis) {
-                case 0 -> point.x;
-                case 1 -> point.y;
-                default -> point.z;
-            };
-
-            coordinates[axis] = face.getAxisDirection() == Direction.AxisDirection.POSITIVE
-                    ? positiveCoordinate(surfaceCoordinate, subdivisions[axis])
-                    : negativeCoordinate(surfaceCoordinate, subdivisions[axis]);
+                coordinates[axis] = face.getAxisDirection() == Direction.AxisDirection.POSITIVE
+                        ? positiveCoordinate(surfaceCoordinate, subdivisions[axis])
+                        : negativeCoordinate(surfaceCoordinate, subdivisions[axis]);
+            }
 
             if (!contains(
                     coordinates[0],

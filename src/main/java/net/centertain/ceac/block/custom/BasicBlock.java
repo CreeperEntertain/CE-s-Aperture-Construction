@@ -55,23 +55,30 @@ public abstract class BasicBlock extends Block {
             boolean willHarvest,
             @NotNull FluidState fluid
     ) {
-        if (this instanceof FillableBlock fillable)
-            return fillable.onDestroyedByPlayer(
-                    state,
-                    level,
-                    pos,
-                    player,
-                    willHarvest,
-                    fluid
-            );
-
-        return super.onDestroyedByPlayer(
+        if (this instanceof FillableBlock fillable
+                && fillable.tryDestroyFilledPiece(
                 state,
                 level,
                 pos,
                 player,
                 willHarvest,
                 fluid
+        ))
+            return false;
+
+        playerWillDestroy(
+                level,
+                pos,
+                state,
+                player
+        );
+
+        return level.setBlock(
+                pos,
+                fluid.createLegacyBlock(),
+                level.isClientSide
+                        ? UPDATE_ALL_IMMEDIATE
+                        : UPDATE_ALL
         );
     }
 }
