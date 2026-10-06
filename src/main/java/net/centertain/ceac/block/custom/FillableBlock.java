@@ -213,13 +213,20 @@ public interface FillableBlock {
         if (newMask == 0)
             return false;
 
+        Block block = (Block) this;
+        block.playerWillDestroy(
+                level,
+                pos,
+                state,
+                player
+        );
         level.setBlock(
                 pos,
                 setFillMask(state, newMask),
                 BasicBlock.UPDATE_ALL
         );
 
-        if (!player.isCreative() && willHarvest && this instanceof Block block)
+        if (!player.isCreative() && willHarvest)
             Block.popResource(
                     level,
                     pos,
