@@ -3,12 +3,16 @@ package net.centertain.ceac.item.custom;
 import net.centertain.ceac.block.custom.FillableBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -21,31 +25,26 @@ public class FillableBlockItem extends BlockItem {
     }
 
     @Override
-    public @NotNull InteractionResult place(@NotNull BlockPlaceContext context) {
-        BlockPlaceContext updated = updatePlacementContext(context);
-        if (updated == null)
-            return InteractionResult.FAIL;
-        return super.place(updated);
-    }
-
-    @Override
-    public @Nullable BlockPlaceContext updatePlacementContext(@NotNull BlockPlaceContext context) {
+    public @NotNull InteractionResult useOn(
+            @NotNull UseOnContext context
+    ) {
         if (!(getBlock() instanceof FillableBlock fillable))
-            return context;
+            return super.useOn(context);
 
         BlockPos clickedPos = context.getClickedPos();
-        Level level = context.getLevel();
-        BlockState clickedState = level.getBlockState(clickedPos);
-        if (clickedState.getBlock() == getBlock()) // Do absolutely fucking nothing special here
-            return context;
-
         Direction clickedFace = context.getClickedFace();
-        Direction targetFace = clickedFace.getOpposite();
+        Level level = context.getLevel();
+
+        BlockState clickedState = level.getBlockState(clickedPos);
+        if (clickedState.getBlock() == getBlock())
+            return super.useOn(context);
 
         BlockPos targetPos = clickedPos.relative(clickedFace);
         BlockState targetState = level.getBlockState(targetPos);
-        if (targetState.getBlock() != getBlock()) // Once again do absolutely nothing special
-            return context;
+        if (targetState.getBlock() != getBlock())
+            return super.useOn(context);
+
+        Direction targetFace = clickedFace.getOpposite();
 
         int fillIndex = fillable.getFillIndex(
                 targetState,
@@ -56,33 +55,38 @@ public class FillableBlockItem extends BlockItem {
                 targetFace
         );
         if (fillIndex < 0)
-            return context;
-        if ((fillable.getFillMask(targetState) & (1 << fillIndex)) != 0)
-            return context;
+            return super.useOn(context);
 
-        return new FillablePlacementContext(context, targetPos, targetFace);
-    }
+        int mask = fillable.getFillMask(targetState);
+        int bit = 1 << fillIndex;
+        if ((mask & bit) != 0)
+            return super.useOn(context);
 
-    private static class FillablePlacementContext extends BlockPlaceContext {
-        private FillablePlacementContext(
-                BlockPlaceContext context,
-                BlockPos targetPos,
-                Direction targetFace
-        ) {
-            super(
-                    context.getLevel(),
-                    context.getPlayer(),
-                    context.getHand(),
-                    context.getItemInHand(),
-                    new BlockHitResult(
-                            context.getClickLocation(),
-                            targetFace,
-                            targetPos,
-                            context.isInside()
-                    )
+        BlockState newState = fillable.setFillMask(
+                targetState,
+                mask | bit
+        );
+
+        if (!level.isClientSide) {
+            level.setBlock(targetPos, newState, Block.UPDATE_ALL);
+
+            ItemStack stack = context.getItemInHand();
+            assert context.getPlayer() != null;
+            if (!context.getPlayer().isCreative())
+                stack.shrink(1);
+
+            SoundType soundType = newState.getSoundType(level, targetPos, context.getPlayer());
+
+            level.playSound(
+                    null,
+                    targetPos,
+                    soundType.getPlaceSound(),
+                    SoundSource.BLOCKS,
+                    (soundType.getVolume() + 1.0F) / 2.0F,
+                    soundType.getPitch() * 0.8F
             );
-
-            replaceClicked = true;
         }
+
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 }
