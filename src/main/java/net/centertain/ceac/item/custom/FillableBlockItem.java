@@ -3,6 +3,7 @@ package net.centertain.ceac.item.custom;
 import net.centertain.ceac.block.custom.FillableBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -17,6 +18,14 @@ import org.jetbrains.annotations.Nullable;
 public class FillableBlockItem extends BlockItem {
     public FillableBlockItem(Block block, Item.Properties properties) {
         super(block, properties);
+    }
+
+    @Override
+    public @NotNull InteractionResult place(@NotNull BlockPlaceContext context) {
+        BlockPlaceContext updated = updatePlacementContext(context);
+        if (updated == null)
+            return InteractionResult.FAIL;
+        return super.place(updated);
     }
 
     @Override
