@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public final class FillableModelBuilder {
     private FillableModelBuilder() {}
@@ -25,7 +26,8 @@ public final class FillableModelBuilder {
             Direction side,
             RandomSource random,
             ModelData data,
-            @Nullable RenderType renderType
+            @Nullable RenderType renderType,
+            Function<BakedQuad, BakedQuad> transform
     ) {
         BakedModel pieceModel = fillable.getFillModel(state);
         List<BakedQuad> source = pieceModel.getQuads(
@@ -53,6 +55,8 @@ public final class FillableModelBuilder {
 
                 if (!isExposed(definition, mask, index, face))
                     continue;
+
+                quad = transform.apply(quad);
 
                 result.add(translate(quad, offset));
             }

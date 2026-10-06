@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.block.custom.FillableBlock;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.block.custom.MaterialShapeRotatable;
-import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.material.shapes.utility.FillableModelBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
@@ -52,6 +51,9 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
         if (state == null)
             state = shape.defaultBlockState();
 
+        Map<Integer, MaterialShapeBlockEntity.MaterialAssignment> materials =
+                data.get(MaterialShapeBlockEntity.MATERIALS);
+
         List<BakedQuad> original;
         if (state.getBlock() instanceof FillableBlock fillable)
             original = FillableModelBuilder.buildQuads(
@@ -60,9 +62,19 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
                     side,
                     random,
                     data,
-                    renderType
+                    renderType,
+                    quad -> {
+                        int faceIndex = findFace(quad);
+
+                        MaterialShapeBlockEntity.MaterialAssignment assignment = materials == null
+                                ? null : materials.get(faceIndex);
+
+                        return assignment == null
+                                ? quad
+                                : retexture(quad, assignment);
+                    }
             );
-        else
+        else {
             original = originalModel.getQuads(
                     state,
                     side,
@@ -71,23 +83,27 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
                     renderType
             );
 
-        Map<Integer, MaterialShapeBlockEntity.MaterialAssignment> materials =
-                data.get(MaterialShapeBlockEntity.MATERIALS);
+            List<BakedQuad> result = new ArrayList<>(original.size());
+
+            for (BakedQuad quad : original) {
+                int faceIndex = findFace(quad);
+
+                MaterialShapeBlockEntity.MaterialAssignment assignment = materials == null
+                        ? null : materials.get(faceIndex);
+
+                if (assignment != null)
+                    quad = retexture(quad, assignment);
+
+                result.add(transformQuad(quad, state));
+            }
+
+            return result;
+        }
 
         List<BakedQuad> result = new ArrayList<>(original.size());
 
-        for (BakedQuad quad : original) {
-            int faceIndex = findFace(quad);
-
-            MaterialShapeBlockEntity.MaterialAssignment assignment = materials == null
-                    ? null
-                    : materials.get(faceIndex);
-
-            if (assignment != null)
-                quad = retexture(quad, assignment);
-
+        for (BakedQuad quad : original)
             result.add(transformQuad(quad, state));
-        }
 
         return result;
     }
