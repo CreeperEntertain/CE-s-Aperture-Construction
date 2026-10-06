@@ -151,14 +151,11 @@ public interface FillableBlock {
                     definition.offset(index)
             );
 
-            result = Shapes.or(
-                    result,
-                    piece.move(
-                            offset.x,
-                            offset.y,
-                            offset.z
-                    )
-            );
+            result = Shapes.or(result, piece.move(
+                    offset.x,
+                    offset.y,
+                    offset.z
+            ));
         }
 
         return result;
