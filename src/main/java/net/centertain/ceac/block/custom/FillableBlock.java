@@ -7,9 +7,16 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -164,6 +171,64 @@ public interface FillableBlock {
     @NotNull BakedModel getFillModel(
             BlockState state
     );
+
+    default boolean onDestroyedByPlayer(
+            @NotNull BlockState state,
+            @NotNull Level level,
+            @NotNull BlockPos pos,
+            @NotNull Player player,
+            boolean willHarvest,
+            @NotNull FluidState fluid
+    ) {
+        int mask = getFillMask(state);
+        if (Integer.bitCount(mask) <= 1)
+            return true;
+
+        HitResult hitResult = player.pick(
+                player.getBlockReach(),
+                1.0f,
+                false
+        );
+        if (!(hitResult instanceof BlockHitResult hit))
+            return true;
+        if (!hit.getBlockPos().equals(pos))
+            return true;
+
+        Vec3 localHit = hit.getLocation().subtract(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ()
+        );
+        int pieceIndex = getFillIndex(
+                state,
+                level,
+                pos,
+                CollisionContext.empty(),
+                localHit,
+                hit.getDirection()
+        );
+        if (pieceIndex < 0)
+            return true;
+
+        int pieceBit = 1 << pieceIndex;
+        if ((mask & pieceBit) == 0)
+            return true;
+
+        int newMask = mask & ~pieceBit;
+        if (newMask == 0)
+            return true;
+
+        level.setBlock(
+                pos,
+                setFillMask(state, newMask),
+                BasicBlock.UPDATE_ALL
+        );
+
+        if (this instanceof Block block)
+            Block.popResource(level, pos, new ItemStack(block));
+
+        return false;
+    }
 
     record FillDefinition(
             int x,

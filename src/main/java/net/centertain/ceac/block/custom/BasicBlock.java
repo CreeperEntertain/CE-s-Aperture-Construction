@@ -1,7 +1,13 @@
 package net.centertain.ceac.block.custom;
 
 import net.centertain.ceac.constants.CategoryConstants;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class BasicBlock extends Block {
@@ -38,5 +44,34 @@ public abstract class BasicBlock extends Block {
     }
     public final double getPrice() {
         return price;
+    }
+
+    @Override
+    public boolean onDestroyedByPlayer(
+            @NotNull BlockState state,
+            @NotNull Level level,
+            @NotNull BlockPos pos,
+            @NotNull Player player,
+            boolean willHarvest,
+            @NotNull FluidState fluid
+    ) {
+        if (this instanceof FillableBlock fillable)
+            return fillable.onDestroyedByPlayer(
+                    state,
+                    level,
+                    pos,
+                    player,
+                    willHarvest,
+                    fluid
+            );
+
+        return super.onDestroyedByPlayer(
+                state,
+                level,
+                pos,
+                player,
+                willHarvest,
+                fluid
+        );
     }
 }
