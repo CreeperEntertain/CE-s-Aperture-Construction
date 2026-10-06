@@ -184,11 +184,7 @@ public interface FillableBlock {
         if (Integer.bitCount(mask) <= 1)
             return false;
 
-        HitResult hitResult = player.pick(
-                player.getBlockReach(),
-                1.0f,
-                false
-        );
+        HitResult hitResult = player.pick(player.getBlockReach(), 1.0f, false);
         if (!(hitResult instanceof BlockHitResult hit))
             return false;
         if (!hit.getBlockPos().equals(pos))
@@ -214,24 +210,11 @@ public interface FillableBlock {
             return false;
 
         Block block = (Block) this;
-        block.playerWillDestroy(
-                level,
-                pos,
-                state,
-                player
-        );
-        level.setBlock(
-                pos,
-                setFillMask(state, newMask),
-                BasicBlock.UPDATE_ALL
-        );
+        block.playerWillDestroy(level, pos, state, player);
+        level.setBlock(pos, setFillMask(state, newMask), BasicBlock.UPDATE_ALL);
 
         if (!player.isCreative() && willHarvest)
-            Block.popResource(
-                    level,
-                    pos,
-                    new ItemStack(block)
-            );
+            Block.popResource(level, pos, new ItemStack(block));
 
         return true;
     }
