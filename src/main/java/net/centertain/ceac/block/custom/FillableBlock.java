@@ -356,6 +356,36 @@ public interface FillableBlock {
             double maxY = Double.NEGATIVE_INFINITY;
             double maxZ = Double.NEGATIVE_INFINITY;
 
+            for (BakedQuad quad : model.getQuads(
+                    state,
+                    null,
+                    random,
+                    ModelData.EMPTY,
+                    null
+            )) {
+                int[] vertices = quad.getVertices();
+                VertexFormat format = DefaultVertexFormat.BLOCK;
+
+                int stride = format.getIntegerSize();
+                int positionOffset = format.getOffset(0) / Integer.BYTES;
+
+                for (int i = 0; i < 4; i++) {
+                    int offset = i * stride + positionOffset;
+
+                    double x = Float.intBitsToFloat(vertices[offset]);
+                    double y = Float.intBitsToFloat(vertices[offset + 1]);
+                    double z = Float.intBitsToFloat(vertices[offset + 2]);
+
+                    minX = Math.min(minX, x);
+                    minY = Math.min(minY, y);
+                    minZ = Math.min(minZ, z);
+
+                    maxX = Math.max(maxX, x);
+                    maxY = Math.max(maxY, y);
+                    maxZ = Math.max(maxZ, z);
+                }
+            }
+
             for (Direction side : Direction.values())
                 for (BakedQuad quad : model.getQuads(
                         state,
