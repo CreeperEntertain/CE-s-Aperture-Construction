@@ -1,10 +1,10 @@
 package net.centertain.ceac.block.custom.material_shapes.basic_shapes;
 
 import net.centertain.ceac.block.custom.FillableBlock;
-import net.centertain.ceac.block.custom.MaterialShapeRotatable6Way;
+import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.material.shapes.models.basic_shapes.HalfGeometry;
-import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper6Way;
+import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,11 +21,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public class Half extends MaterialShapeRotatable6Way implements FillableBlock {
+public class Half extends MaterialShapeRotatable24Way implements FillableBlock {
     private static final IntegerProperty FILL = IntegerProperty.create("fill", 0, 3);
 
-    private static final Map<Direction, VoxelShape> SHAPES =
-            MaterialShapeVoxelHelper6Way.makeShapes(() -> HalfGeometry.COLLISION_SHAPE, false);
+    private static final Map<Direction, VoxelShape[]> SHAPES =
+            MaterialShapeVoxelHelper24Way.makeShapes(() -> HalfGeometry.COLLISION_SHAPE, false);
 
     public Half(Properties properties) {
         super(properties, CategoryConstants.Sub.Shapes.BASIC);
@@ -51,7 +51,7 @@ public class Half extends MaterialShapeRotatable6Way implements FillableBlock {
             BlockPos pos,
             CollisionContext context
     ) {
-        return SHAPES.get(state.getValue(FACING));
+        return SHAPES.get(state.getValue(FACING))[state.getValue(ROTATION)];
     }
 
     @SuppressWarnings("deprecation")
