@@ -20,14 +20,19 @@ import java.util.function.Function;
 public final class FillableModelBuilder {
     private FillableModelBuilder() {}
 
-    public static List<BakedQuad> buildQuads(
+    public record FillableQuad(
+            BakedQuad quad,
+            BakedQuad source,
+            int pieceIndex
+    ) {}
+
+    public static List<FillableQuad> buildQuads(
             FillableBlock fillable,
             BlockState state,
             Direction side,
             RandomSource random,
             ModelData data,
-            @Nullable RenderType renderType,
-            Function<BakedQuad, BakedQuad> transform
+            @Nullable RenderType renderType
     ) {
         BakedModel pieceModel = fillable.getFillModel(state);
         List<BakedQuad> source = pieceModel.getQuads(
@@ -40,25 +45,33 @@ public final class FillableModelBuilder {
 
         int mask = fillable.getFillMask(state);
 
-        FillableBlock.FillDefinition definition = FillableBlock.FillDefinition.fromModel(pieceModel, state);
+        FillableBlock.FillDefinition definition = FillableBlock.FillDefinition.fromModel(
+                pieceModel,
+                state
+        );
 
-        List<BakedQuad> result = new ArrayList<>();
+        List<FillableQuad> result = new ArrayList<>();
 
-        for (int index = 0; index < definition.size(); index++) {
-            if ((mask & (1 << index)) == 0)
+        for (int pieceIndex = 0;
+             pieceIndex < definition.size();
+             pieceIndex++) {
+
+            if ((mask & (1 << pieceIndex)) == 0)
                 continue;
 
-            Vec3 offset = definition.offset(index);
+            Vec3 offset = definition.offset(pieceIndex);
 
             for (BakedQuad quad : source) {
                 Direction face = quad.getDirection();
 
-                if (!isExposed(definition, mask, index, face))
+                if (!isExposed(definition, mask, pieceIndex, face))
                     continue;
 
-                quad = transform.apply(quad);
-
-                result.add(translate(quad, offset));
+                result.add(new FillableQuad(
+                        translate(quad, offset),
+                        quad,
+                        pieceIndex
+                ));
             }
         }
 

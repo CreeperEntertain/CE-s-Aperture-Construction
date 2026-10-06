@@ -9,6 +9,7 @@ import net.centertain.ceac.material.preview.MaterialPlacement;
 import net.centertain.ceac.material.preview.MaterialPreviewer;
 import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.centertain.ceac.material.shapes.MaterialShapeFace;
+import net.centertain.ceac.material.shapes.MaterialShapeFaceInstance;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -182,16 +183,20 @@ public abstract class MatItem extends BasicItem {
         localOrigin = shape.transformPointToLocal(state, localOrigin);
         direction = shape.transformDirectionToLocal(state, direction);
 
-        MaterialShapeFace face = findFace(
+        FaceHit faceHit = findFace(
                 shape,
+                state,
                 localOrigin,
                 direction,
                 player.getBlockReach()
         );
-        if (face == null) {
+        if (faceHit == null) {
             MaterialPlacement.forceCleanup();
             return;
         }
+
+        MaterialShapeFaceInstance instance = faceHit.instance;
+        MaterialShapeFace face = instance.face();
 
         Vector2i materialCoordinate = material.get().getCoordinate(face, pos, state);
 
@@ -199,7 +204,7 @@ public abstract class MatItem extends BasicItem {
                 material.get(),
                 getMaterialCoordinateWithOffset(stack, materialCoordinate),
                 pos,
-                face
+                instance
         );
     }
 
@@ -229,12 +234,18 @@ public abstract class MatItem extends BasicItem {
         localOrigin = shape.transformPointToLocal(state, localOrigin);
         direction = shape.transformDirectionToLocal(state, direction);
 
-        MaterialShapeFace face = findFace(
+        FaceHit faceHit = findFace(
                 shape,
+                state,
                 localOrigin,
                 direction,
                 player.getBlockReach()
         );
+        if (faceHit == null)
+            return InteractionResult.PASS;
+
+        MaterialShapeFaceInstance instance = faceHit.instance;
+        MaterialShapeFace face = instance.face();
 
         if (face == null)
             return InteractionResult.PASS;
@@ -252,7 +263,8 @@ public abstract class MatItem extends BasicItem {
                     pos,
                     state,
                     context.getItemInHand(),
-                    materialCoordinate
+                    materialCoordinate,
+                    instance
             );
 
         spawnMaterialParticles(
@@ -276,12 +288,11 @@ public abstract class MatItem extends BasicItem {
             BlockPos pos,
             BlockState state,
             ItemStack stack,
-            Vector2i materialCoordinate
+            Vector2i materialCoordinate,
+            MaterialShapeFaceInstance instance
     ) {
-        int faceIndex = shape.getFaces().indexOf(face);
-
         blockEntity.setMaterial(
-                faceIndex,
+                instance.key(),
                 material.get(),
                 getMaterialCoordinateWithOffset(stack, materialCoordinate)
         );
@@ -377,18 +388,18 @@ public abstract class MatItem extends BasicItem {
         return center.scale(1.0 / face.getVertices().size());
     }
 
-    private @Nullable MaterialShapeFace findFace(
+    private @Nullable FaceHit findFace(
             MaterialShape shape,
+            BlockState state,
             Vec3 origin,
             Vec3 direction,
             double reach
     ) {
         double closest = reach;
-        MaterialShapeFace result = null;
+        @Nullable FaceHit result = null;
 
-        for (MaterialShapeFace face : shape.getFaces()) {
-            List<Vec3> vertices = face.getVertices();
-
+        for (MaterialShapeFaceInstance instance : shape.getFaceInstances(state)) {
+            List<Vec3> vertices = instance.getVertices();
             if (vertices.size() < 3)
                 continue;
 
@@ -403,15 +414,21 @@ public abstract class MatItem extends BasicItem {
                         vertices.get(i + 1),
                         reach
                 );
+
                 if (distance >= 0.0 && distance < closest) {
                     closest = distance;
-                    result = face;
+                    result = new FaceHit(instance, distance);
                 }
             }
         }
 
         return result;
     }
+
+    private record FaceHit(
+            MaterialShapeFaceInstance instance,
+            double distance
+    ) {}
 
     private double rayTriangle(
             Vec3 origin,

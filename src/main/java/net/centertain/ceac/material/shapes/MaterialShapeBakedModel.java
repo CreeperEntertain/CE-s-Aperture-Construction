@@ -51,48 +51,33 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
         if (state == null)
             state = shape.defaultBlockState();
 
-        Map<Integer, MaterialShapeBlockEntity.MaterialAssignment> materials =
+        Map<MaterialFaceKey, MaterialShapeBlockEntity.MaterialAssignment> materials =
                 data.get(MaterialShapeBlockEntity.MATERIALS);
 
-        List<BakedQuad> original;
-        if (state.getBlock() instanceof FillableBlock fillable)
-            original = FillableModelBuilder.buildQuads(
+        if (state.getBlock() instanceof FillableBlock fillable) {
+            List<FillableModelBuilder.FillableQuad> quads = FillableModelBuilder.buildQuads(
                     fillable,
-                    state,
-                    side,
-                    random,
-                    data,
-                    renderType,
-                    quad -> {
-                        int faceIndex = findFace(quad);
-
-                        MaterialShapeBlockEntity.MaterialAssignment assignment = materials == null
-                                ? null : materials.get(faceIndex);
-
-                        return assignment == null
-                                ? quad
-                                : retexture(quad, assignment);
-                    }
-            );
-        else {
-            original = originalModel.getQuads(
                     state,
                     side,
                     random,
                     data,
                     renderType
             );
+            List<BakedQuad> result = new ArrayList<>(quads.size());
 
-            List<BakedQuad> result = new ArrayList<>(original.size());
+            for (FillableModelBuilder.FillableQuad entry : quads) {
+                int faceIndex = findFace(entry.source());
 
-            for (BakedQuad quad : original) {
-                int faceIndex = findFace(quad);
+                BakedQuad quad = entry.quad();
 
-                MaterialShapeBlockEntity.MaterialAssignment assignment = materials == null
-                        ? null : materials.get(faceIndex);
+                if (faceIndex >= 0) {
+                    MaterialFaceKey key = new MaterialFaceKey(entry.pieceIndex(), faceIndex);
 
-                if (assignment != null)
-                    quad = retexture(quad, assignment);
+                    MaterialShapeBlockEntity.MaterialAssignment assignment = materials == null
+                            ? null : materials.get(key);
+                    if (assignment != null)
+                        quad = retexture(quad, assignment);
+                }
 
                 result.add(transformQuad(quad, state));
             }
@@ -100,10 +85,28 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
             return result;
         }
 
+        List<BakedQuad> original = originalModel.getQuads(
+                state,
+                side,
+                random,
+                data,
+                renderType
+        );
         List<BakedQuad> result = new ArrayList<>(original.size());
 
-        for (BakedQuad quad : original)
+        for (BakedQuad quad : original) {
+            int faceIndex = findFace(quad);
+
+            if (faceIndex >= 0 && materials != null) {
+                MaterialFaceKey key = new MaterialFaceKey(0, faceIndex);
+                MaterialShapeBlockEntity.MaterialAssignment assignment = materials.get(key);
+
+                if (assignment != null)
+                    quad = retexture(quad, assignment);
+            }
+
             result.add(transformQuad(quad, state));
+        }
 
         return result;
     }

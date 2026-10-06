@@ -6,6 +6,7 @@ import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.material.Material;
 import net.centertain.ceac.material.shapes.MaterialShapeFace;
+import net.centertain.ceac.material.shapes.MaterialShapeFaceInstance;
 import net.centertain.ceac.phys_screen.MaterialPreviewerHelpScreen;
 import net.centertain.ceac.phys_screen.framework.PhysScreen;
 import net.centertain.ceac.phys_screen.utility.PhysRenderer;
@@ -43,7 +44,7 @@ public final class MaterialPreviewer {
     private static @Nullable Material material;
     private static @Nullable Vector2i materialCoordinate;
     private static @Nullable BlockPos position;
-    private static @Nullable MaterialShapeFace face;
+    private static @Nullable MaterialShapeFaceInstance face;
 
     private MaterialPreviewer() {}
 
@@ -62,7 +63,7 @@ public final class MaterialPreviewer {
     public static @Nullable BlockPos getPosition() {
         return position;
     }
-    public static @Nullable MaterialShapeFace getFace() {
+    public static @Nullable MaterialShapeFaceInstance getFace() {
         return face;
     }
 
@@ -81,7 +82,7 @@ public final class MaterialPreviewer {
     public static void setPosition(@Nullable BlockPos newPosition) {
         position = newPosition;
     }
-    public static void setFace(@Nullable MaterialShapeFace newFace) {
+    public static void setFace(@Nullable MaterialShapeFaceInstance newFace) {
         face = newFace;
     }
 
@@ -90,7 +91,7 @@ public final class MaterialPreviewer {
             Material newMaterial,
             Vector2i newMaterialCoordinate,
             BlockPos newPosition,
-            MaterialShapeFace newFace
+            MaterialShapeFaceInstance newFace
     ) {
         material = newMaterial;
         materialCoordinate = newMaterialCoordinate;

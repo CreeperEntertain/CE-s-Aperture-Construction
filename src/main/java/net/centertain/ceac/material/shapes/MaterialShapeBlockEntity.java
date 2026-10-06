@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MaterialShapeBlockEntity extends BlockEntity {
-    public static final ModelProperty<Map<Integer, MaterialAssignment>> MATERIALS = new ModelProperty<>();
+    public static final ModelProperty<Map<MaterialFaceKey, MaterialAssignment>> MATERIALS = new ModelProperty<>();
 
-    private Map<Integer, MaterialAssignment> materials = Map.of();
+    private Map<MaterialFaceKey, MaterialAssignment> materials = Map.of();
 
     public MaterialShapeBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MATERIAL_SHAPE.get(), pos, state);
@@ -36,9 +36,21 @@ public class MaterialShapeBlockEntity extends BlockEntity {
             Material material,
             Vector2i materialCoordinate
     ) {
-        Map<Integer, MaterialAssignment> updated = new HashMap<>(materials);
+        setMaterial(
+                new MaterialFaceKey(0, face),
+                material,
+                materialCoordinate
+        );
+    }
 
-        updated.put(face, new MaterialAssignment(
+    public void setMaterial(
+            MaterialFaceKey key,
+            Material material,
+            Vector2i materialCoordinate
+    ) {
+        Map<MaterialFaceKey, MaterialAssignment> updated = new HashMap<>(materials);
+
+        updated.put(key, new MaterialAssignment(
                 material,
                 materialCoordinate.x,
                 materialCoordinate.y
@@ -59,12 +71,16 @@ public class MaterialShapeBlockEntity extends BlockEntity {
     }
 
     public void removeMaterial(int face) {
-        if (!materials.containsKey(face))
+        removeMaterial(new MaterialFaceKey(0, face));
+    }
+
+    public void removeMaterial(MaterialFaceKey key) {
+        if (!materials.containsKey(key))
             return;
 
-        Map<Integer, MaterialAssignment> updated = new HashMap<>(materials);
+        Map<MaterialFaceKey, MaterialAssignment> updated = new HashMap<>(materials);
 
-        updated.remove(face);
+        updated.remove(key);
         materials = Map.copyOf(updated);
 
         setChanged();
@@ -80,7 +96,11 @@ public class MaterialShapeBlockEntity extends BlockEntity {
     }
 
     public @Nullable Material getMaterial(int face) {
-        MaterialAssignment assignment = materials.get(face);
+        return getMaterial(new MaterialFaceKey(0, face));
+    }
+
+    public @Nullable Material getMaterial(MaterialFaceKey key) {
+        MaterialAssignment assignment = materials.get(key);
         return assignment == null ? null : assignment.material();
     }
 
@@ -90,7 +110,7 @@ public class MaterialShapeBlockEntity extends BlockEntity {
 
         CompoundTag materialsTag = new CompoundTag();
 
-        for (Map.Entry<Integer, MaterialAssignment> entry : materials.entrySet()) {
+        for (Map.Entry<MaterialFaceKey, MaterialAssignment> entry : materials.entrySet()) {
             MaterialAssignment assignment = entry.getValue();
 
             CompoundTag materialTag = new CompoundTag();
@@ -103,7 +123,7 @@ public class MaterialShapeBlockEntity extends BlockEntity {
             materialTag.putInt("X", assignment.x);
             materialTag.putInt("Y", assignment.y);
 
-            materialsTag.put(String.valueOf(entry.getKey()), materialTag);
+            materialsTag.put(entry.getKey().toString(), materialTag);
         }
 
         tag.put("Materials", materialsTag);
@@ -113,12 +133,16 @@ public class MaterialShapeBlockEntity extends BlockEntity {
     public void load(@NotNull CompoundTag tag) {
         super.load(tag);
 
-        Map<Integer, MaterialAssignment> loaded = new HashMap<>();
+        Map<MaterialFaceKey, MaterialAssignment> loaded = new HashMap<>();
 
         CompoundTag materialsTag = tag.getCompound("Materials");
 
-        for (String key : materialsTag.getAllKeys()) {
-            CompoundTag materialTag = materialsTag.getCompound(key);
+        for (String serializedKey : materialsTag.getAllKeys()) {
+            MaterialFaceKey faceKey = MaterialFaceKey.parse(serializedKey);
+            if (faceKey == null)
+                continue;
+
+            CompoundTag materialTag = materialsTag.getCompound(serializedKey);
 
             ResourceLocation id = ResourceLocation.tryParse(materialTag.getString("Id"));
             if (id == null)
@@ -128,7 +152,7 @@ public class MaterialShapeBlockEntity extends BlockEntity {
             if (material == null)
                 continue;
 
-            loaded.put(Integer.parseInt(key), new MaterialAssignment(
+            loaded.put(faceKey, new MaterialAssignment(
                     material,
                     materialTag.getInt("X"),
                     materialTag.getInt("Y")

@@ -9,6 +9,7 @@ import net.centertain.ceac.material.particle.MaterialBreakingParticle;
 import net.centertain.ceac.material.particle.MaterialParticleOptions;
 import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.centertain.ceac.material.shapes.MaterialShapeFace;
+import net.centertain.ceac.material.shapes.MaterialShapeFaceInstance;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
@@ -123,13 +124,14 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
     public SoundType getSoundType(
             Vec3 position,
             LevelReader level,
-            BlockPos pos
+            BlockPos pos,
+            BlockState state
     ) {
         position = transformPointToLocal(level.getBlockState(pos), position);
-        MaterialShapeFace face = getNearestFace(position);
-        if (face == null)
+        MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(state, position);
+        if (faceInstance == null)
             return this.soundType;
-        int faceIndex = faces.indexOf(face);
+        int faceIndex = faces.indexOf(faceInstance.face());
         if (faceIndex < 0)
             return this.soundType;
         if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
@@ -162,11 +164,11 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                         pos.getZ()
                 );
 
-                MaterialShapeFace face = getNearestFace(transformPointToLocal(state, localHit));
-                if (face == null)
+                MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(state, transformPointToLocal(state, localHit));
+                if (faceInstance == null)
                     return false;
 
-                int faceIndex = faces.indexOf(face);
+                int faceIndex = faces.indexOf(faceInstance.face());
                 if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
                     return false;
 
@@ -174,7 +176,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                 if (material == null)
                     return false;
 
-                Vector2i coordinate = material.getCoordinate(face, pos, state);
+                Vector2i coordinate = material.getCoordinate(faceInstance.face(), pos, state);
                 ResourceLocation texture = material.getTexture(coordinate);
                 if (texture == null)
                     return false;
@@ -183,13 +185,13 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                         .getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
                 RandomSource random = clientLevel.getRandom();
 
-                List<Vec3> vertices = face.getVertices();
+                List<Vec3> vertices = faceInstance.getVertices();
                 Vec3 a = vertices.get(0);
                 Vec3 b = vertices.get(1);
                 Vec3 c = vertices.get(2);
 
                 Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
-                Vec3 localPoint = randomPointOnFace(face, random).add(normal.scale(0.1));
+                Vec3 localPoint = randomPointOnFace(faceInstance.face(), random).add(normal.scale(0.1));
                 Vec3 worldPoint = transformPointToWorld(state, localPoint).add(pos.getX(), pos.getY(), pos.getZ());
 
                 manager.add(new MaterialBreakingParticle(
@@ -222,11 +224,11 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                 pos.getY(),
                 pos.getZ()
         );
-        MaterialShapeFace face = getNearestFace(transformPointToLocal(state, localPosition));
-        if (face == null)
+        MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(state, transformPointToLocal(state, localPosition));
+        if (faceInstance == null)
             return false;
 
-        int faceIndex = faces.indexOf(face);
+        int faceIndex = faces.indexOf(faceInstance.face());
         if (faceIndex < 0)
             return false;
         if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
@@ -236,7 +238,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         if (material == null)
             return false;
 
-        Vector2i coordinate = material.getCoordinate(face, pos, state);
+        Vector2i coordinate = material.getCoordinate(faceInstance.face(), pos, state);
         ResourceLocation texture = material.getTexture(coordinate);
         if (texture == null)
             return false;
@@ -245,9 +247,9 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
 
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(texture);
 
-        Vec3 point = projectOntoFace(face, localPosition);
+        Vec3 point = projectOntoFace(faceInstance.face(), localPosition);
 
-        List<Vec3> vertices = face.getVertices();
+        List<Vec3> vertices = faceInstance.getVertices();
 
         Vec3 a = vertices.get(0);
         Vec3 b = vertices.get(1);
@@ -289,11 +291,11 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         Vec3 localPosition = entity.position().subtract(pos.getX(), pos.getY(), pos.getZ());
         localPosition = transformPointToLocal(state2, localPosition);
 
-        MaterialShapeFace face = getNearestFace(localPosition);
-        if (face == null)
+        MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(state2, localPosition);
+        if (faceInstance == null)
             return false;
 
-        int faceIndex = faces.indexOf(face);
+        int faceIndex = faces.indexOf(faceInstance.face());
         if (faceIndex < 0)
             return false;
         if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
@@ -303,14 +305,14 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         if (material == null)
             return false;
 
-        Vector2i coordinate = material.getCoordinate(face, pos, state2);
+        Vector2i coordinate = material.getCoordinate(faceInstance.face(), pos, state2);
         ResourceLocation texture = material.getTexture(coordinate);
         if (texture == null)
             return false;
 
-        Vec3 point = projectOntoFace(face, localPosition);
+        Vec3 point = projectOntoFace(faceInstance.face(), localPosition);
 
-        List<Vec3> vertices = face.getVertices();
+        List<Vec3> vertices = faceInstance.getVertices();
 
         Vec3 a = vertices.get(0);
         Vec3 b = vertices.get(1);
@@ -456,14 +458,60 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         return List.copyOf(points);
     }
 
-    public final @Nullable MaterialShapeFace getNearestFace(Vec3 hitPosition) {
+    @SuppressWarnings("ExtractMethodRecommender") // Fuck off
+    public final List<MaterialShapeFaceInstance> getFaceInstances(BlockState state) {
+        if (!(this instanceof FillableBlock fillable)) {
+            List<MaterialShapeFaceInstance> result = new ArrayList<>(faces.size());
+
+            for (int faceIndex = 0; faceIndex < faces.size(); faceIndex++)
+                result.add(new MaterialShapeFaceInstance(
+                        faces.get(faceIndex),
+                        0,
+                        faceIndex,
+                        Vec3.ZERO
+                ));
+
+            return result;
+        }
+
+        FillableBlock.FillDefinition definition = FillableBlock.FillDefinition.fromModel(
+                fillable.getFillModel(state),
+                state
+        );
+        int mask = fillable.getFillMask(state);
+
+        List<MaterialShapeFaceInstance> result = new ArrayList<>();
+
+        for (int pieceIndex = 0; pieceIndex < definition.size(); pieceIndex++) {
+            if ((mask & (1 << pieceIndex)) == 0)
+                continue;
+
+            Vec3 offset = definition.offset(pieceIndex);
+
+            for (int faceIndex = 0; faceIndex < faces.size(); faceIndex++)
+                result.add(new MaterialShapeFaceInstance(
+                        faces.get(faceIndex),
+                        pieceIndex,
+                        faceIndex,
+                        offset
+                ));
+        }
+
+        return List.copyOf(result);
+    }
+
+    @SuppressWarnings("SuspiciousNameCombination")
+    public final @Nullable MaterialShapeFaceInstance getNearestFaceInstance(
+            BlockState state,
+            Vec3 hitPosition
+    ) {
         final double epsilon = 1.0e-6;
 
-        @Nullable MaterialShapeFace closestFace = null;
+        @Nullable MaterialShapeFaceInstance closestFace = null;
         double shortestDistance = Double.POSITIVE_INFINITY;
 
-        for (MaterialShapeFace face : faces) {
-            List<Vec3> vertices = face.getVertices();
+        for (MaterialShapeFaceInstance instance : getFaceInstances(state)) {
+            List<Vec3> vertices = instance.getVertices();
             if (vertices.size() < 3)
                 continue;
 
@@ -472,19 +520,18 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
             Vec3 c = vertices.get(2);
 
             Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
-
-            // Signed distance between point & plane
             double signedDistance = hitPosition.subtract(a).dot(normal);
-
-            // Face plane projection
             Vec3 projected = hitPosition.subtract(normal.scale(signedDistance));
 
-            // Projection onto least parallel plane to face
             double nx = Math.abs(normal.x);
             double ny = Math.abs(normal.y);
             double nz = Math.abs(normal.z);
 
-            int droppedAxis = nx >= ny && nx >= nz ? 0 : ny >= nz ? 1 : 2;
+            int droppedAxis = nx >= ny && nx >= nz
+                    ? 0
+                    : ny >= nz
+                            ? 1
+                            : 2;
 
             double px;
             double py;
@@ -502,7 +549,6 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                 }
             }
 
-            // Point-in-polygon test using raycasting
             boolean inside = false;
 
             for (int i = 0; i < vertices.size(); i++) {
@@ -516,18 +562,18 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
 
                 switch (droppedAxis) {
                     case 0 -> {
-                        //noinspection SuspiciousNameCombination
                         x0 = v0.y;
                         y0 = v0.z;
-                        //noinspection SuspiciousNameCombination
                         x1 = v1.y;
                         y1 = v1.z;
-                    } case 1 -> {
+                    }
+                    case 1 -> {
                         x0 = v0.x;
                         y0 = v0.z;
                         x1 = v1.x;
                         y1 = v1.z;
-                    } default -> {
+                    }
+                    default -> {
                         x0 = v0.x;
                         y0 = v0.y;
                         x1 = v1.x;
@@ -535,7 +581,6 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                     }
                 }
 
-                // Is projected point on this edge?
                 double edgeX = x1 - x0;
                 double edgeY = y1 - y0;
                 double pointX = px - x0;
@@ -553,22 +598,19 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                     }
                 }
 
-                // Standard raycasting toggle
                 if ((y0 > py) != (y1 > py)) {
-                    double intersectionX = (x1 - x0) * (py - y0) / (y1 - y0) + x0;
+                    double intersectionX = (x1 - x0) * (py - y0) / (py - y0) + x0;
                     if (px < intersectionX)
                         inside = !inside;
                 }
             }
-
             if (!inside)
                 continue;
 
             double distance = Math.abs(signedDistance);
-
             if (distance < shortestDistance) {
                 shortestDistance = distance;
-                closestFace = face;
+                closestFace = instance;
             }
         }
 

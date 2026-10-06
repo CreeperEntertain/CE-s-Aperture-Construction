@@ -45,7 +45,9 @@ public final class MaterialShapeSoundEvents {
                 onPos.getZ()
         );
 
-        SoundType soundType = shape.getSoundType(stepPosition, level, entity.getOnPos());
+        BlockPos pos = entity.getOnPos();
+
+        SoundType soundType = shape.getSoundType(stepPosition, level, pos, level.getBlockState(pos));
         SoundEvent sound = entity.fallDistance >= 6
                 ? soundType.getFallSound()
                 : soundType.getStepSound();
@@ -91,7 +93,9 @@ public final class MaterialShapeSoundEvents {
                 pos.getZ()
         );
 
-        SoundType soundType = shape.getSoundType(localHit, minecraft.level, pos);
+        Level level = minecraft.level;
+
+        SoundType soundType = shape.getSoundType(localHit, level, pos, level.getBlockState(pos));
         SoundInstance replacement = new SimpleSoundInstance(
                 soundType.getHitSound(),
                 SoundSource.BLOCKS,
