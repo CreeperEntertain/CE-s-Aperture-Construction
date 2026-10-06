@@ -5,6 +5,7 @@ import net.centertain.ceac.block.custom.MaterialShapeRotatable6Way;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.material.shapes.models.basic_shapes.HalfGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper6Way;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -39,8 +40,13 @@ public class Half extends MaterialShapeRotatable6Way implements FillableBlock {
     }
 
     @Override
+    public @NotNull BakedModel getFillModel(BlockState state) {
+        return getBakedModel();
+    }
+
+    @Override
     public VoxelShape getFillPieceShape(
-            BlockState state,
+            @NotNull BlockState state,
             BlockGetter level,
             BlockPos pos,
             CollisionContext context

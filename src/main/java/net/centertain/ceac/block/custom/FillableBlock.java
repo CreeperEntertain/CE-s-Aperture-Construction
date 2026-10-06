@@ -1,7 +1,12 @@
 package net.centertain.ceac.block.custom;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
@@ -9,6 +14,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.client.model.data.ModelData;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 public interface FillableBlock {
@@ -49,7 +56,7 @@ public interface FillableBlock {
         return direction;
     }
 
-    default int getFillMask(BlockState state) {
+    default int getFillMask(@NotNull BlockState state) {
         return state.getValue(getFillProperty());
     }
 
@@ -58,7 +65,7 @@ public interface FillableBlock {
     }
 
     default BlockState setFillMask(
-            BlockState state,
+            @NotNull BlockState state,
             int mask
     ) {
         return state.setValue(getFillProperty(), mask);
@@ -82,8 +89,8 @@ public interface FillableBlock {
             BlockGetter level,
             BlockPos pos,
             CollisionContext context,
-            Vec3 point,
-            Direction face
+            @NotNull Vec3 point,
+            @NotNull Direction face
     ) {
         FillDefinition definition = getFillDefinition(
                 state,
@@ -157,6 +164,10 @@ public interface FillableBlock {
         return result;
     }
 
+    @NotNull BakedModel getFillModel(
+            BlockState state
+    );
+
     record FillDefinition(
             int x,
             int y,
@@ -179,7 +190,8 @@ public interface FillableBlock {
             return x + this.x * (y + this.y * z);
         }
 
-        public Vec3 offset(int index) {
+        @Contract(value = "_ -> new", pure = true)
+        public @NotNull Vec3 offset(int index) {
             int x = index % this.x;
             int yz = index / this.x;
             int y = yz % this.y;
@@ -204,8 +216,8 @@ public interface FillableBlock {
         }
 
         public int surfaceIndex(
-                Vec3 point,
-                Direction face
+                @NotNull Vec3 point,
+                @NotNull Direction face
         ) {
             int[] coordinates = {
                     coordinate(point.x, x),
@@ -279,7 +291,8 @@ public interface FillableBlock {
             return (int) Math.ceil(coordinate * subdivisions - EPSILON) - 1;
         }
 
-        private static FillDefinition fromShape(
+        @Contract("_, _, _ -> new")
+        private static @NotNull FillDefinition fromShape(
                 FillableBlock fillable,
                 BlockState state,
                 VoxelShape shape
@@ -325,12 +338,65 @@ public interface FillableBlock {
             int z = subdivisions(maxZ - minZ);
 
             return new FillDefinition(
-                    x,
-                    y,
-                    z,
-                    minX,
-                    minY,
-                    minZ
+                    x, y, z,
+                    minX, minY, minZ
+            );
+        }
+
+        public static FillDefinition fromModel(
+                BakedModel model,
+                BlockState state
+        ) {
+            RandomSource random = RandomSource.create();
+
+            double minX = Double.POSITIVE_INFINITY;
+            double minY = Double.POSITIVE_INFINITY;
+            double minZ = Double.POSITIVE_INFINITY;
+            double maxX = Double.NEGATIVE_INFINITY;
+            double maxY = Double.NEGATIVE_INFINITY;
+            double maxZ = Double.NEGATIVE_INFINITY;
+
+            for (Direction side : Direction.values())
+                for (BakedQuad quad : model.getQuads(
+                        state,
+                        side,
+                        random,
+                        ModelData.EMPTY,
+                        null
+                )) {
+                    int[] vertices = quad.getVertices();
+                    VertexFormat format = DefaultVertexFormat.BLOCK;
+
+                    int stride = format.getIntegerSize();
+                    int positionOffset = format.getOffset(0) / Integer.BYTES;
+
+                    for (int i = 0; i < 4; i++) {
+                        int offset = i * stride + positionOffset;
+
+                        double x = Float.intBitsToFloat(vertices[offset]);
+                        double y = Float.intBitsToFloat(vertices[offset + 1]);
+                        double z = Float.intBitsToFloat(vertices[offset + 2]);
+
+                        minX = Math.min(minX, x);
+                        minY = Math.min(minY, y);
+                        minZ = Math.min(minZ, z);
+
+                        maxX = Math.max(maxX, x);
+                        maxY = Math.max(maxY, y);
+                        maxZ = Math.max(maxZ, z);
+                    }
+                }
+
+            if (!Double.isFinite(minX))
+                throw new IllegalStateException("Fillable model has no quads");
+
+            int x = subdivisions(maxX - minX);
+            int y = subdivisions(maxY - minY);
+            int z = subdivisions(maxZ - minZ);
+
+            return new FillDefinition(
+                    x, y, z,
+                    minX, minY, minZ
             );
         }
 

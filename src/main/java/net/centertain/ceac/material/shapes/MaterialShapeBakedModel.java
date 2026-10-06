@@ -2,9 +2,11 @@ package net.centertain.ceac.material.shapes;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.centertain.ceac.block.custom.FillableBlock;
 import net.centertain.ceac.block.custom.MaterialShape;
 import net.centertain.ceac.block.custom.MaterialShapeRotatable;
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
+import net.centertain.ceac.material.shapes.utility.FillableModelBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -50,13 +52,24 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
         if (state == null)
             state = shape.defaultBlockState();
 
-        List<BakedQuad> original = originalModel.getQuads(
-                state,
-                side,
-                random,
-                data,
-                renderType
-        );
+        List<BakedQuad> original;
+        if (state.getBlock() instanceof FillableBlock fillable)
+            original = FillableModelBuilder.buildQuads(
+                    fillable,
+                    state,
+                    side,
+                    random,
+                    data,
+                    renderType
+            );
+        else
+            original = originalModel.getQuads(
+                    state,
+                    side,
+                    random,
+                    data,
+                    renderType
+            );
 
         Map<Integer, MaterialShapeBlockEntity.MaterialAssignment> materials =
                 data.get(MaterialShapeBlockEntity.MATERIALS);

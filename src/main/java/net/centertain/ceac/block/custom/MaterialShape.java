@@ -12,11 +12,9 @@ import net.centertain.ceac.material.shapes.MaterialShapeFace;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleEngine;
-import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -50,6 +48,8 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
 
     private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIAL_SHAPES;
     private static final double DEFAULT_PRICE = PriceConstants.DEFAULT_SHAPE;
+
+    private @Nullable BakedModel bakedModel;
 
     protected MaterialShape(
             Properties properties,
@@ -101,9 +101,9 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
     }
 
     public @NotNull BakedModel getBakedModel() {
-        BlockState state = defaultBlockState();
-        ModelResourceLocation location = BlockModelShaper.stateToModelLocation(state);
-        return Minecraft.getInstance().getModelManager().getModel(location);
+        if (bakedModel == null)
+            throw new IllegalStateException("Material shape model has not baked yet");
+        return bakedModel;
     }
     public @NotNull ItemStack getItemStack() {
         return getItemStack(1);
@@ -403,10 +403,10 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
     }
 
     public void createFaces(BakedModel model) {
+        bakedModel = model;
         faces.clear();
 
         BlockState state = defaultBlockState();
-
         RandomSource random = RandomSource.create();
 
         for (BakedQuad quad : model.getQuads(
