@@ -1,11 +1,13 @@
 package net.centertain.ceac.block.custom;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 
@@ -75,6 +77,86 @@ public interface FillableBlock {
         );
     }
 
+    default int getFillIndex(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            CollisionContext context,
+            Vec3 point,
+            Direction face
+    ) {
+        FillDefinition definition = getFillDefinition(
+                state,
+                level,
+                pos,
+                context
+        );
+
+        Vec3 localPoint = transformPointToLocal(
+                state,
+                point.subtract(pos.getX(), pos.getY(), pos.getZ())
+        );
+
+        Vec3 localDirection = transformDirectionToLocal(state, new Vec3(
+                face.getStepX(),
+                face.getStepY(),
+                face.getStepZ()
+        ));
+
+        Direction localFace = Direction.getNearest(
+                localDirection.x,
+                localDirection.y,
+                localDirection.z
+        );
+
+        return definition.surfaceIndex(localPoint, localFace);
+    }
+
+    default @NotNull VoxelShape getFilledShape(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        FillDefinition definition = getFillDefinition(
+                state,
+                level,
+                pos,
+                context
+        );
+
+        int mask = getFillMask(state);
+        VoxelShape piece = getFillPieceShape(
+                state,
+                level,
+                pos,
+                context
+        );
+
+        VoxelShape result = Shapes.empty();
+
+        for (int index = 0; index < definition.size(); index++) {
+            if ((mask & (1 << index)) == 0)
+                continue;
+
+            Vec3 offset = transformDirectionToWorld(
+                    state,
+                    definition.offset(index)
+            );
+
+            result = Shapes.or(
+                    result,
+                    piece.move(
+                            offset.x,
+                            offset.y,
+                            offset.z
+                    )
+            );
+        }
+
+        return result;
+    }
+
     record FillDefinition(
             int x,
             int y,
@@ -83,6 +165,8 @@ public interface FillableBlock {
             double startY,
             double startZ
     ) {
+        private static final double EPSILON = 1.0e-6;
+
         public int size() {
             return x * y * z;
         }
@@ -119,6 +203,82 @@ public interface FillableBlock {
                     z >= 0 && z < this.z;
         }
 
+        public int surfaceIndex(
+                Vec3 point,
+                Direction face
+        ) {
+            int[] coordinates = {
+                    coordinate(point.x, x),
+                    coordinate(point.y, y),
+                    coordinate(point.z, z)
+            };
+
+            int axis = switch (face.getAxis()) {
+                case X -> 0;
+                case Y -> 1;
+                case Z -> 2;
+            };
+
+            int[] subdivisions = {x, y, z};
+
+            if (subdivisions[axis] <= 1)
+                return -1;
+
+            double surfaceCoordinate = switch (axis) {
+                case 0 -> point.x;
+                case 1 -> point.y;
+                default -> point.z;
+            };
+
+            coordinates[axis] = face.getAxisDirection() == Direction.AxisDirection.POSITIVE
+                    ? positiveCoordinate(surfaceCoordinate, subdivisions[axis])
+                    : negativeCoordinate(surfaceCoordinate, subdivisions[axis]);
+
+            if (!contains(
+                    coordinates[0],
+                    coordinates[1],
+                    coordinates[2]
+            ))
+                return -1;
+
+            return index(
+                    coordinates[0],
+                    coordinates[1],
+                    coordinates[2]
+            );
+        }
+
+        private static int coordinate(
+                double coordinate,
+                int subdivisions
+        ) {
+            int index = (int) Math.floor(coordinate * subdivisions + EPSILON);
+
+            if (Math.abs(coordinate - 1.0) <= EPSILON)
+                return subdivisions - 1;
+
+            return index;
+        }
+
+        private static int positiveCoordinate(
+                double coordinate,
+                int subdivisions
+        ) {
+            int index = (int) Math.floor(coordinate * subdivisions + EPSILON);
+
+            if (Math.abs(coordinate - 1.0) <= EPSILON)
+                return subdivisions - 1;
+
+            return index;
+        }
+
+        private static int negativeCoordinate(
+                double coordinate,
+                int subdivisions
+        ) {
+            return (int) Math.ceil(coordinate * subdivisions - EPSILON) - 1;
+        }
+
         private static FillDefinition fromShape(
                 FillableBlock fillable,
                 BlockState state,
@@ -127,7 +287,7 @@ public interface FillableBlock {
             if (shape.isEmpty())
                 throw new IllegalStateException("Fillable block has an empty piece shape");
             if (shape.toAabbs().size() != 1)
-                throw new IllegalStateException("Fillable block must have a single cuboid piece");
+                throw new IllegalStateException("Fillable block must have a single cuboid piece shape");
 
             var bounds = shape.bounds();
 
@@ -175,7 +335,7 @@ public interface FillableBlock {
         }
 
         private static int subdivisions(double size) {
-            if (size <= 1.0e-6)
+            if (size <= EPSILON)
                 throw new IllegalStateException("Fillable piece has zero-sized axis");
 
             double reciprocal = 1.0 / size;
