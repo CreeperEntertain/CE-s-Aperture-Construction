@@ -30,8 +30,10 @@ public class FillableBlockItem extends BlockItem {
         if (clickedState.getBlock() == getBlock()) // Do absolutely fucking nothing special here
             return context;
 
-        Direction face = context.getClickedFace();
-        BlockPos targetPos = clickedPos.relative(face);
+        Direction clickedFace = context.getClickedFace();
+        Direction targetFace = clickedFace.getOpposite();
+
+        BlockPos targetPos = clickedPos.relative(clickedFace);
         BlockState targetState = level.getBlockState(targetPos);
         if (targetState.getBlock() != getBlock()) // Once again do absolutely nothing special
             return context;
@@ -42,20 +44,21 @@ public class FillableBlockItem extends BlockItem {
                 targetPos,
                 CollisionContext.empty(),
                 context.getClickLocation(),
-                face
+                targetFace
         );
         if (fillIndex < 0)
             return context;
         if ((fillable.getFillMask(targetState) & (1 << fillIndex)) != 0)
             return context;
 
-        return new FillablePlacementContext(context, targetPos);
+        return new FillablePlacementContext(context, targetPos, targetFace);
     }
 
     private static class FillablePlacementContext extends BlockPlaceContext {
         private FillablePlacementContext(
                 BlockPlaceContext context,
-                BlockPos targetPos
+                BlockPos targetPos,
+                Direction targetFace
         ) {
             super(
                     context.getLevel(),
@@ -64,7 +67,7 @@ public class FillableBlockItem extends BlockItem {
                     context.getItemInHand(),
                     new BlockHitResult(
                             context.getClickLocation(),
-                            context.getClickedFace(),
+                            targetFace,
                             targetPos,
                             context.isInside()
                     )
