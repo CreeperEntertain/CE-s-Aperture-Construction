@@ -1,5 +1,6 @@
 package net.centertain.ceac.block;
 
+import net.centertain.ceac.block.custom.FillableBlock;
 import net.centertain.ceac.block.custom.PurchasingTerminal;
 import net.centertain.ceac.block.custom.material_shapes.basic_shapes.Bit;
 import net.centertain.ceac.block.custom.material_shapes.basic_shapes.Half;
@@ -15,6 +16,7 @@ import net.centertain.ceac.block.custom.material_shapes.third_slopes.first.*;
 import net.centertain.ceac.block.custom.material_shapes.third_slopes.second.*;
 import net.centertain.ceac.block.custom.material_shapes.third_slopes.third.*;
 import net.centertain.ceac.item.ModItems;
+import net.centertain.ceac.item.custom.FillableBlockItem;
 import net.centertain.ceac.item.custom.PurchasingTerminalItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -140,7 +142,12 @@ public final class ModBlocks {
             String name,
             RegistryObject<T> block
     ) {
-        return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+        return ModItems.ITEMS.register(name, () -> {
+            T blockInstance = block.get();
+            if (blockInstance instanceof FillableBlock)
+                return new FillableBlockItem(blockInstance, new Item.Properties());
+            return new BlockItem(blockInstance, new Item.Properties());
+        });
     }
 
     private ModBlocks() {}
