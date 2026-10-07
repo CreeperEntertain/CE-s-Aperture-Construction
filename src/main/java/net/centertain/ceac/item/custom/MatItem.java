@@ -271,7 +271,7 @@ public abstract class MatItem extends BasicItem {
                 level,
                 pos,
                 state,
-                face,
+                instance,
                 shape,
                 context.getItemInHand(),
                 materialCoordinate
@@ -308,10 +308,7 @@ public abstract class MatItem extends BasicItem {
         );
 
         Vec3 center = shape
-                .transformPointToWorld(
-                        state,
-                        faceCenter(face)
-                )
+                .transformPointToWorld(state, faceCenter(instance))
                 .add(
                         pos.getX(),
                         pos.getY(),
@@ -336,7 +333,7 @@ public abstract class MatItem extends BasicItem {
             Level level,
             BlockPos pos,
             BlockState state,
-            MaterialShapeFace face,
+            MaterialShapeFaceInstance instance,
             MaterialShape shape,
             ItemStack stack,
             Vector2i materialCoordinate
@@ -358,7 +355,12 @@ public abstract class MatItem extends BasicItem {
         RandomSource random = clientLevel.getRandom();
 
         for (int i = 0; i < 16; i++) {
-            Vec3 point = shape.transformPointToWorld(state, MaterialShape.randomPointOnFace(face, random));
+            Vec3 point = shape.transformPointToWorld(
+                    state,
+                    MaterialShape
+                            .randomPointOnFace(instance.face(), random)
+                            .add(instance.offset())
+            );
 
             double xd = random.nextDouble() - 0.5D;
             double yd = random.nextDouble() - 0.5D;
@@ -379,13 +381,13 @@ public abstract class MatItem extends BasicItem {
         }
     }
 
-    private Vec3 faceCenter(MaterialShapeFace face) {
+    private Vec3 faceCenter(MaterialShapeFaceInstance instance) {
         Vec3 center = Vec3.ZERO;
 
-        for (Vec3 vertex : face.getVertices())
+        for (Vec3 vertex : instance.getVertices())
             center = center.add(vertex);
 
-        return center.scale(1.0 / face.getVertices().size());
+        return center.scale(1.0 / instance.getVertices().size());
     }
 
     private @Nullable FaceHit findFace(
