@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
@@ -45,6 +46,10 @@ public final class MaterialShapeSelectionOutline {
                 .getBlockRenderer()
                 .getBlockModel(state);
 
+        ModelData modelData = ModelData.EMPTY;
+        if (level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity)
+            modelData = blockEntity.getModelData();
+
         event.setCanceled(true);
 
         PoseStack poseStack = event.getPoseStack();
@@ -71,14 +76,14 @@ public final class MaterialShapeSelectionOutline {
                     state,
                     side,
                     random,
-                    ModelData.EMPTY,
+                    modelData,
                     null
             ));
         addEdges(edges, model.getQuads(
                 state,
                 null,
                 random,
-                ModelData.EMPTY,
+                modelData,
                 null
         ));
 
