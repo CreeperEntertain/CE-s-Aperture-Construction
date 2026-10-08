@@ -11,7 +11,8 @@ import net.minecraftforge.client.model.geometry.IGeometryLoader;
 public enum BitLoader implements IGeometryLoader<BitGeometry> {
     INSTANCE;
 
-    public static final VoxelShape CANONICAL_SHAPE = MaterialShapeVoxelHelper.makeShape(new BitGeometry());
+    public static final VoxelShape CANONICAL_SHAPE =
+            MaterialShapeVoxelHelper.makeShape(new BitGeometry(), false);
 
     @Override
     public BitGeometry read(
