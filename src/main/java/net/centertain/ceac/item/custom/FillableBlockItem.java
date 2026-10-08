@@ -1,6 +1,7 @@
 package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.block.custom.FillableBlock;
+import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -68,6 +69,39 @@ public class FillableBlockItem extends BlockItem {
         return super.useOn(context);
     }
 
+    @Override
+    protected boolean placeBlock(
+            @NotNull BlockPlaceContext context,
+            @NotNull BlockState state
+    ) {
+        if (!super.placeBlock(context, state))
+            return false;
+        if (!(getBlock() instanceof FillableBlock fillable))
+            return true;
+
+        Level level = context.getLevel();
+        BlockPos pos = context.replacingClickedOnBlock()
+                ? context.getClickedPos()
+                : context.getClickedPos().relative(context.getClickedFace());
+        if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
+            return true;
+
+        int fillIndex = fillable.getFillIndex(
+                state,
+                level,
+                pos,
+                CollisionContext.empty(),
+                context.getClickLocation(),
+                context.getClickedFace().getOpposite()
+        );
+
+        int mask = fillIndex >= 0 ? 1 << fillIndex : 1;
+
+        blockEntity.setFillMask(mask);
+
+        return true;
+    }
+
     private @Nullable InteractionResult tryFill(
             FillableBlock fillable,
             BlockState state,
@@ -87,21 +121,21 @@ public class FillableBlockItem extends BlockItem {
         if (fillIndex < 0)
             return null;
 
-        int mask = fillable.getFillMask(state);
+        int mask = fillable.getFillMask(level, pos);
         int bit = 1 << fillIndex;
+
         if ((mask & bit) != 0)
             return null;
 
-        BlockState newState = fillable.setFillMask(state, mask | bit);
+        fillable.setFillMask(level, pos, mask | bit);
 
         if (!level.isClientSide) {
-            level.setBlock(pos, newState, Block.UPDATE_ALL);
             Player player = context.getPlayer();
 
             if (player != null && !player.isCreative())
                 context.getItemInHand().shrink(1);
 
-            SoundType soundType = newState.getSoundType(level, pos, player);
+            SoundType soundType = state.getSoundType(level, pos, player);
 
             level.playSound(
                     null,

@@ -24,8 +24,10 @@ import java.util.Map;
 
 public class MaterialShapeBlockEntity extends BlockEntity {
     public static final ModelProperty<Map<MaterialFaceKey, MaterialAssignment>> MATERIALS = new ModelProperty<>();
+    public static final ModelProperty<Integer> FILL_MASK = new ModelProperty<>();
 
     private Map<MaterialFaceKey, MaterialAssignment> materials = Map.of();
+    private int fillMask = 1;
 
     public MaterialShapeBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MATERIAL_SHAPE.get(), pos, state);
@@ -104,9 +106,30 @@ public class MaterialShapeBlockEntity extends BlockEntity {
         return assignment == null ? null : assignment.material();
     }
 
+    public int getFillMask() {
+        return fillMask;
+    }
+
+    public void setFillMask(int fillMask) {
+        this.fillMask = fillMask;
+
+        setChanged();
+        requestModelDataUpdate();
+
+        if (level != null)
+            level.sendBlockUpdated(
+                    worldPosition,
+                    getBlockState(),
+                    getBlockState(),
+                    Block.UPDATE_CLIENTS
+            );
+    }
+
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag) {
         super.saveAdditional(tag);
+
+        tag.putInt("FillMask", fillMask);
 
         CompoundTag materialsTag = new CompoundTag();
 
@@ -132,6 +155,8 @@ public class MaterialShapeBlockEntity extends BlockEntity {
     @Override
     public void load(@NotNull CompoundTag tag) {
         super.load(tag);
+
+        fillMask = tag.contains("FillMask") ? tag.getInt("FillMask") : 1;
 
         Map<MaterialFaceKey, MaterialAssignment> loaded = new HashMap<>();
 
@@ -213,7 +238,10 @@ public class MaterialShapeBlockEntity extends BlockEntity {
 
     @Override
     public @NotNull ModelData getModelData() {
-        return ModelData.builder().with(MATERIALS, materials).build();
+        return ModelData.builder()
+                .with(MATERIALS, materials)
+                .with(FILL_MASK, fillMask)
+                .build();
     }
 
     public record MaterialAssignment(

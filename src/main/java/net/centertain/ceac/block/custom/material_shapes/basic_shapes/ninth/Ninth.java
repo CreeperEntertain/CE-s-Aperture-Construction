@@ -12,7 +12,7 @@ public class Ninth extends FillableMaterialShapeTemplate24Way {
         super(
                 properties,
                 CategoryConstants.Sub.Shapes.BASIC,
-                MaterialShapeVoxelHelper24Way.makeShapes(() -> NinthGeometry.COLLISION_SHAPE, false)
+                MaterialShapeVoxelHelper24Way.makeCuboidShapes(() -> NinthGeometry.COLLISION_SHAPE)
         );
     }
 

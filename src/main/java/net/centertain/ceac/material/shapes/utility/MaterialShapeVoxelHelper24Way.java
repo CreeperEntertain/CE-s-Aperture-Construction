@@ -2,7 +2,9 @@ package net.centertain.ceac.material.shapes.utility;
 
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.*;
@@ -109,5 +111,86 @@ public final class MaterialShapeVoxelHelper24Way extends MaterialShapeVoxelHelpe
                 }
 
         return transformed;
+    }
+
+
+    public static Map<Direction, VoxelShape[]> makeCuboidShapes(Supplier<BakedModel> source) {
+        return lazyMap(source, MaterialShapeVoxelHelper24Way::makeCuboidShapes);
+    }
+
+    private static Map<Direction, VoxelShape[]> makeCuboidShapes(BakedModel source) {
+        VoxelShape canonical = fromBounds(source);
+        Map<Direction, VoxelShape[]> shapes = new EnumMap<>(Direction.class);
+
+        for (Direction facing : Direction.values()) {
+            VoxelShape[] rotations = new VoxelShape[4];
+            for (int rotation = 0; rotation < 4; rotation++)
+                rotations[rotation] = transformCuboid(canonical, facing, rotation);
+            shapes.put(facing, rotations);
+        }
+
+        return Map.copyOf(shapes);
+    }
+
+    private static VoxelShape transformCuboid(
+            VoxelShape shape,
+            Direction facing,
+            int rotation
+    ) {
+        Vec3 forward = new Vec3(
+                facing.getStepX(),
+                facing.getStepY(),
+                facing.getStepZ()
+        );
+
+        Vec3 x = forward.scale(-1.0);
+
+        Vec3 y = switch (facing) {
+            case UP -> new Vec3(0.0, 0.0, -1.0);
+            case DOWN -> new Vec3(0.0, 0.0, 1.0);
+            default -> new Vec3(0.0, 1.0, 0.0);
+        };
+
+        for (int i = 0; i < rotation; i++)
+            y = y.cross(forward).add(forward.scale(y.dot(forward)));
+
+        Vec3 z = y.cross(forward).normalize();
+
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double minZ = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        double maxZ = Double.NEGATIVE_INFINITY;
+
+        for (AABB bounds : shape.toAabbs()) {
+            double[] xs = {bounds.minX, bounds.maxX};
+            double[] ys = {bounds.minY, bounds.maxY};
+            double[] zs = {bounds.minZ, bounds.maxZ};
+
+            for (double localX : xs)
+                for (double localY : ys)
+                    for (double localZ : zs) {
+                        Vec3 local = new Vec3(
+                                localX - 0.5,
+                                localY - 0.5,
+                                localZ - 0.5
+                        );
+
+                        Vec3 world = new Vec3(0.5, 0.5, 0.5)
+                                .add(x.scale(local.x))
+                                .add(y.scale(local.y))
+                                .add(z.scale(local.z));
+
+                        minX = Math.min(minX, world.x);
+                        minY = Math.min(minY, world.y);
+                        minZ = Math.min(minZ, world.z);
+                        maxX = Math.max(maxX, world.x);
+                        maxY = Math.max(maxY, world.y);
+                        maxZ = Math.max(maxZ, world.z);
+                    }
+        }
+
+        return Shapes.box(minX, minY, minZ, maxX, maxY, maxZ);
     }
 }

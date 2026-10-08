@@ -25,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.EntityBlock;
@@ -128,7 +129,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
             BlockState state
     ) {
         position = transformPointToLocal(level.getBlockState(pos), position);
-        MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(state, position);
+        MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(state, level, pos, position);
         if (faceInstance == null)
             return this.soundType;
         int faceIndex = faces.indexOf(faceInstance.face());
@@ -164,7 +165,12 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                         pos.getZ()
                 );
 
-                MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(state, transformPointToLocal(state, localHit));
+                MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(
+                        state,
+                        level,
+                        pos,
+                        transformPointToLocal(state, localHit)
+                );
                 if (faceInstance == null)
                     return false;
 
@@ -224,7 +230,12 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                 pos.getY(),
                 pos.getZ()
         );
-        MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(state, transformPointToLocal(state, localPosition));
+        MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(
+                state,
+                level,
+                pos,
+                transformPointToLocal(state, localPosition)
+        );
         if (faceInstance == null)
             return false;
 
@@ -291,7 +302,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         Vec3 localPosition = entity.position().subtract(pos.getX(), pos.getY(), pos.getZ());
         localPosition = transformPointToLocal(state2, localPosition);
 
-        MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(state2, localPosition);
+        MaterialShapeFaceInstance faceInstance = getNearestFaceInstance(state2, level, pos, localPosition);
         if (faceInstance == null)
             return false;
 
@@ -459,7 +470,11 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
     }
 
     @SuppressWarnings("ExtractMethodRecommender") // Fuck off
-    public final List<MaterialShapeFaceInstance> getFaceInstances(BlockState state) {
+    public final List<MaterialShapeFaceInstance> getFaceInstances(
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos
+    ) {
         if (!(this instanceof FillableBlock fillable)) {
             List<MaterialShapeFaceInstance> result = new ArrayList<>(faces.size());
 
@@ -478,7 +493,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                 fillable.getFillModel(state),
                 state
         );
-        int mask = fillable.getFillMask(state);
+        int mask = fillable.getFillMask(level, pos);
 
         List<MaterialShapeFaceInstance> result = new ArrayList<>();
 
@@ -503,6 +518,8 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
     @SuppressWarnings("SuspiciousNameCombination")
     public final @Nullable MaterialShapeFaceInstance getNearestFaceInstance(
             BlockState state,
+            BlockGetter level,
+            BlockPos pos,
             Vec3 hitPosition
     ) {
         final double epsilon = 1.0e-6;
@@ -510,7 +527,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         @Nullable MaterialShapeFaceInstance closestFace = null;
         double shortestDistance = Double.POSITIVE_INFINITY;
 
-        for (MaterialShapeFaceInstance instance : getFaceInstances(state)) {
+        for (MaterialShapeFaceInstance instance : getFaceInstances(state, level, pos)) {
             List<Vec3> vertices = instance.getVertices();
             if (vertices.size() < 3)
                 continue;

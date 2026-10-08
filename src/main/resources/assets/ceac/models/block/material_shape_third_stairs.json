@@ -1,5 +1,5 @@
 {
-  "loader": "ceac:material_shape_third_sairs",
+  "loader": "ceac:material_shape_third_stairs",
   "textures": {
     "texture": "ceac:block/material_shape"
   }

@@ -3,6 +3,7 @@ package net.centertain.ceac.material.shapes.utility;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.block.custom.FillableBlock;
+import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
@@ -15,7 +16,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public final class FillableModelBuilder {
     private FillableModelBuilder() {}
@@ -43,7 +43,8 @@ public final class FillableModelBuilder {
                 renderType
         );
 
-        int mask = fillable.getFillMask(state);
+        Integer maskValue = data.get(MaterialShapeBlockEntity.FILL_MASK);
+        int mask = maskValue == null ? 1 : maskValue;
 
         FillableBlock.FillDefinition definition = FillableBlock.FillDefinition.fromModel(
                 pieceModel,

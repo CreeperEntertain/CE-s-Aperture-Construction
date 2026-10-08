@@ -12,7 +12,7 @@ public class NinthPillar extends FillableMaterialShapeTemplate24Way {
         super(
                 properties,
                 CategoryConstants.Sub.Shapes.BASIC,
-                MaterialShapeVoxelHelper24Way.makeShapes(() -> NinthPillarGeometry.COLLISION_SHAPE, false)
+                MaterialShapeVoxelHelper24Way.makeCuboidShapes(() -> NinthPillarGeometry.COLLISION_SHAPE)
         );
     }
 

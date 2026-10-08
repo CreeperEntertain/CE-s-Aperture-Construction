@@ -25,6 +25,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -188,7 +189,9 @@ public abstract class MatItem extends BasicItem {
                 state,
                 localOrigin,
                 direction,
-                player.getBlockReach()
+                player.getBlockReach(),
+                level,
+                pos
         );
         if (faceHit == null) {
             MaterialPlacement.forceCleanup();
@@ -239,7 +242,9 @@ public abstract class MatItem extends BasicItem {
                 state,
                 localOrigin,
                 direction,
-                player.getBlockReach()
+                player.getBlockReach(),
+                level,
+                pos
         );
         if (faceHit == null)
             return InteractionResult.PASS;
@@ -395,12 +400,14 @@ public abstract class MatItem extends BasicItem {
             BlockState state,
             Vec3 origin,
             Vec3 direction,
-            double reach
+            double reach,
+            BlockGetter level,
+            BlockPos pos
     ) {
         double closest = reach;
         @Nullable FaceHit result = null;
 
-        for (MaterialShapeFaceInstance instance : shape.getFaceInstances(state)) {
+        for (MaterialShapeFaceInstance instance : shape.getFaceInstances(state, level, pos)) {
             List<Vec3> vertices = instance.getVertices();
             if (vertices.size() < 3)
                 continue;

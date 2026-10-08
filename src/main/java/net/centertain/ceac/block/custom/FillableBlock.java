@@ -2,6 +2,7 @@ package net.centertain.ceac.block.custom;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
@@ -13,7 +14,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -27,8 +27,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 public interface FillableBlock {
-    IntegerProperty getFillProperty();
-
     VoxelShape getCanonicalFillShape();
 
     VoxelShape getFillPieceShape(
@@ -66,19 +64,30 @@ public interface FillableBlock {
         return direction;
     }
 
-    default int getFillMask(@NotNull BlockState state) {
-        return state.getValue(getFillProperty());
+    default int getFillMask(
+            @NotNull BlockGetter level,
+            @NotNull BlockPos pos
+    ) {
+        if (level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity)
+            return blockEntity.getFillMask();
+        return 1;
     }
 
-    default int getFillCount(BlockState state) {
-        return Integer.bitCount(getFillMask(state));
+    default int getFillCount(
+            @NotNull BlockGetter level,
+            @NotNull BlockPos pos
+    ) {
+        return Integer.bitCount(getFillMask(level, pos));
     }
 
-    default BlockState setFillMask(
-            @NotNull BlockState state,
+    default void setFillMask(
+            @NotNull Level level,
+            @NotNull BlockPos pos,
             int mask
     ) {
-        return state.setValue(getFillProperty(), mask);
+        if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
+            throw new IllegalStateException("Fillable block has no MaterialShapeBlockEntity at " + pos);
+        blockEntity.setFillMask(mask);
     }
 
     default @NotNull FillDefinition getFillDefinition(
@@ -142,7 +151,7 @@ public interface FillableBlock {
                 context
         );
 
-        int mask = getFillMask(state);
+        int mask = getFillMask(level, pos);
         VoxelShape piece = getFillPieceShape(
                 state,
                 level,
@@ -181,7 +190,7 @@ public interface FillableBlock {
             boolean willHarvest,
             @NotNull FluidState fluid
     ) {
-        int mask = getFillMask(state);
+        int mask = getFillMask(level, pos);
         if (Integer.bitCount(mask) <= 1)
             return false;
 
@@ -212,7 +221,7 @@ public interface FillableBlock {
 
         Block block = (Block) this;
         block.playerWillDestroy(level, pos, state, player);
-        level.setBlock(pos, setFillMask(state, newMask), BasicBlock.UPDATE_ALL);
+        setFillMask(level, pos, newMask);
 
         if (!player.isCreative() && willHarvest)
             Block.popResource(level, pos, new ItemStack(block));

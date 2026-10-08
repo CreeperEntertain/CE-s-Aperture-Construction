@@ -12,7 +12,7 @@ public class Third extends FillableMaterialShapeTemplate24Way {
         super(
                 properties,
                 CategoryConstants.Sub.Shapes.BASIC,
-                MaterialShapeVoxelHelper24Way.makeShapes(() -> ThirdGeometry.COLLISION_SHAPE, false)
+                MaterialShapeVoxelHelper24Way.makeCuboidShapes(() -> ThirdGeometry.COLLISION_SHAPE)
         );
     }
 
