@@ -171,9 +171,7 @@ public interface FillableBlock {
         return result;
     }
 
-    @NotNull BakedModel getFillModel(
-            BlockState state
-    );
+    @NotNull BakedModel getFillModel(BlockState state);
 
     default boolean tryDestroyFilledPiece(
             @NotNull BlockState state,
