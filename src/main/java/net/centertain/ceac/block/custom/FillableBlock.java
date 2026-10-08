@@ -152,32 +152,66 @@ public interface FillableBlock {
         );
 
         int mask = getFillMask(level, pos);
-        VoxelShape piece = getFillPieceShape(
-                state,
-                level,
-                pos,
-                context
-        );
-
         VoxelShape result = Shapes.empty();
 
         for (int index = 0; index < definition.size(); index++) {
             if ((mask & (1 << index)) == 0)
                 continue;
-
-            Vec3 offset = transformDirectionToWorld(
-                    state,
-                    definition.offset(index)
-            );
-
-            result = Shapes.or(result, piece.move(
-                    offset.x,
-                    offset.y,
-                    offset.z
-            ));
+            result = Shapes.or(result, getFillCellShape(state, definition, index));
         }
 
         return result;
+    }
+
+    @SuppressWarnings("ExtractMethodRecommender")
+    default @NotNull VoxelShape getFillCellShape(
+            @NotNull BlockState state,
+            @NotNull FillDefinition definition,
+            int index
+    ) {
+        int x = index % definition.x();
+        int yz = index / definition.x();
+        int y = yz % definition.y();
+        int z = yz / definition.y();
+
+        double minX = x / (double) definition.x();
+        double minY = y / (double) definition.y();
+        double minZ = z / (double) definition.z();
+
+        double maxX = (x + 1) / (double) definition.x();
+        double maxY = (y + 1) / (double) definition.y();
+        double maxZ = (z + 1) / (double) definition.z();
+
+        Vec3[] corners = {
+                new Vec3(minX, minY, minZ),
+                new Vec3(maxX, minY, minZ),
+                new Vec3(minX, maxY, minZ),
+                new Vec3(maxX, maxY, minZ),
+                new Vec3(minX, minY, maxZ),
+                new Vec3(maxX, minY, maxZ),
+                new Vec3(minX, maxY, maxZ),
+                new Vec3(maxX, maxY, maxZ)
+        };
+
+        double worldMinX = Double.POSITIVE_INFINITY;
+        double worldMinY = Double.POSITIVE_INFINITY;
+        double worldMinZ = Double.POSITIVE_INFINITY;
+        double worldMaxX = Double.NEGATIVE_INFINITY;
+        double worldMaxY = Double.NEGATIVE_INFINITY;
+        double worldMaxZ = Double.NEGATIVE_INFINITY;
+
+        for (Vec3 corner : corners) {
+            Vec3 world = transformPointToWorld(state, corner);
+
+            worldMinX = Math.min(worldMinX, world.x);
+            worldMinY = Math.min(worldMinY, world.y);
+            worldMinZ = Math.min(worldMinZ, world.z);
+            worldMaxX = Math.max(worldMaxX, world.x);
+            worldMaxY = Math.max(worldMaxY, world.y);
+            worldMaxZ = Math.max(worldMaxZ, world.z);
+        }
+
+        return Shapes.box(worldMinX, worldMinY, worldMinZ, worldMaxX, worldMaxY, worldMaxZ);
     }
 
     @NotNull BakedModel getFillModel(BlockState state);
