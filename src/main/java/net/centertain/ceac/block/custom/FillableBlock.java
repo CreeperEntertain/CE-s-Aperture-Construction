@@ -29,6 +29,8 @@ import org.jetbrains.annotations.NotNull;
 public interface FillableBlock {
     IntegerProperty getFillProperty();
 
+    VoxelShape getCanonicalFillShape();
+
     VoxelShape getFillPieceShape(
             BlockState state,
             BlockGetter level,
@@ -238,10 +240,10 @@ public interface FillableBlock {
         );
     }
 
-    VoxelShape getCanonicalFillShape();
-
     default int getMaxFillCount() {
-        VoxelShape shape = getCanonicalFillShape();
+        return getMaxFillCount(getCanonicalFillShape());
+    }
+    default int getMaxFillCount(@NotNull VoxelShape shape) {
         if (shape.isEmpty())
             throw new IllegalStateException("Fillable shape is empty");
         if (shape.toAabbs().size() != 1)
