@@ -60,7 +60,7 @@ public class Bit extends MaterialShapeRotatable24Way implements FillableBlock {
             @NotNull BlockPos pos,
             @NotNull CollisionContext context
     ) {
-        return getFillPieceShape(state, level, pos, context);
+        return getFilledShape(state, level, pos, context);
     }
 
     @Override
