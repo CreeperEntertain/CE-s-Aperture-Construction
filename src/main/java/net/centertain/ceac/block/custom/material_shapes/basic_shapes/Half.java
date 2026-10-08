@@ -29,9 +29,7 @@ public class Half extends MaterialShapeRotatable24Way implements FillableBlock {
 
     public Half(Properties properties) {
         super(properties, CategoryConstants.Sub.Shapes.BASIC);
-        registerDefaultState(defaultBlockState()
-                .setValue(FILL, 1)
-        );
+        registerDefaultState(defaultBlockState().setValue(FILL, 1));
     }
 
     @Override
@@ -62,12 +60,7 @@ public class Half extends MaterialShapeRotatable24Way implements FillableBlock {
             @NotNull BlockPos pos,
             @NotNull CollisionContext context
     ) {
-        return getFilledShape(
-                state,
-                level,
-                pos,
-                context
-        );
+        return getFilledShape(state, level, pos, context);
     }
 
     @Override
@@ -76,7 +69,6 @@ public class Half extends MaterialShapeRotatable24Way implements FillableBlock {
     ) {
         BlockPos pos = context.getClickedPos();
         BlockState clicked = context.getLevel().getBlockState(pos);
-
         if (clicked.getBlock() == this) {
             int index = getFillIndex(
                     clicked,
@@ -86,16 +78,11 @@ public class Half extends MaterialShapeRotatable24Way implements FillableBlock {
                     context.getClickLocation(),
                     context.getClickedFace()
             );
-
             if (index >= 0 && (getFillMask(clicked) & (1 << index)) == 0)
-                return setFillMask(
-                        clicked,
-                        getFillMask(clicked) | (1 << index)
-                );
+                return setFillMask(clicked, getFillMask(clicked) | (1 << index));
         }
 
         BlockState state = super.getStateForPlacement(context);
-
         if (state == null)
             return null;
 
