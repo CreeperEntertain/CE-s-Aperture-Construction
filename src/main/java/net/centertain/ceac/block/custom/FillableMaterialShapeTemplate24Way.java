@@ -2,25 +2,34 @@ package net.centertain.ceac.block.custom;
 
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class FillableBlockTemplate24Way extends MaterialShapeRotatable24Way implements FillableBlock {
+import java.util.Map;
+
+public abstract class FillableMaterialShapeTemplate24Way extends MaterialShapeRotatable24Way implements FillableBlock {
     private IntegerProperty fill;
 
-    protected FillableBlockTemplate24Way(
+    protected final Map<Direction, VoxelShape[]> SHAPES;
+
+    protected FillableMaterialShapeTemplate24Way(
             Properties properties,
-            String subcategory
+            String subcategory,
+            Map<Direction, VoxelShape[]> shapes
     ) {
         super(properties, subcategory);
         registerDefaultState(defaultBlockState().setValue(fill, 1));
+        SHAPES = shapes;
     }
 
     @Override
@@ -40,6 +49,27 @@ public abstract class FillableBlockTemplate24Way extends MaterialShapeRotatable2
     @Override
     public @NotNull BakedModel getFillModel(BlockState state) {
         return getBakedModel();
+    }
+
+    @Override
+    public VoxelShape getFillPieceShape(
+            @NotNull BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        return SHAPES.get(state.getValue(FACING))[state.getValue(ROTATION)];
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public @NotNull VoxelShape getShape(
+            @NotNull BlockState state,
+            @NotNull BlockGetter level,
+            @NotNull BlockPos pos,
+            @NotNull CollisionContext context
+    ) {
+        return getFilledShape(state, level, pos, context);
     }
 
     @Override

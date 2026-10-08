@@ -1,51 +1,23 @@
 package net.centertain.ceac.block.custom.material_shapes.basic_shapes;
 
-import net.centertain.ceac.block.custom.FillableBlockTemplate24Way;
+import net.centertain.ceac.block.custom.FillableMaterialShapeTemplate24Way;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.material.shapes.loaders.basic_shapes.HalfLoader;
 import net.centertain.ceac.material.shapes.models.basic_shapes.HalfGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-
-public class Half extends FillableBlockTemplate24Way {
-    private static final Map<Direction, VoxelShape[]> SHAPES =
-            MaterialShapeVoxelHelper24Way.makeShapes(() -> HalfGeometry.COLLISION_SHAPE, false);
-
+public class Half extends FillableMaterialShapeTemplate24Way {
     public Half(Properties properties) {
-        super(properties, CategoryConstants.Sub.Shapes.BASIC);
+        super(
+                properties,
+                CategoryConstants.Sub.Shapes.BASIC,
+                MaterialShapeVoxelHelper24Way.makeShapes(() -> HalfGeometry.COLLISION_SHAPE, false)
+        );
     }
 
     @Override
     public VoxelShape getCanonicalFillShape() {
         return HalfLoader.CANONICAL_SHAPE;
-    }
-
-    @Override
-    public VoxelShape getFillPieceShape(
-            @NotNull BlockState state,
-            BlockGetter level,
-            BlockPos pos,
-            CollisionContext context
-    ) {
-        return SHAPES.get(state.getValue(FACING))[state.getValue(ROTATION)];
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public @NotNull VoxelShape getShape(
-            @NotNull BlockState state,
-            @NotNull BlockGetter level,
-            @NotNull BlockPos pos,
-            @NotNull CollisionContext context
-    ) {
-        return getFilledShape(state, level, pos, context);
     }
 }
