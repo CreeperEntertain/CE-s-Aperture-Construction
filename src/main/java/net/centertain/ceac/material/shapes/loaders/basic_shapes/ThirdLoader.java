@@ -12,7 +12,7 @@ public enum ThirdLoader implements IGeometryLoader<ThirdGeometry> {
     INSTANCE;
 
     public static final VoxelShape CANONICAL_SHAPE =
-            MaterialShapeVoxelHelper.makeShape(new ThirdGeometry(), false);
+            MaterialShapeVoxelHelper.fromBounds(new ThirdGeometry());
 
     @Override
     public ThirdGeometry read(

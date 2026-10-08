@@ -12,7 +12,7 @@ public enum NinthLoader implements IGeometryLoader<NinthGeometry> {
     INSTANCE;
 
     public static final VoxelShape CANONICAL_SHAPE =
-            MaterialShapeVoxelHelper.makeShape(new NinthGeometry(), false);
+            MaterialShapeVoxelHelper.fromBounds(new NinthGeometry());
 
     @Override
     public NinthGeometry read(

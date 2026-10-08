@@ -12,7 +12,7 @@ public enum NinthPillarLoader implements IGeometryLoader<NinthPillarGeometry> {
     INSTANCE;
 
     public static final VoxelShape CANONICAL_SHAPE =
-            MaterialShapeVoxelHelper.makeShape(new NinthPillarGeometry(), false);
+            MaterialShapeVoxelHelper.fromBounds(new NinthPillarGeometry());
 
     @Override
     public NinthPillarGeometry read(

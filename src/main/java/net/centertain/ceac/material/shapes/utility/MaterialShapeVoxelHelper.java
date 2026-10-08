@@ -80,18 +80,15 @@ public abstract class MaterialShapeVoxelHelper {
     public static VoxelShape makeShape(@NotNull BakedModel source) {
         return makeShape(source, true);
     }
-
     public static VoxelShape makeShape(
             @NotNull BakedModel source,
             boolean greedyMeshing
     ) {
         return compact(voxelize(source, greedyMeshing));
     }
-
     public static VoxelShape makeShape(@NotNull IUnbakedGeometry<?> source) {
         return makeShape(source, true);
     }
-
     public static VoxelShape makeShape(@NotNull IUnbakedGeometry<?> source, boolean greedyMeshing) {
         return makeShape(source.bake(
                 FILL_BAKING_CONTEXT,
@@ -101,6 +98,37 @@ public abstract class MaterialShapeVoxelHelper {
                 null,
                 StandaloneGeometryBakingContext.LOCATION
         ), greedyMeshing);
+    }
+
+    public static VoxelShape fromBounds(@NotNull IUnbakedGeometry<?> source) {
+        return fromBounds(source.bake(
+                FILL_BAKING_CONTEXT,
+                null,
+                material -> UnitTextureAtlasSprite.INSTANCE,
+                null,
+                null,
+                StandaloneGeometryBakingContext.LOCATION
+        ));
+    }
+    public static VoxelShape fromBounds(@NotNull BakedModel source) {
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double minZ = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        double maxZ = Double.NEGATIVE_INFINITY;
+
+        for (Triangle triangle : getTriangles(source))
+            for (Vec3 point : List.of(triangle.a(), triangle.b(), triangle.c())) {
+                minX = Math.min(minX, point.x);
+                minY = Math.min(minY, point.y);
+                minZ = Math.min(minZ, point.z);
+                maxX = Math.max(maxX, point.x);
+                maxY = Math.max(maxY, point.y);
+                maxZ = Math.max(maxZ, point.z);
+            }
+
+        return Shapes.box(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     protected static boolean[][][] voxelize(BakedModel source) {
