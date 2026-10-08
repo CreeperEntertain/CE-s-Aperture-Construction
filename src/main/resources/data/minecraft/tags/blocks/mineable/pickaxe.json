@@ -6,9 +6,16 @@
 
 
     "ceac:material_shape_block",
+
     "ceac:material_shape_bit",
+    "ceac:material_shape_bit_pillar",
     "ceac:material_shape_half",
     "ceac:material_shape_stairs",
+
+    "ceac:material_shape_ninth",
+    "ceac:material_shape_ninth_pillar",
+    "ceac:material_shape_third",
+    "ceac:material_shape_third_stairs",
 
 
     "ceac:material_shape_slope",

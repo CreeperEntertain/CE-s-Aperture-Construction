@@ -23,9 +23,16 @@
 
 
   "block.ceac.material_shape_block": "Material Shape: Block",
+
   "block.ceac.material_shape_bit": "Material Shape: Bit",
+  "block.ceac.material_shape_bit_pillar": "Material Shape: Bit (Pillar)",
   "block.ceac.material_shape_half": "Material Shape: Half",
   "block.ceac.material_shape_stairs": "Material Shape: Stairs",
+
+  "block.ceac.material_shape_ninth": "Material Shape: Ninth",
+  "block.ceac.material_shape_ninth_pillar": "Material Shape: Ninth (Pillar)",
+  "block.ceac.material_shape_third": "Material Shape: Third",
+  "block.ceac.material_shape_third_stairs": "Material Shape: Third Stairs",
 
 
   "block.ceac.material_shape_slope": "Material Shape: Slope",

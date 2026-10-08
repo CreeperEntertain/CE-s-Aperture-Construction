@@ -1,8 +1,8 @@
-package net.centertain.ceac.block.custom.material_shapes.basic_shapes;
+package net.centertain.ceac.block.custom.material_shapes.basic_shapes.ninth;
 
 import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.constants.CategoryConstants;
-import net.centertain.ceac.material.shapes.models.basic_shapes.StairsGeometry;
+import net.centertain.ceac.material.shapes.models.basic_shapes.ThirdStairsGeometry;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeVoxelHelper24Way;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,12 +14,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public class Stairs extends MaterialShapeRotatable24Way {
+public class ThirdStairs extends MaterialShapeRotatable24Way {
     private static final Map<Direction, VoxelShape[]> SHAPES =
-            MaterialShapeVoxelHelper24Way.makeShapes(() -> StairsGeometry.COLLISION_SHAPE, false);
+            MaterialShapeVoxelHelper24Way.makeShapes(() -> ThirdStairsGeometry.COLLISION_SHAPE, false);
 
-    public Stairs(Properties properties) {
-        super(properties, CategoryConstants.Sub.Shapes.SLOPES_FULL);
+    public ThirdStairs(Properties properties) {
+        super(properties, CategoryConstants.Sub.Shapes.BASIC);
     }
 
     @SuppressWarnings("deprecation") // Literally what the docs told me to use. Why would you deprecate something that's

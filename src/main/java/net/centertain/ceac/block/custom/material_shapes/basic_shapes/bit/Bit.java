@@ -1,4 +1,4 @@
-package net.centertain.ceac.block.custom.material_shapes.basic_shapes;
+package net.centertain.ceac.block.custom.material_shapes.basic_shapes.bit;
 
 import net.centertain.ceac.block.custom.FillableMaterialShapeTemplate24Way;
 import net.centertain.ceac.constants.CategoryConstants;
