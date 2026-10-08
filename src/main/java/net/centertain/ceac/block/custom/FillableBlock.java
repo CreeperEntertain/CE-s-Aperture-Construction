@@ -356,6 +356,8 @@ public interface FillableBlock {
                 double coordinate,
                 int subdivisions
         ) {
+            if (Math.abs(coordinate) <= EPSILON)
+                return 0;
             return (int) Math.ceil(coordinate * subdivisions - EPSILON) - 1;
         }
 
