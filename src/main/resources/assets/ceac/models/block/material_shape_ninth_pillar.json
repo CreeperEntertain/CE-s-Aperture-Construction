@@ -1,5 +1,5 @@
 {
-  "loader": "ceac:material_shape_ninth_pillar"
+  "loader": "ceac:material_shape_ninth_pillar",
   "textures": {
     "texture": "ceac:block/material_shape"
   }
