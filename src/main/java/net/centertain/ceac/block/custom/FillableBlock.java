@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -235,6 +236,24 @@ public interface FillableBlock {
                 point,
                 face.getOpposite()
         );
+    }
+
+    VoxelShape getCanonicalFillShape();
+
+    default int getMaxFillCount() {
+        VoxelShape shape = getCanonicalFillShape();
+        if (shape.isEmpty())
+            throw new IllegalStateException("Fillable shape is empty");
+        if (shape.toAabbs().size() != 1)
+            throw new IllegalStateException("Fillable shape must have a single cuboid piece shape");
+
+        AABB bounds = shape.bounds();
+
+        int x = FillDefinition.subdivisions(bounds.maxX - bounds.minX);
+        int y = FillDefinition.subdivisions(bounds.maxY - bounds.minY);
+        int z = FillDefinition.subdivisions(bounds.maxZ - bounds.minZ);
+
+        return x * y * z;
     }
 
     record FillDefinition(

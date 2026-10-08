@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -30,6 +31,11 @@ public class Half extends MaterialShapeRotatable24Way implements FillableBlock {
     public Half(Properties properties) {
         super(properties, CategoryConstants.Sub.Shapes.BASIC);
         registerDefaultState(defaultBlockState().setValue(FILL, 1));
+    }
+
+    @Override
+    public VoxelShape getCanonicalFillShape() {
+        return SHAPES.get(Direction.WEST)[0];
     }
 
     @Override
@@ -67,13 +73,14 @@ public class Half extends MaterialShapeRotatable24Way implements FillableBlock {
     public @Nullable BlockState getStateForPlacement(
             @NotNull BlockPlaceContext context
     ) {
-        BlockPos pos = context.getClickedPos();
-        BlockState clicked = context.getLevel().getBlockState(pos);
+        Level level = context.getLevel();
+        BlockPos clickedPos = context.getClickedPos();
+        BlockState clicked = context.getLevel().getBlockState(clickedPos);
         if (clicked.getBlock() == this) {
             int index = getFillIndex(
                     clicked,
                     context.getLevel(),
-                    pos,
+                    clickedPos,
                     CollisionContext.empty(),
                     context.getClickLocation(),
                     context.getClickedFace()
@@ -85,6 +92,17 @@ public class Half extends MaterialShapeRotatable24Way implements FillableBlock {
         BlockState state = super.getStateForPlacement(context);
         if (state == null)
             return null;
+
+        int index = getFillIndex(
+                state,
+                level,
+                clickedPos,
+                CollisionContext.empty(),
+                context.getClickLocation(),
+                context.getClickedFace().getOpposite()
+        );
+        if (index >= 0)
+            return setFillMask(state, 1 << index);
 
         return setFillMask(state, 1);
     }
