@@ -2,6 +2,7 @@ package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.block.custom.FillableBlock;
 import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
+import net.centertain.ceac.material.shapes.utility.FillableBlockPlaceContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -9,14 +10,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -76,30 +75,30 @@ public class FillableBlockItem extends BlockItem {
     ) {
         if (!super.placeBlock(context, state))
             return false;
-        if (!(getBlock() instanceof FillableBlock fillable))
+        if (!(context instanceof FillableBlockPlaceContext fillableContext))
+            return true;
+        if (!(getBlock() instanceof FillableBlock))
             return true;
 
         Level level = context.getLevel();
-        BlockPos pos = context.replacingClickedOnBlock()
-                ? context.getClickedPos()
-                : context.getClickedPos().relative(context.getClickedFace());
+        BlockPos pos = context.getClickedPos();
         if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
             return true;
 
-        int fillIndex = fillable.getFillIndex(
-                state,
-                level,
-                pos,
-                CollisionContext.empty(),
-                context.getClickLocation(),
-                context.getClickedFace().getOpposite()
-        );
-
+        int fillIndex = fillableContext.getInitialFillIndex();
         int mask = fillIndex >= 0 ? 1 << fillIndex : 1;
 
         blockEntity.setFillMask(mask);
 
         return true;
+    }
+
+    @Override
+    public @Nullable BlockPlaceContext updatePlacementContext(@NotNull BlockPlaceContext context) {
+        BlockPlaceContext updated = super.updatePlacementContext(context);
+        if (updated == null)
+            return null;
+        return new FillableBlockPlaceContext(updated);
     }
 
     private @Nullable InteractionResult tryFill(

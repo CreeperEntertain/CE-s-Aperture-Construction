@@ -1,5 +1,6 @@
 package net.centertain.ceac.block.custom;
 
+import net.centertain.ceac.material.shapes.utility.FillableBlockPlaceContext;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -50,6 +51,27 @@ public abstract class FillableMaterialShapeTemplate24Way extends MaterialShapeRo
             @NotNull CollisionContext context
     ) {
         return getFilledShape(state, level, pos, context);
+    }
+
+    @Override
+    public @Nullable BlockState getStateForPlacement(
+            @NotNull BlockPlaceContext context
+    ) {
+        BlockState state = super.getStateForPlacement(context);
+        if (state == null)
+            return null;
+        if (context instanceof FillableBlockPlaceContext fillableContext) {
+            int index = getFillIndex(
+                    state,
+                    context.getLevel(),
+                    context.getClickedPos(),
+                    CollisionContext.empty(),
+                    context.getClickLocation(),
+                    context.getClickedFace().getOpposite()
+            );
+            fillableContext.setInitialFillIndex(index);
+        }
+        return state;
     }
 
     @SuppressWarnings("deprecation")
