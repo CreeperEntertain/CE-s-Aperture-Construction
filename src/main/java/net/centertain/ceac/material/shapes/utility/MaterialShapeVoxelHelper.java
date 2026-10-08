@@ -2,14 +2,23 @@ package net.centertain.ceac.material.shapes.utility;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Transformation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.client.RenderTypeGroup;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
+import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
+import net.minecraftforge.client.model.geometry.StandaloneGeometryBakingContext;
+import net.minecraftforge.client.textures.UnitTextureAtlasSprite;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -20,9 +29,81 @@ public abstract class MaterialShapeVoxelHelper {
     protected static final int SIZE = 16;
     protected static final double EPSILON = 1.0e-9;
 
-    protected static boolean[][][] voxelize(
-            BakedModel source
+    private static final IGeometryBakingContext FILL_BAKING_CONTEXT = new IGeometryBakingContext() {
+        private final IGeometryBakingContext delegate = StandaloneGeometryBakingContext.INSTANCE;
+        @Override
+        public String getModelName() {
+            return delegate.getModelName();
+        }
+        @Override
+        public boolean hasMaterial(String name) {
+            return delegate.hasMaterial(name);
+        }
+        @Override
+        public Material getMaterial(String name) {
+            return delegate.getMaterial(name);
+        }
+        @Override
+        public boolean isGui3d() {
+            return delegate.isGui3d();
+        }
+        @Override
+        public boolean useBlockLight() {
+            return delegate.useBlockLight();
+        }
+        @Override
+        public boolean useAmbientOcclusion() {
+            return delegate.useAmbientOcclusion();
+        }
+        @Override
+        public ItemTransforms getTransforms() {
+            return delegate.getTransforms();
+        }
+        @Override
+        public Transformation getRootTransform() {
+            return delegate.getRootTransform();
+        }
+        @Override
+        public ResourceLocation getRenderTypeHint() {
+            return delegate.getRenderTypeHint();
+        }
+        @Override
+        public boolean isComponentVisible(String component, boolean fallback) {
+            return delegate.isComponentVisible(component, fallback);
+        }
+        @Override
+        public RenderTypeGroup getRenderType(ResourceLocation name) {
+            return RenderTypeGroup.EMPTY;
+        }
+    };
+
+    public static VoxelShape makeShape(@NotNull BakedModel source) {
+        return makeShape(source, true);
+    }
+
+    public static VoxelShape makeShape(
+            @NotNull BakedModel source,
+            boolean greedyMeshing
     ) {
+        return compact(voxelize(source, greedyMeshing));
+    }
+
+    public static VoxelShape makeShape(@NotNull IUnbakedGeometry<?> source) {
+        return makeShape(source, true);
+    }
+
+    public static VoxelShape makeShape(@NotNull IUnbakedGeometry<?> source, boolean greedyMeshing) {
+        return makeShape(source.bake(
+                FILL_BAKING_CONTEXT,
+                null,
+                material -> UnitTextureAtlasSprite.INSTANCE,
+                null,
+                null,
+                StandaloneGeometryBakingContext.LOCATION
+        ), greedyMeshing);
+    }
+
+    protected static boolean[][][] voxelize(BakedModel source) {
         return rasterize(getTriangles(source), true);
     }
     protected static boolean[][][] voxelize(
@@ -39,9 +120,7 @@ public abstract class MaterialShapeVoxelHelper {
         return new LazyMap<>(source, factory);
     }
 
-    protected static List<Triangle> getTriangles(
-            BakedModel source
-    ) {
+    protected static List<Triangle> getTriangles(BakedModel source) {
         List<Triangle> triangles = new ArrayList<>();
         RandomSource random = RandomSource.create();
 
@@ -250,9 +329,7 @@ public abstract class MaterialShapeVoxelHelper {
         };
     }
 
-    protected static VoxelShape compact(
-            boolean[][][] voxels
-    ) {
+    protected static VoxelShape compact(boolean[][][] voxels) {
         List<Cuboid> best = null;
 
         for (Direction.Axis axis : Direction.Axis.values()) {
@@ -357,9 +434,7 @@ public abstract class MaterialShapeVoxelHelper {
         return rectangles;
     }
 
-    private static Rectangle findLargestRectangle(
-            boolean[][] filled
-    ) {
+    private static Rectangle findLargestRectangle(boolean[][] filled) {
         int[] heights = new int[SIZE];
 
         Rectangle best = null;

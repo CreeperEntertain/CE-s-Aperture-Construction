@@ -1,8 +1,6 @@
 package net.centertain.ceac.block.custom.material_shapes.basic_shapes;
 
-import net.centertain.ceac.block.custom.FillableBlock;
 import net.centertain.ceac.block.custom.FillableBlockTemplate24Way;
-import net.centertain.ceac.block.custom.MaterialShapeRotatable24Way;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.material.shapes.loaders.basic_shapes.BitLoader;
 import net.centertain.ceac.material.shapes.models.basic_shapes.BitGeometry;
@@ -13,10 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +29,7 @@ public class Bit extends FillableBlockTemplate24Way {
 
     @Override
     public VoxelShape getCanonicalFillShape() {
-        return SHAPES.get(Direction.WEST)[0];
+        return BitLoader.CANONICAL_SHAPE;
     }
 
     @Override
