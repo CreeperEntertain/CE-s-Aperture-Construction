@@ -10,7 +10,7 @@ import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 
 import java.util.function.Function;
 
-public class EightSphereGeometry implements IUnbakedGeometry<EightSphereGeometry> {
+public class EighthSphereGeometry implements IUnbakedGeometry<EighthSphereGeometry> {
     public static BakedModel COLLISION_SHAPE;
 
     @Override
