@@ -20,6 +20,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.BitSet;
+
 public class FillableBlockItem extends BlockItem {
     public FillableBlockItem(Block block, Item.Properties properties) {
         super(block, properties);
@@ -86,7 +88,9 @@ public class FillableBlockItem extends BlockItem {
             return true;
 
         int fillIndex = fillableContext.getInitialFillIndex();
-        int mask = fillIndex >= 0 ? 1 << fillIndex : 1;
+
+        BitSet mask = new BitSet();
+        mask.set(Math.max(fillIndex, 0));
 
         blockEntity.setFillMask(mask);
 
@@ -120,13 +124,12 @@ public class FillableBlockItem extends BlockItem {
         if (fillIndex < 0)
             return null;
 
-        int mask = fillable.getFillMask(level, pos);
-        int bit = 1 << fillIndex;
-
-        if ((mask & bit) != 0)
+        BitSet mask = fillable.getFillMask(level, pos);
+        if (mask.get(fillIndex))
             return null;
 
-        fillable.setFillMask(level, pos, mask | bit);
+        mask.set(fillIndex);
+        fillable.setFillMask(level, pos, mask);
 
         if (!level.isClientSide) {
             Player player = context.getPlayer();

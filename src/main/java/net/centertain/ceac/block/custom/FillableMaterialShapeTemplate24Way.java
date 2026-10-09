@@ -94,6 +94,6 @@ public abstract class FillableMaterialShapeTemplate24Way extends MaterialShapeRo
                 context.getClickedFace()
         );
 
-        return index >= 0 && (getFillMask(context.getLevel(), context.getClickedPos()) & (1 << index)) == 0;
+        return index >= 0 && !getFillMask(context.getLevel(), context.getClickedPos()).get(index);
     }
 }

@@ -19,15 +19,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MaterialShapeBlockEntity extends BlockEntity {
     public static final ModelProperty<Map<MaterialFaceKey, MaterialAssignment>> MATERIALS = new ModelProperty<>();
-    public static final ModelProperty<Integer> FILL_MASK = new ModelProperty<>();
+    public static final ModelProperty<BitSet> FILL_MASK = new ModelProperty<>();
 
     private Map<MaterialFaceKey, MaterialAssignment> materials = Map.of();
-    private int fillMask = 1;
+    private BitSet fillMask = defaultFillMask();
 
     public MaterialShapeBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MATERIAL_SHAPE.get(), pos, state);
@@ -106,11 +107,11 @@ public class MaterialShapeBlockEntity extends BlockEntity {
         return assignment == null ? null : assignment.material();
     }
 
-    public int getFillMask() {
-        return fillMask;
+    public BitSet getFillMask() {
+        return (BitSet) fillMask.clone();
     }
 
-    public void setFillMask(int fillMask) {
+    public void setFillMask(BitSet fillMask) {
         this.fillMask = fillMask;
 
         setChanged();
@@ -125,11 +126,17 @@ public class MaterialShapeBlockEntity extends BlockEntity {
             );
     }
 
+    private BitSet defaultFillMask() {
+        BitSet mask = new BitSet();
+        mask.set(0);
+        return mask;
+    }
+
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag) {
         super.saveAdditional(tag);
 
-        tag.putInt("FillMask", fillMask);
+        tag.putByteArray("FillMask", fillMask.toByteArray());
 
         CompoundTag materialsTag = new CompoundTag();
 
@@ -156,7 +163,10 @@ public class MaterialShapeBlockEntity extends BlockEntity {
     public void load(@NotNull CompoundTag tag) {
         super.load(tag);
 
-        fillMask = tag.contains("FillMask") ? tag.getInt("FillMask") : 1;
+        if (tag.contains("FillMask", CompoundTag.TAG_BYTE_ARRAY))
+            fillMask = BitSet.valueOf(tag.getByteArray("FillMask"));
+        else
+            fillMask = defaultFillMask();
 
         Map<MaterialFaceKey, MaterialAssignment> loaded = new HashMap<>();
 
@@ -240,7 +250,7 @@ public class MaterialShapeBlockEntity extends BlockEntity {
     public @NotNull ModelData getModelData() {
         return ModelData.builder()
                 .with(MATERIALS, materials)
-                .with(FILL_MASK, fillMask)
+                .with(FILL_MASK, getFillMask())
                 .build();
     }
 

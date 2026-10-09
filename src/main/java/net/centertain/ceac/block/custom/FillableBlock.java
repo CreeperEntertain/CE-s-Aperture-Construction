@@ -26,6 +26,8 @@ import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.BitSet;
+
 public interface FillableBlock {
     VoxelShape getCanonicalFillShape();
 
@@ -64,26 +66,28 @@ public interface FillableBlock {
         return direction;
     }
 
-    default int getFillMask(
+    default BitSet getFillMask(
             @NotNull BlockGetter level,
             @NotNull BlockPos pos
     ) {
         if (level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity)
             return blockEntity.getFillMask();
-        return 1;
+        BitSet mask = new BitSet();
+        mask.set(0);
+        return mask;
     }
 
     default int getFillCount(
             @NotNull BlockGetter level,
             @NotNull BlockPos pos
     ) {
-        return Integer.bitCount(getFillMask(level, pos));
+        return getFillMask(level, pos).cardinality();
     }
 
     default void setFillMask(
             @NotNull Level level,
             @NotNull BlockPos pos,
-            int mask
+            @NotNull BitSet mask
     ) {
         if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
             throw new IllegalStateException("Fillable block has no MaterialShapeBlockEntity at " + pos);
@@ -151,11 +155,11 @@ public interface FillableBlock {
                 context
         );
 
-        int mask = getFillMask(level, pos);
+        BitSet mask = getFillMask(level, pos);
         VoxelShape result = Shapes.empty();
 
         for (int index = 0; index < definition.size(); index++) {
-            if ((mask & (1 << index)) == 0)
+            if (!mask.get(index))
                 continue;
             result = Shapes.or(result, getFillCellShape(state, definition, index));
         }
@@ -224,8 +228,8 @@ public interface FillableBlock {
             boolean willHarvest,
             @NotNull FluidState fluid
     ) {
-        int mask = getFillMask(level, pos);
-        if (Integer.bitCount(mask) <= 1)
+        BitSet mask = getFillMask(level, pos);
+        if (mask.cardinality() <= 1)
             return false;
 
         HitResult hitResult = player.pick(player.getBlockReach(), 1.0f, false);
@@ -244,18 +248,15 @@ public interface FillableBlock {
         );
         if (pieceIndex < 0)
             return false;
-
-        int pieceBit = 1 << pieceIndex;
-        if ((mask & pieceBit) == 0)
+        if (!mask.get(pieceIndex))
             return false;
-
-        int newMask = mask & ~pieceBit;
-        if (newMask == 0)
+        mask.clear(pieceIndex);
+        if (mask.isEmpty())
             return false;
 
         Block block = (Block) this;
         block.playerWillDestroy(level, pos, state, player);
-        setFillMask(level, pos, newMask);
+        setFillMask(level, pos, mask);
 
         if (!player.isCreative() && willHarvest)
             Block.popResource(level, pos, new ItemStack(block));

@@ -15,6 +15,7 @@ import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 public final class FillableModelBuilder {
@@ -43,8 +44,14 @@ public final class FillableModelBuilder {
                 renderType
         );
 
-        Integer maskValue = data.get(MaterialShapeBlockEntity.FILL_MASK);
-        int mask = maskValue == null ? 1 : maskValue;
+        BitSet maskValue = data.get(MaterialShapeBlockEntity.FILL_MASK);
+
+        BitSet mask;
+        if (maskValue == null) {
+            mask = new BitSet();
+            mask.set(0);
+        } else
+            mask = (BitSet) maskValue.clone();
 
         FillableBlock.FillDefinition definition = FillableBlock.FillDefinition.fromModel(
                 pieceModel,
@@ -57,7 +64,7 @@ public final class FillableModelBuilder {
              pieceIndex < definition.size();
              pieceIndex++) {
 
-            if ((mask & (1 << pieceIndex)) == 0)
+            if (!mask.get(pieceIndex))
                 continue;
 
             Vec3 offset = definition.offset(pieceIndex);
@@ -81,7 +88,7 @@ public final class FillableModelBuilder {
 
     private static boolean isExposed(
             FillableBlock.FillDefinition definition,
-            int mask,
+            BitSet mask,
             int index,
             Direction face
     ) {
@@ -110,7 +117,7 @@ public final class FillableModelBuilder {
                 neighborZ
         );
 
-        return (mask & (1 << neighborIndex)) == 0;
+        return !mask.get(neighborIndex);
     }
 
     private static BakedQuad translate(

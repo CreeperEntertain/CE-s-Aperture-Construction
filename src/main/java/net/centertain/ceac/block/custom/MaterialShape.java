@@ -42,6 +42,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -493,12 +494,12 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                 fillable.getFillModel(state),
                 state
         );
-        int mask = fillable.getFillMask(level, pos);
+        BitSet mask = fillable.getFillMask(level, pos);
 
         List<MaterialShapeFaceInstance> result = new ArrayList<>();
 
         for (int pieceIndex = 0; pieceIndex < definition.size(); pieceIndex++) {
-            if ((mask & (1 << pieceIndex)) == 0)
+            if (!mask.get(pieceIndex))
                 continue;
 
             Vec3 offset = definition.offset(pieceIndex);
