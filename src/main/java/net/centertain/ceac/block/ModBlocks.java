@@ -3,6 +3,8 @@ package net.centertain.ceac.block;
 import net.centertain.ceac.block.custom.FillableBlock;
 import net.centertain.ceac.block.custom.PurchasingTerminal;
 import net.centertain.ceac.block.custom.material_shapes.basic_shapes.halves.*;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.other.Eighth;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.other.Layer;
 import net.centertain.ceac.block.custom.material_shapes.basic_shapes.quarters.Quarter;
 import net.centertain.ceac.block.custom.material_shapes.basic_shapes.quarters.QuarterStairs;
 import net.centertain.ceac.block.custom.material_shapes.basic_shapes.quarters.Sixteenth;
@@ -61,6 +63,9 @@ public final class ModBlocks {
     public static final RegistryObject<Block> MATERIAL_SHAPE_SIXTEENTH_PILLAR = registerBlock("material_shape_sixteenth_pillar", () -> new SixteenthPillar(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER = registerBlock("material_shape_quarter", () -> new Quarter(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_STAIRS = registerBlock("material_shape_quarter_stairs", () -> new QuarterStairs(MATERIAL_SHAPE_PROPERTIES));
+
+    public static final RegistryObject<Block> MATERIAL_SHAPE_EIGHTH = registerBlock("material_shape_eighth", () -> new Eighth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_LAYER = registerBlock("material_shape_layer", () -> new Layer(MATERIAL_SHAPE_PROPERTIES));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope", () -> new Slope(MATERIAL_SHAPE_PROPERTIES));

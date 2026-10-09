@@ -22,6 +22,9 @@
     "ceac:material_shape_quarter",
     "ceac:material_shape_quarter_stairs",
 
+    "ceac:material_shape_eighth",
+    "ceac:material_shape_layer",
+
 
     "ceac:material_shape_slope",
     "ceac:material_shape_full_corner_outer",

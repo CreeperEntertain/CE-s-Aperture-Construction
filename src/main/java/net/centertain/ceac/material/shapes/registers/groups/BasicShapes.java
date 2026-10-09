@@ -4,6 +4,8 @@ import net.centertain.ceac.material.shapes.loaders.basic_shapes.halves.BitLoader
 import net.centertain.ceac.material.shapes.loaders.basic_shapes.halves.BitPillarLoader;
 import net.centertain.ceac.material.shapes.loaders.basic_shapes.halves.HalfLoader;
 import net.centertain.ceac.material.shapes.loaders.basic_shapes.halves.StairsLoader;
+import net.centertain.ceac.material.shapes.loaders.basic_shapes.other.EighthLoader;
+import net.centertain.ceac.material.shapes.loaders.basic_shapes.other.LayerLoader;
 import net.centertain.ceac.material.shapes.loaders.basic_shapes.quarters.QuarterLoader;
 import net.centertain.ceac.material.shapes.loaders.basic_shapes.quarters.QuarterStairsLoader;
 import net.centertain.ceac.material.shapes.loaders.basic_shapes.quarters.SixteenthLoader;
@@ -32,5 +34,8 @@ public final class BasicShapes {
         event.register("material_shape_sixteenth_pillar", SixteenthPillarLoader.INSTANCE);
         event.register("material_shape_quarter", QuarterLoader.INSTANCE);
         event.register("material_shape_quarter_stairs", QuarterStairsLoader.INSTANCE);
+
+        event.register("material_shape_eighth", EighthLoader.INSTANCE);
+        event.register("material_shape_layer", LayerLoader.INSTANCE);
     }
 }

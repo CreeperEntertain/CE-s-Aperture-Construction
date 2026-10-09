@@ -47,6 +47,9 @@ public final class ModCreativeModeTabs {
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER.get());
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_STAIRS.get());
 
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_EIGHTH.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_LAYER.get());
+
 
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_SLOPE.get());
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_FULL_CORNER_OUTER.get());

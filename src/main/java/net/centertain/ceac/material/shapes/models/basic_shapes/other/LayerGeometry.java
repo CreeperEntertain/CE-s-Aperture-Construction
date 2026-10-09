@@ -1,4 +1,4 @@
-package net.centertain.ceac.material.shapes.models;
+package net.centertain.ceac.material.shapes.models.basic_shapes.other;
 
 import net.centertain.ceac.material.utility.ModelHelper;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
@@ -10,7 +10,7 @@ import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 
 import java.util.function.Function;
 
-public class EigthGeometry implements IUnbakedGeometry<EigthGeometry> {
+public class LayerGeometry implements IUnbakedGeometry<LayerGeometry> {
     public static BakedModel COLLISION_SHAPE;
 
     @Override
@@ -44,42 +44,42 @@ public class EigthGeometry implements IUnbakedGeometry<EigthGeometry> {
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
-                ModelHelper.vertex(0f, 0.125f, 1f, -0f, 1f),
-                ModelHelper.vertex(1f, 0.125f, 1f, 1f, 1f),
-                ModelHelper.vertex(1f, 0.125f, 0f, 1f, 0f),
-                ModelHelper.vertex(0f, 0.125f, 0f, 0f, -0f)
-        ));
-
-        builder.addUnculledFace(ModelHelper.quad(
-                sprite,
-                ModelHelper.vertex(1f, 0f, 1f, 0f, 1f),
-                ModelHelper.vertex(1f, 0f, 0f, 1f, 1f),
-                ModelHelper.vertex(1f, 0.125f, 0f, 1f, 0.875f),
-                ModelHelper.vertex(1f, 0.125f, 1f, 0f, 0.875f)
-        ));
-
-        builder.addUnculledFace(ModelHelper.quad(
-                sprite,
-                ModelHelper.vertex(0f, 0f, 0f, -0f, 1f),
-                ModelHelper.vertex(0f, 0f, 1f, 1f, 1f),
-                ModelHelper.vertex(0f, 0.125f, 1f, 1f, 0.875f),
-                ModelHelper.vertex(0f, 0.125f, 0f, -0f, 0.875f)
+                ModelHelper.vertex(0f, 0.0625f, 1f, -0f, 1f),
+                ModelHelper.vertex(1f, 0.0625f, 1f, 1f, 1f),
+                ModelHelper.vertex(1f, 0.0625f, 0f, 1f, 0f),
+                ModelHelper.vertex(0f, 0.0625f, 0f, 0f, -0f)
         ));
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
                 ModelHelper.vertex(1f, 0f, 0f, 0f, 1f),
                 ModelHelper.vertex(0f, 0f, 0f, 1f, 1f),
-                ModelHelper.vertex(0f, 0.125f, 0f, 1f, 0.875f),
-                ModelHelper.vertex(1f, 0.125f, 0f, 0f, 0.875f)
+                ModelHelper.vertex(0f, 0.0625f, 0f, 1f, 0.9375f),
+                ModelHelper.vertex(1f, 0.0625f, 0f, 0f, 0.9375f)
         ));
 
         builder.addUnculledFace(ModelHelper.quad(
                 sprite,
                 ModelHelper.vertex(0f, 0f, 1f, 0f, 1f),
                 ModelHelper.vertex(1f, 0f, 1f, 1f, 1f),
-                ModelHelper.vertex(1f, 0.125f, 1f, 1f, 0.875f),
-                ModelHelper.vertex(0f, 0.125f, 1f, 0f, 0.875f)
+                ModelHelper.vertex(1f, 0.0625f, 1f, 1f, 0.9375f),
+                ModelHelper.vertex(0f, 0.0625f, 1f, 0f, 0.9375f)
+        ));
+
+        builder.addUnculledFace(ModelHelper.quad(
+                sprite,
+                ModelHelper.vertex(1f, 0f, 1f, 0f, 1f),
+                ModelHelper.vertex(1f, 0f, 0f, 1f, 1f),
+                ModelHelper.vertex(1f, 0.0625f, 0f, 1f, 0.9375f),
+                ModelHelper.vertex(1f, 0.0625f, 1f, 0f, 0.9375f)
+        ));
+
+        builder.addUnculledFace(ModelHelper.quad(
+                sprite,
+                ModelHelper.vertex(0f, 0f, 0f, -0f, 1f),
+                ModelHelper.vertex(0f, 0f, 1f, 1f, 1f),
+                ModelHelper.vertex(0f, 0.0625f, 1f, 1f, 0.9375f),
+                ModelHelper.vertex(0f, 0.0625f, 0f, -0f, 0.9375f)
         ));
 
         COLLISION_SHAPE = builder.build(context.getRenderType(modelLocation));

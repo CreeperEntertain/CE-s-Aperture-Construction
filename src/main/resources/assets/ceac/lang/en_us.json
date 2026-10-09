@@ -39,6 +39,9 @@
   "block.ceac.material_shape_quarter": "Material Shape: Quarter",
   "block.ceac.material_shape_quarter_stairs": "Material Shape: Quarter Stairs",
 
+  "block.ceac.material_shape_eighth": "Material Shape: Eighth",
+  "block.ceac.material_shape_layer": "Material Shape: Layer",
+
 
   "block.ceac.material_shape_slope": "Material Shape: Slope",
   "block.ceac.material_shape_full_corner_outer": "Material Shape: Full Corner (Outer)",
