@@ -1,6 +1,6 @@
 package net.centertain.ceac.item.custom;
 
-import net.centertain.ceac.block.custom.FillableBlock;
+import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.centertain.ceac.material.shapes.utility.FillableBlockPlaceContext;
 import net.minecraft.core.BlockPos;

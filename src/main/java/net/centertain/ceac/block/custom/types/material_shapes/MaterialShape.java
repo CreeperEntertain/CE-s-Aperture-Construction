@@ -1,7 +1,9 @@
-package net.centertain.ceac.block.custom;
+package net.centertain.ceac.block.custom.types.material_shapes;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.centertain.ceac.block.custom.types.BasicBlock;
+import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.material.*;

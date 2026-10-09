@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;

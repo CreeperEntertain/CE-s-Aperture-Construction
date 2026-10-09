@@ -2,7 +2,7 @@ package net.centertain.ceac.material.shapes.utility;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.centertain.ceac.block.custom.FillableBlock;
+import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;

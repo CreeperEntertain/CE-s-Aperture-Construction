@@ -1,6 +1,6 @@
 package net.centertain.ceac.material.shapes;
 
-import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;

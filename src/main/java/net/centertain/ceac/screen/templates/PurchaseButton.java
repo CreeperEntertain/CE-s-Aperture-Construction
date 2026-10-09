@@ -1,9 +1,8 @@
 package net.centertain.ceac.screen.templates;
 
-import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.custom.BasicItem;
-import net.centertain.ceac.screen.PurchasingTermialScreen;
 import net.centertain.ceac.screen.elements.*;
 import net.centertain.ceac.screen.framework.Element;
 import net.minecraft.network.chat.Component;

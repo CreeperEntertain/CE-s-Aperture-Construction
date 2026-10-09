@@ -1,6 +1,6 @@
 package net.centertain.ceac.item.custom;
 
-import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.sound.ModSounds;
 import net.centertain.ceac.utility.Mathworks;
@@ -12,7 +12,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;

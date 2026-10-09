@@ -1,8 +1,8 @@
 package net.centertain.ceac.screen.templates.pages;
 
 import net.centertain.ceac.block.ModBlocks;
-import net.centertain.ceac.block.custom.BasicBlock;
-import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.block.custom.types.BasicBlock;
+import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.screen.elements.*;

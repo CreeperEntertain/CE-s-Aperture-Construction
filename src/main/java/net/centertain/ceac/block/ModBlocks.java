@@ -1,6 +1,6 @@
 package net.centertain.ceac.block;
 
-import net.centertain.ceac.block.custom.FillableBlock;
+import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.block.custom.PurchasingTerminal;
 import net.centertain.ceac.block.custom.material_shapes.basic_shapes.halves.*;
 import net.centertain.ceac.block.custom.material_shapes.basic_shapes.other.Eighth;

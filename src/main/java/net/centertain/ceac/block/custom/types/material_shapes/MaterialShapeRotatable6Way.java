@@ -1,4 +1,4 @@
-package net.centertain.ceac.block.custom;
+package net.centertain.ceac.block.custom.types.material_shapes;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

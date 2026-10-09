@@ -1,5 +1,6 @@
-package net.centertain.ceac.block.custom;
+package net.centertain.ceac.block.custom.types;
 
+import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;

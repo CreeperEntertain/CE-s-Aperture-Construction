@@ -1,6 +1,6 @@
 package net.centertain.ceac.material.network;
 
-import net.centertain.ceac.block.custom.BasicBlock;
+import net.centertain.ceac.block.custom.types.BasicBlock;
 import net.centertain.ceac.item.custom.BasicItem;
 import net.centertain.ceac.material.PlayerCurrency;
 import net.centertain.ceac.network.ModNetworking;
@@ -15,7 +15,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;

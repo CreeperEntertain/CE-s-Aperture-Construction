@@ -1,7 +1,7 @@
 package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.constants.CategoryConstants;
-import net.centertain.ceac.block.custom.MaterialShape;
+import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.material.*;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;

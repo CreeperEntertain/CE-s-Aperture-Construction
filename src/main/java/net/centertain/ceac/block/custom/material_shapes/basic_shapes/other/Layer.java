@@ -1,6 +1,6 @@
 package net.centertain.ceac.block.custom.material_shapes.basic_shapes.other;
 
-import net.centertain.ceac.block.custom.FillableMaterialShapeTemplate24Way;
+import net.centertain.ceac.block.custom.types.fillable.FillableMaterialShapeTemplate24Way;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.material.shapes.loaders.basic_shapes.other.LayerLoader;
 import net.centertain.ceac.material.shapes.models.basic_shapes.other.LayerGeometry;

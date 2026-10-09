@@ -1,6 +1,6 @@
 package net.centertain.ceac.block.custom.material_shapes.basic_shapes.halves;
 
-import net.centertain.ceac.block.custom.FillableMaterialShapeTemplate24Way;
+import net.centertain.ceac.block.custom.types.fillable.FillableMaterialShapeTemplate24Way;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.material.shapes.loaders.basic_shapes.halves.BitPillarLoader;
 import net.centertain.ceac.material.shapes.models.basic_shapes.halves.BitPillarGeometry;

@@ -1,4 +1,4 @@
-package net.centertain.ceac.block.custom;
+package net.centertain.ceac.block.custom.types.fillable;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;

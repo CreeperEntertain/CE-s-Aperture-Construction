@@ -1,6 +1,6 @@
 package net.centertain.ceac.screen;
 
-import net.centertain.ceac.block.custom.BasicBlock;
+import net.centertain.ceac.block.custom.types.BasicBlock;
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.custom.BasicItem;
 import net.centertain.ceac.material.PlayerCurrency;
