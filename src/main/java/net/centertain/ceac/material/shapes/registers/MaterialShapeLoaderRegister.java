@@ -12,5 +12,6 @@ public final class MaterialShapeLoaderRegister {
         HalfSlopes.register(event);
         ThirdSlopes.register(event);
         QuarterSlopes.register(event);
+        Round.register(event);
     }
 }
