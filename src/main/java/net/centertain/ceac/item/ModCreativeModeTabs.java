@@ -42,6 +42,11 @@ public final class ModCreativeModeTabs {
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD.get());
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_STAIRS.get());
 
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_SIXTEENTH.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_SIXTEENTH_PILLAR.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_STAIRS.get());
+
 
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_SLOPE.get());
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_FULL_CORNER_OUTER.get());

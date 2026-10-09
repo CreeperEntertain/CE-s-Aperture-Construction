@@ -17,6 +17,11 @@
     "ceac:material_shape_third",
     "ceac:material_shape_third_stairs",
 
+    "ceac:material_shape_sixteenth",
+    "ceac:material_shape_sixteenth_pillar",
+    "ceac:material_shape_quarter",
+    "ceac:material_shape_quarter_stairs",
+
 
     "ceac:material_shape_slope",
     "ceac:material_shape_full_corner_outer",

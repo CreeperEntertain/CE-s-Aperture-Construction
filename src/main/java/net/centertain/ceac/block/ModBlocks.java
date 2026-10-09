@@ -2,8 +2,12 @@ package net.centertain.ceac.block;
 
 import net.centertain.ceac.block.custom.FillableBlock;
 import net.centertain.ceac.block.custom.PurchasingTerminal;
-import net.centertain.ceac.block.custom.material_shapes.basic_shapes.bit.*;
-import net.centertain.ceac.block.custom.material_shapes.basic_shapes.ninth.*;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.halves.*;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.quarters.Quarter;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.quarters.QuarterStairs;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.quarters.Sixteenth;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.quarters.SixteenthPillar;
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.thirds.*;
 import net.centertain.ceac.block.custom.material_shapes.full_slopes.*;
 import net.centertain.ceac.block.custom.material_shapes.half_slopes.bottom.*;
 import net.centertain.ceac.block.custom.material_shapes.half_slopes.top.*;
@@ -52,6 +56,11 @@ public final class ModBlocks {
     public static final RegistryObject<Block> MATERIAL_SHAPE_NINTH_PILLAR = registerBlock("material_shape_ninth_pillar", () -> new NinthPillar(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD = registerBlock("material_shape_third", () -> new Third(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_STAIRS = registerBlock("material_shape_third_stairs", () -> new ThirdStairs(MATERIAL_SHAPE_PROPERTIES));
+
+    public static final RegistryObject<Block> MATERIAL_SHAPE_SIXTEENTH = registerBlock("material_shape_sixteenth", () -> new Sixteenth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_SIXTEENTH_PILLAR = registerBlock("material_shape_sixteenth_pillar", () -> new SixteenthPillar(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER = registerBlock("material_shape_quarter", () -> new Quarter(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_STAIRS = registerBlock("material_shape_quarter_stairs", () -> new QuarterStairs(MATERIAL_SHAPE_PROPERTIES));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope", () -> new Slope(MATERIAL_SHAPE_PROPERTIES));

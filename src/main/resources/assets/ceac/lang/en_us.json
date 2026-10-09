@@ -34,6 +34,11 @@
   "block.ceac.material_shape_third": "Material Shape: Third",
   "block.ceac.material_shape_third_stairs": "Material Shape: Third Stairs",
 
+  "block.ceac.material_shape_sixteenth": "Material Shape: Sixteenth",
+  "block.ceac.material_shape_sixteenth_pillar": "Material Shape: Sixteenth (Pillar)",
+  "block.ceac.material_shape_quarter": "Material Shape: Quarter",
+  "block.ceac.material_shape_quarter_stairs": "Material Shape: Quarter Stairs",
+
 
   "block.ceac.material_shape_slope": "Material Shape: Slope",
   "block.ceac.material_shape_full_corner_outer": "Material Shape: Full Corner (Outer)",
