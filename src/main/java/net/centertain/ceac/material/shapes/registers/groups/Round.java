@@ -18,7 +18,7 @@ public final class Round {
         event.register("material_shape_sphere", SphereLoader.INSTANCE);
         event.register("material_shape_cylinder", CylinderLoader.INSTANCE);
         event.register("material_shape_cylinder_end", CylinderEndLoader.INSTANCE);
-        event.register("material_shaoe_cylinder_bend", CylinderBendLoader.INSTANCE);
+        event.register("material_shape_cylinder_bend", CylinderBendLoader.INSTANCE);
         event.register("material_shape_cylinder_t_cross", CylinderTCrossLoader.INSTANCE);
 
         event.register("material_shape_thin_cylinder", ThinCylinderLoader.INSTANCE);
