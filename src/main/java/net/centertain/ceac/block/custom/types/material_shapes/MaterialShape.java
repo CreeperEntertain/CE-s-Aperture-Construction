@@ -496,9 +496,9 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                             Vec3.ZERO,
                             axis
                     ));
-
-                return List.copyOf(result);
             }
+
+            return List.copyOf(result);
         }
 
         if (!(this instanceof FillableBlock fillable)) {
