@@ -2,6 +2,7 @@ package net.centertain.ceac.material.shapes;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.centertain.ceac.block.custom.types.combinable.CombinableBlock;
 import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.centertain.ceac.block.custom.types.material_shapes.MaterialShapeRotatable;
@@ -94,6 +95,26 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
         );
         List<BakedQuad> result = new ArrayList<>(original.size());
 
+        if (state.getBlock() instanceof CombinableBlock combinable) {
+            for (Direction.Axis axis : Direction.Axis.values()) {
+                if (!combinable.isFilled(state, axis))
+                    continue;
+                int pieceIndex = CombinableBlock.pieceIndexForAxis(axis);
+                for (BakedQuad quad : original) {
+                    int faceIndex = findFace(quad);
+                    BakedQuad pieceQuad = quad;
+                    if (faceIndex >= 0 && materials != null) {
+                        MaterialShapeBlockEntity.MaterialAssignment assignment =
+                                materials.get(new MaterialFaceKey(pieceIndex, faceIndex));
+                        if (assignment != null)
+                            pieceQuad = retexture(pieceQuad, assignment);
+                    }
+                    result.add(transformQuad(pieceQuad, state, axis));
+                }
+            }
+            return result;
+        }
+
         for (BakedQuad quad : original) {
             int faceIndex = findFace(quad);
 
@@ -109,6 +130,72 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
         }
 
         return result;
+    }
+
+    @SuppressWarnings("ExtractMethodRecommender")
+    private BakedQuad transformQuad(
+            BakedQuad quad,
+            BlockState state,
+            Direction.Axis axis
+    ) {
+        if (axis == Direction.Axis.Y)
+            return transformQuad(quad, state);
+
+        int[] vertices = quad.getVertices().clone();
+        VertexFormat format = DefaultVertexFormat.BLOCK;
+        int stride = format.getIntegerSize();
+
+        Vec3[] transformed = new Vec3[4];
+
+        for (int i = 0; i < 4; i++) {
+            int offset = i * stride;
+            Vec3 point = new Vec3(
+                    Float.intBitsToFloat(vertices[offset]),
+                    Float.intBitsToFloat(vertices[offset + 1]),
+                    Float.intBitsToFloat(vertices[offset + 2])
+            );
+            Vec3 axisPoint = switch (axis) {
+                case X -> new Vec3(point.y, 1.0 - point.x, point.z);
+                case Z -> new Vec3(point.x, 1.0 - point.z, point.y);
+                default -> throw new IllegalStateException("Unexpected value: " + axis);
+            };
+            transformed[i] = shape.transformPointToWorld(state, axisPoint);
+            vertices[offset] = Float.floatToRawIntBits((float) transformed[i].x);
+            vertices[offset + 1] = Float.floatToRawIntBits((float) transformed[i].y);
+            vertices[offset + 2] = Float.floatToRawIntBits((float) transformed[i].z);
+        }
+
+        int uvOffset = format.getOffset(2) / Integer.BYTES;
+        int normalOffset = format.getOffset(4) / Integer.BYTES;
+        TextureAtlasSprite sprite = quad.getSprite();
+
+        Vec3 normal = transformed[1]
+                .subtract(transformed[0])
+                .cross(transformed[2].subtract(transformed[0]))
+                .normalize();
+        Direction projection = Direction.getNearest(
+                normal.x,
+                normal.y * (1.0 - DIRECTION_BIAS),
+                normal.z
+        );
+
+        for (int i = 0; i < 4; i++) {
+            int offset = i * stride;
+            double u = getTextureU(projection, transformed[i]);
+            double v = getTextureV(projection, transformed[i]);
+            vertices[offset + uvOffset] = Float.floatToRawIntBits(sprite.getU(u * 16.0));
+            vertices[offset + uvOffset + 1] = Float.floatToRawIntBits(sprite.getV(v * 16.0));
+            vertices[offset + normalOffset] = packNormal(normal);
+        }
+
+        return new BakedQuad(
+                vertices,
+                quad.getTintIndex(),
+                Direction.getNearest(normal.x, normal.y, normal.z),
+                sprite,
+                quad.isShade(),
+                quad.hasAmbientOcclusion()
+        );
     }
 
     private BakedQuad transformQuad(
