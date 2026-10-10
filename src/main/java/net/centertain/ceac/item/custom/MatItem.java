@@ -362,9 +362,7 @@ public abstract class MatItem extends BasicItem {
         for (int i = 0; i < 16; i++) {
             Vec3 point = shape.transformPointToWorld(
                     state,
-                    MaterialShape
-                            .randomPointOnFace(instance.face(), random)
-                            .add(instance.offset())
+                    instance.transformPoint(MaterialShape.randomPointOnFace(instance.face(), random))
             );
 
             double xd = random.nextDouble() - 0.5D;

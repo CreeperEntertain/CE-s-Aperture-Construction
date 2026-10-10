@@ -3,6 +3,7 @@ package net.centertain.ceac.block.custom.types.material_shapes;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.block.custom.types.BasicBlock;
+import net.centertain.ceac.block.custom.types.combinable.CombinableBlock;
 import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.constants.PriceConstants;
@@ -478,6 +479,28 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
             BlockGetter level,
             BlockPos pos
     ) {
+        if (this instanceof CombinableBlock combinable) {
+            List<MaterialShapeFaceInstance> result = new ArrayList<>();
+
+            for (Direction.Axis axis : Direction.Axis.values()) {
+                if (!combinable.isFilled(state, axis))
+                    continue;
+
+                int pieceIndex = CombinableBlock.pieceIndexForAxis(axis);
+
+                for (int faceIndex = 0; faceIndex < faces.size(); faceIndex++)
+                    result.add(new MaterialShapeFaceInstance(
+                            faces.get(faceIndex),
+                            pieceIndex,
+                            faceIndex,
+                            Vec3.ZERO,
+                            axis
+                    ));
+
+                return List.copyOf(result);
+            }
+        }
+
         if (!(this instanceof FillableBlock fillable)) {
             List<MaterialShapeFaceInstance> result = new ArrayList<>(faces.size());
 
