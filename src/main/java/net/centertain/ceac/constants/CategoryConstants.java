@@ -35,6 +35,7 @@ public final class CategoryConstants {
             public static final String MISC = "Miscellaneous";
 
             public static final String BASIC = "Basic Shapes";
+            public static final String ROUND = "Round Shapes";
             public static final String SLOPES_FULL = "Full Slopes";
             public static final String SLOPES_HALF = "Half Slopes";
             public static final String SLOPES_THIRD = "Third Slopes";
@@ -43,6 +44,7 @@ public final class CategoryConstants {
             public static final List<String> SORTED = List.of(
                     MISC,
                     BASIC,
+                    ROUND,
                     SLOPES_FULL,
                     SLOPES_HALF,
                     SLOPES_THIRD,

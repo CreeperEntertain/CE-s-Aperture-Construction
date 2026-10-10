@@ -43,6 +43,9 @@
   "block.ceac.material_shape_layer": "Material Shape: Layer",
 
 
+  "block.ceac.material_shape_cylinder": "Material Shape: Cylinder",
+
+
   "block.ceac.material_shape_slope": "Material Shape: Slope",
   "block.ceac.material_shape_full_corner_outer": "Material Shape: Full Corner (Outer)",
   "block.ceac.material_shape_full_corner_inner": "Material Shape: Full Corner (Inner)",

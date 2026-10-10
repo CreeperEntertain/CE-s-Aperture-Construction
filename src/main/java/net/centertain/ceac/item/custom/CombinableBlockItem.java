@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -17,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class CombinableBlockItem extends BlockItem {
     public CombinableBlockItem(
-            CombinableBlock block,
+            Block block,
             Properties properties
     ) {
         super(block, properties);
@@ -58,7 +59,7 @@ public class CombinableBlockItem extends BlockItem {
             Direction clickedFace,
             UseOnContext context
     ) {
-        BooleanProperty property = CombinableBlock.propertyForAxis(clickedFace.getAxis());
+        BooleanProperty property = CombinableBlock.propertyForAxis(block.getInsertionAxis(state, clickedFace));
         if (state.getValue(property))
             return null;
 

@@ -1,5 +1,6 @@
 package net.centertain.ceac.block;
 
+import net.centertain.ceac.block.custom.material_shapes.round.Cylinder;
 import net.centertain.ceac.block.custom.types.combinable.CombinableBlock;
 import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.block.custom.PurchasingTerminal;
@@ -68,6 +69,9 @@ public final class ModBlocks {
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_EIGHTH = registerBlock("material_shape_eighth", () -> new Eighth(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_LAYER = registerBlock("material_shape_layer", () -> new Layer(MATERIAL_SHAPE_PROPERTIES));
+
+
+    public static final RegistryObject<Block> MATERIAL_SHAPE_CYLINDER = registerBlock("material_shape_cylinder", () -> new Cylinder(MATERIAL_SHAPE_PROPERTIES));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope", () -> new Slope(MATERIAL_SHAPE_PROPERTIES));
@@ -171,8 +175,8 @@ public final class ModBlocks {
             T blockInstance = block.get();
             if (blockInstance instanceof FillableBlock)
                 return new FillableBlockItem(blockInstance, new Item.Properties());
-            if (blockInstance instanceof CombinableBlock combinable)
-                return new CombinableBlockItem(combinable, new Item.Properties());
+            if (blockInstance instanceof CombinableBlock)
+                return new CombinableBlockItem(blockInstance, new Item.Properties());
             return new BlockItem(blockInstance, new Item.Properties());
         });
     }

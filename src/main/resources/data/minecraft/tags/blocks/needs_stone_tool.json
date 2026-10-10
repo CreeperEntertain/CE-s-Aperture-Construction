@@ -26,6 +26,9 @@
     "ceac:material_shape_layer",
 
 
+    "ceac:material_shape_cylinder",
+
+
     "ceac:material_shape_slope",
     "ceac:material_shape_full_corner_outer",
     "ceac:material_shape_full_corner_inner",
