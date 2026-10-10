@@ -1,5 +1,6 @@
 package net.centertain.ceac.block;
 
+import net.centertain.ceac.block.custom.types.combinable.CombinableBlock;
 import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.block.custom.PurchasingTerminal;
 import net.centertain.ceac.block.custom.material_shapes.basic_shapes.halves.*;
@@ -21,6 +22,7 @@ import net.centertain.ceac.block.custom.material_shapes.third_slopes.first.*;
 import net.centertain.ceac.block.custom.material_shapes.third_slopes.second.*;
 import net.centertain.ceac.block.custom.material_shapes.third_slopes.third.*;
 import net.centertain.ceac.item.ModItems;
+import net.centertain.ceac.item.custom.CombinableBlockItem;
 import net.centertain.ceac.item.custom.FillableBlockItem;
 import net.centertain.ceac.item.custom.PurchasingTerminalItem;
 import net.minecraft.world.item.BlockItem;
@@ -169,6 +171,8 @@ public final class ModBlocks {
             T blockInstance = block.get();
             if (blockInstance instanceof FillableBlock)
                 return new FillableBlockItem(blockInstance, new Item.Properties());
+            if (blockInstance instanceof CombinableBlock combinable)
+                return new CombinableBlockItem(combinable, new Item.Properties());
             return new BlockItem(blockInstance, new Item.Properties());
         });
     }
