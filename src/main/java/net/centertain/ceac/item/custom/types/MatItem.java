@@ -340,7 +340,7 @@ public abstract class MatItem extends BasicItem {
                 : null;
         Vec3 center = wholePiece && !pieceVolume.isEmpty()
                 ? pieceVolume.bounds().getCenter()
-                : shape.transformDirectionToWorld(state, faceCenter(instance));
+                : shape.transformPointToWorld(state, faceCenter(instance));
         center = center.add(pos.getX(), pos.getY(), pos.getZ());
 
         SoundType soundType = material.get().getSoundType();
