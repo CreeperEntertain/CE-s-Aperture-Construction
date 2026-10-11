@@ -609,14 +609,12 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                         y0 = v0.z;
                         x1 = v1.y;
                         y1 = v1.z;
-                    }
-                    case 1 -> {
+                    } case 1 -> {
                         x0 = v0.x;
                         y0 = v0.z;
                         x1 = v1.x;
                         y1 = v1.z;
-                    }
-                    default -> {
+                    } default -> {
                         x0 = v0.x;
                         y0 = v0.y;
                         x1 = v1.x;
@@ -660,6 +658,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         return closestFace;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean canApplyMaterial(
             BlockState state,
             MaterialShapeFace face,
