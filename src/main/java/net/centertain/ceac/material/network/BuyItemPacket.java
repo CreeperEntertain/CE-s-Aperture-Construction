@@ -1,7 +1,7 @@
 package net.centertain.ceac.material.network;
 
 import net.centertain.ceac.block.custom.types.BasicBlock;
-import net.centertain.ceac.item.custom.BasicItem;
+import net.centertain.ceac.item.custom.types.BasicItem;
 import net.centertain.ceac.material.PlayerCurrency;
 import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.sound.ModSounds;

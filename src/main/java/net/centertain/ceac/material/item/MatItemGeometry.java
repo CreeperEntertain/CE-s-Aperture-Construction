@@ -1,6 +1,6 @@
 package net.centertain.ceac.material.item;
 
-import net.centertain.ceac.item.custom.MatItem;
+import net.centertain.ceac.item.custom.types.MatItem;
 import net.centertain.ceac.material.Material;
 import net.centertain.ceac.material.utility.ModelHelper;
 import net.minecraft.client.renderer.block.model.BakedQuad;

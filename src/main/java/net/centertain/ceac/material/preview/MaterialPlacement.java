@@ -1,6 +1,6 @@
 package net.centertain.ceac.material.preview;
 
-import net.centertain.ceac.item.custom.MatItem;
+import net.centertain.ceac.item.custom.types.MatItem;
 import net.centertain.ceac.material.network.MaterialOffsetPacket;
 import net.centertain.ceac.network.ModNetworking;
 import net.minecraft.client.KeyMapping;

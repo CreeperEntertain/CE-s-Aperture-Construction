@@ -3,7 +3,7 @@ package net.centertain.ceac.client;
 import net.centertain.ceac.decal.ScraperXray;
 import net.centertain.ceac.decal.client.DecalPlacement;
 import net.centertain.ceac.item.custom.DecalItem;
-import net.centertain.ceac.item.custom.MatItem;
+import net.centertain.ceac.item.custom.types.MatItem;
 import net.centertain.ceac.item.custom.ScraperItem;
 import net.centertain.ceac.material.preview.MaterialPlacement;
 import net.minecraft.client.Minecraft;

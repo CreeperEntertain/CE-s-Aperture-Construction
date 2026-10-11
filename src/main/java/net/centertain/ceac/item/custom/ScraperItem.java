@@ -3,6 +3,7 @@ package net.centertain.ceac.item.custom;
 import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.decal.Decal;
 import net.centertain.ceac.decal.client.ClientDecals;
+import net.centertain.ceac.item.custom.types.BasicItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;

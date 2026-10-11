@@ -8,6 +8,7 @@ import net.centertain.ceac.decal.DecalPreviewer;
 import net.centertain.ceac.decal.client.ClientDecals;
 import net.centertain.ceac.decal.client.DecalLoader;
 import net.centertain.ceac.decal.client.DecalPlacement;
+import net.centertain.ceac.item.custom.types.BasicItem;
 import net.centertain.ceac.screen.DecalItemScreen;
 import net.centertain.ceac.sound.ModSounds;
 import net.centertain.ceac.utility.Soundworks;

@@ -2,7 +2,7 @@ package net.centertain.ceac.screen;
 
 import net.centertain.ceac.block.custom.types.BasicBlock;
 import net.centertain.ceac.constants.GuiConstants;
-import net.centertain.ceac.item.custom.BasicItem;
+import net.centertain.ceac.item.custom.types.BasicItem;
 import net.centertain.ceac.material.PlayerCurrency;
 import net.centertain.ceac.material.network.BuyItemPacket;
 import net.centertain.ceac.network.ModNetworking;

@@ -1,7 +1,7 @@
 package net.centertain.ceac.item.custom.materials;
 
 import net.centertain.ceac.constants.CategoryConstants;
-import net.centertain.ceac.item.custom.MatItem;
+import net.centertain.ceac.item.custom.types.MatItem;
 import net.centertain.ceac.material.ModMaterials;
 
 public class ObservationConcreteWallMatItem extends MatItem {

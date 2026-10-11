@@ -2,6 +2,7 @@ package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.centertain.ceac.constants.PriceConstants;
+import net.centertain.ceac.item.custom.types.BasicItem;
 import net.centertain.ceac.sound.ModSounds;
 import net.centertain.ceac.utility.Mathworks;
 import net.minecraft.client.Minecraft;

@@ -1,4 +1,4 @@
-package net.centertain.ceac.item.custom;
+package net.centertain.ceac.item.custom.types;
 
 import net.centertain.ceac.block.custom.types.combinable.CombinableBlock;
 import net.minecraft.core.BlockPos;

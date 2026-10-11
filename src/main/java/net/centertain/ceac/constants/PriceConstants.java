@@ -1,7 +1,7 @@
 package net.centertain.ceac.constants;
 
 import net.centertain.ceac.block.custom.types.BasicBlock;
-import net.centertain.ceac.item.custom.BasicItem;
+import net.centertain.ceac.item.custom.types.BasicItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

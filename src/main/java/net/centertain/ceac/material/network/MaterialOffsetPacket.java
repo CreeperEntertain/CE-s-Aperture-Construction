@@ -1,6 +1,6 @@
 package net.centertain.ceac.material.network;
 
-import net.centertain.ceac.item.custom.MatItem;
+import net.centertain.ceac.item.custom.types.MatItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;

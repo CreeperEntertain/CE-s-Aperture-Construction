@@ -2,15 +2,13 @@ package net.centertain.ceac.screen.templates.pages;
 
 import net.centertain.ceac.constants.GuiConstants;
 import net.centertain.ceac.item.ModItems;
-import net.centertain.ceac.item.custom.BasicItem;
-import net.centertain.ceac.item.custom.MatItem;
-import net.centertain.ceac.screen.PurchasingTermialScreen;
+import net.centertain.ceac.item.custom.types.BasicItem;
+import net.centertain.ceac.item.custom.types.MatItem;
 import net.centertain.ceac.screen.elements.FlowPanel;
 import net.centertain.ceac.screen.elements.Page;
 import net.centertain.ceac.screen.elements.ScrollContainer;
 import net.centertain.ceac.screen.framework.Element;
 import net.centertain.ceac.screen.templates.PurchaseButton;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
