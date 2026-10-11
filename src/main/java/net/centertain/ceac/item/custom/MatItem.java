@@ -1,5 +1,7 @@
 package net.centertain.ceac.item.custom;
 
+import net.centertain.ceac.block.custom.types.combinable.CombinableBlock;
+import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.constants.CategoryConstants;
 import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.centertain.ceac.constants.PriceConstants;
@@ -7,6 +9,7 @@ import net.centertain.ceac.material.*;
 import net.centertain.ceac.material.particle.MaterialBreakingParticle;
 import net.centertain.ceac.material.preview.MaterialPlacement;
 import net.centertain.ceac.material.preview.MaterialPreviewer;
+import net.centertain.ceac.material.shapes.MaterialFaceKey;
 import net.centertain.ceac.material.shapes.MaterialShapeBlockEntity;
 import net.centertain.ceac.material.shapes.MaterialShapeFace;
 import net.centertain.ceac.material.shapes.MaterialShapeFaceInstance;
@@ -30,14 +33,19 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public abstract class MatItem extends BasicItem {
@@ -199,9 +207,8 @@ public abstract class MatItem extends BasicItem {
         }
 
         MaterialShapeFaceInstance instance = faceHit.instance;
-        MaterialShapeFace face = instance.face();
 
-        Vector2i materialCoordinate = material.get().getCoordinate(face, pos, state);
+        Vector2i materialCoordinate = material.get().getCoordinate(instance, pos, state);
 
         MaterialPreviewer.update(
                 material.get(),
@@ -257,7 +264,8 @@ public abstract class MatItem extends BasicItem {
         if (!shape.canApplyMaterial(state, face, context.getItemInHand()))
             return InteractionResult.PASS;
 
-        Vector2i materialCoordinate = material.get().getCoordinate(face, pos, state);
+        boolean wholePiece = player.isShiftKeyDown();
+        Vector2i materialCoordinate = material.get().getCoordinate(instance, pos, state);
 
         if (!level.isClientSide)
             serverSide(
@@ -269,7 +277,8 @@ public abstract class MatItem extends BasicItem {
                     state,
                     context.getItemInHand(),
                     materialCoordinate,
-                    instance
+                    instance,
+                    wholePiece
             );
 
         spawnMaterialParticles(
@@ -279,7 +288,8 @@ public abstract class MatItem extends BasicItem {
                 instance,
                 shape,
                 context.getItemInHand(),
-                materialCoordinate
+                materialCoordinate,
+                wholePiece
         );
 
         return InteractionResult.sidedSuccess(level.isClientSide);
@@ -294,31 +304,45 @@ public abstract class MatItem extends BasicItem {
             BlockState state,
             ItemStack stack,
             Vector2i materialCoordinate,
-            MaterialShapeFaceInstance instance
+            MaterialShapeFaceInstance instance,
+            boolean wholePiece
     ) {
-        blockEntity.setMaterial(
-                instance.key(),
-                material.get(),
-                getMaterialCoordinateWithOffset(stack, materialCoordinate)
-        );
+        if (wholePiece) {
+            Map<MaterialFaceKey, MaterialShapeBlockEntity.MaterialAssignment> assignments = new HashMap<>();
+            for (MaterialShapeFaceInstance target : shape.getFaceInstances(state, level, pos)) {
+                if (target.pieceIndex() != instance.pieceIndex())
+                    continue;
 
-        blockEntity.setChanged();
-        blockEntity.requestModelDataUpdate();
+                MaterialShapeFace targetFace = target.face();
+                if (!shape.canApplyMaterial(state, targetFace, stack))
+                    continue;
 
-        level.sendBlockUpdated(
-                pos,
-                state,
-                state,
-                Block.UPDATE_CLIENTS
-        );
-
-        Vec3 center = shape
-                .transformPointToWorld(state, faceCenter(instance))
-                .add(
-                        pos.getX(),
-                        pos.getY(),
-                        pos.getZ()
+                Vector2i coordinate = getMaterialCoordinateWithOffset(
+                        stack,
+                        material.get().getCoordinate(target, pos, state)
                 );
+
+                assignments.put(target.key(), new MaterialShapeBlockEntity.MaterialAssignment(
+                        material.get(),
+                        coordinate.x,
+                        coordinate.y
+                ));
+            }
+            blockEntity.setMaterials(assignments);
+        } else
+            blockEntity.setMaterial(
+                    instance.key(),
+                    material.get(),
+                    getMaterialCoordinateWithOffset(stack, materialCoordinate)
+            );
+
+        VoxelShape pieceVolume = wholePiece
+                ? getPieceVolume(shape, state, level, pos, instance)
+                : null;
+        Vec3 center = wholePiece && !pieceVolume.isEmpty()
+                ? pieceVolume.bounds().getCenter()
+                : shape.transformDirectionToWorld(state, faceCenter(instance));
+        center = center.add(pos.getX(), pos.getY(), pos.getZ());
 
         SoundType soundType = material.get().getSoundType();
 
@@ -341,29 +365,29 @@ public abstract class MatItem extends BasicItem {
             MaterialShapeFaceInstance instance,
             MaterialShape shape,
             ItemStack stack,
-            Vector2i materialCoordinate
+            Vector2i materialCoordinate,
+            boolean wholePiece
     ) {
         if (!(level instanceof ClientLevel clientLevel))
             return;
 
         Vector2i coordinate = getMaterialCoordinateWithOffset(stack, materialCoordinate);
-
         ResourceLocation texture = material.get().getTexture(coordinate);
-
         if (texture == null)
             return;
 
         TextureAtlasSprite sprite = Minecraft.getInstance()
                 .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
                 .apply(texture);
-
         RandomSource random = clientLevel.getRandom();
+        VoxelShape pieceVolume = wholePiece ? getPieceVolume(shape, state, level, pos, instance) : null;
 
         for (int i = 0; i < 16; i++) {
-            Vec3 point = shape.transformPointToWorld(
-                    state,
-                    instance.transformPoint(MaterialShape.randomPointOnFace(instance.face(), random))
-            );
+            Vec3 point = wholePiece
+                    ? randomPointInVolume(pieceVolume, random)
+                    : shape.transformPointToWorld(state, instance.transformPoint(MaterialShape.randomPointOnFace(
+                            instance.face(), random
+                    )));
 
             double xd = random.nextDouble() - 0.5D;
             double yd = random.nextDouble() - 0.5D;
@@ -382,6 +406,71 @@ public abstract class MatItem extends BasicItem {
                     sprite
             ));
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    private VoxelShape getPieceVolume(
+            MaterialShape shape,
+            BlockState state,
+            BlockGetter level,
+            BlockPos pos,
+            MaterialShapeFaceInstance instance
+    ) {
+        if (shape instanceof CombinableBlock combinable)
+            return combinable.getAxisShape(state, instance.axis());
+
+        if (shape instanceof FillableBlock fillable) {
+            FillableBlock.FillDefinition definition = fillable.getFillDefinition(
+                    state, level, pos, CollisionContext.empty()
+            );
+            return fillable.getFillCellShape(state, definition, instance.pieceIndex());
+        }
+
+        return shape.getShape(state, level, pos, CollisionContext.empty());
+    }
+
+    private Vec3 randomPointInVolume(VoxelShape volume, RandomSource random) {
+        List<AABB> boxes = volume.toAabbs();
+        if (boxes.isEmpty())
+            return new Vec3(0.5, 0.5, 0.5);
+
+        double totalVolume = 0.0;
+        for (AABB box : boxes)
+            totalVolume += boxVolume(box);
+        if (totalVolume <= 1.0e-12)
+            return randomPointInBounds(volume.bounds(), random);
+
+        double remaining = random.nextDouble() * totalVolume;
+        AABB  lastPositiveVolumeBox = null;
+
+        for (AABB box : boxes) {
+            double boxVolume = boxVolume(box);
+            if (boxVolume <= 0.0)
+                continue;
+
+            lastPositiveVolumeBox = box;
+            if (remaining < boxVolume)
+                return randomPointInBounds(box, random);
+
+            remaining -= boxVolume;
+        }
+
+        return randomPointInBounds(lastPositiveVolumeBox == null ? volume.bounds() : lastPositiveVolumeBox, random);
+    }
+
+    private double boxVolume(AABB box) {
+        return
+                Math.max(0.0, box.maxX - box.minX) *
+                Math.max(0.0, box.maxY - box.minY) *
+                Math.max(0.0, box.maxZ - box.minZ);
+    }
+
+    private Vec3 randomPointInBounds(AABB bounds, RandomSource random) {
+        return new Vec3(
+                bounds.minX + random.nextDouble() * (bounds.maxX - bounds.minX),
+                bounds.minY + random.nextDouble() * (bounds.maxY - bounds.minY),
+                bounds.minZ + random.nextDouble() * (bounds.maxZ - bounds.minZ)
+        );
     }
 
     private Vec3 faceCenter(MaterialShapeFaceInstance instance) {

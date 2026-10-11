@@ -2,6 +2,7 @@ package net.centertain.ceac.material;
 
 import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.centertain.ceac.material.shapes.MaterialShapeFace;
+import net.centertain.ceac.material.shapes.MaterialShapeFaceInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -93,21 +94,47 @@ public abstract class Material {
     public @Nullable ResourceLocation getTexture(Vector2i coordinate) {
         return textures.get(coordinate);
     }
+    public Vector2i getTilingSize() {
+        return tilingSize;
+    }
+
     public Vector2i getCoordinate(
             MaterialShapeFace face,
             BlockPos pos,
             BlockState state
     ) {
         MaterialShape shape = face.getOwner();
-        
-        List<Vec3> vertices = face.getVertices().stream()
-                .map(vertex -> shape.transformPointToWorld(state, vertex)).toList();
+        List<Vec3> vertices = face.getVertices()
+                .stream()
+                .map(vertex -> shape.transformPointToWorld(state, vertex))
+                .toList();
+        return getCoordinate(vertices, pos);
+    }
 
+    public Vector2i getCoordinate(
+            MaterialShapeFaceInstance instance,
+            BlockPos pos,
+            BlockState state
+    ) {
+        MaterialShape shape = instance.face().getOwner();
+        List<Vec3> vertices = instance.getVertices()
+                .stream()
+                .map(vertex -> shape.transformPointToWorld(state, vertex))
+                .toList();
+        return getCoordinate(vertices, pos);
+    }
+
+    private Vector2i getCoordinate(
+            List<Vec3> vertices,
+            BlockPos pos
+    ) {
         Vec3 a = vertices.get(0);
         Vec3 b = vertices.get(1);
         Vec3 c = vertices.get(2);
 
-        Vec3 normal = b.subtract(a).cross(c.subtract(a)).normalize();
+        Vec3 normal = b.subtract(a)
+                .cross(c.subtract(a))
+                .normalize();
 
         Direction side = Direction.getNearest(
                 normal.x,
@@ -144,9 +171,6 @@ public abstract class Material {
                     Math.floorMod(-pos.getY() - 1, height)
             );
         };
-    }
-    public Vector2i getTilingSize() {
-        return tilingSize;
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted") // ?????

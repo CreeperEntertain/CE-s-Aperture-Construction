@@ -51,14 +51,22 @@ public class MaterialShapeBlockEntity extends BlockEntity {
             Material material,
             Vector2i materialCoordinate
     ) {
-        Map<MaterialFaceKey, MaterialAssignment> updated = new HashMap<>(materials);
-
-        updated.put(key, new MaterialAssignment(
-                material,
-                materialCoordinate.x,
-                materialCoordinate.y
+        setMaterials(Map.of(
+                key,
+                new MaterialAssignment(
+                        material,
+                        materialCoordinate.x,
+                        materialCoordinate.y
+                )
         ));
+    }
 
+    public void setMaterials(Map<MaterialFaceKey, MaterialAssignment> assignments) {
+        if (assignments.isEmpty())
+            return;
+
+        Map<MaterialFaceKey, MaterialAssignment> updated = new HashMap<>(materials);
+        updated.putAll(assignments);
         materials = Map.copyOf(updated);
 
         setChanged();
