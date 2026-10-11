@@ -187,5 +187,17 @@
         "stream": false
       }
     ]
+  },
+  "crowbar_clank": {
+    "subtitle": "sound.ceac.crowbar.clank",
+    "sounds": [
+      {
+        "name": "ceac:crowbar/clank",
+        "volume": 1.0,
+        "pitch": 1.0,
+        "weight": 1,
+        "stream": false
+      }
+    ]
   }
 }

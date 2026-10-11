@@ -31,6 +31,8 @@ public final class ModSounds {
 
     public static final RegistryObject<SoundEvent> WRENCH_ROTATE = register("wrench_rotate");
 
+    public static final RegistryObject<SoundEvent> CROWBAR_CLANK = register("crowbar_clank");
+
 
     private static RegistryObject<SoundEvent> register(String name) {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(MOD_ID, name);

@@ -150,5 +150,7 @@
   "sound.ceac.purchasing_terminal.purchase": "Item purchased",
   "sound.ceac.purchasing_terminal.sell": "Item sold",
 
-  "sound.ceac.wrench.rotate": "Wrench used"
+  "sound.ceac.wrench.rotate": "Wrench used",
+
+  "sound.ceac.crowbar.clank": "CLANK!"
 }
