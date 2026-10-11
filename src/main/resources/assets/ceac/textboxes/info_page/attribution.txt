@@ -1,6 +1,8 @@
 This mod is heavily inspired by the works of the Valve corporation, Portal, and Portal 2 respectively. This mod is neither endorsed nor permitted by the mentioned entity, and is purely created for the intent of artistic expression. At any further questions in this regard, I suggest sending a message request to any of the available contact methods.
 
 
+This mod makes use of LittleBigPlanet UI sound effects for decal related sounds. I do not claim affiliation to the game, nor do I claim endorsement. This is purely done out of reasons of artistic expression, and to reference the works of MediaMolecule and Sumo Digital in a lighthearted and respectful manner.
+
 Additionally, This project makes use of the Bitfont project released and maintained by thecodewarrior. All rights relating to that software's libraries not merely accessed and utilized in this project belong to them in whole. I do not claim ownership of said work. This project purely makes use of the Bitfont project for the purpose of custom font availability.
 
 A license for the Bitfont project can be found inside the JAR file under:
