@@ -1,6 +1,11 @@
 package net.centertain.ceac.block;
 
-import net.centertain.ceac.block.custom.material_shapes.round.Cylinder;
+import net.centertain.ceac.block.custom.material_shapes.round.cylinders.*;
+import net.centertain.ceac.block.custom.material_shapes.round.pipes_arches.*;
+import net.centertain.ceac.block.custom.material_shapes.round.thin_cylinders.ThinCylinder;
+import net.centertain.ceac.block.custom.material_shapes.round.thin_cylinders.ThinCylinderBend;
+import net.centertain.ceac.block.custom.material_shapes.round.thin_cylinders.ThinCylinderEnd;
+import net.centertain.ceac.block.custom.material_shapes.round.thin_cylinders.ThinCylinderTCross;
 import net.centertain.ceac.block.custom.types.combinable.CombinableBlock;
 import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.block.custom.PurchasingTerminal;
@@ -71,7 +76,22 @@ public final class ModBlocks {
     public static final RegistryObject<Block> MATERIAL_SHAPE_LAYER = registerBlock("material_shape_layer", () -> new Layer(MATERIAL_SHAPE_PROPERTIES));
 
 
+    public static final RegistryObject<Block> MATERIAL_SHAPE_EIGHTH_SPHERE = registerBlock("material_shape_eighth_sphere", () -> new EighthSphere(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CYLINDER = registerBlock("material_shape_quarter_cylinder", () -> new QuarterCylinder(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ARCH = registerBlock("material_shape_quarter_arch", () -> new QuarterArch(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ARCH_OUTER = registerBlock("material_shape_quarter_arch_outer", () -> new QuarterArchOuter(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ARCH_INNER = registerBlock("material_shape_quarter_arch_inner", () -> new QuarterArchInner(MATERIAL_SHAPE_PROPERTIES));
+
+    public static final RegistryObject<Block> MATERIAL_SHAPE_SPHERE = registerBlock("material_shape_sphere", () -> new Sphere(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_CYLINDER = registerBlock("material_shape_cylinder", () -> new Cylinder(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_CYLINDER_END = registerBlock("material_shape_cylinder_end", () -> new CylinderEnd(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_CYLINDER_BEND = registerBlock("material_shape_cylinder_bend", () -> new CylinderBend(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_CYLINDER_T_CROSS = registerBlock("material_shape_cylinder_t_cross", () -> new CylinderTCross(MATERIAL_SHAPE_PROPERTIES));
+
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIN_CYLINDER = registerBlock("material_shape_thin_cylinder", () -> new ThinCylinder(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIN_CYLINDER_END = registerBlock("material_shape_thin_cylinder_end", () -> new ThinCylinderEnd(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIN_CYLINDER_BEND = registerBlock("material_shape_thin_cylinder_bend", () -> new ThinCylinderBend(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIN_CYLINDER_T_CROSS = registerBlock("material_shape_thin_cylinder_t_cross", () -> new ThinCylinderTCross(MATERIAL_SHAPE_PROPERTIES));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope", () -> new Slope(MATERIAL_SHAPE_PROPERTIES));

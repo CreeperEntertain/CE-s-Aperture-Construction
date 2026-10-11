@@ -43,7 +43,22 @@
   "block.ceac.material_shape_layer": "Material Shape: Layer",
 
 
+  "block.ceac.material_shape_eighth_sphere": "Material Shape: Sphere (Eighth)",
+  "block.ceac.material_shape_quarter_cylinder": "Material Shape: Cylinder (Quarter)",
+  "block.ceac.material_shape_quarter_arch": "Material Shape: Arch (Quarter)",
+  "block.ceac.material_shape_quarter_arch_outer": "Material Shape: Arch (Quarter, Outer)",
+  "block.ceac.material_shape_quarter_arch_inner": "Material Shape: Arch (Quarter, Inner)",
+
+  "block.ceac.material_shape_sphere": "Material Shape: Sphere",
   "block.ceac.material_shape_cylinder": "Material Shape: Cylinder",
+  "block.ceac.material_shape_cylinder_end": "Material Shape: Cylinder (End)",
+  "block.ceac.material_shape_cylinder_bend": "Material Shape: Cylinder (Corner)",
+  "block.ceac.material_shape_cylinder_t_cross": "Material Shape: Cylinder (T-Cross)",
+
+  "block.ceac.material_shape_thin_cylinder": "Material Shape: Cylinder (Thin)",
+  "block.ceac.material_shape_thin_cylinder_end": "Material Shape: Cylinder (Thin, End)",
+  "block.ceac.material_shape_thin_cylinder_bend": "Material Shape: Cylinder (Thin, Corner)",
+  "block.ceac.material_shape_thin_cylinder_t_cross": "Material Shape: Cylinder (Thin, T-Cross)",
 
 
   "block.ceac.material_shape_slope": "Material Shape: Slope",

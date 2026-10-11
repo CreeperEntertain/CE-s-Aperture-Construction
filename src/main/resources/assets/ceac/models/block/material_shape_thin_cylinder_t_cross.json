@@ -1,0 +1,6 @@
+{
+  "loader": "ceac:material_shape_thin_cylinder_t_cross",
+  "textures": {
+    "texture": "ceac:block/material_shape"
+  }
+}

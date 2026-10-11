@@ -1,0 +1,6 @@
+{
+  "loader": "ceac:material_shape_thin_cylinder_end",
+  "textures": {
+    "texture": "ceac:block/material_shape"
+  }
+}

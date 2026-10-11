@@ -1,0 +1,6 @@
+{
+  "loader": "ceac:material_shape_quarter_cylinder",
+  "textures": {
+    "texture": "ceac:block/material_shape"
+  }
+}

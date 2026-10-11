@@ -1,0 +1,6 @@
+{
+  "loader": "ceac:material_shape_eighth_sphere",
+  "textures": {
+    "texture": "ceac:block/material_shape"
+  }
+}

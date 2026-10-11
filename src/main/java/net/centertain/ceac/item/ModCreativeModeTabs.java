@@ -51,7 +51,22 @@ public final class ModCreativeModeTabs {
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_LAYER.get());
 
 
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_EIGHTH_SPHERE.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CYLINDER.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ARCH.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ARCH_OUTER.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ARCH_INNER.get());
+
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_SPHERE.get());
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER_END.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER_BEND.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER_T_CROSS.get());
+
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER_END.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER_BEND.get());
+                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER_T_CROSS.get());
 
 
                         pOutput.accept(ModBlocks.MATERIAL_SHAPE_SLOPE.get());

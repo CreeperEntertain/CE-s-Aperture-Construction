@@ -26,7 +26,22 @@
     "ceac:material_shape_layer",
 
 
+    "ceac:material_shape_eighth_sphere",
+    "ceac:material_shape_quarter_cylinder",
+    "ceac:material_shape_quarter_arch",
+    "ceac:material_shape_quarter_arch_outer",
+    "ceac:material_shape_quarter_arch_inner",
+
+    "ceac:material_shape_sphere",
     "ceac:material_shape_cylinder",
+    "ceac:material_shape_cylinder_end",
+    "ceac:material_shape_cylinder_bend",
+    "ceac:material_shape_cylinder_t_cross",
+
+    "ceac:material_shape_thin_cylinder",
+    "ceac:material_shape_thin_cylinder_end",
+    "ceac:material_shape_thin_cylinder_bend",
+    "ceac:material_shape_thin_cylinder_t_cross",
 
 
     "ceac:material_shape_slope",
