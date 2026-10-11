@@ -311,6 +311,8 @@ public abstract class MatItem extends BasicItem {
             for (MaterialShapeFaceInstance target : shape.getFaceInstances(state, level, pos)) {
                 if (target.pieceIndex() != instance.pieceIndex())
                     continue;
+                if (target.getVertices().size() < 3)
+                    continue;
 
                 MaterialShapeFace targetFace = target.face();
                 if (!shape.canApplyMaterial(state, targetFace, stack))
