@@ -141,7 +141,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
             return this.soundType;
         if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
             return this.soundType;
-        Material material = blockEntity.getMaterial(faceIndex);
+        Material material = blockEntity.getMaterial(faceInstance.key());
         if (material == null)
             return this.soundType;
         return material.getSoundType();
@@ -177,12 +177,10 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                 );
                 if (faceInstance == null)
                     return false;
-
-                int faceIndex = faces.indexOf(faceInstance.face());
                 if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
                     return false;
 
-                Material material = blockEntity.getMaterial(faceIndex);
+                Material material = blockEntity.getMaterial(faceInstance.key());
                 if (material == null)
                     return false;
 
@@ -249,7 +247,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
             return false;
 
-        Material material = blockEntity.getMaterial(faceIndex);
+        Material material = blockEntity.getMaterial(faceInstance.key());
         if (material == null)
             return false;
 
@@ -316,7 +314,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         if (!(level.getBlockEntity(pos) instanceof MaterialShapeBlockEntity blockEntity))
             return false;
 
-        Material material = blockEntity.getMaterial(faceIndex);
+        Material material = blockEntity.getMaterial(faceInstance.key());
         if (material == null)
             return false;
 
@@ -551,7 +549,7 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
         final double epsilon = 1.0e-6;
 
         @Nullable MaterialShapeFaceInstance closestFace = null;
-        double shortestDistance = Double.POSITIVE_INFINITY;
+        double shortestDistanceSquared = Double.POSITIVE_INFINITY;
 
         for (MaterialShapeFaceInstance instance : getFaceInstances(state, level, pos)) {
             List<Vec3> vertices = instance.getVertices();
@@ -640,17 +638,36 @@ public abstract class MaterialShape extends BasicBlock implements EntityBlock {
                 }
 
                 if ((y0 > py) != (y1 > py)) {
-                    double intersectionX = (x1 - x0) * (py - y0) / (py - y0) + x0;
+                    double intersectionX = (x1 - x0) * (py - y0) / (y1 - y0) + x0;
                     if (px < intersectionX)
                         inside = !inside;
                 }
             }
-            if (!inside)
-                continue;
+            double distanceSquared;
 
-            double distance = Math.abs(signedDistance);
-            if (distance < shortestDistance) {
-                shortestDistance = distance;
+            if (inside)
+                distanceSquared = signedDistance * signedDistance;
+            else {
+                distanceSquared = Double.POSITIVE_INFINITY;
+
+                for (int i = 0; i < vertices.size(); i++) {
+                    Vec3 start = vertices.get(i);
+                    Vec3 end = vertices.get((i + 1) % vertices.size());
+                    Vec3 segment = end.subtract(start);
+
+                    double segmentLengthSquared = segment.lengthSqr();
+                    double t = segmentLengthSquared <= epsilon ? 0.0 : Math.max(0.0,
+                            Math.min(1.0, hitPosition.subtract(start).dot(segment) / segmentLengthSquared)
+                    );
+
+                    Vec3 nearestPoint = start.add(segment.scale(t));
+
+                    distanceSquared = Math.min(distanceSquared, hitPosition.distanceToSqr(nearestPoint));
+                }
+            }
+
+            if (distanceSquared < shortestDistanceSquared) {
+                shortestDistanceSquared = distanceSquared;
                 closestFace = instance;
             }
         }
