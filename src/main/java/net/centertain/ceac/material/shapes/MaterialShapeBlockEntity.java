@@ -115,6 +115,30 @@ public class MaterialShapeBlockEntity extends BlockEntity {
         return assignment == null ? null : assignment.material();
     }
 
+    public boolean removeMaterials(int pieceIndex) {
+        Map<MaterialFaceKey, MaterialAssignment> updated = new HashMap<>(materials);
+        boolean changed = updated.keySet().removeIf(key -> key.pieceIndex() == pieceIndex);
+        if (!changed)
+            return false;
+
+        materials = Map.copyOf(updated);
+
+        setChanged();
+        requestModelDataUpdate();
+
+        if (level != null) {
+            BlockState state = getBlockState();
+            level.sendBlockUpdated(
+                    worldPosition,
+                    state,
+                    state,
+                    Block.UPDATE_CLIENTS
+            );
+        }
+
+        return true;
+    }
+
     public BitSet getFillMask() {
         return (BitSet) fillMask.clone();
     }

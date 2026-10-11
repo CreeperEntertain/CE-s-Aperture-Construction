@@ -27,6 +27,7 @@ public final class ModCreativeModeTabs {
                         pOutput.accept(ModItems.DECAL.get());
                         pOutput.accept(ModItems.SCRAPER.get());
                         pOutput.accept(ModItems.WRENCH.get());
+                        pOutput.accept(ModItems.CROWBAR.get());
 
 
 

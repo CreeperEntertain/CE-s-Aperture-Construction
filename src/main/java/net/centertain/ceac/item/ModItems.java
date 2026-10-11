@@ -18,6 +18,7 @@ public final class ModItems {
     public static final RegistryObject<Item> DECAL = ITEMS.register("decal", () -> new DecalItem(new Item.Properties()));
     public static final RegistryObject<Item> SCRAPER = ITEMS.register("scraper", () -> new ScraperItem(new Item.Properties()));
     public static final RegistryObject<Item> WRENCH = ITEMS.register("wrench", () -> new WrenchItem(new Item.Properties()));
+    public static final RegistryObject<Item> CROWBAR = ITEMS.register("crowbar", () -> new CrowbarItem(new Item.Properties()));
 
     public static final RegistryObject<Item> OBSERVATION_CONCRETE_WALL = ITEMS.register("observation_concrete_wall", () -> new ObservationConcreteWallMatItem(new Item.Properties()));
 
