@@ -1,7 +1,5 @@
 package net.centertain.ceac.item.custom;
 
-import net.centertain.ceac.block.custom.types.combinable.CombinableBlock;
-import net.centertain.ceac.block.custom.types.fillable.FillableBlock;
 import net.centertain.ceac.block.custom.types.material_shapes.MaterialShape;
 import net.centertain.ceac.constants.PriceConstants;
 import net.centertain.ceac.item.custom.types.BasicItem;
@@ -11,15 +9,20 @@ import net.centertain.ceac.material.shapes.MaterialShapeFaceInstance;
 import net.centertain.ceac.sound.ModSounds;
 import net.centertain.ceac.utility.Mathworks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class CrowbarItem extends BasicItem {
     public CrowbarItem(Properties properties) {
@@ -27,6 +30,17 @@ public class CrowbarItem extends BasicItem {
                 properties.durability(250),
                 PriceConstants.DEFAULT_TOOL
         );
+    }
+
+    @Override
+    public void appendHoverText(
+            @NotNull ItemStack stack,
+            @Nullable Level level,
+            @NotNull List<Component> tooltipComponents,
+            @NotNull TooltipFlag isAdvanced
+    ) {
+        tooltipComponents.add(Component.translatable("tooltip.ceac.crowbar.desc"));
+        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
     }
 
     @Override
