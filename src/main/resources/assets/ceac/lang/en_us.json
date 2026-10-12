@@ -154,5 +154,6 @@
 
   "sound.ceac.wrench.rotate": "Wrench used",
 
-  "sound.ceac.crowbar.clank": "CLANK!"
+  "sound.ceac.crowbar.clank": "CLANK!",
+  "sound.ceac.crowbar.swing": "Crowbar swung"
 }

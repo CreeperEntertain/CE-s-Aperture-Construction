@@ -10,15 +10,19 @@ import net.centertain.ceac.sound.ModSounds;
 import net.centertain.ceac.utility.Mathworks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +45,67 @@ public class CrowbarItem extends BasicItem {
     ) {
         tooltipComponents.add(Component.translatable("tooltip.ceac.crowbar.desc"));
         super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+    }
+
+    @SuppressWarnings("resource")
+    @Override
+    public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
+        if (!(entity instanceof Player player) || player.level().isClientSide)
+            return false;
+
+        Level level = player.level();
+        double reach = player.getBlockReach();
+
+        Vec3 start = player.getEyePosition();
+        Vec3 end = start.add(player.getViewVector(1.0f).scale(reach));
+
+        BlockHitResult blockHit = level.clip(new ClipContext(
+                start,
+                end,
+                ClipContext.Block.OUTLINE,
+                ClipContext.Fluid.NONE,
+                player
+        ));
+        double blockDistanceSquared = blockHit.getType() == HitResult.Type.MISS
+                ? reach * reach
+                : start.distanceToSqr(blockHit.getLocation());
+        AABB searchArea = player.getBoundingBox()
+                .expandTowards(end.subtract(start))
+                .inflate(1.0);
+        EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
+                player,
+                start,
+                end,
+                searchArea,
+                target -> !target.isSpectator() && target.isPickable(),
+                reach * reach
+        );
+
+        if (entityHit != null && start.distanceToSqr(entityHit.getLocation()) < blockDistanceSquared)
+            playSound(level, ModSounds.CROWBAR_CLANK.get(), entityHit.getLocation());
+        else if (blockHit.getType() != HitResult.Type.MISS)
+            playSound(level, ModSounds.CROWBAR_CLANK.get(), blockHit.getLocation());
+        else
+            playSound(level, ModSounds.CROWBAR_SWING.get(), player.getEyePosition());
+
+        return false;
+    }
+
+    private void playSound(
+            Level level,
+            SoundEvent sound,
+            Vec3 coordinate
+    ) {
+        level.playSound(
+                null,
+                coordinate.x,
+                coordinate.y,
+                coordinate.z,
+                sound,
+                SoundSource.BLOCKS,
+                Mathworks.randomBetween(0.9f, 1.1f),
+                Mathworks.randomBetween(0.9f, 1.1f)
+        );
     }
 
     @Override

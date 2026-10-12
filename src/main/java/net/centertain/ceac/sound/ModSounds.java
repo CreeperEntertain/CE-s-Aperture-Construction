@@ -32,6 +32,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> WRENCH_ROTATE = register("wrench_rotate");
 
     public static final RegistryObject<SoundEvent> CROWBAR_CLANK = register("crowbar_clank");
+    public static final RegistryObject<SoundEvent> CROWBAR_SWING = register("crowbar_swing");
 
 
     private static RegistryObject<SoundEvent> register(String name) {
