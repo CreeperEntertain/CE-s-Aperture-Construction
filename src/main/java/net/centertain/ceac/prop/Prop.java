@@ -1,0 +1,143 @@
+package net.centertain.ceac.prop;
+
+import net.centertain.ceac.prop.server.PropCapabilities;
+import net.centertain.ceac.prop.server.PropManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+
+import java.util.UUID;
+
+public final class Prop {
+    private static final int TRANSFORM_SIZE = 16;
+
+    private final UUID id;
+    private final ResourceLocation definition;
+    private final Matrix4f transform;
+    private final PropCollisionMode collisionMode;
+    private final PropMotionMode motionMode;
+    private final CompoundTag data;
+
+    public Prop(
+            UUID id,
+            ResourceLocation definition,
+            Matrix4f transform,
+            PropCollisionMode collisionMode,
+            PropMotionMode motionMode
+    ) {
+        this(id, definition, transform, collisionMode, motionMode, new CompoundTag());
+    }
+
+    public Prop(
+            UUID id,
+            ResourceLocation definition,
+            Matrix4f transform,
+            PropCollisionMode collisionMode,
+            PropMotionMode motionMode,
+            CompoundTag data
+    ) {
+        this.id = id;
+        this.definition = definition;
+        this.transform = new Matrix4f(transform);
+        this.collisionMode = collisionMode;
+        this.motionMode = motionMode;
+        this.data = data.copy();
+    }
+
+    public UUID getId() {
+        return id;
+    }
+    public ResourceLocation getDefinition() {
+        return definition;
+    }
+    public Matrix4f getTransform() {
+        return new Matrix4f(transform);
+    }
+    public PropCollisionMode getCollisionMode() {
+        return collisionMode;
+    }
+    public PropMotionMode getMotionMode() {
+        return motionMode;
+    }
+    public CompoundTag getData() {
+        return data;
+    }
+
+    public BlockPos getBlockPosition() {
+        return BlockPos.containing(
+                transform.m30(),
+                transform.m31(),
+                transform.m32()
+        );
+    }
+
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.putUUID("Id", id);
+        tag.putString("Definition", definition.toString());
+        tag.putString("CollisionMode", collisionMode.name());
+        tag.putString("MotionMode", motionMode.name());
+        float[] values = new float[TRANSFORM_SIZE];
+        transform.get(values);
+        ListTag matrix = new ListTag();
+        for (float value : values)
+            matrix.add(FloatTag.valueOf(value));
+        tag.put("Transform", matrix);
+        tag.put("Data", data.copy());
+        return tag;
+    }
+
+    public static @Nullable Prop deserializeNBT(CompoundTag tag) {
+        if (!tag.hasUUID("Id"))
+            return null;
+        ResourceLocation definition = ResourceLocation.tryParse(tag.getString("Definition"));
+        if (definition == null)
+            return null;
+        ListTag matrixTag = tag.getList("Transform", FloatTag.TAG_FLOAT);
+        if (matrixTag.size() != TRANSFORM_SIZE)
+            return null;
+        float[] values = new float[TRANSFORM_SIZE];
+        for (int i = 0; i < TRANSFORM_SIZE; i++) {
+            values[i] = matrixTag.getFloat(i);
+            if (!Float.isFinite(values[i]))
+                return null;
+        }
+        try {
+            PropCollisionMode collisionMode = PropCollisionMode.valueOf(tag.getString("CollisionMode"));
+            PropMotionMode motionMode = PropMotionMode.valueOf(tag.getString("MotionMode"));
+            CompoundTag data = tag.contains("Data", FloatTag.TAG_COMPOUND)
+                    ? tag.getCompound("Data") : new CompoundTag();
+            return new Prop(
+                    tag.getUUID("Id"),
+                    definition,
+                    new Matrix4f().set(values),
+                    collisionMode,
+                    motionMode,
+                    data
+            );
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
+    }
+
+    public static void placeInWorld(Prop prop, Level level) {
+        if (level.isClientSide)
+            throw new IllegalStateException("Props must be placed on the logical server");
+        LevelChunk chunk = level.getChunkAt(prop.getBlockPosition());
+        PropManager manager = PropCapabilities.get(chunk);
+        manager.addProp(prop);
+    }
+
+    public static void removeFromWorld(Prop prop, Level level) {
+        if (level.isClientSide)
+            throw new IllegalStateException("Props must be removed on the logical server");
+        LevelChunk chunk = level.getChunkAt(prop.getBlockPosition());
+        PropCapabilities.get(chunk).removeProp(prop.getId());
+    }
+}
