@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -45,6 +46,37 @@ public class CrowbarItem extends BasicItem {
     ) {
         tooltipComponents.add(Component.translatable("tooltip.ceac.crowbar.desc"));
         super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+    }
+
+    @SuppressWarnings("resource")
+    @Override
+    public boolean hurtEnemy(
+            @NotNull ItemStack stack,
+            @NotNull LivingEntity target,
+            @NotNull LivingEntity attacker
+    ) {
+        if (!(attacker instanceof Player player) || attacker.level().isClientSide)
+            return false;
+        target.hurt(player.damageSources().playerAttack(player), 4.0f);
+        stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(
+                player.getMainHandItem() == stack ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND
+        ));
+        return false;
+    }
+
+    @Override
+    public boolean mineBlock(
+            @NotNull ItemStack stack,
+            @NotNull Level level,
+            @NotNull BlockState state,
+            @NotNull BlockPos pos,
+            @NotNull LivingEntity entity
+    ) {
+        if (!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0f)
+            stack.hurtAndBreak(1, entity, e -> e.broadcastBreakEvent(
+                    entity.getMainHandItem() == stack ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND
+            ));
+        return false;
     }
 
     @SuppressWarnings("resource")
