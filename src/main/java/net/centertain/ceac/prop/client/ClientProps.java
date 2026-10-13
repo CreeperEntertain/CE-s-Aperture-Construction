@@ -10,6 +10,7 @@ import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -28,7 +29,7 @@ public final class ClientProps {
 
     private ClientProps() {}
 
-    public static void put(Prop prop) {
+    public static void put(@NotNull Prop prop) {
         long newChunkKey = new ChunkPos(prop.getBlockPosition()).toLong();
         Long oldChunkKey = CHUNK_BY_ID.put(prop.getId(), newChunkKey);
 
@@ -52,7 +53,7 @@ public final class ClientProps {
     public static void replaceChunk(
             int chunkX,
             int chunkZ,
-            Collection<Prop> props
+            @NotNull Collection<Prop> props
     ) {
         removeChunk(chunkX, chunkZ);
         props.forEach(ClientProps::put);
@@ -71,7 +72,7 @@ public final class ClientProps {
     }
 
     @SubscribeEvent
-    public static void onChunkUnload(ChunkEvent.Unload event) {
+    public static void onChunkUnload(@NotNull ChunkEvent.Unload event) {
         if (!(event.getLevel() instanceof ClientLevel))
             return;
         ChunkPos pos = event.getChunk().getPos();
@@ -79,7 +80,7 @@ public final class ClientProps {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
+    public static void onClientTick(@NotNull TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END)
             return;
 
@@ -91,7 +92,7 @@ public final class ClientProps {
     }
 
     @SubscribeEvent
-    public static void onLevelUnload(LevelEvent.Unload event) {
+    public static void onLevelUnload(@NotNull LevelEvent.Unload event) {
         if (!(event.getLevel() instanceof ClientLevel))
             return;
         clear();
