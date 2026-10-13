@@ -15,7 +15,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -98,17 +100,16 @@ public final class PropRenderer {
                 (float) scale.z
         );
 
-        int light = LevelRenderer.getLightColor(level, prop.getBlockPosition());
-
-        modelRenderer.renderModel(
-                poseStack.last(),
-                consumer,
-                null,
+        modelRenderer.tesselateBlock(
+                level,
                 model,
-                1.0f,
-                1.0f,
-                1.0f,
-                light,
+                Blocks.AIR.defaultBlockState(),
+                prop.getBlockPosition(),
+                poseStack,
+                consumer,
+                false,
+                RandomSource.create(),
+                prop.getId().getMostSignificantBits(),
                 OverlayTexture.NO_OVERLAY,
                 ModelData.EMPTY,
                 RenderType.solid()
