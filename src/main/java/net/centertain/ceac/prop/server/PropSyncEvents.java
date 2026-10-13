@@ -13,8 +13,8 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
         modid = MOD_ID,
         bus = Mod.EventBusSubscriber.Bus.FORGE
 )
-public final class PropSyncEvent {
-    private PropSyncEvent() {}
+public final class PropSyncEvents {
+    private PropSyncEvents() {}
 
     @SubscribeEvent
     public static void onChunkWatch(ChunkWatchEvent.Watch event) {
