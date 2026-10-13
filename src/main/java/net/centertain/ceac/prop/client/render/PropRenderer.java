@@ -61,7 +61,16 @@ public final class PropRenderer {
         buffers.endBatch(RenderType.solid());
     }
 
-    private static void handleProp(Prop prop, Minecraft minecraft, ModelManager modelManager, PoseStack poseStack, Vec3 camera, ClientLevel level, ModelBlockRenderer modelRenderer, VertexConsumer consumer) {
+    private static void handleProp(
+            Prop prop,
+            Minecraft minecraft,
+            ModelManager modelManager,
+            PoseStack poseStack,
+            Vec3 camera,
+            ClientLevel level,
+            ModelBlockRenderer modelRenderer,
+            VertexConsumer consumer
+    ) {
         Vec3 position = prop.getPosition();
         Vec3 scale = prop.getScale();
         // Assumes prop geometry is authored in block-sized units
