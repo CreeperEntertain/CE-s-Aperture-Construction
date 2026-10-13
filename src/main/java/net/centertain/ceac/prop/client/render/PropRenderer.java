@@ -20,6 +20,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.model.data.ModelData;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 
 import java.util.HashMap;
@@ -54,64 +55,71 @@ public final class PropRenderer {
 
         for (int chunkX = center.x - chunkRadius; chunkX <= center.x + chunkRadius; chunkX++)
             for (int chunkZ = center.z - chunkRadius; chunkZ <= center.z + chunkRadius; chunkZ++)
-                for (Prop prop : ClientProps.getInChunk(chunkX, chunkZ)) {
-                    Vec3 position = prop.getPosition();
-                    Vec3 scale = prop.getScale();
-                    // Assumes prop geometry is authored in block-sized units
-                    // TODO: Make PropDefinition and let it provide this later
-                    double radius = Math.max(1.5, Math.max(
-                            Math.abs(scale.x),
-                            Math.max(Math.abs(scale.y), Math.abs(scale.z))
-                    ) * 1.5);
-                    AABB bounds = new AABB(
-                            position.x - radius,
-                            position.y - radius,
-                            position.z - radius,
-                            position.x + radius,
-                            position.y + radius,
-                            position.z + radius
-                    );
-                    if (!minecraft.levelRenderer.getFrustum().isVisible(bounds))
-                        continue;
-
-                    BakedModel model = MODEL_CACHE.computeIfAbsent(prop.getDefinition(), modelManager::getModel);
-
-                    poseStack.pushPose();
-
-                    poseStack.translate(
-                            position.x - camera.x,
-                            position.y - camera.y,
-                            position.z - camera.z
-                    );
-
-                    Quaternionf rotation = prop.getRotationQuat().normalize();
-                    poseStack.mulPose(rotation);
-
-                    poseStack.scale(
-                            (float) scale.x,
-                            (float) scale.y,
-                            (float) scale.z
-                    );
-
-                    int light = LevelRenderer.getLightColor(level, prop.getBlockPosition());
-
-                    modelRenderer.renderModel(
-                            poseStack.last(),
-                            consumer,
-                            null,
-                            model,
-                            1.0f,
-                            1.0f,
-                            1.0f,
-                            light,
-                            OverlayTexture.NO_OVERLAY,
-                            ModelData.EMPTY,
-                            RenderType.solid()
-                    );
-
-                    poseStack.popPose();
-                }
+                for (Prop prop : ClientProps.getInChunk(chunkX, chunkZ))
+                    handleProp(prop, minecraft, modelManager, poseStack, camera, level, modelRenderer, consumer);
 
         buffers.endBatch(RenderType.solid());
+    }
+
+    private static void handleProp(Prop prop, Minecraft minecraft, ModelManager modelManager, PoseStack poseStack, Vec3 camera, ClientLevel level, ModelBlockRenderer modelRenderer, VertexConsumer consumer) {
+        Vec3 position = prop.getPosition();
+        Vec3 scale = prop.getScale();
+        // Assumes prop geometry is authored in block-sized units
+        // TODO: Make PropDefinition and let it provide this later
+        AABB bounds = getBounds(scale, position);
+        if (!minecraft.levelRenderer.getFrustum().isVisible(bounds))
+            return;
+
+        BakedModel model = MODEL_CACHE.computeIfAbsent(prop.getDefinition(), modelManager::getModel);
+
+        poseStack.pushPose();
+
+        poseStack.translate(
+                position.x - camera.x,
+                position.y - camera.y,
+                position.z - camera.z
+        );
+
+        Quaternionf rotation = prop.getRotationQuat().normalize();
+        poseStack.mulPose(rotation);
+
+        poseStack.scale(
+                (float) scale.x,
+                (float) scale.y,
+                (float) scale.z
+        );
+
+        int light = LevelRenderer.getLightColor(level, prop.getBlockPosition());
+
+        modelRenderer.renderModel(
+                poseStack.last(),
+                consumer,
+                null,
+                model,
+                1.0f,
+                1.0f,
+                1.0f,
+                light,
+                OverlayTexture.NO_OVERLAY,
+                ModelData.EMPTY,
+                RenderType.solid()
+        );
+
+        poseStack.popPose();
+    }
+
+    private static @NotNull AABB getBounds(Vec3 scale, Vec3 position) {
+        double radius = Math.max(1.5, Math.max(
+                Math.abs(scale.x),
+                Math.max(Math.abs(scale.y), Math.abs(scale.z))
+        ) * 1.5);
+        return new AABB(
+                position.x - radius,
+                position.y - radius,
+                position.z - radius,
+                position.x + radius,
+                position.y + radius,
+                position.z + radius
+        );
     }
 }
