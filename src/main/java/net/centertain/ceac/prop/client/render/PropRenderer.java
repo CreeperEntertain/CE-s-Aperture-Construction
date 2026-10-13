@@ -28,6 +28,7 @@ import org.joml.Quaternionf;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO: Make prop rendering support cutout mipped, potentially translucent
 public final class PropRenderer {
     private static final Map<ResourceLocation, BakedModel> MODEL_CACHE = new HashMap<>();
 
