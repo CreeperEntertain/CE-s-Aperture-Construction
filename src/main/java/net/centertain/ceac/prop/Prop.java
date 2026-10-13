@@ -1,5 +1,7 @@
 package net.centertain.ceac.prop;
 
+import net.centertain.ceac.network.ModNetworking;
+import net.centertain.ceac.prop.network.SyncPropPacket;
 import net.centertain.ceac.prop.server.PropCapabilities;
 import net.centertain.ceac.prop.server.PropManager;
 import net.minecraft.core.BlockPos;
@@ -10,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -209,6 +212,11 @@ public final class Prop {
         LevelChunk chunk = level.getChunkAt(prop.getBlockPosition());
         PropManager manager = PropCapabilities.get(chunk);
         manager.addProp(prop);
+
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.TRACKING_CHUNK.with(() -> chunk),
+                new SyncPropPacket(prop)
+        );
     }
 
     public static void removeFromWorld(Prop prop, @NotNull Level level) {

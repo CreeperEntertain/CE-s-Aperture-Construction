@@ -15,6 +15,8 @@ public final class ModItems {
             DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
 
 
+    public static final RegistryObject<Item> PROP_PLACER = ITEMS.register("prop_placer", () -> new PropPlacerItem(new Item.Properties()));
+
     public static final RegistryObject<Item> DECAL = ITEMS.register("decal", () -> new DecalItem(new Item.Properties()));
     public static final RegistryObject<Item> SCRAPER = ITEMS.register("scraper", () -> new ScraperItem(new Item.Properties()));
     public static final RegistryObject<Item> WRENCH = ITEMS.register("wrench", () -> new WrenchItem(new Item.Properties()));

@@ -1,0 +1,9 @@
+{
+  "loader": "forge:obj",
+  "model": "ceac:models/prop_obj/test_prop.obj",
+  "flip-v": true,
+  "textures": {
+    "texture0": "minecraft:block/oak_planks",
+    "particle": "minecraft:block/oak_planks"
+  }
+}
