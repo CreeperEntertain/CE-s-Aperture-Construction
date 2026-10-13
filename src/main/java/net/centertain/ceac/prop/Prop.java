@@ -9,8 +9,11 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.UUID;
 
@@ -19,10 +22,10 @@ public final class Prop {
 
     private final UUID id;
     private final ResourceLocation definition;
-    private final Matrix4f transform;
-    private final PropCollisionMode collisionMode;
-    private final PropMotionMode motionMode;
-    private final CompoundTag data;
+    private Matrix4f transform;
+    private PropCollisionMode collisionMode;
+    private PropMotionMode motionMode;
+    private CompoundTag data;
 
     public Prop(
             UUID id,
@@ -68,12 +71,81 @@ public final class Prop {
     public CompoundTag getData() {
         return data;
     }
-
     public BlockPos getBlockPosition() {
         return BlockPos.containing(
                 transform.m30(),
                 transform.m31(),
                 transform.m32()
+        );
+    }
+    public Vec3 getPosition() {
+        return new Vec3(
+                transform.m30(),
+                transform.m31(),
+                transform.m32()
+        );
+    }
+    public Vec3 getRotation() {
+        Vector3f euler = getRotationQuat().getEulerAnglesXYZ(new Vector3f());
+        return new Vec3(euler.x, euler.y, euler.z);
+    }
+    public Quaternionf getRotationQuat() {
+        return transform.getUnnormalizedRotation(new Quaternionf());
+    }
+    public Vec3 getScale() {
+        Vector3f scale = transform.getScale(new Vector3f());
+        return new Vec3(scale.x, scale.y, scale.z);
+    }
+
+    public void setTransform(Matrix4f transform) {
+        this.transform = transform;
+    }
+    public void setCollisionMode(PropCollisionMode collisionMode) {
+        this.collisionMode = collisionMode;
+    }
+    public void setMotionMode(PropMotionMode motionMode) {
+        this.motionMode = motionMode;
+    }
+    public void setData(CompoundTag data) {
+        this.data = data;
+    }
+    public void setPosition(Vec3 position) {
+        transform.setTranslation(
+                (float) position.x,
+                (float) position.y,
+                (float) position.z
+        );
+    }
+    public void setRotation(Vec3 rotation) {
+        Vector3f position = transform.getTranslation(new Vector3f());
+        Vector3f scale = transform.getScale(new Vector3f());
+        Quaternionf rotationQuat = new Quaternionf().rotationXYZ(
+                (float) rotation.x,
+                (float) rotation.y,
+                (float) rotation.z
+        );
+        transform.translationRotateScale(position, rotationQuat, scale);
+    }
+    public void setRotation(Quaternionf rotation) {
+        Vector3f positon = transform.getTranslation(new Vector3f());
+        Vector3f scale = transform.getScale(new Vector3f());
+        transform.translationRotateScale(
+                positon,
+                new Quaternionf(rotation).normalize(),
+                scale
+        );
+    }
+    public void setScale(Vec3 scale) {
+        Vector3f position = transform.getTranslation(new Vector3f());
+        Quaternionf rotation = getRotationQuat();
+        transform.translationRotateScale(
+                position,
+                rotation,
+                new Vector3f(
+                        (float) scale.x,
+                        (float) scale.y,
+                        (float) scale.z
+                )
         );
     }
 
