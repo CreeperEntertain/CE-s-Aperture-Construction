@@ -32,7 +32,7 @@ public class PropPlacerItem extends Item {
     ) {
         ItemStack stack = player.getItemInHand(hand);
         BlockHitResult hit = Item.getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
-        if (hit.getType() != HitResult.Type.MISS)
+        if (hit.getType() == HitResult.Type.MISS)
             return InteractionResultHolder.pass(stack);
 
         if (!level.isClientSide) {
