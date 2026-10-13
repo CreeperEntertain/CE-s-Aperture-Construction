@@ -62,6 +62,8 @@ public final class PropMiningClient {
         Prop prop = propHit.getProp();
         if (activePropId == null || !activePropId.equals(prop.getId()))
             start(prop);
+        else
+            minecraft.player.swing(InteractionHand.MAIN_HAND);
 
         PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
         boolean creative = minecraft.player.getAbilities().instabuild;

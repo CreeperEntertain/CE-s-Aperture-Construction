@@ -178,8 +178,8 @@ public final class PropMiningManager {
                     session.blockPos,
                     soundType.getHitSound(),
                     SoundSource.BLOCKS,
-                    soundType.getVolume() * 0.5F,
-                    soundType.getPitch()
+                    (soundType.getVolume() + 1.0F) / 8.0F,
+                    soundType.getPitch() * 0.5F
             );
         }
     }
@@ -215,8 +215,8 @@ public final class PropMiningManager {
                 prop.getBlockPosition(),
                 soundType.getBreakSound(),
                 SoundSource.BLOCKS,
-                soundType.getVolume(),
-                soundType.getPitch()
+                (soundType.getVolume() + 1.0F) / 2.0F,
+                soundType.getPitch() * 0.8F
         );
     }
 
