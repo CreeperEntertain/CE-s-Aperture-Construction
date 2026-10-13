@@ -26,7 +26,7 @@ public final class Prop {
     private static final int TRANSFORM_SIZE = 16;
 
     private final UUID id;
-    private final ResourceLocation definition;
+    private final ResourceLocation definitionId;
     private Matrix4f transform;
     private PropCollisionMode collisionMode;
     private PropMotionMode motionMode;
@@ -44,14 +44,14 @@ public final class Prop {
 
     public Prop(
             UUID id,
-            ResourceLocation definition,
+            ResourceLocation definitionId,
             Matrix4f transform,
             PropCollisionMode collisionMode,
             PropMotionMode motionMode,
             @NotNull CompoundTag data
     ) {
         this.id = id;
-        this.definition = definition;
+        this.definitionId = definitionId;
         this.transform = new Matrix4f(transform);
         this.collisionMode = collisionMode;
         this.motionMode = motionMode;
@@ -61,8 +61,8 @@ public final class Prop {
     public UUID getId() {
         return id;
     }
-    public ResourceLocation getDefinition() {
-        return definition;
+    public ResourceLocation getDefinitionId() {
+        return definitionId;
     }
     @Contract(" -> new")
     public @NotNull Matrix4f getTransform() {
@@ -160,7 +160,7 @@ public final class Prop {
     public @NotNull CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("Id", id);
-        tag.putString("Definition", definition.toString());
+        tag.putString("Definition", definitionId.toString());
         tag.putString("CollisionMode", collisionMode.name());
         tag.putString("MotionMode", motionMode.name());
         float[] values = new float[TRANSFORM_SIZE];
@@ -176,8 +176,8 @@ public final class Prop {
     public static @Nullable Prop deserializeNBT(@NotNull CompoundTag tag) {
         if (!tag.hasUUID("Id"))
             return null;
-        ResourceLocation definition = ResourceLocation.tryParse(tag.getString("Definition"));
-        if (definition == null)
+        ResourceLocation definitionId = ResourceLocation.tryParse(tag.getString("Definition"));
+        if (definitionId == null)
             return null;
         ListTag matrixTag = tag.getList("Transform", FloatTag.TAG_FLOAT);
         if (matrixTag.size() != TRANSFORM_SIZE)
@@ -195,7 +195,7 @@ public final class Prop {
                     ? tag.getCompound("Data") : new CompoundTag();
             return new Prop(
                     tag.getUUID("Id"),
-                    definition,
+                    definitionId,
                     new Matrix4f().set(values),
                     collisionMode,
                     motionMode,

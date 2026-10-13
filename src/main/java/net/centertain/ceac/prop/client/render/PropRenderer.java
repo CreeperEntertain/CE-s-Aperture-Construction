@@ -3,10 +3,11 @@ package net.centertain.ceac.prop.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.prop.Prop;
+import net.centertain.ceac.prop.PropDefinition;
+import net.centertain.ceac.prop.PropDefinitions;
 import net.centertain.ceac.prop.client.ClientProps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
@@ -82,7 +83,14 @@ public final class PropRenderer {
         if (!minecraft.levelRenderer.getFrustum().isVisible(bounds))
             return;
 
-        BakedModel model = MODEL_CACHE.computeIfAbsent(prop.getDefinition(), modelManager::getModel);
+        PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+        if (definition == null)
+            return;
+
+        BakedModel model = MODEL_CACHE.computeIfAbsent(
+                definition.getModelId(),
+                modelManager::getModel
+        );
 
         poseStack.pushPose();
 
@@ -140,7 +148,14 @@ public final class PropRenderer {
             Vec3 camera
     ) {
         Minecraft minecraft = Minecraft.getInstance();
-        BakedModel model = MODEL_CACHE.computeIfAbsent(prop.getDefinition(), minecraft.getModelManager()::getModel);
+        PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+        if (definition == null)
+            return;
+
+        BakedModel model = MODEL_CACHE.computeIfAbsent(
+                definition.getModelId(),
+                minecraft.getModelManager()::getModel
+        );
 
         Vec3 position = prop.getPosition();
         Vec3 scale = prop.getScale();

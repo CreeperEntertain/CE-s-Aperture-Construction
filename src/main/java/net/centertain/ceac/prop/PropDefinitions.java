@@ -1,6 +1,7 @@
 package net.centertain.ceac.prop;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.SoundType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +9,16 @@ import java.util.Optional;
 
 public final class PropDefinitions {
     private static final Map<ResourceLocation, PropDefinition> DEFINITIONS = new HashMap<>();
+
+    static {
+        register(PropTypes.TEST_PROP, new PropDefinition(
+                PropModels.TEST_PROP,
+                SoundType.WOOD,
+                2.0f,
+                true,
+                true
+        ));
+    }
 
     private PropDefinitions() {}
 

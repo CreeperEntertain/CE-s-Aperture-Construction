@@ -1,27 +1,36 @@
 package net.centertain.ceac.prop;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.SoundType;
 
+import java.util.Objects;
+
+@SuppressWarnings("ClassCanBeRecord")
 public final class PropDefinition {
-    private Prop prop;
-    private SoundType soundType;
-    private float destroyTime;
-    private boolean minable;
+    private final ResourceLocation modelId;
+    private final SoundType soundType;
+    private final float destroyTime;
+    private final boolean targetable;
+    private final boolean minable;
 
     public PropDefinition(
-            Prop prop,
+            ResourceLocation modelId,
             SoundType soundType,
             float destroyTime,
+            boolean targetable,
             boolean minable
     ) {
-        this.prop = prop;
-        this.soundType = soundType;
+        this.modelId = Objects.requireNonNull(modelId);
+        this.soundType = Objects.requireNonNull(soundType);
+        if (!Float.isFinite(destroyTime))
+            throw new IllegalArgumentException("Destroy time must be finite");
         this.destroyTime = destroyTime;
+        this.targetable = targetable;
         this.minable = minable;
     }
 
-    public Prop getProp() {
-        return prop;
+    public ResourceLocation getModelId() {
+        return modelId;
     }
     public SoundType getSoundType() {
         return soundType;
@@ -29,20 +38,10 @@ public final class PropDefinition {
     public float getDestroyTime() {
         return destroyTime;
     }
+    public boolean isTargetable() {
+        return targetable;
+    }
     public boolean getMinable() {
         return minable;
-    }
-
-    public void setProp(Prop prop) {
-        this.prop = prop;
-    }
-    public void setSoundType(SoundType soundType) {
-        this.soundType = soundType;
-    }
-    public void setDestroyTime(float destroyTime) {
-        this.destroyTime = destroyTime;
-    }
-    public void setMinable(boolean minable) {
-        this.minable = minable;
     }
 }
