@@ -22,6 +22,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.NotNull;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
@@ -96,16 +97,11 @@ public class ClientForgeEvents {
     }
 
     @SubscribeEvent
-    public static void onPropHighlight(RenderHighlightEvent.Block event) {
+    public static void onPropHighlight(@NotNull RenderHighlightEvent.Block event) {
         if (!(event.getTarget() instanceof PropHitResult hit))
             return;
 
         event.setCanceled(true);
-
-        PropRenderer.renderOutline(
-                event.getPoseStack(),
-                hit.getProp(),
-                event.getCamera().getPosition()
-        );
+        PropRenderer.renderOutline(event, hit.getProp());
     }
 }
