@@ -1,5 +1,6 @@
 package net.centertain.ceac.prop.server;
 
+import net.centertain.ceac.block.custom.material_shapes.basic_shapes.Block;
 import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
@@ -11,7 +12,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -186,12 +189,27 @@ public final class PropMiningManager {
             Prop prop,
             PropDefinition definition
     ) {
-        ServerLevel level = (ServerLevel) player.level();
-
-        cancel(player.getUUID(), null);
+        if (!(player.level() instanceof ServerLevel level))
+            return;
+        if (!Prop.removeFromWorld(prop, level))
+            return;
+        if (
+                !player.getAbilities().instabuild &&
+                definition.getDropItem() != null &&
+                PropMiningMath.hasRequiredTool(player, definition)
+        )
+            Block.popResource(
+                    level,
+                    prop.getBlockPosition(),
+                    new ItemStack(definition.getDropItem())
+            );
+        if (!player.getAbilities().instabuild) {
+            ItemStack tool = player.getMainHandItem();
+            if (!tool.isEmpty())
+                tool.hurtAndBreak(1, player, e -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        }
 
         var soundType = definition.getSoundType();
-
         level.playSound(
                 null,
                 prop.getBlockPosition(),

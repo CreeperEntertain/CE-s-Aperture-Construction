@@ -4,6 +4,7 @@ import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.prop.*;
 import net.centertain.ceac.prop.network.PropMiningPacket;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.HitResult;
 
 import java.util.UUID;
@@ -24,6 +25,8 @@ public final class PropMiningClient {
         )
             return;
         abort();
+
+        minecraft.player.swing(InteractionHand.MAIN_HAND);
 
         minecraft.gameMode.stopDestroyBlock();
         activePropId = prop.getId();
