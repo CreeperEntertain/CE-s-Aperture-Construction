@@ -63,6 +63,7 @@ public final class PropRenderer {
 
         PoseStack poseStack = event.getPoseStack();
         MultiBufferSource.BufferSource buffers = minecraft.renderBuffers().bufferSource();
+        MultiBufferSource.BufferSource crumblingBuffers = minecraft.renderBuffers().crumblingBufferSource();
 
         VertexConsumer consumer = buffers.getBuffer(RenderType.solid());
         ModelBlockRenderer modelRenderer = minecraft.getBlockRenderer().getModelRenderer();
@@ -71,10 +72,20 @@ public final class PropRenderer {
         for (int chunkX = center.x - chunkRadius; chunkX <= center.x + chunkRadius; chunkX++)
             for (int chunkZ = center.z - chunkRadius; chunkZ <= center.z + chunkRadius; chunkZ++)
                 for (Prop prop : ClientProps.getInChunk(chunkX, chunkZ))
-                    handleProp(prop, minecraft, modelManager, poseStack, camera, level, modelRenderer, consumer, buffers);
+                    handleProp(
+                            prop,
+                            minecraft,
+                            modelManager,
+                            poseStack,
+                            camera,
+                            level,
+                            modelRenderer,
+                            consumer,
+                            crumblingBuffers
+                    );
 
         buffers.endBatch(RenderType.solid());
-        buffers.endBatch(RenderType.crumbling(InventoryMenu.BLOCK_ATLAS));
+        crumblingBuffers.endBatch();
     }
 
     private static void handleProp(
@@ -86,7 +97,7 @@ public final class PropRenderer {
             ClientLevel level,
             ModelBlockRenderer modelRenderer,
             VertexConsumer consumer,
-            MultiBufferSource.BufferSource buffers
+            MultiBufferSource.BufferSource crumblingBuffers
     ) {
         Vec3 position = prop.getPosition();
         Vec3 scale = prop.getScale();
@@ -140,7 +151,7 @@ public final class PropRenderer {
         if (stage < 0)
             stage = ClientPropMiningProgress.getStage(prop.getId());
         if (stage >= 0) {
-            VertexConsumer crackConsumer = buffers.getBuffer(RenderType.crumbling(InventoryMenu.BLOCK_ATLAS));
+            VertexConsumer crackConsumer = crumblingBuffers.getBuffer(RenderType.crumbling(InventoryMenu.BLOCK_ATLAS));
             renderDamageOverlay(model, poseStack, crackConsumer, stage, prop.getId().getMostSignificantBits());
         }
 
