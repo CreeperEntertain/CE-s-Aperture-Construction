@@ -25,6 +25,7 @@ public final class PropManager implements INBTSerializable<CompoundTag> {
         chunk.setUnsaved(true);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public boolean removeProp(UUID id) {
         if (props.remove(id) == null)
             return false;
