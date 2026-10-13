@@ -10,6 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -43,7 +45,7 @@ public final class Prop {
             Matrix4f transform,
             PropCollisionMode collisionMode,
             PropMotionMode motionMode,
-            CompoundTag data
+            @NotNull CompoundTag data
     ) {
         this.id = id;
         this.definition = definition;
@@ -59,7 +61,8 @@ public final class Prop {
     public ResourceLocation getDefinition() {
         return definition;
     }
-    public Matrix4f getTransform() {
+    @Contract(" -> new")
+    public @NotNull Matrix4f getTransform() {
         return new Matrix4f(transform);
     }
     public PropCollisionMode getCollisionMode() {
@@ -71,28 +74,30 @@ public final class Prop {
     public CompoundTag getData() {
         return data;
     }
-    public BlockPos getBlockPosition() {
+    @Contract(" -> new")
+    public @NotNull BlockPos getBlockPosition() {
         return BlockPos.containing(
                 transform.m30(),
                 transform.m31(),
                 transform.m32()
         );
     }
-    public Vec3 getPosition() {
+    @Contract(" -> new")
+    public @NotNull Vec3 getPosition() {
         return new Vec3(
                 transform.m30(),
                 transform.m31(),
                 transform.m32()
         );
     }
-    public Vec3 getRotation() {
+    public @NotNull Vec3 getRotation() {
         Vector3f euler = getRotationQuat().getEulerAnglesXYZ(new Vector3f());
         return new Vec3(euler.x, euler.y, euler.z);
     }
     public Quaternionf getRotationQuat() {
         return transform.getUnnormalizedRotation(new Quaternionf());
     }
-    public Vec3 getScale() {
+    public @NotNull Vec3 getScale() {
         Vector3f scale = transform.getScale(new Vector3f());
         return new Vec3(scale.x, scale.y, scale.z);
     }
@@ -109,14 +114,14 @@ public final class Prop {
     public void setData(CompoundTag data) {
         this.data = data;
     }
-    public void setPosition(Vec3 position) {
+    public void setPosition(@NotNull Vec3 position) {
         transform.setTranslation(
                 (float) position.x,
                 (float) position.y,
                 (float) position.z
         );
     }
-    public void setRotation(Vec3 rotation) {
+    public void setRotation(@NotNull Vec3 rotation) {
         Vector3f position = transform.getTranslation(new Vector3f());
         Vector3f scale = transform.getScale(new Vector3f());
         Quaternionf rotationQuat = new Quaternionf().rotationXYZ(
@@ -135,7 +140,7 @@ public final class Prop {
                 scale
         );
     }
-    public void setScale(Vec3 scale) {
+    public void setScale(@NotNull Vec3 scale) {
         Vector3f position = transform.getTranslation(new Vector3f());
         Quaternionf rotation = getRotationQuat();
         transform.translationRotateScale(
@@ -149,7 +154,7 @@ public final class Prop {
         );
     }
 
-    public CompoundTag serializeNBT() {
+    public @NotNull CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("Id", id);
         tag.putString("Definition", definition.toString());
@@ -165,7 +170,7 @@ public final class Prop {
         return tag;
     }
 
-    public static @Nullable Prop deserializeNBT(CompoundTag tag) {
+    public static @Nullable Prop deserializeNBT(@NotNull CompoundTag tag) {
         if (!tag.hasUUID("Id"))
             return null;
         ResourceLocation definition = ResourceLocation.tryParse(tag.getString("Definition"));
@@ -198,7 +203,7 @@ public final class Prop {
         }
     }
 
-    public static void placeInWorld(Prop prop, Level level) {
+    public static void placeInWorld(Prop prop, @NotNull Level level) {
         if (level.isClientSide)
             throw new IllegalStateException("Props must be placed on the logical server");
         LevelChunk chunk = level.getChunkAt(prop.getBlockPosition());
@@ -206,7 +211,7 @@ public final class Prop {
         manager.addProp(prop);
     }
 
-    public static void removeFromWorld(Prop prop, Level level) {
+    public static void removeFromWorld(Prop prop, @NotNull Level level) {
         if (level.isClientSide)
             throw new IllegalStateException("Props must be removed on the logical server");
         LevelChunk chunk = level.getChunkAt(prop.getBlockPosition());
