@@ -133,4 +133,32 @@ public final class PropRenderer {
                 position.z + radius
         );
     }
+
+    public static void renderOutline(
+            PoseStack poseStack,
+            Prop prop,
+            Vec3 camera
+    ) {
+        Minecraft minecraft = Minecraft.getInstance();
+        BakedModel model = MODEL_CACHE.computeIfAbsent(prop.getDefinition(), minecraft.getModelManager()::getModel);
+
+        Vec3 position = prop.getPosition();
+        Vec3 scale = prop.getScale();
+
+        poseStack.pushPose();
+
+        poseStack.translate(
+                position.x - camera.x,
+                position.y - camera.y,
+                position.z - camera.z
+        );
+        poseStack.mulPose(prop.getRotationQuat().normalize());
+        poseStack.scale(
+                (float) scale.x,
+                (float) scale.y,
+                (float) scale.z
+        );
+
+        poseStack.popPose();
+    }
 }

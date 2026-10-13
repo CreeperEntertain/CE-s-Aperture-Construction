@@ -8,6 +8,8 @@ import net.centertain.ceac.decal.server.DecalBreakage;
 import net.centertain.ceac.material.preview.MaterialPlacement;
 import net.centertain.ceac.material.shapes.MaterialShapeSoundEvents;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeSelectionOutline;
+import net.centertain.ceac.prop.PropHitResult;
+import net.centertain.ceac.prop.client.render.PropRenderer;
 import net.centertain.ceac.utility.Soundworks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -91,5 +93,19 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void onPlaySound(PlaySoundEvent event) {
         MaterialShapeSoundEvents.handleGeneralSoundEvents(event);
+    }
+
+    @SubscribeEvent
+    public static void onPropHighlight(RenderHighlightEvent.Block event) {
+        if (!(event.getTarget() instanceof PropHitResult hit))
+            return;
+
+        event.setCanceled(true);
+
+        PropRenderer.renderOutline(
+                event.getPoseStack(),
+                hit.getProp(),
+                event.getCamera().getPosition()
+        );
     }
 }
