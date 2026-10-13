@@ -5,8 +5,8 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
 
-public final class ModCapabilities {
+public final class ModDecalCapabilities {
     public static final Capability<DecalManager> DECALS = CapabilityManager.get(new CapabilityToken<>() {});
 
-    private ModCapabilities() {}
+    private ModDecalCapabilities() {}
 }
