@@ -9,6 +9,8 @@ import net.centertain.ceac.material.preview.MaterialPlacement;
 import net.centertain.ceac.material.shapes.MaterialShapeSoundEvents;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeSelectionOutline;
 import net.centertain.ceac.prop.PropHitResult;
+import net.centertain.ceac.prop.client.ClientPropMiningProgress;
+import net.centertain.ceac.prop.client.PropMiningClient;
 import net.centertain.ceac.prop.client.render.PropRenderer;
 import net.centertain.ceac.utility.Soundworks;
 import net.minecraftforge.api.distmarker.Dist;
@@ -63,6 +65,8 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientDecals.clear();
+        ClientPropMiningProgress.clear();
+        PropMiningClient.reset();
     }
 
     @SubscribeEvent

@@ -2,6 +2,8 @@ package net.centertain.ceac.prop;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.ToolActions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +18,14 @@ public final class PropDefinitions {
                 SoundType.WOOD,
                 2.0f,
                 true,
-                true
+                true,
+                new AABB(
+                        -0.5, 0.0, -0.5,
+                        0.5, 1.0, 0.5
+                ),
+                ToolActions.AXE_DIG,
+                -1,
+                null
         ));
     }
 

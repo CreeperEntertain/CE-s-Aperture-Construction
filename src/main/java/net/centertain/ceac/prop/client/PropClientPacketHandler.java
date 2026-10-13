@@ -17,6 +17,9 @@ public final class PropClientPacketHandler {
                 Prop prop = Prop.deserializeNBT(packet.getData());
                 if (prop != null)
                     ClientProps.put(prop);
+            } case REMOVE -> {
+                if (packet.getData().hasUUID("Id"))
+                    ClientProps.remove(packet.getData().getUUID("Id"));
             } case CHUNK_SNAPSHOT -> {
                 List<Prop> props = new ArrayList<>();
                 ListTag list = packet.getData().getList("Props", Tag.TAG_COMPOUND);

@@ -3,6 +3,7 @@ package net.centertain.ceac.prop.network;
 import net.centertain.ceac.material.network.SyncCurrencyPacket;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.client.PropClientPacketHandler;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -12,11 +13,13 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.Collection;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public final class SyncPropPacket {
     public enum Action {
         ADD,
+        REMOVE,
         CHUNK_SNAPSHOT
     }
 
@@ -32,6 +35,17 @@ public final class SyncPropPacket {
         this.chunkX = pos.x;
         this.chunkZ = pos.z;
         this.data = prop.serializeNBT();
+    }
+
+    public SyncPropPacket(UUID propId, BlockPos position) {
+        ChunkPos pos = new ChunkPos(position);
+
+        this.action = Action.REMOVE;
+        this.chunkX = pos.x;
+        this.chunkZ = pos.z;
+
+        this.data = new CompoundTag();
+        this.data.putUUID("Id", propId);
     }
 
     public SyncPropPacket(ChunkPos pos, Collection<Prop> props) {

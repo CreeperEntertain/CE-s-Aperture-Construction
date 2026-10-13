@@ -6,20 +6,25 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
 import net.centertain.ceac.prop.PropDefinitions;
+import net.centertain.ceac.prop.client.ClientPropMiningProgress;
 import net.centertain.ceac.prop.client.ClientProps;
+import net.centertain.ceac.prop.client.PropMiningClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -30,7 +35,6 @@ import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 
 import java.util.*;
 
@@ -67,9 +71,10 @@ public final class PropRenderer {
         for (int chunkX = center.x - chunkRadius; chunkX <= center.x + chunkRadius; chunkX++)
             for (int chunkZ = center.z - chunkRadius; chunkZ <= center.z + chunkRadius; chunkZ++)
                 for (Prop prop : ClientProps.getInChunk(chunkX, chunkZ))
-                    handleProp(prop, minecraft, modelManager, poseStack, camera, level, modelRenderer, consumer);
+                    handleProp(prop, minecraft, modelManager, poseStack, camera, level, modelRenderer, consumer, buffers);
 
         buffers.endBatch(RenderType.solid());
+        buffers.endBatch(RenderType.crumbling(InventoryMenu.BLOCK_ATLAS));
     }
 
     private static void handleProp(
@@ -80,7 +85,8 @@ public final class PropRenderer {
             Vec3 camera,
             ClientLevel level,
             ModelBlockRenderer modelRenderer,
-            VertexConsumer consumer
+            VertexConsumer consumer,
+            MultiBufferSource.BufferSource buffers
     ) {
         Vec3 position = prop.getPosition();
         Vec3 scale = prop.getScale();
@@ -107,8 +113,7 @@ public final class PropRenderer {
                 position.z - camera.z
         );
 
-        Quaternionf rotation = prop.getRotationQuat().normalize();
-        poseStack.mulPose(rotation);
+        poseStack.mulPose(prop.getRotationQuat().normalize());
 
         poseStack.scale(
                 (float) scale.x,
@@ -131,7 +136,92 @@ public final class PropRenderer {
                 RenderType.solid()
         );
 
+        int stage = PropMiningClient.getPredictedStage(prop.getId());
+        if (stage < 0)
+            stage = ClientPropMiningProgress.getStage(prop.getId());
+        if (stage >= 0) {
+            VertexConsumer crackConsumer = buffers.getBuffer(RenderType.crumbling(InventoryMenu.BLOCK_ATLAS));
+            renderDamageOverlay(model, poseStack, crackConsumer, stage, prop.getId().getMostSignificantBits());
+        }
+
         poseStack.popPose();
+    }
+
+    private static void renderDamageOverlay(
+            BakedModel model,
+            PoseStack poseStack,
+            VertexConsumer consumer,
+            int stage,
+            long seed
+    ) {
+        Minecraft minecraft = Minecraft.getInstance();
+        ResourceLocation spriteId = ResourceLocation.fromNamespaceAndPath(
+                "minecraft",
+                "block/destroy_stage_" + stage
+        );
+        TextureAtlasSprite sprite = minecraft.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(spriteId);
+        PoseStack.Pose pose = poseStack.last();
+        Matrix4f poseMatrix = pose.pose();
+        Matrix3f normalMatrix = pose.normal();
+
+        float u0 = sprite.getU(0.0);
+        float u1 = sprite.getU(16.0);
+        float v0 = sprite.getV(0.0);
+        float v1 = sprite.getV(16.0);
+
+        float[][] uv = {
+                {u0, v1},
+                {u1, v1},
+                {u1, v0},
+                {u0, v0}
+        };
+
+        for (BakedQuad quad : getModelQuads(model, seed)) {
+            int[] data = quad.getVertices();
+            int stride = DefaultVertexFormat.BLOCK.getIntegerSize();
+            int offset = DefaultVertexFormat.BLOCK.getOffset(0) / Integer.BYTES;
+            Direction face = quad.getDirection();
+
+            float nx = face.getStepX();
+            float ny = face.getStepY();
+            float nz = face.getStepZ();
+
+            for (int i = 0; i < 4; i++) {
+                int index = i * stride + offset;
+
+                float x = Float.intBitsToFloat(data[index]);
+                float y = Float.intBitsToFloat(data[index + 1]);
+                float z = Float.intBitsToFloat(data[index + 2]);
+
+                x += nx * 0.0005F;
+                y += ny * 0.0005F;
+                z += nz * 0.0005F;
+
+                consumer.vertex(poseMatrix, x, y, z)
+                        .color(255, 255, 255, 255)
+                        .uv(uv[i][0], uv[i][1])
+                        .overlayCoords(OverlayTexture.NO_OVERLAY)
+                        .uv2(LightTexture.FULL_BRIGHT)
+                        .normal(normalMatrix, nx, ny, nz)
+                        .endVertex();
+            }
+        }
+    }
+
+    private static List<BakedQuad> getModelQuads(BakedModel model, long seed) {
+        List<BakedQuad> quads = new ArrayList<>();
+        var state = Blocks.AIR.defaultBlockState();
+        RandomSource random = RandomSource.create();
+
+        for (Direction face : Direction.values()) {
+            random.setSeed(seed);
+            quads.addAll(model.getQuads(state, face, random, ModelData.EMPTY, null));
+        }
+
+        random.setSeed(seed);
+        quads.addAll(model.getQuads(state, null, random, ModelData.EMPTY, null));
+
+        return quads;
     }
 
     private static @NotNull AABB getBounds(Vec3 scale, Vec3 position) {

@@ -6,6 +6,8 @@ import net.centertain.ceac.material.network.BuyItemPacket;
 import net.centertain.ceac.material.network.MaterialOffsetPacket;
 import net.centertain.ceac.material.network.SellItemPacket;
 import net.centertain.ceac.material.network.SyncCurrencyPacket;
+import net.centertain.ceac.prop.network.PropMiningPacket;
+import net.centertain.ceac.prop.network.PropMiningProgressPacket;
 import net.centertain.ceac.prop.network.SyncPropPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
@@ -74,6 +76,20 @@ public final class ModNetworking {
                 SyncPropPacket::encode,
                 SyncPropPacket::decode,
                 SyncPropPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                PropMiningPacket.class,
+                PropMiningPacket::encode,
+                PropMiningPacket::decode,
+                PropMiningPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                PropMiningProgressPacket.class,
+                PropMiningProgressPacket::encode,
+                PropMiningProgressPacket::decode,
+                PropMiningProgressPacket::handle
         );
     }
 }

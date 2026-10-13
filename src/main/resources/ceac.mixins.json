@@ -10,7 +10,8 @@
     "LevelRendererAccessor",
     "LevelRendererMixin",
     "LightTextureAccessor",
-    "RenderSystemMixin"
+    "RenderSystemMixin",
+    "MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -41,6 +41,22 @@ public final class ClientProps {
         PROPS_BY_CHUNK.computeIfAbsent(newChunkKey, ignored -> new HashMap<>()).put(prop.getId(), prop);
     }
 
+    public static boolean remove(UUID id) {
+        Long chunkKey = CHUNK_BY_ID.remove(id);
+        if (chunkKey == null)
+            return false;
+
+        Map<UUID, Prop> chunkProps = PROPS_BY_CHUNK.get(chunkKey);
+        if (chunkProps == null)
+            return false;
+
+        boolean removed = chunkProps.remove(id) != null;
+        if (chunkProps.isEmpty())
+            PROPS_BY_CHUNK.remove(chunkKey);
+
+        return removed;
+    }
+
     public static Collection<Prop> getInChunk(int chunkX, int chunkZ) {
         Map<UUID, Prop> props = PROPS_BY_CHUNK.get(ChunkPos.asLong(chunkX, chunkZ));
         return props == null ? List.of() : props.values();

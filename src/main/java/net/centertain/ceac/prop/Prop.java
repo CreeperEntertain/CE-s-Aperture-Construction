@@ -222,7 +222,15 @@ public final class Prop {
     public static void removeFromWorld(Prop prop, @NotNull Level level) {
         if (level.isClientSide)
             throw new IllegalStateException("Props must be removed on the logical server");
+
         LevelChunk chunk = level.getChunkAt(prop.getBlockPosition());
-        PropCapabilities.get(chunk).removeProp(prop.getId());
+        PropManager manager = PropCapabilities.get(chunk);
+        if (!manager.removeProp(prop.getId()))
+            return;
+
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.TRACKING_CHUNK.with(() -> chunk),
+                new SyncPropPacket(prop.getId(), prop.getBlockPosition())
+        );
     }
 }
