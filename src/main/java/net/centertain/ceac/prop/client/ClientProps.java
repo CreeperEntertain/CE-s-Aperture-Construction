@@ -1,11 +1,9 @@
 package net.centertain.ceac.prop.client;
 
 import net.centertain.ceac.prop.Prop;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -24,8 +22,6 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 public final class ClientProps {
     private static final Map<Long, Map<UUID, Prop>> PROPS_BY_CHUNK = new HashMap<>();
     private static final Map<UUID, Long> CHUNK_BY_ID = new HashMap<>();
-
-    private static ClientLevel currentLevel;
 
     private ClientProps() {}
 
@@ -77,18 +73,6 @@ public final class ClientProps {
             return;
         ChunkPos pos = event.getChunk().getPos();
         removeChunk(pos.x, pos.z);
-    }
-
-    @SubscribeEvent
-    public static void onClientTick(@NotNull TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END)
-            return;
-
-        ClientLevel level = Minecraft.getInstance().level;
-        if (level != currentLevel) {
-            clear();
-            currentLevel = level;
-        }
     }
 
     @SubscribeEvent
