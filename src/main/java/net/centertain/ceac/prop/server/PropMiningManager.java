@@ -2,16 +2,15 @@ package net.centertain.ceac.prop.server;
 
 import net.centertain.ceac.block.custom.material_shapes.basic_shapes.Block;
 import net.centertain.ceac.network.ModNetworking;
-import net.centertain.ceac.prop.Prop;
-import net.centertain.ceac.prop.PropDefinition;
-import net.centertain.ceac.prop.PropMiningMath;
-import net.centertain.ceac.prop.PropRaycast;
+import net.centertain.ceac.prop.*;
+import net.centertain.ceac.prop.network.PropBreakParticlesPacket;
 import net.centertain.ceac.prop.network.PropMiningPacket;
 import net.centertain.ceac.prop.network.PropMiningProgressPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -22,6 +21,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -193,6 +194,9 @@ public final class PropMiningManager {
             return;
         if (!Prop.removeFromWorld(prop, level))
             return;
+
+        sendBreakParticles(level, prop, definition);
+
         if (
                 !player.getAbilities().instabuild &&
                 definition.getDropItem() != null &&
@@ -261,6 +265,39 @@ public final class PropMiningManager {
         ModNetworking.CHANNEL.send(
                 PacketDistributor.TRACKING_CHUNK.with(() -> chunk),
                 new PropMiningProgressPacket(propId, stage)
+        );
+    }
+
+    private static void sendBreakParticles(
+            ServerLevel level,
+            Prop prop,
+            PropDefinition definition
+    ) {
+        PropGeometry geometry = PropGeometry.get(level.getServer().getResourceManager(), definition.getModelId());
+        if (geometry == null)
+            return;
+
+        Matrix4f transform = prop.getTransform();
+        double volume = geometry.getVolume() * Math.abs(new Matrix3f(transform).determinant());
+        if (!Double.isFinite(volume) || volume <= 1.0e-12)
+            return;
+
+        int count = (int) Math.min(1000.0, Math.max(1.0, Math.ceil(volume * 64.0)));
+        LevelChunk chunk = level.getChunkSource().getChunkNow(
+                prop.getBlockPosition().getX() >> 4,
+                prop.getBlockPosition().getZ() >> 4
+        );
+        if (chunk == null)
+            return;
+
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.TRACKING_CHUNK.with(() -> chunk),
+                new PropBreakParticlesPacket(
+                        definition.getModelId(),
+                        transform,
+                        count,
+                        RandomSource.create().nextLong()
+                )
         );
     }
 

@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -23,10 +24,43 @@ public final class PropGeometry {
     private static final double RAY_EPSILON = 1.0e-7;
     private static final Map<ResourceLocation, Optional<PropGeometry>> CACHE = new HashMap<>();
 
+    private final Vec3 minBounds;
+    private final Vec3 maxBounds;
+    private final double boundsVolume;
+    private final double volume;
     private final List<Triangle> triangles;
 
     private PropGeometry(List<Triangle> triangles) {
         this.triangles = List.copyOf(triangles);
+
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double minZ = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        double maxZ = Double.NEGATIVE_INFINITY;
+        double signedVolume = 0.0;
+
+        for (Triangle triangle : triangles) {
+            Vec3 a = triangle.a;
+            Vec3 b = triangle.b;
+            Vec3 c = triangle.c;
+            signedVolume += a.dot(b.cross(c)) / 6.0;
+
+            for (Vec3 vertex : new Vec3[]{a, b, c}) {
+                minX = Math.min(minX, vertex.x);
+                minY = Math.min(minY, vertex.y);
+                minZ = Math.min(minZ, vertex.z);
+                maxX = Math.max(maxX, vertex.x);
+                maxY = Math.max(maxY, vertex.y);
+                maxZ = Math.max(maxZ, vertex.z);
+            }
+        }
+
+        this.minBounds = new Vec3(minX, minY, minZ);
+        this.maxBounds = new Vec3(maxX, maxY, maxZ);
+        this.boundsVolume = (maxX - minX) * (maxY - minY) * (maxZ * minZ);
+        this.volume = Math.abs(signedVolume);
     }
 
     public record Triangle(
@@ -63,6 +97,14 @@ public final class PropGeometry {
 
     public List<Triangle> getTriangles() {
         return triangles;
+    }
+
+    public double getVolume() {
+        return volume;
+    }
+
+    public Vec3 getBoundsCenter() {
+        return minBounds.add(maxBounds).scale(0.5);
     }
 
     private static PropGeometry load(ResourceManager resources, ResourceLocation modelId) throws IOException {
@@ -183,6 +225,48 @@ public final class PropGeometry {
         }
 
         return triangles;
+    }
+
+    public @Nullable Vec3 samplePointInside(RandomSource random) {
+        if (volume <= 1.0e-12 || boundsVolume <= 1.0e-12)
+            return null;
+
+        int maxAttempts = (int) Math.max(128.0, Math.min(100_000.0, Math.ceil(boundsVolume / volume * 12.0)));
+        Vec3 rayDirection = new Vec3( // Random axis non-aligned values from hell
+                1.0,
+                0.3713906763541037,
+                0.6947465906068658
+        ).normalize();
+        double width = maxBounds.x - minBounds.x;
+        double height = maxBounds.y - minBounds.y;
+        double depth = maxBounds.z - minBounds.z;
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            Vec3 point = new Vec3(
+                    minBounds.x + random.nextDouble() * width,
+                    minBounds.y + random.nextDouble() * height,
+                    minBounds.z + random.nextDouble() * depth
+            );
+            if (containsPoint(point, rayDirection))
+                return point;
+        }
+
+        return null;
+    }
+
+    private boolean containsPoint(Vec3 point, Vec3 rayDirection) {
+        int intersections = 0;
+        for (Triangle triangle : triangles)
+            if (intersectTriangle(
+                    point,
+                    rayDirection,
+                    triangle.a,
+                    triangle.b,
+                    triangle.c,
+                    Double.POSITIVE_INFINITY
+            ) != null)
+                intersections++;
+        return (intersections & 1) != 0;
     }
 
     public @Nullable RayHit raycast(

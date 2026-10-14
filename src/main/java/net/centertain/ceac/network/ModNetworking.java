@@ -6,6 +6,7 @@ import net.centertain.ceac.material.network.BuyItemPacket;
 import net.centertain.ceac.material.network.MaterialOffsetPacket;
 import net.centertain.ceac.material.network.SellItemPacket;
 import net.centertain.ceac.material.network.SyncCurrencyPacket;
+import net.centertain.ceac.prop.network.PropBreakParticlesPacket;
 import net.centertain.ceac.prop.network.PropMiningPacket;
 import net.centertain.ceac.prop.network.PropMiningProgressPacket;
 import net.centertain.ceac.prop.network.SyncPropPacket;
@@ -90,6 +91,13 @@ public final class ModNetworking {
                 PropMiningProgressPacket::encode,
                 PropMiningProgressPacket::decode,
                 PropMiningProgressPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                PropBreakParticlesPacket.class,
+                PropBreakParticlesPacket::encode,
+                PropBreakParticlesPacket::decode,
+                PropBreakParticlesPacket::handle
         );
     }
 }
