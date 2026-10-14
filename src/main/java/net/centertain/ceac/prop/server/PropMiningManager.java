@@ -96,7 +96,11 @@ public final class PropMiningManager {
             UUID requestedPropId
     ) {
         Session session = SESSIONS.get(player.getUUID());
-        if (session == null || !session.propId.equals(requestedPropId))
+        if (session == null) {
+            start(player, requestedPropId);
+            return;
+        }
+        if (!session.propId.equals(requestedPropId))
             return;
         if (player.level() != session.level) {
             cancel(player.getUUID(), null);
