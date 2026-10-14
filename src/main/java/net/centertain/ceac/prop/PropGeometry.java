@@ -59,7 +59,7 @@ public final class PropGeometry {
 
         this.minBounds = new Vec3(minX, minY, minZ);
         this.maxBounds = new Vec3(maxX, maxY, maxZ);
-        this.boundsVolume = (maxX - minX) * (maxY - minY) * (maxZ * minZ);
+        this.boundsVolume = (maxX - minX) * (maxY - minY) * (maxZ - minZ);
         this.volume = Math.abs(signedVolume);
     }
 
