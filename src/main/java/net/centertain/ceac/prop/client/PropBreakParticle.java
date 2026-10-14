@@ -8,8 +8,8 @@ import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.NotNull;
 
 public final class PropBreakParticle extends TextureSheetParticle {
-    private final float uo;
-    private final float vo;
+    private final int uo;
+    private final int vo;
 
     public PropBreakParticle(
             ClientLevel level,
@@ -47,21 +47,21 @@ public final class PropBreakParticle extends TextureSheetParticle {
 
     @Override
     protected float getU0() {
-        return this.sprite.getU((this.uo + 1) / 4.0);
+        return this.sprite.getU((this.uo + 1) * 4.0);
     }
 
     @Override
     protected float getU1() {
-        return this.sprite.getU(this.uo / 4.0);
+        return this.sprite.getU(this.uo * 4.0);
     }
 
     @Override
     protected float getV0() {
-        return this.sprite.getV(this.vo / 4.0);
+        return this.sprite.getV(this.vo * 4.0);
     }
 
     @Override
     protected float getV1() {
-        return this.sprite.getV((this.vo + 1) / 4.0);
+        return this.sprite.getV((this.vo + 1) * 4.0);
     }
 }
