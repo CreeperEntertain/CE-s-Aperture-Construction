@@ -337,8 +337,8 @@ public final class PropRenderer {
         for (OverlayVertex current : input) {
             double currentValue = projectedAxis(current, projection, axis);
             boolean currentInside = keepGreater
-                    ? previousValue >= boundary - 1.0e-9
-                    : previousValue <= boundary + 1.0e-9;
+                    ? currentValue >= boundary - 1.0e-9
+                    : currentValue <= boundary + 1.0e-9;
 
             if (currentInside != previousInside) {
                 double denominator = currentValue - previousValue;
