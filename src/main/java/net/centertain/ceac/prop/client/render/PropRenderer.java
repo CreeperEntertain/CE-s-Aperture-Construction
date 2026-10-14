@@ -257,6 +257,7 @@ public final class PropRenderer {
         return new Vec3(result.x, result.y, result.z);
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     private static void emitRepeatedProjectedPolygon(
             List<OverlayVertex> polygon,
             Projection projection,
@@ -301,16 +302,24 @@ public final class PropRenderer {
                 OverlayVertex first = clipped.get(0);
 
                 for (int i = 1; i < clipped.size() - 1; i++) {
+                    OverlayVertex a = first;
+                    OverlayVertex b = clipped.get(i);
+                    OverlayVertex c = clipped.get(i + 1);
+
                     emitOverlayVertex(
-                            first, tileU, tileV, projection, sprite,
+                            a, tileU, tileV, projection, sprite,
                             consumer, poseMatrix, normalMatrix, normal
                     );
                     emitOverlayVertex(
-                            clipped.get(i), tileU, tileV, projection, sprite,
+                            b, tileU, tileV, projection, sprite,
                             consumer, poseMatrix, normalMatrix, normal
                     );
                     emitOverlayVertex(
-                            clipped.get(i + 1), tileU, tileV, projection, sprite,
+                            c, tileU, tileV, projection, sprite,
+                            consumer, poseMatrix, normalMatrix, normal
+                    );
+                    emitOverlayVertex(
+                            c, tileU, tileV, projection, sprite,
                             consumer, poseMatrix, normalMatrix, normal
                     );
                 }
