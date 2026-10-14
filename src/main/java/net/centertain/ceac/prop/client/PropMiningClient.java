@@ -13,7 +13,6 @@ public final class PropMiningClient {
     private static UUID activePropId;
     private static float predictedProgress;
     private static int predictedStage = -1;
-    private static boolean consumeAttackUntilRelease;
 
     private PropMiningClient() {}
 
@@ -26,7 +25,6 @@ public final class PropMiningClient {
         )
             return;
         abort();
-        consumeAttackUntilRelease = true;
 
         minecraft.player.swing(InteractionHand.MAIN_HAND);
 
@@ -46,19 +44,6 @@ public final class PropMiningClient {
         ) {
             abort();
             return false;
-        }
-
-        if (consumeAttackUntilRelease) {
-            if (!breaking) {
-                consumeAttackUntilRelease = false;
-                minecraft.gameMode.stopDestroyBlock();
-                abort();
-                return true;
-            }
-            if (!(minecraft.hitResult instanceof PropHitResult)) {
-                abort();
-                return true;
-            }
         }
 
         HitResult hitResult = minecraft.hitResult;
@@ -115,7 +100,6 @@ public final class PropMiningClient {
         activePropId = null;
         predictedProgress = 0.0f;
         predictedStage = -1;
-        consumeAttackUntilRelease = false;
     }
 
     private static void send(
