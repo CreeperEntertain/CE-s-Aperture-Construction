@@ -24,6 +24,8 @@ public final class PropBreakParticle extends TextureSheetParticle {
     ) {
         super(level, x, y, z);
 
+        setSprite(sprite);
+
         this.xd = xd;
         this.yd = yd;
         this.zd = zd;
