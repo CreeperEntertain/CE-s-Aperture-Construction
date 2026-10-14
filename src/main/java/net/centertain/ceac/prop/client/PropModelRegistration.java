@@ -1,5 +1,6 @@
 package net.centertain.ceac.prop.client;
 
+import net.centertain.ceac.prop.PropGeometry;
 import net.centertain.ceac.prop.client.render.PropRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -32,6 +33,7 @@ public final class PropModelRegistration {
 
     @SubscribeEvent
     public static void onModelsBaked(ModelEvent.BakingCompleted event) {
+        PropGeometry.clearCache();
         PropRenderer.clearModelCache();
     }
 }

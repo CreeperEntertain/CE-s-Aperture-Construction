@@ -28,6 +28,7 @@ public final class PropRaycast {
             double distance
     ) {}
 
+    @SuppressWarnings("resource")
     public static @Nullable Target findTarget(
             @NotNull ServerPlayer player,
             double reach
@@ -47,8 +48,9 @@ public final class PropRaycast {
         ));
         double blockDistance = blockHit.getType() == HitResult.Type.MISS
                 ? reach : origin.distanceTo(blockHit.getLocation());
-        Target closest = null;
         double closestPropDistance = reach;
+        Target closest = null;
+
         BlockPos playerPos = player.blockPosition();
         int chunkRadius = (int) Math.ceil(reach / 16.0) + 1;
 
@@ -62,52 +64,36 @@ public final class PropRaycast {
                 LevelChunk chunk = level.getChunkSource().getChunkNow(chunkX, chunkZ);
                 if (chunk == null)
                     continue;
-
                 for (Prop prop : PropCapabilities.get(chunk).getProps().values()) {
                     PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
                     if (definition == null || !definition.isTargetable())
                         continue;
 
-                    Matrix4f transform = prop.getTransform();
-                    if (Math.abs(transform.determinant()) < 1.0e-8f)
+                    PropGeometry geometry = PropGeometry.get(
+                            level.getServer().getResourceManager(),
+                            definition.getModelId()
+                    );
+                    if (geometry == null)
                         continue;
 
-                    Matrix4f inverse = new Matrix4f(transform).invert();
-                    Vec3 localStart = transformPoint(origin, inverse);
-                    Vec3 localEnd = transformPoint(end, inverse);
-                    AABB hitbox = definition.getLocalHitbox();
-                    Vec3 localHit = hitbox.clip(localStart, localEnd).orElse(null);
-                    if (localHit == null)
+                    double maxDistance = Math.min(reach, Math.max(blockDistance + EPSILON, closestPropDistance));
+                    PropGeometry.RayHit hit = geometry.raycast(origin, direction, prop.getTransform(), maxDistance);
+                    if (hit == null)
                         continue;
 
-                    Vec3 worldHit = transformPoint(localHit, transform);
-                    double distance = origin.distanceTo(worldHit);
-                    if (distance > reach)
-                        continue;
-                    if (distance > blockDistance + EPSILON)
-                        continue;
-                    if (distance >= closestPropDistance)
+                    double distance = hit.distance();
+                    if (
+                            distance > reach ||
+                            distance > blockDistance + EPSILON ||
+                            distance >= closestPropDistance
+                    )
                         continue;
 
                     closestPropDistance = distance;
-                    closest = new Target(prop, definition, worldHit, distance);
+                    closest = new Target(prop, definition, hit.location(), distance);
                 }
             }
 
         return closest;
-    }
-
-    @Contract("_, _ -> new")
-    private static @NotNull Vec3 transformPoint(
-            @NotNull Vec3 point,
-            Matrix4f transform
-    ) {
-        Vector3f result = new Vector3f(
-                (float) point.x,
-                (float) point.y,
-                (float) point.z
-        );
-        result.mulPosition(transform);
-        return new Vec3(result.x, result.y, result.z);
     }
 }
