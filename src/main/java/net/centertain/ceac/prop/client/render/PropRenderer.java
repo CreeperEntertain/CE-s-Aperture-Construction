@@ -35,6 +35,7 @@ import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import java.util.*;
 
@@ -42,6 +43,8 @@ import java.util.*;
 public final class PropRenderer {
     private static final Map<ResourceLocation, BakedModel> MODEL_CACHE = new HashMap<>();
     private static final Map<ResourceLocation, Set<Edge>> OUTLINE_EDGE_CACHE = new HashMap<>();
+
+    private static final double CRACK_OVERLAY_OFFSET = 0.001;
 
     private PropRenderer() {}
 
@@ -152,7 +155,7 @@ public final class PropRenderer {
             stage = ClientPropMiningProgress.getStage(prop.getId());
         if (stage >= 0) {
             VertexConsumer crackConsumer = crumblingBuffers.getBuffer(RenderType.crumbling(InventoryMenu.BLOCK_ATLAS));
-            renderDamageOverlay(model, poseStack, crackConsumer, stage, prop.getId().getMostSignificantBits());
+            renderDamageOverlay(model, poseStack, crackConsumer, stage, prop);
         }
 
         poseStack.popPose();
@@ -163,7 +166,7 @@ public final class PropRenderer {
             PoseStack poseStack,
             VertexConsumer consumer,
             int stage,
-            long seed
+            Prop prop
     ) {
         Minecraft minecraft = Minecraft.getInstance();
         ResourceLocation spriteId = ResourceLocation.fromNamespaceAndPath(
@@ -174,48 +177,57 @@ public final class PropRenderer {
         PoseStack.Pose pose = poseStack.last();
         Matrix4f poseMatrix = pose.pose();
         Matrix3f normalMatrix = pose.normal();
+        Matrix4f worldTransform = prop.getTransform();
 
-        float u0 = sprite.getU(0.0);
-        float u1 = sprite.getU(16.0);
-        float v0 = sprite.getV(0.0);
-        float v1 = sprite.getV(16.0);
-
-        float[][] uv = {
-                {u0, v1},
-                {u1, v1},
-                {u1, v0},
-                {u0, v0}
-        };
-
-        for (BakedQuad quad : getModelQuads(model, seed)) {
+        for (BakedQuad quad : getModelQuads(model, prop.getId().getMostSignificantBits())) {
             int[] data = quad.getVertices();
             int stride = DefaultVertexFormat.BLOCK.getIntegerSize();
             int offset = DefaultVertexFormat.BLOCK.getOffset(0) / Integer.BYTES;
-            Direction face = quad.getDirection();
 
-            float nx = face.getStepX();
-            float ny = face.getStepY();
-            float nz = face.getStepZ();
+            Vec3[] local = new Vec3[4];
+            Vec3[] world = new Vec3[4];
 
             for (int i = 0; i < 4; i++) {
                 int index = i * stride + offset;
-
-                float x = Float.intBitsToFloat(data[index]);
-                float y = Float.intBitsToFloat(data[index + 1]);
-                float z = Float.intBitsToFloat(data[index + 2]);
-
-                x += nx * 0.0005F;
-                y += ny * 0.0005F;
-                z += nz * 0.0005F;
-
-                consumer.vertex(poseMatrix, x, y, z)
-                        .color(255, 255, 255, 255)
-                        .uv(uv[i][0], uv[i][1])
-                        .overlayCoords(OverlayTexture.NO_OVERLAY)
-                        .uv2(LightTexture.FULL_BRIGHT)
-                        .normal(normalMatrix, nx, ny, nz)
-                        .endVertex();
+                local[i] = new Vec3(
+                        Float.intBitsToFloat(data[index]),
+                        Float.intBitsToFloat(data[index + 1]),
+                        Float.intBitsToFloat(data[index + 2])
+                );
+                world[i] = transformPoint(local[i], worldTransform);
             }
+
+            Vec3 localNormal = local[1].subtract(local[0]).cross(local[2].subtract(local[0]));
+            Vec3 worldNormal = world[1].subtract(world[0]).cross(world[2].subtract(world[0]));
+            if (localNormal.lengthSqr() < 1.0e-12 || worldNormal.lengthSqr() < 1.0e-12)
+                continue;
+            localNormal = localNormal.normalize();
+            worldNormal = worldNormal.normalize();
+
+            double ax = Math.abs(worldNormal.x);
+            double ay = Math.abs(worldNormal.y);
+            double az = Math.abs(worldNormal.z);
+
+            Projection projection;
+            if (ay >= ax && ay >= az)
+                projection = new Projection(0, 2);
+            else if (ax >= az)
+                projection = new Projection(2, 1);
+            else
+                projection = new Projection(0, 1);
+
+            List<OverlayVertex> polygon = new ArrayList<>(4);
+            for (int i = 0; i < 4; i++)
+                polygon.add(new OverlayVertex(local[i], world[i]));
+            emitRepeatedProjectedPolygon(
+                    polygon,
+                    projection,
+                    sprite,
+                    consumer,
+                    poseMatrix,
+                    normalMatrix,
+                    localNormal
+            );
         }
     }
 
@@ -233,6 +245,158 @@ public final class PropRenderer {
         quads.addAll(model.getQuads(state, null, random, ModelData.EMPTY, null));
 
         return quads;
+    }
+
+    private static Vec3 transformPoint(Vec3 point, Matrix4f transform) {
+        Vector3f result = new Vector3f(
+                (float) point.x,
+                (float) point.y,
+                (float) point.z
+        );
+        result.mulPosition(transform);
+        return new Vec3(result.x, result.y, result.z);
+    }
+
+    private static void emitRepeatedProjectedPolygon(
+            List<OverlayVertex> polygon,
+            Projection projection,
+            TextureAtlasSprite sprite,
+            VertexConsumer consumer,
+            Matrix4f poseMatrix,
+            Matrix3f normalMatrix,
+            Vec3 normal
+    ) {
+        if (polygon.size() < 3)
+            return;
+
+        double minU = Double.POSITIVE_INFINITY;
+        double minV = Double.POSITIVE_INFINITY;
+        double maxU = Double.NEGATIVE_INFINITY;
+        double maxV = Double.NEGATIVE_INFINITY;
+
+        for (OverlayVertex vertex : polygon) {
+            double u = projection.u(vertex.world);
+            double v = projection.v(vertex.world);
+
+            minU = Math.min(minU, u);
+            minV = Math.min(minV, v);
+            maxU = Math.max(maxU, u);
+            maxV = Math.max(maxV, v);
+        }
+
+        int firstU = (int) Math.floor(minU);
+        int firstV = (int) Math.floor(minV);
+        int lastU = (int) Math.ceil(maxU) - 1;
+        int lastV = (int) Math.ceil(maxV) - 1;
+
+        for (int tileU = firstU; tileU <= lastU; tileU++)
+            for (int tileV = firstV; tileV <= lastV; tileV++) {
+                List<OverlayVertex> clipped = clipPolygon(polygon, projection, 0, tileU, true);
+                clipped = clipPolygon(clipped, projection, 0, tileU + 1.0, false);
+                clipped = clipPolygon(clipped, projection, 1, tileV, true);
+                clipped = clipPolygon(clipped, projection, 1, tileV + 1.0, false);
+                if (clipped.size() < 3)
+                    continue;
+
+                OverlayVertex first = clipped.get(0);
+
+                for (int i = 1; i < clipped.size() - 1; i++) {
+                    emitOverlayVertex(
+                            first, tileU, tileV, projection, sprite,
+                            consumer, poseMatrix, normalMatrix, normal
+                    );
+                    emitOverlayVertex(
+                            clipped.get(i), tileU, tileV, projection, sprite,
+                            consumer, poseMatrix, normalMatrix, normal
+                    );
+                    emitOverlayVertex(
+                            clipped.get(i + 1), tileU, tileV, projection, sprite,
+                            consumer, poseMatrix, normalMatrix, normal
+                    );
+                }
+            }
+    }
+
+    private static List<OverlayVertex> clipPolygon(
+            List<OverlayVertex> input,
+            Projection projection,
+            int axis,
+            double boundary,
+            boolean keepGreater
+    ) {
+        List<OverlayVertex> output = new ArrayList<>();
+        if (input.isEmpty())
+            return output;
+
+        OverlayVertex previous = input.get(input.size() - 1);
+        double previousValue = projectedAxis(previous, projection, axis);
+        boolean previousInside = keepGreater
+                ? previousValue >= boundary - 1.0e-9
+                : previousValue <= boundary + 1.0e-9;
+
+        for (OverlayVertex current : input) {
+            double currentValue = projectedAxis(current, projection, axis);
+            boolean currentInside = keepGreater
+                    ? previousValue >= boundary - 1.0e-9
+                    : previousValue <= boundary + 1.0e-9;
+
+            if (currentInside != previousInside) {
+                double denominator = currentValue - previousValue;
+                if (Math.abs(denominator) > 1.0e-12) {
+                    double t = (boundary - previousValue) / denominator;
+                    output.add(new OverlayVertex(
+                            previous.local.lerp(current.local, t),
+                            previous.world.lerp(current.world, t)
+                    ));
+                }
+            }
+            if (currentInside)
+                output.add(current);
+
+            previous = current;
+            previousValue = currentValue;
+            previousInside = currentInside;
+        }
+
+        return output;
+    }
+
+    private static double projectedAxis(OverlayVertex vertex, Projection projection, int axis) {
+        return axis == 0 ? projection.u(vertex.world) : projection.v(vertex.world);
+    }
+
+    private static void emitOverlayVertex(
+            OverlayVertex vertex,
+            int tileU, int tileV,
+            Projection projection,
+            TextureAtlasSprite sprite,
+            VertexConsumer consumer,
+            Matrix4f poseMatrix,
+            Matrix3f normalMatrix,
+            Vec3 normal
+    ) {
+        double localU = projection.u(vertex.world) - tileU;
+        double localV = projection.v(vertex.world) - tileV;
+
+        float x = (float) (vertex.local.x + normal.x * CRACK_OVERLAY_OFFSET);
+        float y = (float) (vertex.local.y + normal.y * CRACK_OVERLAY_OFFSET);
+        float z = (float) (vertex.local.z + normal.z * CRACK_OVERLAY_OFFSET);
+
+        float u = sprite.getU(Math.max(0.0, Math.min(16.0, localU * 16.0)));
+        float v = sprite.getV(Math.max(0.0, Math.min(16.0, (1.0 - localV) * 16.0)));
+
+        consumer.vertex(poseMatrix, x, y, z)
+                .color(255, 255, 255, 255)
+                .uv(u, v)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(LightTexture.FULL_BRIGHT)
+                .normal(
+                        normalMatrix,
+                        (float) normal.x,
+                        (float) normal.y,
+                        (float) normal.z
+                )
+                .endVertex();
     }
 
     private static @NotNull AABB getBounds(Vec3 scale, Vec3 position) {
@@ -378,6 +542,25 @@ public final class PropRenderer {
             if (result != 0)
                 return result;
             return Double.compare(a.z, b.z);
+        }
+    }
+
+    private record OverlayVertex(Vec3 local, Vec3 world) {}
+
+    private record Projection(int uAxis, int vAxis) {
+        double u(Vec3 point) {
+            return component(point, uAxis);
+        }
+        double v(Vec3 point) {
+            return component(point, vAxis);
+        }
+
+        private static double component(Vec3 point, int axis) {
+            return switch (axis) {
+                case 0 -> point.x;
+                case 1 -> point.y;
+                default -> point.z;
+            };
         }
     }
 }
