@@ -17,6 +17,24 @@ public final class PropMiningClient {
 
     private PropMiningClient() {}
 
+    public static boolean isAttackConsumed() {
+        if (!consumeAttackUntilRelease)
+            return false;
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (
+                minecraft.player == null ||
+                minecraft.level == null ||
+                minecraft.gameMode == null ||
+                !minecraft.options.keyAttack.isDown()
+        ) {
+            consumeAttackUntilRelease = false;
+            return false;
+        }
+
+        return true;
+    }
+
     public static void start(Prop prop) {
         Minecraft minecraft = Minecraft.getInstance();
         if (
@@ -48,16 +66,9 @@ public final class PropMiningClient {
             return false;
         }
 
-        if (consumeAttackUntilRelease) {
-            if (!breaking) {
-                consumeAttackUntilRelease = false;
-                abort();
-                return true;
-            }
-            if (!(minecraft.hitResult instanceof PropHitResult)) {
-                abort();
-                return true;
-            }
+        if (isAttackConsumed() && !(minecraft.hitResult instanceof PropHitResult)) {
+            abort();
+            return true;
         }
 
         HitResult hitResult = minecraft.hitResult;
