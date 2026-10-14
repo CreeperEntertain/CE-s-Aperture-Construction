@@ -20,11 +20,13 @@ public final class PropBreakParticle extends TextureSheetParticle {
             double yd,
             double zd,
             TextureAtlasSprite sprite,
+            float shade,
             RandomSource random
     ) {
         super(level, x, y, z);
 
         setSprite(sprite);
+        setColor(shade, shade, shade);
 
         this.xd = xd;
         this.yd = yd;
@@ -34,8 +36,8 @@ public final class PropBreakParticle extends TextureSheetParticle {
         this.quadSize = 0.035f + random.nextFloat() * 0.065f;
         this.lifetime = 12 + random.nextInt(13);
 
-        this.uo = random.nextFloat() * 3.0f;
-        this.vo = random.nextFloat() * 3.0f;
+        this.uo = random.nextInt(4);
+        this.vo = random.nextInt(4);
     }
 
     @Override
@@ -45,21 +47,21 @@ public final class PropBreakParticle extends TextureSheetParticle {
 
     @Override
     protected float getU0() {
-        return this.sprite.getU((this.uo + 1.0f) / 4.0f);
+        return this.sprite.getU((this.uo + 1) / 4.0);
     }
 
     @Override
     protected float getU1() {
-        return this.sprite.getU(this.uo / 4.0f);
+        return this.sprite.getU(this.uo / 4.0);
     }
 
     @Override
     protected float getV0() {
-        return this.sprite.getV(this.vo / 4.0f);
+        return this.sprite.getV(this.vo / 4.0);
     }
 
     @Override
     protected float getV1() {
-        return this.sprite.getV((this.vo + 1.0f) / 4.0f);
+        return this.sprite.getV((this.vo + 1) / 4.0);
     }
 }

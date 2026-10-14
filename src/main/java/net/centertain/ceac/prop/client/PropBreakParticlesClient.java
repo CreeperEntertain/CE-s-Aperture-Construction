@@ -50,6 +50,18 @@ public final class PropBreakParticlesClient {
             else
                 direction = direction.normalize();
 
+            double normalWeight =
+                    Math.abs(direction.x) +
+                    Math.abs(direction.y) +
+                    Math.abs(direction.z);
+            float shade = (float) ((
+                    Math.abs(direction.x) * 0.6
+                    + Math.abs(direction.z) * 0.8
+                    + (direction.y >= 0.0
+                            ? direction.y
+                            : -direction.y * 0.5)
+            ) / normalWeight);
+
             double speed = 0.02 + random.nextDouble() * 0.09;
             double xd = direction.x * speed + (random.nextDouble() - 0.5) * 0.035;
             double yd = direction.y * speed + 0.025 + random.nextDouble() * 0.065;
@@ -64,6 +76,7 @@ public final class PropBreakParticlesClient {
                     yd,
                     zd,
                     sprite,
+                    shade,
                     random
             ));
         }
