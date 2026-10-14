@@ -10,10 +10,13 @@ import net.minecraft.world.phys.HitResult;
 import java.util.UUID;
 
 public final class PropMiningClient {
+    private static final int CREATIVE_PROP_BREAK_INTERVAL = 5;
+
     private static UUID activePropId;
     private static float predictedProgress;
     private static int predictedStage = -1;
     private static boolean consumeAttackUntilRelease;
+    private static int nextCreativePropBreakTick;
 
     private PropMiningClient() {}
 
@@ -35,6 +38,18 @@ public final class PropMiningClient {
         return true;
     }
 
+    private static boolean isCreativePropBreakDelayed(Minecraft minecraft) {
+        if (minecraft.player == null) {
+            nextCreativePropBreakTick = 0;
+            return false;
+        }
+        if (!minecraft.player.getAbilities().instabuild) {
+            nextCreativePropBreakTick = 0;
+            return false;
+        }
+        return minecraft.player.tickCount < nextCreativePropBreakTick;
+    }
+
     public static void start(Prop prop) {
         Minecraft minecraft = Minecraft.getInstance();
         if (
@@ -43,6 +58,10 @@ public final class PropMiningClient {
                 minecraft.gameMode == null
         )
             return;
+        if (isCreativePropBreakDelayed(minecraft)) {
+            consumeAttackUntilRelease = true;
+            return;
+        }
         abort();
         consumeAttackUntilRelease = true;
 
@@ -53,6 +72,8 @@ public final class PropMiningClient {
         predictedProgress = 0.0f;
         predictedStage = -1;
         send(PropMiningPacket.Action.START, activePropId);
+        if (minecraft.player.getAbilities().instabuild)
+            nextCreativePropBreakTick = minecraft.player.tickCount + CREATIVE_PROP_BREAK_INTERVAL;
     }
 
     public static boolean handleContinue(boolean breaking) {
@@ -66,6 +87,7 @@ public final class PropMiningClient {
             return false;
         }
 
+        boolean creativeBreakDelayed = isCreativePropBreakDelayed(minecraft);
         if (isAttackConsumed() && !(minecraft.hitResult instanceof PropHitResult)) {
             abort();
             return true;
@@ -85,8 +107,11 @@ public final class PropMiningClient {
         }
 
         Prop prop = propHit.getProp();
-        if (activePropId == null || !activePropId.equals(prop.getId()))
+        if (activePropId == null || !activePropId.equals(prop.getId())) {
+            if (creativeBreakDelayed)
+                return true;
             start(prop);
+        }
         else
             minecraft.player.swing(InteractionHand.MAIN_HAND);
 
@@ -126,6 +151,7 @@ public final class PropMiningClient {
         predictedProgress = 0.0f;
         predictedStage = -1;
         consumeAttackUntilRelease = false;
+        nextCreativePropBreakTick = 0;
     }
 
     private static void send(
