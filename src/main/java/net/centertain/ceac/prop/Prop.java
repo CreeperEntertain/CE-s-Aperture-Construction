@@ -1,6 +1,8 @@
 package net.centertain.ceac.prop;
 
 import net.centertain.ceac.network.ModNetworking;
+import net.centertain.ceac.prop.enums.PropCollisionMode;
+import net.centertain.ceac.prop.enums.PropMotionMode;
 import net.centertain.ceac.prop.network.SyncPropPacket;
 import net.centertain.ceac.prop.server.PropCapabilities;
 import net.centertain.ceac.prop.server.PropManager;

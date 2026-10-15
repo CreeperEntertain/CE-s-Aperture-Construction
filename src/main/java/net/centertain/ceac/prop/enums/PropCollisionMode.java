@@ -1,4 +1,4 @@
-package net.centertain.ceac.prop;
+package net.centertain.ceac.prop.enums;
 
 public enum PropCollisionMode {
     NONE,
