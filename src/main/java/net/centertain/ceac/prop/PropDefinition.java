@@ -1,5 +1,6 @@
 package net.centertain.ceac.prop;
 
+import net.centertain.ceac.prop.physics.PropPhysDefinition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.SoundType;
@@ -20,6 +21,7 @@ public final class PropDefinition {
     @Nullable private final ToolAction effectiveToolAction;
     private final int requiredToolLevel;
     @Nullable private final Item dropItem;
+    private final PropPhysDefinition physDefinition;
 
     public PropDefinition(
             ResourceLocation modelId,
@@ -31,6 +33,32 @@ public final class PropDefinition {
             @Nullable ToolAction effectiveToolAction,
             int requiredToolLevel,
             @Nullable Item dropItem
+    ) {
+        this(
+                modelId,
+                soundType,
+                destroyTime,
+                targetable,
+                minable,
+                localHitbox,
+                effectiveToolAction,
+                requiredToolLevel,
+                dropItem,
+                PropPhysDefinition.DEFAULT
+        );
+    }
+
+    public PropDefinition(
+            ResourceLocation modelId,
+            SoundType soundType,
+            float destroyTime,
+            boolean targetable,
+            boolean minable,
+            AABB localHitbox,
+            @Nullable ToolAction effectiveToolAction,
+            int requiredToolLevel,
+            @Nullable Item dropItem,
+            PropPhysDefinition physDefinition
     ) {
         this.modelId = Objects.requireNonNull(modelId);
         this.soundType = Objects.requireNonNull(soundType);
@@ -47,6 +75,7 @@ public final class PropDefinition {
         this.effectiveToolAction = effectiveToolAction;
         this.requiredToolLevel = requiredToolLevel;
         this.dropItem = dropItem;
+        this.physDefinition = Objects.requireNonNull(physDefinition);
     }
 
     public ResourceLocation getModelId() {
@@ -58,6 +87,7 @@ public final class PropDefinition {
     public float getDestroyTime() {
         return destroyTime;
     }
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isTargetable() {
         return targetable;
     }
@@ -75,5 +105,8 @@ public final class PropDefinition {
     }
     public @Nullable Item getDropItem() {
         return dropItem;
+    }
+    public PropPhysDefinition getPhysDefinition() {
+        return physDefinition;
     }
 }
