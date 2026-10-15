@@ -1083,7 +1083,7 @@ public final class PropPhysManager implements AutoCloseable {
 
         loadedChunks.clear();
         geometryCache.clear();
-        activeProps.clear();
+        activeProps = List.of();
     }
 
 
