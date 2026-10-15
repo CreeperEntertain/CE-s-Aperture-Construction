@@ -201,7 +201,7 @@ dependencies {
         jarJar.ranged(it, "[0.4.0-beta.3,)")
     }
 
-    jarJar(implementation("cc.modlabs:box3d4j:git-8128d74-1.0.2")) {
+    jarJar minecraftLibrary(group: "cc.modlabs", name: "box3d4j", version: "git-8128d74-1.0.2") {
         exclude group: "org.bytedeco", module: "javacpp"
         jarJar.ranged(it, "[git-8128d74-1.0.2,)")
     }
