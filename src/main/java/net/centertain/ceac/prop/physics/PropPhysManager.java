@@ -850,7 +850,9 @@ public final class PropPhysManager implements AutoCloseable {
                             (float) (x == 0 ? geometry.minX : geometry.maxX),
                             (float) (y == 0 ? geometry.minY : geometry.maxY),
                             (float) (z == 0 ? geometry.minZ : geometry.maxZ)
-                    ).normalize();
+                    );
+
+                    transform.transformPosition(point);
 
                     minX = Math.min(minX, point.x);
                     minY = Math.min(minY, point.y);
