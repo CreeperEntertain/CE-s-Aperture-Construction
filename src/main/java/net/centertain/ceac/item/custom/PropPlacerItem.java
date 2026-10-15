@@ -47,8 +47,8 @@ public class PropPlacerItem extends Item {
                     UUID.randomUUID(),
                     PropTypes.TEST_PROP,
                     transform,
-                    PropCollisionMode.PASSIVE,
-                    PropMotionMode.STATIC
+                    PropCollisionMode.SOLID,
+                    PropMotionMode.DYNAMIC
             );
 
             Prop.placeInWorld(prop, level);
