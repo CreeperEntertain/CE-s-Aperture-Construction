@@ -30,6 +30,7 @@ public final class Prop {
     private final UUID id;
     private final ResourceLocation definitionId;
     private Matrix4f transform;
+    private long transformRevision;
     private PropCollisionMode collisionMode;
     private PropMotionMode motionMode;
     private CompoundTag data;
@@ -70,6 +71,9 @@ public final class Prop {
     public @NotNull Matrix4f getTransform() {
         return new Matrix4f(transform);
     }
+    public long getTransformRevision() {
+        return transformRevision;
+    }
     public PropCollisionMode getCollisionMode() {
         return collisionMode;
     }
@@ -108,7 +112,10 @@ public final class Prop {
     }
 
     public void setTransform(Matrix4f transform) {
-        this.transform = transform;
+        if (this.transform.equals(transform))
+            return;
+        this.transform = new Matrix4f(transform);
+        transformRevision++;
     }
     public void setCollisionMode(PropCollisionMode collisionMode) {
         this.collisionMode = collisionMode;
@@ -120,43 +127,54 @@ public final class Prop {
         this.data = data;
     }
     public void setPosition(@NotNull Vec3 position) {
-        transform.setTranslation(
-                (float) position.x,
-                (float) position.y,
-                (float) position.z
-        );
+        float x = (float) position.x;
+        float y = (float) position.y;
+        float z = (float) position.z;
+        if (
+                Float.compare(transform.m30(), x) == 0 &&
+                Float.compare(transform.m31(), y) == 0 &&
+                Float.compare(transform.m32(), z) == 0
+        )
+            return;
+        transform.setTranslation(x, y, z);
+        transformRevision++;
     }
     public void setRotation(@NotNull Vec3 rotation) {
-        Vector3f position = transform.getTranslation(new Vector3f());
-        Vector3f scale = transform.getScale(new Vector3f());
-        Quaternionf rotationQuat = new Quaternionf().rotationXYZ(
+        setRotation(new Quaternionf().rotationXYZ(
                 (float) rotation.x,
                 (float) rotation.y,
                 (float) rotation.z
-        );
-        transform.translationRotateScale(position, rotationQuat, scale);
+        ));
     }
     public void setRotation(Quaternionf rotation) {
-        Vector3f positon = transform.getTranslation(new Vector3f());
+        Quaternionf normalized = new Quaternionf(rotation).normalize();
+        Quaternionf current = transform.getUnnormalizedRotation(new Quaternionf()).normalize();
+        if (Math.abs(current.dot(normalized)) >= 1.0f - 1.0e-7f)
+            return;
+
+        Vector3f position = transform.getTranslation(new Vector3f());
         Vector3f scale = transform.getScale(new Vector3f());
-        transform.translationRotateScale(
-                positon,
-                new Quaternionf(rotation).normalize(),
-                scale
-        );
+
+        transform.translationRotateScale(position, normalized, scale);
+        transformRevision++;
     }
     public void setScale(@NotNull Vec3 scale) {
+        float x = (float) scale.x;
+        float y = (float) scale.y;
+        float z = (float) scale.z;
+        Vector3f currentScale = transform.getScale(new Vector3f());
+        if (
+                Float.compare(currentScale.x, x) == 0 &&
+                Float.compare(currentScale.y, y) == 0 &&
+                Float.compare(currentScale.z, z) == 0
+        )
+            return;
+
         Vector3f position = transform.getTranslation(new Vector3f());
-        Quaternionf rotation = getRotationQuat();
-        transform.translationRotateScale(
-                position,
-                rotation,
-                new Vector3f(
-                        (float) scale.x,
-                        (float) scale.y,
-                        (float) scale.z
-                )
-        );
+        Quaternionf rotation = transform.getUnnormalizedRotation(new Quaternionf());
+
+        transform.translationRotateScale(position, rotation, new Vector3f(x, y, z));
+        transformRevision++;
     }
 
     public @NotNull CompoundTag serializeNBT() {

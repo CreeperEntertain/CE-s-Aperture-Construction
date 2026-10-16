@@ -269,16 +269,17 @@ public final class PropPhysManager implements AutoCloseable {
             return;
         }
 
-        Vec3 scale = prop.getScale();
         PropBody existing = propBodies.get(prop.getId());
+        long transformRevision = prop.getTransformRevision();
         boolean rebuild = existing == null
                 || !existing.definitionId.equals(prop.getDefinitionId())
                 || existing.collisionMode != prop.getCollisionMode()
-                || existing.motionMode != prop.getMotionMode()
-                || !sameScale(existing.scale, scale);
-
+                || existing.motionMode != prop.getMotionMode();
+        if (!rebuild && existing.lastObservedTransformRevision != transformRevision)
+            rebuild = !sameScale(existing.scale, prop.getScale());
         if (rebuild) {
             destroyPropBody(prop.getId());
+
             GeometryData geometry = getGeometry(definition.getModelId());
             if (geometry == null)
                 return;
@@ -289,22 +290,24 @@ public final class PropPhysManager implements AutoCloseable {
 
             propBodies.put(prop.getId(), created);
             propsByBody.put(BodyKey.of(created.body), created);
-            existing = created;
-        } else {
-            existing.prop = prop;
-            existing.ownerChunk = ownerChunk;
+            return;
         }
+
+        existing.prop = prop;
+        existing.ownerChunk = ownerChunk;
+        if (existing.lastObservedTransformRevision == transformRevision)
+            return;
 
         Matrix4f currentTransform = prop.getTransform();
 
-        if (!sameTransform(currentTransform, existing.lastSyncedTransform)) {
-            b3Body_SetTransform(
-                    existing.body,
-                    toBoxPos(prop.getPosition()),
-                    toBoxQuat(prop.getRotationQuat())
-            );
-            existing.lastSyncedTransform = new Matrix4f(currentTransform);
-        }
+        b3Body_SetTransform(
+                existing.body,
+                toBoxPos(prop.getPosition()),
+                toBoxQuat(prop.getRotationQuat())
+        );
+
+        existing.lastSyncedTransform.set(currentTransform);
+        existing.lastObservedTransformRevision = transformRevision;
     }
 
     private PropBody createPropBody(
@@ -416,6 +419,7 @@ public final class PropPhysManager implements AutoCloseable {
                 position.z()
         ));
         body.prop.setRotation(quaternion);
+        body.lastObservedTransformRevision = body.prop.getTransformRevision();
 
         Matrix4f after = body.prop.getTransform();
         body.lastSyncedTransform.set(after);
@@ -528,6 +532,18 @@ public final class PropPhysManager implements AutoCloseable {
             if (geometry == null)
                 continue;
 
+            UUID propId = prop.getId();
+            long transformRevision = prop.getTransformRevision();
+            TerrainCoverage previous = terrainCoverageByProp.get(propId);
+            if (
+                    previous != null &&
+                    previous.definitionId().equals(prop.getDefinitionId()) &&
+                    previous.transformRevision() == transformRevision
+            ) {
+                coveredPropIds.add(propId);
+                continue;
+            }
+
             AABB bounds = worldBounds(geometry, prop.getTransform());
             if (
                     !Double.isFinite(bounds.minX)
@@ -551,12 +567,17 @@ public final class PropPhysManager implements AutoCloseable {
             if (minY > maxY)
                 continue;
 
-            UUID propId = prop.getId();
             coveredPropIds.add(propId);
-
-            TerrainCoverage previous = terrainCoverageByProp.get(propId);
-            if (previous != null && previous.matches(minX, minY, minZ, maxX, maxY, maxZ))
+            if (previous != null && previous.matches(minX, minY, minZ, maxX, maxY, maxZ)) {
+                terrainCoverageByProp.put(propId, new TerrainCoverage(
+                        minX, minY, minZ,
+                        maxX, maxY, maxZ,
+                        prop.getDefinitionId(),
+                        transformRevision,
+                        previous.keys()
+                ));
                 continue;
+            }
 
             Set<Long> nextKeys = new HashSet<>();
             for (int x = minX; x <= maxX; x++)
@@ -571,7 +592,13 @@ public final class PropPhysManager implements AutoCloseable {
                 if (previous == null || !previous.keys().contains(key))
                     retainTerrainKey(key);
 
-            terrainCoverageByProp.put(propId, new TerrainCoverage(minX, minY, minZ, maxX, maxY, maxZ, nextKeys));
+            terrainCoverageByProp.put(propId, new TerrainCoverage(
+                    minX, minY, minZ,
+                    maxX, maxY, maxZ,
+                    prop.getDefinitionId(),
+                    transformRevision,
+                    nextKeys
+            ));
         }
 
         Iterator<Map.Entry<UUID, TerrainCoverage>> coverageIterator = terrainCoverageByProp.entrySet().iterator();
@@ -588,7 +615,6 @@ public final class PropPhysManager implements AutoCloseable {
         validateTerrainBodiesIncrementally();
 
         Iterator<Long> dirtyIterator = dirtyTerrainKeys.iterator();
-
         while (dirtyIterator.hasNext()) {
             long key = dirtyIterator.next();
             if (terrainReferenceCounts.containsKey(key))
@@ -816,17 +842,18 @@ public final class PropPhysManager implements AutoCloseable {
                 continue;
 
             UUID id = prop.getId();
-            Matrix4f transform = prop.getTransform();
+            long transformRevision = prop.getTransformRevision();
 
             PropSpatialEntry existing = solidPropSpatialEntries.get(id);
             if (
                     existing != null &&
                     existing.definitionId.equals(prop.getDefinitionId()) &&
-                    sameTransform(existing.transform, transform)
+                    existing.transformRevision == transformRevision
             ) {
                 spatialSeenProps.add(id);
                 continue;
             }
+            Matrix4f transform = prop.getTransform();
             if (existing != null)
                 removePropSpatialEntry(id, existing);
 
@@ -852,7 +879,7 @@ public final class PropPhysManager implements AutoCloseable {
 
             PropSpatialEntry updated = new PropSpatialEntry(
                     prop.getDefinitionId(),
-                    new Matrix4f(transform),
+                    transformRevision,
                     interactionBounds,
                     cellKeys
             );
@@ -1452,8 +1479,9 @@ public final class PropPhysManager implements AutoCloseable {
         private final PropCollisionMode collisionMode;
         private final PropMotionMode motionMode;
         private final Vec3 scale;
-        private Matrix4f lastSyncedTransform;
+        private final Matrix4f lastSyncedTransform;
         private final Matrix4f lastNetworkedTransform;
+        private long lastObservedTransformRevision;
 
         private PropBody(
                 Prop prop,
@@ -1474,6 +1502,7 @@ public final class PropPhysManager implements AutoCloseable {
             this.scale = scale;
             this.lastSyncedTransform = new Matrix4f(lastSyncedTransform);
             this.lastNetworkedTransform = new Matrix4f(lastSyncedTransform);
+            this.lastObservedTransformRevision = prop.getTransformRevision();
         }
     }
 
@@ -1533,20 +1562,20 @@ public final class PropPhysManager implements AutoCloseable {
 
     private static final class PropSpatialEntry {
         private final ResourceLocation definitionId;
-        private final Matrix4f transform;
         private final AABB interactionBounds;
         private final Set<Long> cellKeys;
+        private final long transformRevision;
 
         private long lastQueryStamp;
 
         private PropSpatialEntry(
                 ResourceLocation definitionId,
-                Matrix4f transform,
+                long transformRevision,
                 AABB interactionBounds,
                 Set<Long> cellKeys
         ) {
             this.definitionId = definitionId;
-            this.transform = transform;
+            this.transformRevision = transformRevision;
             this.interactionBounds = interactionBounds;
             this.cellKeys = cellKeys;
         }
@@ -1572,6 +1601,8 @@ public final class PropPhysManager implements AutoCloseable {
     private record TerrainCoverage(
             int minX, int minY, int minZ,
             int maxX, int maxY, int maxZ,
+            ResourceLocation definitionId,
+            long transformRevision,
             Set<Long> keys
     ) {
         private boolean matches(
