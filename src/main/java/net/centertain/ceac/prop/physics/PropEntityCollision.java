@@ -401,12 +401,9 @@ public final class PropEntityCollision {
         if (exitTime < -1.0e-7 || entryTime > 1.0 + 1.0e-7)
             return null;
         if (entryTime < -1.0e-7) {
-            Vec3 normal = faceNormal;
-            if (center.subtract(a).dot(normal) < 0.0)
-                normal = normal.scale(-1.0);
-            if (movement.dot(normal) >= -1.0e-7)
+            if (movement.dot(faceNormal) >= -1.0e-7)
                 return null;
-            return new Hit(0.0, normal, true);
+            return new Hit(0.0, faceNormal, true);
         }
         if (movement.dot(entryNormal) >= -1.0e-7) {
             Vec3 normal = movement.dot(faceNormal) > 0.0
