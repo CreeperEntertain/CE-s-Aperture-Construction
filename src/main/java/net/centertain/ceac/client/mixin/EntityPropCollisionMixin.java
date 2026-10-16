@@ -1,5 +1,6 @@
 package net.centertain.ceac.client.mixin;
 
+import net.centertain.ceac.prop.physics.PropEntityCollision;
 import net.centertain.ceac.prop.physics.PropPhysManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -22,6 +23,11 @@ public abstract class EntityPropCollisionMixin {
         Entity entity = (Entity) (Object) this;
         if (entity.level().isClientSide || entity.noPhysics || entity.isSpectator())
             return;
-        cir.setReturnValue(PropPhysManager.clipEntityMovement(entity, cir.getReturnValue()));
+
+        Vec3 vanillaMovement = cir.getReturnValue();
+        Vec3 propMovement = PropPhysManager.clipEntityMovement(entity, vanillaMovement);
+        Vec3 safeMovement = PropEntityCollision.clipAgainstBlocks(entity, propMovement);
+
+        cir.setReturnValue(safeMovement);
     }
 }

@@ -1,8 +1,10 @@
 package net.centertain.ceac.prop.physics;
 
 import net.centertain.ceac.prop.PropGeometry;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -361,6 +363,25 @@ public final class PropEntityCollision {
                 Math.max(a.x, Math.max(b.x, c.x)),
                 Math.max(a.y, Math.max(b.y, c.y)),
                 Math.max(a.z, Math.max(b.z, c.z))
+        );
+    }
+
+    public static Vec3 clipAgainstBlocks(Entity entity, Vec3 movement) {
+        if (movement.lengthSqr() < 1.0e-12)
+            return movement;
+
+        AABB box = entity.getBoundingBox();
+        List<VoxelShape> blockCollisions = new ArrayList<>();
+        entity.level()
+                .getBlockCollisions(entity, box.expandTowards(movement).inflate(1.0e-7))
+                .forEach(blockCollisions::add);
+
+        return Entity.collideBoundingBox(
+                entity,
+                movement,
+                box,
+                entity.level(),
+                blockCollisions
         );
     }
 
