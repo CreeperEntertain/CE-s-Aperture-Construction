@@ -10,6 +10,7 @@ import net.centertain.ceac.prop.PropGeometry;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
 import net.centertain.ceac.prop.enums.PropMotionMode;
 import net.centertain.ceac.prop.network.SyncPropPacket;
+import net.centertain.ceac.prop.network.SyncPropTransformPacket;
 import net.centertain.ceac.prop.server.PropCapabilities;
 import net.centertain.ceac.prop.server.PropManager;
 import net.minecraft.core.BlockPos;
@@ -395,28 +396,72 @@ public final class PropPhysManager implements AutoCloseable {
 
     private void writeBackTransform(PropBody body, boolean sendUpdate) {
         Matrix4f before = body.prop.getTransform();
-
         b3Pos position = b3Body_GetPosition(body.body);
         b3Quat rotation = b3Body_GetRotation(body.body);
+        Quaternionf quaternion = fromBoxQuat(rotation);
 
-        body.prop.setPosition(new Vec3(position.x(), position.y(), position.z()));
-        body.prop.setRotation(fromBoxQuat(rotation));
+        body.prop.setPosition(new Vec3(
+                position.x(),
+                position.y(),
+                position.z()
+        ));
+        body.prop.setRotation(quaternion);
 
         Matrix4f after = body.prop.getTransform();
-        body.lastSyncedTransform = new Matrix4f(after);
+        body.lastSyncedTransform.set(after);
         if (sameTransform(before, after))
             return;
 
         body.ownerChunk.setUnsaved(true);
 
         boolean migrated = movePropToCurrentChunk(body);
-        if (sendUpdate && !migrated) {
-            LevelChunk owner = body.ownerChunk;
-            ModNetworking.CHANNEL.send(
-                    PacketDistributor.TRACKING_CHUNK.with(() -> owner),
-                    new SyncPropPacket(body.prop)
-            );
+        if (migrated) {
+            body.lastNetworkedTransform.set(after);
+            return;
         }
+        if (!sendUpdate)
+            return;
+        if (!transformChangedEnough(after, body.lastNetworkedTransform))
+            return;
+
+        LevelChunk owner = body.ownerChunk;
+
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.TRACKING_CHUNK.with(() -> owner),
+                new SyncPropTransformPacket(
+                        body.prop.getId(),
+                        (float) position.x(),
+                        (float) position.y(),
+                        (float) position.z(),
+                        quaternion.x,
+                        quaternion.y,
+                        quaternion.z,
+                        quaternion.w
+                )
+        );
+
+        body.lastNetworkedTransform.set(after);
+    }
+
+    private static boolean transformChangedEnough(Matrix4f current, Matrix4f previous) {
+        float dx = current.m30() - previous.m30();
+        float dy = current.m31() - previous.m31();
+        float dz = current.m32() - previous.m32();
+        if (dx * dx + dy * dy + dz * dz >= 1.0e-4f)
+            return true;
+
+        final float rotationEpsilon = 1.0e-3f;
+
+        return
+                Math.abs(current.m00() - previous.m00()) >= rotationEpsilon ||
+                Math.abs(current.m01() - previous.m01()) >= rotationEpsilon ||
+                Math.abs(current.m02() - previous.m02()) >= rotationEpsilon ||
+                Math.abs(current.m10() - previous.m10()) >= rotationEpsilon ||
+                Math.abs(current.m11() - previous.m11()) >= rotationEpsilon ||
+                Math.abs(current.m12() - previous.m12()) >= rotationEpsilon ||
+                Math.abs(current.m20() - previous.m20()) >= rotationEpsilon ||
+                Math.abs(current.m21() - previous.m21()) >= rotationEpsilon ||
+                Math.abs(current.m22() - previous.m22()) >= rotationEpsilon;
     }
 
     @SuppressWarnings("deprecation")
@@ -956,10 +1001,7 @@ public final class PropPhysManager implements AutoCloseable {
 
         b3Vec3 velocity = b3Body_GetLinearVelocity(body.body);
 
-        float intoObstacle =
-                velocity.x() * ox *
-                velocity.y() * oy *
-                velocity.z() * oz;
+        float intoObstacle = velocity.x() * ox + velocity.y() * oy + velocity.z() * oz;
         if (intoObstacle <= 0.0f)
             return;
 
@@ -1261,6 +1303,7 @@ public final class PropPhysManager implements AutoCloseable {
         private final PropMotionMode motionMode;
         private final Vec3 scale;
         private Matrix4f lastSyncedTransform;
+        private final Matrix4f lastNetworkedTransform;
 
         private PropBody(
                 Prop prop,
@@ -1280,6 +1323,7 @@ public final class PropPhysManager implements AutoCloseable {
             this.motionMode = motionMode;
             this.scale = scale;
             this.lastSyncedTransform = new Matrix4f(lastSyncedTransform);
+            this.lastNetworkedTransform = new Matrix4f(lastSyncedTransform);
         }
     }
 

@@ -6,10 +6,7 @@ import net.centertain.ceac.material.network.BuyItemPacket;
 import net.centertain.ceac.material.network.MaterialOffsetPacket;
 import net.centertain.ceac.material.network.SellItemPacket;
 import net.centertain.ceac.material.network.SyncCurrencyPacket;
-import net.centertain.ceac.prop.network.PropBreakParticlesPacket;
-import net.centertain.ceac.prop.network.PropMiningPacket;
-import net.centertain.ceac.prop.network.PropMiningProgressPacket;
-import net.centertain.ceac.prop.network.SyncPropPacket;
+import net.centertain.ceac.prop.network.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
@@ -17,7 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class ModNetworking {
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "2";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
@@ -98,6 +95,13 @@ public final class ModNetworking {
                 PropBreakParticlesPacket::encode,
                 PropBreakParticlesPacket::decode,
                 PropBreakParticlesPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                SyncPropTransformPacket.class,
+                SyncPropTransformPacket::encode,
+                SyncPropTransformPacket::decode,
+                SyncPropTransformPacket::handle
         );
     }
 }

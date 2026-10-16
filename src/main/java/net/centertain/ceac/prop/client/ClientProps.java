@@ -3,12 +3,14 @@ package net.centertain.ceac.prop.client;
 import net.centertain.ceac.prop.Prop;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
 
 import java.util.*;
 
@@ -81,6 +83,38 @@ public final class ClientProps {
     public static void clear() {
         PROPS_BY_CHUNK.clear();
         CHUNK_BY_ID.clear();
+    }
+
+    public static boolean updateTransform(
+            UUID id,
+            float x,
+            float y,
+            float z,
+            float qx,
+            float qy,
+            float qz,
+            float qw
+    ) {
+        Long oldChunkKey = CHUNK_BY_ID.get(id);
+        if (oldChunkKey == null)
+            return false;
+
+        Map<UUID, Prop> chunkProps = PROPS_BY_CHUNK.get(oldChunkKey);
+        if (chunkProps == null)
+            return false;
+
+        Prop prop = chunkProps.get(id);
+        if (prop == null)
+            return false;
+
+        prop.setPosition(new Vec3(x, y, z));
+        prop.setRotation(new Quaternionf(qx, qy, qz, qw));
+
+        long newChunkKey = new ChunkPos(prop.getBlockPosition()).toLong();
+        if (newChunkKey != oldChunkKey)
+            put(prop);
+
+        return true;
     }
 
     @SubscribeEvent

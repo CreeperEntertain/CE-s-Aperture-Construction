@@ -2,6 +2,7 @@ package net.centertain.ceac.prop.client;
 
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.network.SyncPropPacket;
+import net.centertain.ceac.prop.network.SyncPropTransformPacket;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
@@ -10,6 +11,19 @@ import java.util.List;
 
 public final class PropClientPacketHandler {
     private PropClientPacketHandler() {}
+
+    public static void handle(SyncPropTransformPacket packet) {
+        ClientProps.updateTransform(
+                packet.getPropId(),
+                packet.getX(),
+                packet.getY(),
+                packet.getZ(),
+                packet.getQx(),
+                packet.getQy(),
+                packet.getQz(),
+                packet.getQw()
+        );
+    }
 
     public static void handle(SyncPropPacket packet) {
         switch (packet.getAction()) {
