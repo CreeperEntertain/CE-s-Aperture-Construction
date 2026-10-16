@@ -23,6 +23,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -48,6 +49,8 @@ public final class PropPhysManager implements AutoCloseable {
 
     private static final float FIXED_STEP = 1.0f / 20.0f;
     private static final int SUB_STEPS = 4;
+    private static final double TERRAIN_BOUNDS_EPSILON = 1.0e-4;
+    private static final int TERRAIN_VALIDATION_INTERVAL = 20;
 
     private static final int MAX_PROP_HULL_VERTICES = 32;
 
@@ -90,7 +93,19 @@ public final class PropPhysManager implements AutoCloseable {
 
     private final Map<ResourceLocation, Optional<GeometryData>> geometryCache = new HashMap<>();
 
-    private List<Prop> activeProps = List.of();
+    private final List<Prop> activeProps = new ArrayList<>();
+    private final Set<UUID> seenPropIds = new HashSet<>();
+    private final Set<UUID> coveredPropIds = new HashSet<>();
+    private final Map<UUID, Entity> wantedEntities = new HashMap<>();
+    private final Set<ImpactKey> handledEntityImpacts = new HashSet<>();
+
+    private final Map<UUID, TerrainCoverage> terrainCoverageByProp = new HashMap<>();
+    private final Map<Long, Integer> terrainReferenceCounts = new HashMap<>();
+    private final Map<Long, Set<Long>> terrainKeysByChunk = new HashMap<>();
+
+    private final Set<Long> dirtyTerrainKeys = new HashSet<>();
+    private int terrainValidationTicks;
+
     private boolean closed;
 
     private PropPhysManager(ServerLevel level) {
@@ -153,9 +168,31 @@ public final class PropPhysManager implements AutoCloseable {
         }
     }
 
+    @SubscribeEvent
+    public static void onBlockChanged(BlockEvent event) {
+        if (!(event.getLevel() instanceof ServerLevel serverLevel))
+            return;
+        PropPhysManager manager = INSTANCES.get(serverLevel);
+        if (manager != null && !manager.closed)
+            manager.markTerrainDirtyAround(event.getPos());
+    }
+
+    private void markTerrainDirtyAround(BlockPos position) {
+        for (int dx = -1; dx <= 1; dx++)
+            for (int dy = -1; dy <= 1; dy++)
+                for (int dz = -1; dz <= 1; dz++) {
+                    long key = position.offset(dx, dy, dz).asLong();
+                    if (terrainReferenceCounts.containsKey(key))
+                        dirtyTerrainKeys.add(key);
+                }
+    }
+
 
     private void onChunkLoaded(LevelChunk chunk) {
         loadedChunks.put(chunk.getPos().toLong(), chunk);
+        Set<Long> keys = terrainKeysByChunk.get(chunk.getPos().toLong());
+        if (keys != null)
+            dirtyTerrainKeys.addAll(keys);
     }
 
     private void onChunkUnloaded(LevelChunk chunk) {
@@ -206,7 +243,7 @@ public final class PropPhysManager implements AutoCloseable {
             if (!discovered.containsKey(id))
                 destroyPropBody(id);
 
-        activeProps = List.copyOf(props);
+        activeProps.clear();
     }
 
     private void synchronizeProp(Prop prop, LevelChunk ownerChunk) {
@@ -343,7 +380,7 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     private void synchronizePropTransforms() {
-        for (PropBody body : new ArrayList<>(propBodies.values())) {
+        for (PropBody body : propBodies.values()) {
             if (body.motionMode == PropMotionMode.STATIC)
                 continue;
             writeBackTransform(body, true);
@@ -415,9 +452,8 @@ public final class PropPhysManager implements AutoCloseable {
         return true;
     }
 
-    @SuppressWarnings("deprecation")
     private void synchronizeTerrain() {
-        Set<Long> wanted = new HashSet<>();
+        coveredPropIds.clear();
 
         for (Prop prop : activeProps) {
             if (prop.getCollisionMode() == PropCollisionMode.NONE)
@@ -432,41 +468,140 @@ public final class PropPhysManager implements AutoCloseable {
                 continue;
 
             AABB bounds = worldBounds(geometry, prop.getTransform());
+            if (
+                    !Double.isFinite(bounds.minX)
+                    || !Double.isFinite(bounds.minY)
+                    || !Double.isFinite(bounds.minZ)
+                    || !Double.isFinite(bounds.maxX)
+                    || !Double.isFinite(bounds.maxY)
+                    || !Double.isFinite(bounds.maxZ)
+                    || bounds.minX > bounds.maxX
+                    || bounds.minY > bounds.maxY
+                    || bounds.minZ > bounds.maxZ
+            )
+                continue;
 
-            int minX = floor(bounds.minX) - 1;
-            int minY = Math.max(level.getMinBuildHeight(), floor(bounds.minY) - 1);
-            int minZ = floor(bounds.minZ) - 1;
-            int maxX = floor(bounds.maxX) + 1;
-            int maxY = Math.min(level.getMaxBuildHeight() - 1, floor(bounds.maxY) + 1);
-            int maxZ = floor(bounds.maxZ) + 1;
+            int minX = floor(bounds.minX - TERRAIN_BOUNDS_EPSILON);
+            int minY = Math.max(level.getMinBuildHeight(), floor(bounds.minY - TERRAIN_BOUNDS_EPSILON));
+            int minZ = floor(bounds.minZ - TERRAIN_BOUNDS_EPSILON);
+            int maxX = floor(bounds.maxX + TERRAIN_BOUNDS_EPSILON);
+            int maxY = Math.min(level.getMaxBuildHeight() - 1, floor(bounds.maxY + TERRAIN_BOUNDS_EPSILON));
+            int maxZ = floor(bounds.maxZ + TERRAIN_BOUNDS_EPSILON);
+            if (minY > maxY)
+                continue;
 
+            UUID propId = prop.getId();
+            coveredPropIds.add(propId);
+
+            TerrainCoverage previous = terrainCoverageByProp.get(propId);
+            if (previous != null && previous.matches(minX, minY, minZ, maxX, maxY, maxZ))
+                continue;
+
+            Set<Long> nextKeys = new HashSet<>();
             for (int x = minX; x <= maxX; x++)
                 for (int y = minY; y <= maxY; y++)
-                    for (int z = minZ; z <= maxZ; z++) {
-                        BlockPos position = new BlockPos(x, y, z);
-                        if (!level.hasChunkAt(position))
-                            continue;
+                    for (int z = minZ; z <= maxZ; z++)
+                        nextKeys.add(new BlockPos(x, y, z).asLong());
+            if (previous != null)
+                for (Long key : previous.keys())
+                    if (!nextKeys.contains(key))
+                        releaseTerrainKey(key);
+            for (Long key : nextKeys)
+                if (previous == null || !previous.keys().contains(key))
+                    retainTerrainKey(key);
 
-                        long key = position.asLong();
-                        wanted.add(key);
-
-                        BlockState state = level.getBlockState(position);
-                        TerrainBody cached = terrainBodies.get(key);
-                        if (cached != null && cached.state.equals(state))
-                            continue;
-
-                        destroyTerrainBody(key);
-
-                        TerrainBody created = createTerrainBody(position, state);
-                        terrainBodies.put(key, created);
-                        if (created.body != null)
-                            terrainByBody.put(BodyKey.of(created.body), created);
-                    }
+            terrainCoverageByProp.put(propId, new TerrainCoverage(minX, minY, minZ, maxX, maxY, maxZ, nextKeys));
         }
 
-        for (Long key : new ArrayList<>(terrainBodies.keySet()))
-            if (!wanted.contains(key))
+        Iterator<Map.Entry<UUID, TerrainCoverage>> coverageIterator = terrainCoverageByProp.entrySet().iterator();
+
+        while (coverageIterator.hasNext()) {
+            Map.Entry<UUID, TerrainCoverage> entry = coverageIterator.next();
+            if (coveredPropIds.contains(entry.getKey()))
+                continue;
+            for (Long key : entry.getValue().keys())
+                releaseTerrainKey(key);
+            coverageIterator.remove();
+        }
+
+        if (++terrainValidationTicks >= TERRAIN_VALIDATION_INTERVAL) {
+            terrainValidationTicks = 0;
+            for (Map.Entry<Long, TerrainBody> entry : terrainBodies.entrySet()) {
+                BlockPos position = BlockPos.of(entry.getKey());
+                TerrainBody cached = entry.getValue();
+                if (!cached.state.equals(level.getBlockState(position)))
+                    dirtyTerrainKeys.add(entry.getKey());
+            }
+        }
+
+        Iterator<Long> dirtyIterator = dirtyTerrainKeys.iterator();
+
+        while (dirtyIterator.hasNext()) {
+            long key = dirtyIterator.next();
+            if (terrainReferenceCounts.containsKey(key))
+                refreshTerrainBody(key);
+            else
                 destroyTerrainBody(key);
+            dirtyIterator.remove();
+        }
+    }
+
+    private void retainTerrainKey(long key) {
+        int references = terrainReferenceCounts.getOrDefault(key, 0);
+        terrainReferenceCounts.put(key, references + 1);
+        if (references != 0)
+            return;
+
+        BlockPos position = BlockPos.of(key);
+        long chunkKey = new ChunkPos(position).toLong();
+        terrainKeysByChunk.computeIfAbsent(chunkKey, ignored -> new HashSet<>()).add(key);
+        dirtyTerrainKeys.add(key);
+    }
+
+    private void releaseTerrainKey(long key) {
+        Integer references = terrainReferenceCounts.get(key);
+        if (references == null)
+            return;
+        if (references > 1) {
+            terrainReferenceCounts.put(key, references - 1);
+            return;
+        }
+
+        terrainReferenceCounts.remove(key);
+        dirtyTerrainKeys.remove(key);
+        destroyTerrainBody(key);
+
+        BlockPos position = BlockPos.of(key);
+        long chunkKey = new ChunkPos(position).toLong();
+
+        Set<Long> chunkKeys = terrainKeysByChunk.get(chunkKey);
+        if (chunkKeys != null) {
+            chunkKeys.remove(key);
+            if (chunkKeys.isEmpty())
+                terrainKeysByChunk.remove(chunkKey);
+        }
+    }
+
+    private void refreshTerrainBody(long key) {
+        destroyTerrainBody(key);
+        if (terrainReferenceCounts.containsKey(key))
+            ensureTerrainBody(key);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void ensureTerrainBody(long key) {
+        if (terrainBodies.containsKey(key))
+            return;
+
+        BlockPos position = BlockPos.of(key);
+        if (!level.hasChunkAt(position))
+            return;
+
+        BlockState state = level.getBlockState(position);
+        TerrainBody created = createTerrainBody(position, state);
+        terrainBodies.put(key, created);
+        if (created.body != null)
+            terrainByBody.put(BodyKey.of(created.body), created);
     }
 
     private TerrainBody createTerrainBody(BlockPos position, BlockState state) {
@@ -524,7 +659,7 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     private void synchronizeEntities() {
-        Map<UUID, Entity> wanted = new HashMap<>();
+        wantedEntities.clear();
 
         for (Prop prop : activeProps) {
             if (prop.getCollisionMode() != PropCollisionMode.SOLID)
@@ -539,17 +674,28 @@ public final class PropPhysManager implements AutoCloseable {
                 continue;
 
             AABB bounds = worldBounds(geometry, prop.getTransform()).inflate(1.0);
-
             for (Entity entity : level.getEntities(null, bounds)) {
                 if (entity.isRemoved() || entity.isSpectator())
                     continue;
-                wanted.put(entity.getUUID(), entity);
+                wantedEntities.put(entity.getUUID(), entity);
             }
         }
-        for (UUID id : new ArrayList<>(entityBodies.keySet()))
-            if (!wanted.containsKey(id))
-                destroyEntityBody(id);
-        for (Entity entity : wanted.values())
+
+        Iterator<Map.Entry<UUID, EntityBody>> iterator = entityBodies.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, EntityBody> entry = iterator.next();
+            if (wantedEntities.containsKey(entry.getKey()))
+                continue;
+
+            EntityBody body = entry.getValue();
+
+            entitiesByBody.remove(BodyKey.of(body.body));
+            b3DestroyBody(body.body);
+            iterator.remove();
+        }
+
+        for (Entity entity : wantedEntities.values())
             synchronizeEntityBody(entity);
     }
 
@@ -654,6 +800,8 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     private void processHitEvents() {
+        handledEntityImpacts.clear();
+
         b3ContactEvents events = b3World_GetContactEvents(world);
         if (events.hitCount() <= 0)
             return;
@@ -661,8 +809,6 @@ public final class PropPhysManager implements AutoCloseable {
         b3ContactHitEvent hits = events.hitEvents();
         if (hits == null || hits.isNull())
             return;
-
-        Set<ImpactKey> handledEntityImpacts = new HashSet<>();
 
         for (int i = 0; i < events.hitCount(); i++) {
             b3ContactHitEvent hit = hits.position(i);
@@ -836,33 +982,30 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     private static AABB worldBounds(GeometryData geometry, Matrix4f transform) {
-        double minX = Double.POSITIVE_INFINITY;
-        double minY = Double.POSITIVE_INFINITY;
-        double minZ = Double.POSITIVE_INFINITY;
-        double maxX = Double.NEGATIVE_INFINITY;
-        double maxY = Double.NEGATIVE_INFINITY;
-        double maxZ = Double.NEGATIVE_INFINITY;
+        double cx = (geometry.minX + geometry.maxX) * 0.5;
+        double cy = (geometry.minY + geometry.maxY) * 0.5;
+        double cz = (geometry.minZ + geometry.maxZ) * 0.5;
 
-        for (int x = 0; x < 2; x++)
-            for (int y = 0; y < 2; y++)
-                for (int z = 0; z < 2; z++) {
-                    Vector3f point = new Vector3f(
-                            (float) (x == 0 ? geometry.minX : geometry.maxX),
-                            (float) (y == 0 ? geometry.minY : geometry.maxY),
-                            (float) (z == 0 ? geometry.minZ : geometry.maxZ)
-                    );
+        double ex = (geometry.maxX - geometry.minX) * 0.5;
+        double ey = (geometry.maxY - geometry.minY) * 0.5;
+        double ez = (geometry.maxZ - geometry.minZ) * 0.5;
 
-                    transform.transformPosition(point);
+        double worldX = transform.m00() * cx + transform.m10() * cy + transform.m20() * cz + transform.m30();
+        double worldY = transform.m01() * cx + transform.m11() * cy + transform.m21() * cz + transform.m31();
+        double worldZ = transform.m02() * cx + transform.m12() * cy + transform.m22() * cz + transform.m32();
 
-                    minX = Math.min(minX, point.x);
-                    minY = Math.min(minY, point.y);
-                    minZ = Math.min(minZ, point.z);
-                    maxX = Math.max(maxX, point.x);
-                    maxY = Math.max(maxY, point.y);
-                    maxZ = Math.max(maxZ, point.z);
-                }
+        double extentX = Math.abs(transform.m00()) * ex + Math.abs(transform.m10()) * ey + Math.abs(transform.m20()) * ez;
+        double extentY = Math.abs(transform.m01()) * ex + Math.abs(transform.m11()) * ey + Math.abs(transform.m21()) * ez;
+        double extentZ = Math.abs(transform.m02()) * ex + Math.abs(transform.m12()) * ey + Math.abs(transform.m22()) * ez;
 
-        return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+        return new AABB(
+                worldX - extentX,
+                worldY - extentY,
+                worldZ - extentZ,
+                worldX + extentX,
+                worldY + extentY,
+                worldZ + extentZ
+        );
     }
 
     private static List<FloatPoint> scaledUniqueVertices(PropGeometry geometry, Vec3 scale) {
@@ -1033,17 +1176,23 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     private static boolean sameTransform(Matrix4f a, Matrix4f b) {
-        float[] left = new float[16];
-        float[] right = new float[16];
-
-        a.get(left);
-        b.get(right);
-
-        for (int i = 0; i < left.length; i++)
-            if (Float.compare(left[i], right[i]) != 0)
-                return false;
-
-        return true;
+        return
+                Float.compare(a.m00(), b.m00()) == 0 &&
+                Float.compare(a.m01(), b.m01()) == 0 &&
+                Float.compare(a.m02(), b.m02()) == 0 &&
+                Float.compare(a.m03(), b.m03()) == 0 &&
+                Float.compare(a.m10(), b.m10()) == 0 &&
+                Float.compare(a.m11(), b.m11()) == 0 &&
+                Float.compare(a.m12(), b.m12()) == 0 &&
+                Float.compare(a.m13(), b.m13()) == 0 &&
+                Float.compare(a.m20(), b.m20()) == 0 &&
+                Float.compare(a.m21(), b.m21()) == 0 &&
+                Float.compare(a.m22(), b.m22()) == 0 &&
+                Float.compare(a.m23(), b.m23()) == 0 &&
+                Float.compare(a.m30(), b.m30()) == 0 &&
+                Float.compare(a.m31(), b.m31()) == 0 &&
+                Float.compare(a.m32(), b.m32()) == 0 &&
+                Float.compare(a.m33(), b.m33()) == 0;
     }
 
     private static boolean sameBox(AABB a, AABB b) {
@@ -1083,7 +1232,17 @@ public final class PropPhysManager implements AutoCloseable {
 
         loadedChunks.clear();
         geometryCache.clear();
-        activeProps = List.of();
+
+        activeProps.clear();
+        seenPropIds.clear();
+        coveredPropIds.clear();
+        wantedEntities.clear();
+        handledEntityImpacts.clear();
+
+        terrainCoverageByProp.clear();
+        terrainReferenceCounts.clear();
+        terrainKeysByChunk.clear();
+        dirtyTerrainKeys.clear();
     }
 
 
@@ -1199,6 +1358,24 @@ public final class PropPhysManager implements AutoCloseable {
                     id.world0(),
                     id.generation()
             );
+        }
+    }
+    private record TerrainCoverage(
+            int minX, int minY, int minZ,
+            int maxX, int maxY, int maxZ,
+            Set<Long> keys
+    ) {
+        private boolean matches(
+                int otherMinX, int otherMinY, int otherMinZ,
+                int otherMaxX, int otherMaxY, int otherMaxZ
+        ) {
+            return
+                    minX == otherMinX &&
+                    minY == otherMinY &&
+                    minZ == otherMinZ &&
+                    maxX == otherMaxX &&
+                    maxY == otherMaxY &&
+                    maxZ == otherMaxZ;
         }
     }
 }
