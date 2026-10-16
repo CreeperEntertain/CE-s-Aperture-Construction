@@ -864,8 +864,7 @@ public final class PropPhysManager implements AutoCloseable {
         if (movement.lengthSqr() < 1.0e-12)
             return movement;
 
-        AABB entityBox = entity.getBoundingBox();
-        AABB sweptBounds = entityBox.expandTowards(movement).inflate(1.0e-6);
+        AABB sweptBounds = PropStepManager.collisionQueryBounds(entity, movement);
 
         int minX = spatialCell(sweptBounds.minX);
         int minY = spatialCell(sweptBounds.minY);
@@ -893,7 +892,7 @@ public final class PropPhysManager implements AutoCloseable {
                     }
                 }
 
-        return PropEntityCollision.clipMovementAgainstTriangles(entityBox, movement, obstacles);
+        return PropStepManager.clipMovement(entity, movement, obstacles);
     }
 
     private void updatePropSpatialIndex() {

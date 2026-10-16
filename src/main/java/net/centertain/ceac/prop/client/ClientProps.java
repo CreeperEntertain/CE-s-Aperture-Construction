@@ -6,6 +6,7 @@ import net.centertain.ceac.prop.PropDefinitions;
 import net.centertain.ceac.prop.PropGeometry;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
 import net.centertain.ceac.prop.physics.PropEntityCollision;
+import net.centertain.ceac.prop.physics.PropStepManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
@@ -194,8 +195,7 @@ public final class ClientProps {
         if (movement.lengthSqr() < 1.0e-12)
             return movement;
 
-        AABB entityBox = entity.getBoundingBox();
-        AABB sweptBounds = entityBox.expandTowards(movement).inflate(1.0e-6);
+        AABB sweptBounds = PropStepManager.collisionQueryBounds(entity, movement);
         AABB searchBounds = sweptBounds.inflate(16.0);
 
         int minChunkX = Mth.floor(searchBounds.minX) >> 4;
@@ -231,7 +231,7 @@ public final class ClientProps {
                             COLLISION_TRIANGLES_SCRATCH.addAll(triangles);
                     }
 
-            return PropEntityCollision.clipMovementAgainstTriangles(entityBox, movement, COLLISION_TRIANGLES_SCRATCH);
+            return PropStepManager.clipMovement(entity, movement, COLLISION_TRIANGLES_SCRATCH);
         } finally {
             COLLISION_TRIANGLES_SCRATCH.clear();
         }
