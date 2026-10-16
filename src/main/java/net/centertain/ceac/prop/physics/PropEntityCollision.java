@@ -13,6 +13,8 @@ import java.util.Collection;
 import java.util.List;
 
 public final class PropEntityCollision {
+    private static final double COLLISION_SKIN = 1.0e-3;
+
     private PropEntityCollision() {}
 
     public static List<PropGeometry.Triangle> transformTriangles(PropGeometry geometry, Matrix4f transform) {
@@ -125,6 +127,10 @@ public final class PropEntityCollision {
             }
 
             double time = Math.max(0.0, Math.min(1.0, nearest.time));
+            double intoSurfaceSpeed = -remaining.dot(nearest.normal);
+            if (intoSurfaceSpeed > 1.0e-12)
+                time = Math.max(0.0, time - COLLISION_SKIN / intoSurfaceSpeed);
+
             Vec3 step = remaining.scale(time);
             applied = applied.add(step);
             box = box.move(step);
@@ -169,7 +175,9 @@ public final class PropEntityCollision {
             if (hit == null)
                 continue;
 
-            allowedTime = Math.min(allowedTime, Math.max(0.0, Math.min(1.0, hit.time)));
+            double hitTime = Math.max(0.0, Math.min(1.0, hit.time));
+            double skinTime = COLLISION_SKIN / Math.abs(amount);
+            allowedTime = Math.min(allowedTime, Math.max(0.0, hitTime - skinTime));
             if (allowedTime <= 0.0)
                 break;
         }
