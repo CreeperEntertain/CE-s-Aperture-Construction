@@ -51,6 +51,7 @@ public final class PropPhysManager implements AutoCloseable {
     private static final int SUB_STEPS = 4;
     private static final double TERRAIN_BOUNDS_EPSILON = 1.0e-4;
     private static final int TERRAIN_VALIDATION_INTERVAL = 20;
+    private static final int PROP_SPATIAL_CELL_SIZE = 8;
 
     private static final int MAX_PROP_HULL_VERTICES = 32;
 
@@ -104,7 +105,13 @@ public final class PropPhysManager implements AutoCloseable {
     private final Map<Long, Set<Long>> terrainKeysByChunk = new HashMap<>();
 
     private final Set<Long> dirtyTerrainKeys = new HashSet<>();
+
+    private final Map<UUID, PropSpatialEntry> solidPropSpatialEntries = new HashMap<>();
+    private final Map<Long, Set<UUID>> propSpatialCells = new HashMap<>();
+    private final Set<UUID> spatialSeenProps = new HashSet<>();
+
     private int terrainValidationTicks;
+    private long spatialQueryStamp;
 
     private boolean closed;
 
@@ -712,25 +719,48 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     private void synchronizeEntities() {
+        updatePropSpatialIndex();
         wantedEntities.clear();
 
-        for (Prop prop : activeProps) {
-            if (prop.getCollisionMode() != PropCollisionMode.SOLID)
+        for (Entity entity : level.getAllEntities()) {
+            if (entity.isRemoved() || entity.isSpectator())
                 continue;
 
-            PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
-            if (definition == null)
-                continue;
+            AABB entityBounds = entity.getBoundingBox();
+            AABB searchBounds = entityBounds.inflate(1.0);
 
-            GeometryData geometry = getGeometry(definition.getModelId());
-            if (geometry == null)
-                continue;
+            int minX = spatialCell(searchBounds.minX);
+            int minY = spatialCell(searchBounds.minY);
+            int minZ = spatialCell(searchBounds.minZ);
+            int maxX = spatialCell(searchBounds.maxX);
+            int maxY = spatialCell(searchBounds.maxY);
+            int maxZ = spatialCell(searchBounds.maxZ);
 
-            AABB bounds = worldBounds(geometry, prop.getTransform()).inflate(1.0);
-            for (Entity entity : level.getEntities(null, bounds)) {
-                if (entity.isRemoved() || entity.isSpectator())
-                    continue;
-                wantedEntities.put(entity.getUUID(), entity);
+            long queryStamp = ++spatialQueryStamp;
+            boolean found = false;
+
+            for (int x = minX; x <= maxX && !found; x++) {
+                for (int y = minY; y <= maxY && !found; y++) {
+                    for (int z = minZ; z <= maxZ && !found; z++) {
+                        Set<UUID> candidates = propSpatialCells.get(spatialCellKey(x, y, z));
+                        if (candidates == null)
+                            continue;
+
+                        for (UUID propId : candidates) {
+                            PropSpatialEntry candidate = solidPropSpatialEntries.get(propId);
+                            if (candidate == null || candidate.lastQueryStamp == queryStamp)
+                                continue;
+
+                            candidate.lastQueryStamp = queryStamp;
+                            if (!candidate.interactionBounds.intersects(entityBounds))
+                                continue;
+
+                            wantedEntities.put(entity.getUUID(), entity);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -750,6 +780,98 @@ public final class PropPhysManager implements AutoCloseable {
 
         for (Entity entity : wantedEntities.values())
             synchronizeEntityBody(entity);
+    }
+
+    private void updatePropSpatialIndex() {
+        spatialSeenProps.clear();
+
+        for (Prop prop : activeProps) {
+            if (prop.getCollisionMode() != PropCollisionMode.SOLID)
+                continue;
+
+            PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+            if (definition == null)
+                continue;
+
+            GeometryData geometry = getGeometry(definition.getModelId());
+            if (geometry == null)
+                continue;
+
+            UUID id = prop.getId();
+            Matrix4f transform = prop.getTransform();
+
+            PropSpatialEntry existing = solidPropSpatialEntries.get(id);
+            if (
+                    existing != null &&
+                    existing.definitionId.equals(prop.getDefinitionId()) &&
+                    sameTransform(existing.transform, transform)
+            ) {
+                spatialSeenProps.add(id);
+                continue;
+            }
+            if (existing != null)
+                removePropSpatialEntry(id, existing);
+
+            AABB bounds = worldBounds(geometry, transform);
+            AABB interactionBounds = bounds.inflate(1.0);
+
+            int minX = spatialCell(bounds.minX);
+            int minY = spatialCell(bounds.minY);
+            int minZ = spatialCell(bounds.minZ);
+            int maxX = spatialCell(bounds.maxX);
+            int maxY = spatialCell(bounds.maxY);
+            int maxZ = spatialCell(bounds.maxZ);
+
+            Set<Long> cellKeys = new HashSet<>();
+
+            for (int x = minX; x <= maxX; x++)
+                for (int y = minY; y <= maxY; y++)
+                    for (int z = minZ; z <= maxZ; z++) {
+                        long key = spatialCellKey(x, y, z);
+                        cellKeys.add(key);
+                        propSpatialCells.computeIfAbsent(key, ignored -> new HashSet<>()).add(id);
+                    }
+
+            PropSpatialEntry updated = new PropSpatialEntry(
+                    prop.getDefinitionId(),
+                    new Matrix4f(transform),
+                    interactionBounds,
+                    cellKeys
+            );
+
+            solidPropSpatialEntries.put(id, updated);
+            spatialSeenProps.add(id);
+        }
+
+        Iterator<Map.Entry<UUID, PropSpatialEntry>> iterator = solidPropSpatialEntries.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, PropSpatialEntry> entry = iterator.next();
+            if (spatialSeenProps.contains(entry.getKey()))
+                continue;
+            removePropSpatialEntry(entry.getKey(), entry.getValue());
+            iterator.remove();
+        }
+    }
+
+    private void removePropSpatialEntry(UUID id, PropSpatialEntry entry) {
+        for (long key : entry.cellKeys) {
+            Set<UUID> bucket = propSpatialCells.get(key);
+            if (bucket == null)
+                continue;
+
+            bucket.remove(id);
+
+            if (bucket.isEmpty())
+                propSpatialCells.remove(key);
+        }
+    }
+
+    private static int spatialCell(double coordinate) {
+        return floor(coordinate / PROP_SPATIAL_CELL_SIZE);
+    }
+
+    private static long spatialCellKey(int x, int y, int z) {
+        return new BlockPos(x, y, z).asLong();
     }
 
     private void synchronizeEntityBody(Entity entity) {
@@ -1295,6 +1417,10 @@ public final class PropPhysManager implements AutoCloseable {
         terrainReferenceCounts.clear();
         terrainKeysByChunk.clear();
         dirtyTerrainKeys.clear();
+
+        solidPropSpatialEntries.clear();
+        propSpatialCells.clear();
+        spatialSeenProps.clear();
     }
 
 
@@ -1382,6 +1508,27 @@ public final class PropPhysManager implements AutoCloseable {
             this.maxX = maxX;
             this.maxY = maxY;
             this.maxZ = maxZ;
+        }
+    }
+
+    private static final class PropSpatialEntry {
+        private final ResourceLocation definitionId;
+        private final Matrix4f transform;
+        private final AABB interactionBounds;
+        private final Set<Long> cellKeys;
+
+        private long lastQueryStamp;
+
+        private PropSpatialEntry(
+                ResourceLocation definitionId,
+                Matrix4f transform,
+                AABB interactionBounds,
+                Set<Long> cellKeys
+        ) {
+            this.definitionId = definitionId;
+            this.transform = transform;
+            this.interactionBounds = interactionBounds;
+            this.cellKeys = cellKeys;
         }
     }
 
