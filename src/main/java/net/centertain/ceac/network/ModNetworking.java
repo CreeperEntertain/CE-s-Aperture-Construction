@@ -14,7 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class ModNetworking {
-    private static final String PROTOCOL_VERSION = "2";
+    private static final String PROTOCOL_VERSION = "3";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(MOD_ID, "main"),
             () -> PROTOCOL_VERSION,

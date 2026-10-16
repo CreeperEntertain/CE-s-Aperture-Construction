@@ -95,6 +95,8 @@ public final class PropPhysManager implements AutoCloseable {
 
     private final Map<ResourceLocation, Optional<GeometryData>> geometryCache = new HashMap<>();
 
+    private final Map<LevelChunk, List<SyncPropTransformPacket.Transform>> pendingTransformUpdates = new LinkedHashMap<>();
+
     private final List<Prop> activeProps = new ArrayList<>();
     private final Set<UUID> seenPropIds = new HashSet<>();
     private final Set<UUID> coveredPropIds = new HashSet<>();
@@ -400,11 +402,30 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     private void synchronizePropTransforms() {
+        pendingTransformUpdates.clear();
+
         for (PropBody body : propBodies.values()) {
             if (body.motionMode == PropMotionMode.STATIC)
                 continue;
             writeBackTransform(body, true);
         }
+
+        for (Map.Entry<LevelChunk, List<SyncPropTransformPacket.Transform>> entry : pendingTransformUpdates.entrySet()) {
+            LevelChunk chunk = entry.getKey();
+            List<SyncPropTransformPacket.Transform> updates = entry.getValue();
+
+            for (int start = 0; start < updates.size(); start += SyncPropTransformPacket.MAX_TRANSFORMS_PER_PACKET) {
+                int end = Math.min(start + SyncPropTransformPacket.MAX_TRANSFORMS_PER_PACKET, updates.size());
+                SyncPropTransformPacket packet = new SyncPropTransformPacket(updates.subList(start, end));
+
+                ModNetworking.CHANNEL.send(
+                        PacketDistributor.TRACKING_CHUNK.with(() -> chunk),
+                        packet
+                );
+            }
+        }
+
+        pendingTransformUpdates.clear();
     }
 
     private void writeBackTransform(PropBody body, boolean sendUpdate) {
@@ -440,9 +461,8 @@ public final class PropPhysManager implements AutoCloseable {
 
         LevelChunk owner = body.ownerChunk;
 
-        ModNetworking.CHANNEL.send(
-                PacketDistributor.TRACKING_CHUNK.with(() -> owner),
-                new SyncPropTransformPacket(
+        pendingTransformUpdates.computeIfAbsent(owner, ignored -> new ArrayList<>())
+                .add(new SyncPropTransformPacket.Transform(
                         body.prop.getId(),
                         (float) position.x(),
                         (float) position.y(),

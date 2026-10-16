@@ -13,16 +13,18 @@ public final class PropClientPacketHandler {
     private PropClientPacketHandler() {}
 
     public static void handle(SyncPropTransformPacket packet) {
-        ClientProps.updateTransform(
-                packet.getPropId(),
-                packet.getX(),
-                packet.getY(),
-                packet.getZ(),
-                packet.getQx(),
-                packet.getQy(),
-                packet.getQz(),
-                packet.getQw()
-        );
+        for (SyncPropTransformPacket.Transform transform : packet.getTransforms()) {
+            ClientProps.updateTransform(
+                    transform.propId(),
+                    transform.x(),
+                    transform.y(),
+                    transform.z(),
+                    transform.qx(),
+                    transform.qy(),
+                    transform.qz(),
+                    transform.qw()
+            );
+        }
     }
 
     public static void handle(SyncPropPacket packet) {

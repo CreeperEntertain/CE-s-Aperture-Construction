@@ -6,22 +6,15 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 public final class SyncPropTransformPacket {
-    private final UUID propId;
+    public static final int MAX_TRANSFORMS_PER_PACKET = 65_536;
 
-    private final float x;
-    private final float y;
-    private final float z;
-
-    private final float qx;
-    private final float qy;
-    private final float qz;
-    private final float qw;
-
-    public SyncPropTransformPacket(
+    public record Transform(
             UUID propId,
             float x,
             float y,
@@ -30,73 +23,61 @@ public final class SyncPropTransformPacket {
             float qy,
             float qz,
             float qw
-    ) {
-        this.propId = propId;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.qx = qx;
-        this.qy = qy;
-        this.qz = qz;
-        this.qw = qw;
+    ) {}
+
+    private final List<Transform> transforms;
+
+    public SyncPropTransformPacket(List<Transform> transforms) {
+        if (transforms.isEmpty())
+            throw new IllegalArgumentException("Transform batch cannot be empty");
+        if (transforms.size() > MAX_TRANSFORMS_PER_PACKET)
+            throw new IllegalArgumentException("Transform batch is too large");
+        this.transforms = List.copyOf(transforms);
     }
 
-    public UUID getPropId() {
-        return propId;
+    public List<Transform> getTransforms() {
+        return transforms;
     }
-    public float getX() {
-        return x;
-    }
-    public float getY() {
-        return y;
-    }
-    public float getZ() {
-        return z;
-    }
-    public float getQx() {
-        return qx;
-    }
-    public float getQy() {
-        return qy;
-    }
-    public float getQz() {
-        return qz;
-    }
-    public float getQw() {
-        return qw;
-    }
+
 
     public static void encode(
             SyncPropTransformPacket packet,
             FriendlyByteBuf buffer
     ) {
-        buffer.writeUUID(packet.propId);
+        buffer.writeVarInt(packet.transforms.size());
 
-        buffer.writeFloat(packet.x);
-        buffer.writeFloat(packet.y);
-        buffer.writeFloat(packet.z);
-
-        buffer.writeFloat(packet.qx);
-        buffer.writeFloat(packet.qy);
-        buffer.writeFloat(packet.qz);
-        buffer.writeFloat(packet.qw);
+        for (Transform transform : packet.transforms) {
+            buffer.writeUUID(transform.propId());
+            buffer.writeFloat(transform.x());
+            buffer.writeFloat(transform.y());
+            buffer.writeFloat(transform.z());
+            buffer.writeFloat(transform.qx());
+            buffer.writeFloat(transform.qy());
+            buffer.writeFloat(transform.qz());
+            buffer.writeFloat(transform.qw());
+        }
     }
 
-    public static SyncPropTransformPacket decode(
-            FriendlyByteBuf buffer
-    ) {
-        UUID propId = buffer.readUUID();
+    public static SyncPropTransformPacket decode(FriendlyByteBuf buffer) {
+        int count = buffer.readVarInt();
+        if (count < 1 || count > MAX_TRANSFORMS_PER_PACKET)
+            throw new IllegalArgumentException("Invalid transform batch size: " + count);
 
-        float x = buffer.readFloat();
-        float y = buffer.readFloat();
-        float z = buffer.readFloat();
+        List<Transform> transforms = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            transforms.add(new Transform(
+                    buffer.readUUID(),
+                    buffer.readFloat(),
+                    buffer.readFloat(),
+                    buffer.readFloat(),
+                    buffer.readFloat(),
+                    buffer.readFloat(),
+                    buffer.readFloat(),
+                    buffer.readFloat()
+            ));
+        }
 
-        float qx = buffer.readFloat();
-        float qy = buffer.readFloat();
-        float qz = buffer.readFloat();
-        float qw = buffer.readFloat();
-
-        return new SyncPropTransformPacket(propId, x, y, z, qx, qy, qz, qw);
+        return new SyncPropTransformPacket(transforms);
     }
 
     public static void handle(
