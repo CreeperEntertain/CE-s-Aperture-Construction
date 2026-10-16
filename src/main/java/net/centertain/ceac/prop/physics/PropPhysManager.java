@@ -347,6 +347,7 @@ public final class PropPhysManager implements AutoCloseable {
                     category,
                     mask,
                     sensor,
+                    false,
                     prop.getMotionMode() != PropMotionMode.STATIC,
                     density
             );
@@ -684,6 +685,7 @@ public final class PropPhysManager implements AutoCloseable {
                         MASK_WORLD,
                         false,
                         false,
+                        false,
                         0.0f
                 );
                 b3CreateHullShape(body, shapeDefinition, hull);
@@ -796,6 +798,7 @@ public final class PropPhysManager implements AutoCloseable {
                 b3ShapeDef shapeDefinition = makeShapeDefinition(
                         CATEGORY_ENTITY,
                         MASK_ENTITY,
+                        false,
                         false,
                         true,
                         0.0f
@@ -1136,6 +1139,7 @@ public final class PropPhysManager implements AutoCloseable {
             long category,
             long mask,
             boolean sensor,
+            boolean contactEvents,
             boolean hitEvents,
             float density
     ) {
@@ -1149,7 +1153,7 @@ public final class PropPhysManager implements AutoCloseable {
         definition.filter(filter);
         definition.density(density);
         definition.isSensor(sensor);
-        definition.enableContactEvents(hitEvents);
+        definition.enableContactEvents(contactEvents);
         definition.enableHitEvents(hitEvents);
 
         return definition;
