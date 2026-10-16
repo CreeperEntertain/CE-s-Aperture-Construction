@@ -308,7 +308,8 @@ public final class PropEntityCollision {
 
             double velocity = movement.dot(axis);
             if (Math.abs(velocity) < 1.0e-12) {
-                if (boxMax < triangleMin - 1.0e-7 || boxMin > triangleMax + 1.0e-7)
+                double epsilon = 1.0e-7;
+                if (boxMax <= triangleMin + epsilon || boxMin >= triangleMax - epsilon)
                     return null;
                 continue;
             }
