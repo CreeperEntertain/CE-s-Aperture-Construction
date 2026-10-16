@@ -31,7 +31,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -227,23 +226,30 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     private void synchronizeProps() {
-        Map<UUID, PropOwner> discovered = new HashMap<>();
-        List<Prop> props = new ArrayList<>();
+        seenPropIds.clear();
+        activeProps.clear();
 
         for (LevelChunk chunk : loadedChunks.values()) {
             PropManager manager = PropCapabilities.get(chunk);
             for (Prop prop : manager.getProps().values()) {
-                discovered.put(prop.getId(), new PropOwner(prop, chunk));
-                props.add(prop);
+                if (!seenPropIds.add(prop.getId()))
+                    continue;
+                activeProps.add(prop);
+                synchronizeProp(prop, chunk);
             }
         }
-        for (PropOwner owner : discovered.values())
-            synchronizeProp(owner.prop, owner.chunk);
-        for (UUID id : new ArrayList<>(propBodies.keySet()))
-            if (!discovered.containsKey(id))
-                destroyPropBody(id);
 
-        activeProps.clear();
+        Iterator<Map.Entry<UUID, PropBody>> iterator = propBodies.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Map.Entry<UUID, PropBody> entry = iterator.next();
+            if (seenPropIds.contains(entry.getKey()))
+                continue;
+            PropBody body = entry.getValue();
+            propsByBody.remove(BodyKey.of(body.body));
+            b3DestroyBody(body.body);
+            iterator.remove();
+        }
     }
 
     private void synchronizeProp(Prop prop, LevelChunk ownerChunk) {
@@ -1289,22 +1295,6 @@ public final class PropPhysManager implements AutoCloseable {
         }
     }
 
-    private static final class TerrainBody {
-        private final BlockPos position;
-        private final BlockState state;
-        private final b3BodyId body;
-
-        private TerrainBody(
-                BlockPos position,
-                BlockState state,
-                b3BodyId body
-        ) {
-            this.position = position.immutable();
-            this.state = state;
-            this.body = body;
-        }
-    }
-
     private static final class GeometryData {
         private final PropGeometry geometry;
         private final double minX;
@@ -1347,7 +1337,11 @@ public final class PropPhysManager implements AutoCloseable {
         }
     }
 
-    private record PropOwner(Prop prop, LevelChunk chunk) {}
+    private record TerrainBody(BlockPos position, BlockState state, b3BodyId body) {
+        private TerrainBody {
+            position = position.immutable();
+        }
+    }
     private record FloatPoint(float x, float y, float z) {}
     private record PointKey(int x, int y, int z) {}
     private record ImpactKey(UUID propId, UUID entityId) {}
