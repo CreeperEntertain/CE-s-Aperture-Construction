@@ -1,8 +1,15 @@
 package net.centertain.ceac.prop.client;
 
 import net.centertain.ceac.prop.Prop;
+import net.centertain.ceac.prop.PropDefinition;
+import net.centertain.ceac.prop.PropDefinitions;
+import net.centertain.ceac.prop.enums.PropCollisionMode;
+import net.centertain.ceac.prop.physics.PropEntityCollision;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.level.ChunkEvent;
@@ -26,6 +33,9 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 public final class ClientProps {
     private static final long INTERPOLATION_DURATION_NANOS = 50_000_000L;
     private static final float SNAP_DISTANCE_SQUARED = 64.0f;
+
+    private static final Matrix4f COLLISION_TRANSFORM = new Matrix4f();
+    private static final List<AABB> COLLISION_BOUNDS_SCRATCH = new ArrayList<>(8);
 
     private static final Map<Long, Map<UUID, Prop>> PROPS_BY_CHUNK = new HashMap<>();
     private static final Map<UUID, Long> CHUNK_BY_ID = new HashMap<>();
@@ -174,6 +184,47 @@ public final class ClientProps {
                 interpolation.renderRotation,
                 interpolation.scaleScratch
         );
+    }
+
+    public static Vec3 clipLocalPlayerMovement(Entity entity, Vec3 movement) {
+        if (!entity.level().isClientSide || entity.noPhysics || entity.isSpectator())
+            return movement;
+        if (movement.lengthSqr() < 1.0e-12)
+            return movement;
+
+        AABB entityBox = entity.getBoundingBox();
+        AABB sweptBounds = entityBox.expandTowards(movement).inflate(1.0e-6);
+        AABB searchBounds = sweptBounds.inflate(16.0);
+
+        int minChunkX = Mth.floor(searchBounds.minX) >> 4;
+        int maxChunkX = Mth.floor(searchBounds.maxX) >> 4;
+        int minChunkZ = Mth.floor(searchBounds.minZ) >> 4;
+        int maxChunkZ = Mth.floor(searchBounds.maxZ) >> 4;
+
+        long renderTimeNanos = System.nanoTime();
+        COLLISION_BOUNDS_SCRATCH.clear();
+
+        try {
+            for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++)
+                for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++)
+                    for (Prop prop : getInChunk(chunkX, chunkZ)) {
+                        if (prop.getCollisionMode() != PropCollisionMode.SOLID)
+                            continue;
+
+                        PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+                        if (definition == null)
+                            continue;
+
+                        copyRenderTransformTo(prop, COLLISION_TRANSFORM, renderTimeNanos);
+                        AABB bounds = PropEntityCollision.transformBounds(definition.getLocalHitbox(), COLLISION_TRANSFORM);
+                        if (bounds.intersects(sweptBounds))
+                            COLLISION_BOUNDS_SCRATCH.add(bounds);
+                    }
+
+            return PropEntityCollision.clipMovement(entityBox, movement, COLLISION_BOUNDS_SCRATCH);
+        } finally {
+            COLLISION_BOUNDS_SCRATCH.clear();
+        }
     }
 
 

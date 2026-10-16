@@ -116,6 +116,7 @@ public final class PropPhysManager implements AutoCloseable {
 
     private int terrainValidationTicks;
     private long spatialQueryStamp;
+    private long collisionQueryStamp;
 
     private boolean closed;
 
@@ -451,6 +452,7 @@ public final class PropPhysManager implements AutoCloseable {
         if (sameTransform(before, after))
             return;
 
+        updatePropSpatialEntry(body.prop);
         body.ownerChunk.setUnsaved(true);
 
         boolean migrated = movePropToCurrentChunk(body);
@@ -849,67 +851,57 @@ public final class PropPhysManager implements AutoCloseable {
             synchronizeEntityBody(entity);
     }
 
+    public static Vec3 clipEntityMovement(Entity entity, Vec3 movement) {
+        if(!(entity.level() instanceof ServerLevel serverLevel))
+            return movement;
+        PropPhysManager manager = INSTANCES.get(serverLevel);
+        if (manager == null || manager.closed)
+            return movement;
+        return manager.clipEntityMovementInterval(entity, movement);
+    }
+
+    private Vec3 clipEntityMovementInterval(Entity entity, Vec3 movement) {
+        if (movement.lengthSqr() < 1.0e-12)
+            return movement;
+
+        AABB entityBox = entity.getBoundingBox();
+        AABB sweptBounds = entityBox.expandTowards(movement).inflate(1.0e-6);
+
+        int minX = spatialCell(sweptBounds.minX);
+        int minY = spatialCell(sweptBounds.minY);
+        int minZ = spatialCell(sweptBounds.minZ);
+        int maxX = spatialCell(sweptBounds.maxX);
+        int maxY = spatialCell(sweptBounds.maxY);
+        int maxZ = spatialCell(sweptBounds.maxZ);
+
+        long stamp = ++collisionQueryStamp;
+        List<AABB> obstacles = new ArrayList<>(8);
+
+        for (int x = minX; x <= maxX; x++)
+            for (int y = minY; y <= maxY; y++)
+                for (int z = minZ; z <= maxZ; z++) {
+                    Set<UUID> ids = propSpatialCells.get(spatialCellKey(x, y, z));
+                    if (ids == null)
+                        continue;
+                    for (UUID id : ids) {
+                        PropSpatialEntry entry = solidPropSpatialEntries.get(id);
+                        if (entry == null || entry.lastCollisionQueryStamp == stamp)
+                            continue;
+                        entry.lastCollisionQueryStamp = stamp;
+                        if (entry.worldBounds.intersects(sweptBounds))
+                            obstacles.add(entry.worldBounds);
+                    }
+                }
+
+        return PropEntityCollision.clipMovement(entityBox, movement, obstacles);
+    }
+
     private void updatePropSpatialIndex() {
         spatialSeenProps.clear();
 
-        for (Prop prop : activeProps) {
-            if (prop.getCollisionMode() != PropCollisionMode.SOLID)
-                continue;
-
-            PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
-            if (definition == null)
-                continue;
-
-            GeometryData geometry = getGeometry(definition.getModelId());
-            if (geometry == null)
-                continue;
-
-            UUID id = prop.getId();
-            long transformRevision = prop.getTransformRevision();
-
-            PropSpatialEntry existing = solidPropSpatialEntries.get(id);
-            if (
-                    existing != null &&
-                    existing.definitionId.equals(prop.getDefinitionId()) &&
-                    existing.transformRevision == transformRevision
-            ) {
-                spatialSeenProps.add(id);
-                continue;
-            }
-            Matrix4f transform = prop.getTransform();
-            if (existing != null)
-                removePropSpatialEntry(id, existing);
-
-            AABB bounds = worldBounds(geometry, transform);
-            AABB interactionBounds = bounds.inflate(1.0);
-
-            int minX = spatialCell(bounds.minX);
-            int minY = spatialCell(bounds.minY);
-            int minZ = spatialCell(bounds.minZ);
-            int maxX = spatialCell(bounds.maxX);
-            int maxY = spatialCell(bounds.maxY);
-            int maxZ = spatialCell(bounds.maxZ);
-
-            Set<Long> cellKeys = new HashSet<>();
-
-            for (int x = minX; x <= maxX; x++)
-                for (int y = minY; y <= maxY; y++)
-                    for (int z = minZ; z <= maxZ; z++) {
-                        long key = spatialCellKey(x, y, z);
-                        cellKeys.add(key);
-                        propSpatialCells.computeIfAbsent(key, ignored -> new HashSet<>()).add(id);
-                    }
-
-            PropSpatialEntry updated = new PropSpatialEntry(
-                    prop.getDefinitionId(),
-                    transformRevision,
-                    interactionBounds,
-                    cellKeys
-            );
-
-            solidPropSpatialEntries.put(id, updated);
-            spatialSeenProps.add(id);
-        }
+        for (Prop prop : activeProps)
+            if (updatePropSpatialEntry(prop))
+                spatialSeenProps.add(prop.getId());
 
         Iterator<Map.Entry<UUID, PropSpatialEntry>> iterator = solidPropSpatialEntries.entrySet().iterator();
         while (iterator.hasNext()) {
@@ -919,6 +911,62 @@ public final class PropPhysManager implements AutoCloseable {
             removePropSpatialEntry(entry.getKey(), entry.getValue());
             iterator.remove();
         }
+    }
+
+    private boolean updatePropSpatialEntry(Prop prop) {
+        if (prop.getCollisionMode() != PropCollisionMode.SOLID)
+            return false;
+
+        PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+        if (definition == null)
+            return false;
+
+        GeometryData geometry = getGeometry(definition.getModelId());
+        if (geometry == null)
+            return false;
+
+        UUID id = prop.getId();
+        long transformRevision = prop.getTransformRevision();
+        PropSpatialEntry existing = solidPropSpatialEntries.get(id);
+        if (existing != null
+                && existing.definitionId.equals(prop.getDefinitionId())
+                && existing.transformRevision == transformRevision) {
+            return true;
+        }
+        Matrix4f transform = prop.getTransform();
+        if (existing != null)
+            removePropSpatialEntry(id, existing);
+
+        AABB bounds = PropEntityCollision.transformBounds(definition.getLocalHitbox(), transform);
+        AABB interactionBounds = bounds.inflate(1.0);
+
+        int minX = spatialCell(bounds.minX);
+        int minY = spatialCell(bounds.minY);
+        int minZ = spatialCell(bounds.minZ);
+        int maxX = spatialCell(bounds.maxX);
+        int maxY = spatialCell(bounds.maxY);
+        int maxZ = spatialCell(bounds.maxZ);
+
+        Set<Long> cellKeys = new HashSet<>();
+
+        for (int x = minX; x <= maxX; x++)
+            for (int y = minY; y <= maxY; y++)
+                for (int z = minZ; z <= maxZ; z++) {
+                    long key = spatialCellKey(x, y, z);
+                    cellKeys.add(key);
+                    propSpatialCells.computeIfAbsent(key, ignored -> new HashSet<>()).add(id);
+                }
+
+        PropSpatialEntry updated = new PropSpatialEntry(
+                prop.getDefinitionId(),
+                transformRevision,
+                bounds,
+                interactionBounds,
+                cellKeys
+        );
+
+        solidPropSpatialEntries.put(id, updated);
+        return true;
     }
 
     private void removePropSpatialEntry(UUID id, PropSpatialEntry entry) {
@@ -1143,19 +1191,59 @@ public final class PropPhysManager implements AutoCloseable {
         double awayY = ny * direction;
         double awayZ = nz * direction;
 
-        double strength;
+        b3Pos propPosition = b3Body_GetPosition(prop.body);
+        AABB entityBox = entityBody.entity.getBoundingBox();
 
+        double entityCenterX = (entityBox.minX + entityBox.maxX) * 0.5;
+        double entityCenterY = (entityBox.minY + entityBox.maxY) * 0.5;
+        double entityCenterZ = (entityBox.minZ + entityBox.maxZ) * 0.5;
+
+        double toEntityX = entityCenterX - propPosition.x();
+        double toEntityY = entityCenterY - propPosition.y();
+        double toEntityZ = entityCenterZ - propPosition.z();
+
+        double dot = awayX * toEntityX + awayY * toEntityY + awayZ * toEntityZ;
+        if (dot < 0.0) {
+            awayX = -awayX;
+            awayY = -awayY;
+            awayZ = -awayZ;
+        }
+
+        double normalLengthSquared = awayX * awayX + awayY * awayY + awayZ * awayZ;
+        if (normalLengthSquared < 1.0e-10) {
+            awayX = toEntityX;
+            awayY = toEntityY;
+            awayZ = toEntityZ;
+            normalLengthSquared = awayX * awayX + awayY * awayY + awayZ * awayZ;
+        }
+        if (normalLengthSquared < 1.0e-10)
+            return;
+
+        double inverseLength = 1.0 / Math.sqrt(normalLengthSquared);
+        awayX *= inverseLength;
+        awayY *= inverseLength;
+        awayZ *= inverseLength;
+        if (awayY < -0.6 && awayX * awayX + awayZ * awayZ < 0.16) {
+            awayX = 0.0;
+            awayY = 1.0;
+            awayZ = 0.0;
+        }
+
+        double strength;
         if (prop.motionMode == PropMotionMode.DYNAMIC)
-            strength = clamp(approachSpeed * 0.16, 0.1, 1.25);
-        else {
+            strength = clamp(approachSpeed * 0.50, 0.25, 1.75);
+        else if (prop.motionMode == PropMotionMode.MOVING) {
+            b3Vec3 velocity = b3Body_GetLinearVelocity(prop.body);
+            double propApproachSpeed = velocity.x() * awayX + velocity.y() * awayY + velocity.z() * awayZ;
+            if (propApproachSpeed <= 0.02)
+                return;
+            strength = clamp(propApproachSpeed * 0.35, 0.15, 0.9);
+        } else {
             Vec3 entityVelocity = entityBody.entity.getDeltaMovement();
-            double movingIntoProp =
-                    entityVelocity.x * awayX +
-                    entityVelocity.y * awayY +
-                    entityVelocity.z * awayZ;
+            double movingIntoProp = entityVelocity.x * awayX + entityVelocity.y * awayY + entityVelocity.z * awayZ;
             if (movingIntoProp >= -0.02)
                 return;
-            strength = clamp(approachSpeed * 0.08, 0.05, 0.45);
+            strength = clamp(-movingIntoProp * 0.12, 0.05, 0.4);
         }
 
         entityBody.entity.push(
@@ -1591,6 +1679,8 @@ public final class PropPhysManager implements AutoCloseable {
         private final AABB interactionBounds;
         private final Set<Long> cellKeys;
         private final long transformRevision;
+        private final AABB worldBounds;
+        private long lastCollisionQueryStamp;
 
         private long lastQueryStamp;
 
@@ -1598,11 +1688,13 @@ public final class PropPhysManager implements AutoCloseable {
                 ResourceLocation definitionId,
                 long transformRevision,
                 AABB interactionBounds,
+                AABB worldBounds,
                 Set<Long> cellKeys
         ) {
             this.definitionId = definitionId;
             this.transformRevision = transformRevision;
             this.interactionBounds = interactionBounds;
+            this.worldBounds = worldBounds;
             this.cellKeys = cellKeys;
         }
     }
