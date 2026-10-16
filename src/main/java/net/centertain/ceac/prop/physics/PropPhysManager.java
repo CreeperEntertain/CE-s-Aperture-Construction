@@ -843,9 +843,9 @@ public final class PropPhysManager implements AutoCloseable {
                 continue;
             b3Vec3 velocity = b3Body_GetLinearVelocity(body.body);
             b3Body_SetLinearVelocity(body.body, new b3Vec3()
-                    .x(velocity.x() * 0.99f)
-                    .y((velocity.y() - 9.81f * FIXED_STEP) * 0.99f)
-                    .z(velocity.z() * 0.99f)
+                    .x(velocity.x())
+                    .y(velocity.y() - 9.81f * FIXED_STEP)
+                    .z(velocity.z())
             );
         }
     }
