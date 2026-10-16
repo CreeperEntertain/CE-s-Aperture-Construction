@@ -9,15 +9,17 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 
 import javax.annotation.Nullable;
 
 public final class PropTargeting {
     private static final double EPSILON = 1.0e-7;
 
+    private static final Matrix4f RENDER_TRANSFORM = new Matrix4f();
+
     private PropTargeting() {}
 
-    @SuppressWarnings("resource")
     public static @Nullable PropHitResult pick(
             LocalPlayer player,
             float partialTick,
@@ -49,6 +51,8 @@ public final class PropTargeting {
         int minChunkZ = (playerPos.getZ() >> 4) - chunkRadius;
         int maxChunkZ = (playerPos.getZ() >> 4) + chunkRadius;
 
+        long renderTimeNanos = System.nanoTime();
+
         for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++)
             for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++)
                 for (Prop prop : ClientProps.getInChunk(chunkX, chunkZ)) {
@@ -60,7 +64,8 @@ public final class PropTargeting {
                     if (geometry == null)
                         continue;
 
-                    PropGeometry.RayHit hit = geometry.raycast(origin, direction, prop.getTransform(), closestDistance);
+                    ClientProps.copyRenderTransformTo(prop, RENDER_TRANSFORM, renderTimeNanos);
+                    PropGeometry.RayHit hit = geometry.raycast(origin, direction, RENDER_TRANSFORM, closestDistance);
                     if (hit == null)
                         continue;
 
@@ -95,6 +100,4 @@ public final class PropTargeting {
                 underlyingBlockHit
         );
     }
-
-    private record Intersection(double distance, Vec3 normal) {}
 }

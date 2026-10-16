@@ -35,12 +35,18 @@ import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.*;
 
 // TODO: Make prop rendering support cutout mipped, potentially translucent
 public final class PropRenderer {
+    private static final Matrix4f RENDER_TRANSFORM = new Matrix4f();
+    private static final Vector3f RENDER_POSITION = new Vector3f();
+    private static final Vector3f RENDER_SCALE = new Vector3f();
+    private static final Quaternionf RENDER_ROTATION = new Quaternionf();
+
     private static final Map<ResourceLocation, BakedModel> MODEL_CACHE = new HashMap<>();
     private static final Map<ResourceLocation, Set<Edge>> OUTLINE_EDGE_CACHE = new HashMap<>();
 
@@ -72,6 +78,8 @@ public final class PropRenderer {
         ModelBlockRenderer modelRenderer = minecraft.getBlockRenderer().getModelRenderer();
         ModelManager modelManager = minecraft.getModelManager();
 
+        long renderTimeNanos = System.nanoTime();
+
         for (int chunkX = center.x - chunkRadius; chunkX <= center.x + chunkRadius; chunkX++)
             for (int chunkZ = center.z - chunkRadius; chunkZ <= center.z + chunkRadius; chunkZ++)
                 for (Prop prop : ClientProps.getInChunk(chunkX, chunkZ))
@@ -84,7 +92,8 @@ public final class PropRenderer {
                             level,
                             modelRenderer,
                             consumer,
-                            crumblingBuffers
+                            crumblingBuffers,
+                            renderTimeNanos
                     );
 
         buffers.endBatch(RenderType.solid());
@@ -100,13 +109,22 @@ public final class PropRenderer {
             ClientLevel level,
             ModelBlockRenderer modelRenderer,
             VertexConsumer consumer,
-            MultiBufferSource.BufferSource crumblingBuffers
+            MultiBufferSource.BufferSource crumblingBuffers,
+            long renderTimeNanos
     ) {
-        Vec3 position = prop.getPosition();
-        Vec3 scale = prop.getScale();
+        ClientProps.copyRenderTransformTo(
+                prop,
+                RENDER_TRANSFORM,
+                renderTimeNanos
+        );
+
+        RENDER_TRANSFORM.getTranslation(RENDER_POSITION);
+        RENDER_TRANSFORM.getScale(RENDER_SCALE);
+        RENDER_TRANSFORM.getUnnormalizedRotation(RENDER_ROTATION).normalize();
+
         // Assumes prop geometry is authored in block-sized units
         // TODO: Make PropDefinition and let it provide this later
-        AABB bounds = getBounds(scale, position);
+        AABB bounds = getBounds(RENDER_SCALE, RENDER_POSITION);
         if (!minecraft.levelRenderer.getFrustum().isVisible(bounds))
             return;
 
@@ -122,17 +140,17 @@ public final class PropRenderer {
         poseStack.pushPose();
 
         poseStack.translate(
-                position.x - camera.x,
-                position.y - camera.y,
-                position.z - camera.z
+                RENDER_POSITION.x - camera.x,
+                RENDER_POSITION.y - camera.y,
+                RENDER_POSITION.z - camera.z
         );
 
-        poseStack.mulPose(prop.getRotationQuat().normalize());
+        poseStack.mulPose(RENDER_ROTATION);
 
         poseStack.scale(
-                (float) scale.x,
-                (float) scale.y,
-                (float) scale.z
+                RENDER_SCALE.x,
+                RENDER_SCALE.y,
+                RENDER_SCALE.z
         );
 
         modelRenderer.tesselateBlock(
@@ -155,18 +173,20 @@ public final class PropRenderer {
             stage = ClientPropMiningProgress.getStage(prop.getId());
         if (stage >= 0) {
             VertexConsumer crackConsumer = crumblingBuffers.getBuffer(RenderType.crumbling(InventoryMenu.BLOCK_ATLAS));
-            renderDamageOverlay(model, poseStack, crackConsumer, stage, prop);
+            renderDamageOverlay(model, poseStack, crackConsumer, stage, prop, RENDER_TRANSFORM);
         }
 
         poseStack.popPose();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static void renderDamageOverlay(
             BakedModel model,
             PoseStack poseStack,
             VertexConsumer consumer,
             int stage,
-            Prop prop
+            Prop prop,
+            Matrix4f worldTransform
     ) {
         Minecraft minecraft = Minecraft.getInstance();
         ResourceLocation spriteId = ResourceLocation.fromNamespaceAndPath(
@@ -177,7 +197,6 @@ public final class PropRenderer {
         PoseStack.Pose pose = poseStack.last();
         Matrix4f poseMatrix = pose.pose();
         Matrix3f normalMatrix = pose.normal();
-        Matrix4f worldTransform = prop.getTransform();
 
         for (BakedQuad quad : getModelQuads(model, prop.getId().getMostSignificantBits())) {
             int[] data = quad.getVertices();
@@ -408,7 +427,8 @@ public final class PropRenderer {
                 .endVertex();
     }
 
-    private static @NotNull AABB getBounds(Vec3 scale, Vec3 position) {
+    @SuppressWarnings("SameParameterValue")
+    private static @NotNull AABB getBounds(Vector3f scale, Vector3f position) {
         double radius = Math.max(1.5, Math.max(
                 Math.abs(scale.x),
                 Math.max(Math.abs(scale.y), Math.abs(scale.z))
@@ -435,21 +455,29 @@ public final class PropRenderer {
 
         PoseStack poseStack = event.getPoseStack();
         Vec3 camera = event.getCamera().getPosition();
-        Vec3 position = prop.getPosition();
-        Vec3 scale = prop.getScale();
+
+        ClientProps.copyRenderTransformTo(
+                prop,
+                RENDER_TRANSFORM,
+                System.nanoTime()
+        );
+
+        RENDER_TRANSFORM.getTranslation(RENDER_POSITION);
+        RENDER_TRANSFORM.getScale(RENDER_SCALE);
+        RENDER_TRANSFORM.getUnnormalizedRotation(RENDER_ROTATION).normalize();
 
         poseStack.pushPose();
 
         poseStack.translate(
-                position.x - camera.x,
-                position.y - camera.y,
-                position.z - camera.z
+                RENDER_POSITION.x - camera.x,
+                RENDER_POSITION.y - camera.y,
+                RENDER_POSITION.z - camera.z
         );
-        poseStack.mulPose(prop.getRotationQuat().normalize());
+        poseStack.mulPose(RENDER_ROTATION);
         poseStack.scale(
-                (float) scale.x,
-                (float) scale.y,
-                (float) scale.z
+                RENDER_SCALE.x,
+                RENDER_SCALE.y,
+                RENDER_SCALE.z
         );
 
         PoseStack.Pose pose = poseStack.last();
