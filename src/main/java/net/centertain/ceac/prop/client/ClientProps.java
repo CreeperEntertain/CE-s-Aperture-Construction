@@ -3,8 +3,10 @@ package net.centertain.ceac.prop.client;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
 import net.centertain.ceac.prop.PropDefinitions;
+import net.centertain.ceac.prop.PropGeometry;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
 import net.centertain.ceac.prop.physics.PropEntityCollision;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -35,7 +37,7 @@ public final class ClientProps {
     private static final float SNAP_DISTANCE_SQUARED = 64.0f;
 
     private static final Matrix4f COLLISION_TRANSFORM = new Matrix4f();
-    private static final List<AABB> COLLISION_BOUNDS_SCRATCH = new ArrayList<>(8);
+    private static final List<PropGeometry.Triangle> COLLISION_TRIANGLES_SCRATCH = new ArrayList<>(256);
 
     private static final Map<Long, Map<UUID, Prop>> PROPS_BY_CHUNK = new HashMap<>();
     private static final Map<UUID, Long> CHUNK_BY_ID = new HashMap<>();
@@ -202,7 +204,7 @@ public final class ClientProps {
         int maxChunkZ = Mth.floor(searchBounds.maxZ) >> 4;
 
         long renderTimeNanos = System.nanoTime();
-        COLLISION_BOUNDS_SCRATCH.clear();
+        COLLISION_TRIANGLES_SCRATCH.clear();
 
         try {
             for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++)
@@ -215,15 +217,23 @@ public final class ClientProps {
                         if (definition == null)
                             continue;
 
+                        PropGeometry geometry = PropGeometry.get(
+                                Minecraft.getInstance().getResourceManager(), definition.getModelId()
+                        );
+                        if (geometry == null)
+                            continue;
+
                         copyRenderTransformTo(prop, COLLISION_TRANSFORM, renderTimeNanos);
-                        AABB bounds = PropEntityCollision.transformBounds(definition.getLocalHitbox(), COLLISION_TRANSFORM);
+                        List<PropGeometry.Triangle> triangles =
+                                PropEntityCollision.transformTriangles(geometry, COLLISION_TRANSFORM);
+                        AABB bounds = PropEntityCollision.boundsOf(triangles);
                         if (bounds.intersects(sweptBounds))
-                            COLLISION_BOUNDS_SCRATCH.add(bounds);
+                            COLLISION_TRIANGLES_SCRATCH.addAll(triangles);
                     }
 
-            return PropEntityCollision.clipMovement(entityBox, movement, COLLISION_BOUNDS_SCRATCH);
+            return PropEntityCollision.clipMovementAgainstTriangles(entityBox, movement, COLLISION_TRIANGLES_SCRATCH);
         } finally {
-            COLLISION_BOUNDS_SCRATCH.clear();
+            COLLISION_TRIANGLES_SCRATCH.clear();
         }
     }
 

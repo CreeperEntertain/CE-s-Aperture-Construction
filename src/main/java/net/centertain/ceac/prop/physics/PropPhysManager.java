@@ -875,7 +875,7 @@ public final class PropPhysManager implements AutoCloseable {
         int maxZ = spatialCell(sweptBounds.maxZ);
 
         long stamp = ++collisionQueryStamp;
-        List<AABB> obstacles = new ArrayList<>(8);
+        List<PropGeometry.Triangle> obstacles = new ArrayList<>(64);
 
         for (int x = minX; x <= maxX; x++)
             for (int y = minY; y <= maxY; y++)
@@ -889,11 +889,11 @@ public final class PropPhysManager implements AutoCloseable {
                             continue;
                         entry.lastCollisionQueryStamp = stamp;
                         if (entry.worldBounds.intersects(sweptBounds))
-                            obstacles.add(entry.worldBounds);
+                            obstacles.addAll(entry.triangles);
                     }
                 }
 
-        return PropEntityCollision.clipMovement(entityBox, movement, obstacles);
+        return PropEntityCollision.clipMovementAgainstTriangles(entityBox, movement, obstacles);
     }
 
     private void updatePropSpatialIndex() {
@@ -936,8 +936,11 @@ public final class PropPhysManager implements AutoCloseable {
         Matrix4f transform = prop.getTransform();
         if (existing != null)
             removePropSpatialEntry(id, existing);
+        List<PropGeometry.Triangle> worldTriangles = PropEntityCollision.transformTriangles(geometry.geometry, transform);
+        if (worldTriangles.isEmpty())
+            return false;
 
-        AABB bounds = PropEntityCollision.transformBounds(definition.getLocalHitbox(), transform);
+        AABB bounds = PropEntityCollision.boundsOf(worldTriangles);
         AABB interactionBounds = bounds.inflate(1.0);
 
         int minX = spatialCell(bounds.minX);
@@ -960,9 +963,10 @@ public final class PropPhysManager implements AutoCloseable {
         PropSpatialEntry updated = new PropSpatialEntry(
                 prop.getDefinitionId(),
                 transformRevision,
-                bounds,
                 interactionBounds,
-                cellKeys
+                bounds,
+                cellKeys,
+                worldTriangles
         );
 
         solidPropSpatialEntries.put(id, updated);
@@ -1681,6 +1685,7 @@ public final class PropPhysManager implements AutoCloseable {
         private final long transformRevision;
         private final AABB worldBounds;
         private long lastCollisionQueryStamp;
+        private final List<PropGeometry.Triangle> triangles;
 
         private long lastQueryStamp;
 
@@ -1689,13 +1694,15 @@ public final class PropPhysManager implements AutoCloseable {
                 long transformRevision,
                 AABB interactionBounds,
                 AABB worldBounds,
-                Set<Long> cellKeys
+                Set<Long> cellKeys,
+                List<PropGeometry.Triangle> triangles
         ) {
             this.definitionId = definitionId;
             this.transformRevision = transformRevision;
             this.interactionBounds = interactionBounds;
             this.worldBounds = worldBounds;
             this.cellKeys = cellKeys;
+            this.triangles = List.copyOf(triangles);
         }
     }
 
