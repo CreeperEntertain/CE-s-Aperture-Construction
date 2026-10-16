@@ -334,8 +334,6 @@ public final class PropEntityCollision {
                 return null;
             return new Hit(0.0, normal, true);
         }
-        if (entryNormal == null)
-            return null;
         if (movement.dot(entryNormal) >= -1.0e-7) {
             Vec3 normal = movement.dot(faceNormal) > 0.0
                     ? faceNormal.scale(-1.0)
