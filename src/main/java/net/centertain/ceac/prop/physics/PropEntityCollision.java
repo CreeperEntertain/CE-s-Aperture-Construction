@@ -189,26 +189,58 @@ public final class PropEntityCollision {
         if (triangles.isEmpty() || movement.lengthSqr() < 1.0e-12)
             return movement;
 
+        double dy = clipAxisMovement(entityBox, movement.y, 1, triangles);
+        AABB afterY = entityBox.move(0.0, dy, 0.0);
+        Vec3 horizontal = new Vec3(movement.x, 0.0, movement.z);
+        Vec3 clippedHorizontal = clipHorizontalMovementAgainstTriangles(afterY, horizontal, triangles);
+
+        return new Vec3(clippedHorizontal.x, dy, clippedHorizontal.z);
+    }
+
+    private static Vec3 clipHorizontalMovementAgainstTriangles(
+            AABB entityBox,
+            Vec3 movement,
+            Collection<PropGeometry.Triangle> triangles
+    ) {
         AABB box = entityBox;
         Vec3 remaining = movement;
         Vec3 applied = Vec3.ZERO;
-        for (int iteration = 0; iteration < 5 && remaining.lengthSqr() >= 1.0e-12; iteration++) {
+
+        for (int iteration = 0;
+             iteration < 5 && remaining.lengthSqr() >= 1.0e-12;
+             iteration++) {
+
             AABB swept = box.expandTowards(remaining).inflate(1.0e-6);
             Hit nearest = null;
+            double tieEpsilon = 1.0e-7;
 
             for (PropGeometry.Triangle triangle : triangles) {
                 if (!triangleBounds(triangle).inflate(1.0e-6).intersects(swept))
                     continue;
+
                 Hit hit = sweepTriangle(box, remaining, triangle);
                 if (hit == null)
                     continue;
+
+                if (!hit.faceAxis) {
+                    Vec3 faceNormal = triangle.b().subtract(triangle.a()).cross(triangle.c().subtract(triangle.a()));
+                    double normalLengthSqr = faceNormal.lengthSqr();
+                    if (normalLengthSqr < 1.0e-12)
+                        continue;
+
+                    faceNormal = faceNormal.scale(1.0 / Math.sqrt(normalLengthSqr));
+                    if (Math.abs(remaining.dot(faceNormal)) < 1.0e-7)
+                        continue;
+                }
+
                 if (
                         nearest == null ||
-                        hit.time < nearest.time - 1.0e-7 ||
-                        (Math.abs(hit.time - nearest.time) <= 1.0e-7 && hit.faceAxis && !nearest.faceAxis)
+                        hit.time < nearest.time - tieEpsilon ||
+                        (Math.abs(hit.time - nearest.time) <= tieEpsilon && hit.faceAxis && !nearest.faceAxis)
                 )
                     nearest = hit;
             }
+
             if (nearest == null) {
                 applied = applied.add(remaining);
                 break;
@@ -231,6 +263,40 @@ public final class PropEntityCollision {
         }
 
         return applied;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private static double clipAxisMovement(
+            AABB box,
+            double amount,
+            int axis,
+            Collection<PropGeometry.Triangle> triangles
+    ) {
+        if (Math.abs(amount) < 1.0e-12)
+            return amount;
+
+        Vec3 movement = switch (axis) {
+            case 0 -> new Vec3(amount, 0.0, 0.0);
+            case 1 -> new Vec3(0.0, amount, 0.0);
+            default -> new Vec3(0.0, 0.0, amount);
+        };
+        AABB swept = box.expandTowards(movement).inflate(1.0e-6);
+        double allowedTime = 1.0;
+
+        for (PropGeometry.Triangle triangle : triangles) {
+            if (!triangleBounds(triangle).inflate(1.0e-6).intersects(swept))
+                continue;
+
+            Hit hit = sweepTriangle(box, movement, triangle);
+            if (hit == null)
+                continue;
+
+            allowedTime = Math.min(allowedTime, Math.max(0.0, Math.min(1.0, hit.time)));
+            if (allowedTime <= 0.0)
+                break;
+        }
+
+        return amount * allowedTime;
     }
 
     private static Hit sweepTriangle(
