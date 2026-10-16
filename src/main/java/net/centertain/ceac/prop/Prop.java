@@ -177,6 +177,10 @@ public final class Prop {
         transformRevision++;
     }
 
+    public void copyTransformTo(Matrix4f destination) {
+        destination.set(transform);
+    }
+
     public @NotNull CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("Id", id);

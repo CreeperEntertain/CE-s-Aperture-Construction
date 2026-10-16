@@ -429,7 +429,11 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     private void writeBackTransform(PropBody body, boolean sendUpdate) {
-        Matrix4f before = body.prop.getTransform();
+        Matrix4f before = body.transformBeforeScratch;
+        Matrix4f after = body.transformAfterScratch;
+
+        body.prop.copyTransformTo(before);
+
         b3Pos position = b3Body_GetPosition(body.body);
         b3Quat rotation = b3Body_GetRotation(body.body);
         Quaternionf quaternion = fromBoxQuat(rotation);
@@ -442,7 +446,7 @@ public final class PropPhysManager implements AutoCloseable {
         body.prop.setRotation(quaternion);
         body.lastObservedTransformRevision = body.prop.getTransformRevision();
 
-        Matrix4f after = body.prop.getTransform();
+        body.prop.copyTransformTo(after);
         body.lastSyncedTransform.set(after);
         if (sameTransform(before, after))
             return;
@@ -471,8 +475,7 @@ public final class PropPhysManager implements AutoCloseable {
                         quaternion.y,
                         quaternion.z,
                         quaternion.w
-                )
-        );
+                ));
 
         body.lastNetworkedTransform.set(after);
     }
@@ -1503,6 +1506,9 @@ public final class PropPhysManager implements AutoCloseable {
         private final Matrix4f lastNetworkedTransform;
         private long lastObservedTransformRevision;
 
+        private final Matrix4f transformBeforeScratch = new Matrix4f();
+        private final Matrix4f transformAfterScratch = new Matrix4f();
+
         private PropBody(
                 Prop prop,
                 LevelChunk ownerChunk,
@@ -1557,19 +1563,19 @@ public final class PropPhysManager implements AutoCloseable {
             double maxY = Double.NEGATIVE_INFINITY;
             double maxZ = Double.NEGATIVE_INFINITY;
 
-            for (PropGeometry.Triangle triangle : geometry.getTriangles())
-                for (Vec3 vertex : new Vec3[]{
-                        triangle.a(),
-                        triangle.b(),
-                        triangle.c()
-                }) {
-                    minX = Math.min(minX, vertex.x);
-                    minY = Math.min(minY, vertex.y);
-                    minZ = Math.min(minZ, vertex.z);
-                    maxX = Math.max(maxX, vertex.x);
-                    maxY = Math.max(maxY, vertex.y);
-                    maxZ = Math.max(maxZ, vertex.z);
-                }
+            for (PropGeometry.Triangle triangle : geometry.getTriangles()) {
+                Vec3 a = triangle.a();
+                Vec3 b = triangle.b();
+                Vec3 c = triangle.c();
+
+                minX = Math.min(minX, Math.min(a.x, Math.min(b.x, c.x)));
+                minY = Math.min(minY, Math.min(a.y, Math.min(b.y, c.y)));
+                minZ = Math.min(minZ, Math.min(a.z, Math.min(b.z, c.z)));
+
+                maxX = Math.max(maxX, Math.max(a.x, Math.max(b.x, c.x)));
+                maxY = Math.max(maxY, Math.max(a.y, Math.max(b.y, c.y)));
+                maxZ = Math.max(maxZ, Math.max(a.z, Math.max(b.z, c.z)));
+            }
 
             this.minX = minX;
             this.minY = minY;

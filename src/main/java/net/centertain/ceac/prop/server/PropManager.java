@@ -14,6 +14,7 @@ import java.util.UUID;
 public final class PropManager implements INBTSerializable<CompoundTag> {
     private final LevelChunk chunk;
     private final Map<UUID, Prop> props = new HashMap<>();
+    private final Map<UUID, Prop> readOnlyProps = Collections.unmodifiableMap(props);
 
     public PropManager(LevelChunk chunk) {
         this.chunk = chunk;
@@ -37,7 +38,7 @@ public final class PropManager implements INBTSerializable<CompoundTag> {
         return props.get(id);
     }
     public Map<UUID, Prop> getProps() {
-        return Collections.unmodifiableMap(props);
+        return readOnlyProps;
     }
 
     @Override
