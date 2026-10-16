@@ -144,7 +144,8 @@ public final class PropEntityCollision {
             transformed.add(new PropGeometry.Triangle(
                     transformPoint(triangle.a(), transform),
                     transformPoint(triangle.b(), transform),
-                    transformPoint(triangle.c(), transform)
+                    transformPoint(triangle.c(), transform),
+                    triangle.smoothEdgeMask()
             ));
 
         return List.copyOf(transformed);
@@ -260,12 +261,18 @@ public final class PropEntityCollision {
         axes.add(baseAxes[1]);
         axes.add(baseAxes[2]);
         axes.add(faceNormal);
-        for (Vec3 edge : List.of(edgeAB, edgeBC, edgeCA))
+
+        Vec3[] triangleEdges = {edgeAB, edgeBC, edgeCA};
+        for (int edgeIndex = 0; edgeIndex < triangleEdges.length; edgeIndex++) {
+            if (triangle.isSmoothEdge(edgeIndex))
+                continue;
+            Vec3 edge = triangleEdges[edgeIndex];
             for (Vec3 baseAxis : baseAxes) {
                 Vec3 axis = edge.cross(baseAxis);
                 if (axis.lengthSqr() >= 1.0e-12)
                     axes.add(axis.normalize());
             }
+        }
 
         Vec3 center = new Vec3(
                 (box.minX + box.maxX) * 0.5,

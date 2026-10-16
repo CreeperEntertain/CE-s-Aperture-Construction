@@ -31,7 +31,7 @@ public final class PropGeometry {
     private final List<Triangle> triangles;
 
     private PropGeometry(List<Triangle> triangles) {
-        this.triangles = List.copyOf(triangles);
+        this.triangles = markCoplanarSharedEdges(triangles);
 
         double minX = Double.POSITIVE_INFINITY;
         double minY = Double.POSITIVE_INFINITY;
@@ -66,14 +66,122 @@ public final class PropGeometry {
     public record Triangle(
             Vec3 a,
             Vec3 b,
-            Vec3 c
-    ) {}
+            Vec3 c,
+            int smoothEdgeMask
+    ) {
+        public Triangle(Vec3 a, Vec3 b, Vec3 c) {
+            this(a, b, c, 0);
+        }
+        public boolean isSmoothEdge(int edgeIndex) {
+            return (smoothEdgeMask & (1 << edgeIndex)) != 0;
+        }
+    }
 
     public record RayHit(
             Vec3 location,
             Vec3 normal,
             double distance
     ) {}
+
+    private static List<Triangle> markCoplanarSharedEdges(List<Triangle> source) {
+        int[] masks = new int[source.size()];
+        Map<EdgeKey, List<EdgeUse>> edgeUses = new HashMap<>();
+
+        for (int i = 0; i < source.size(); i++) {
+            Triangle t = source.get(i);
+
+            addEdgeUse(edgeUses, t.a(), t.b(), i, 0);
+            addEdgeUse(edgeUses, t.b(), t.c(), i, 1);
+            addEdgeUse(edgeUses, t.c(), t.a(), i, 2);
+        }
+
+        for (Map.Entry<EdgeKey, List<EdgeUse>> entry : edgeUses.entrySet()) {
+            List<EdgeUse> uses = entry.getValue();
+            if (uses.size() != 2)
+                continue;
+
+            EdgeUse useA = uses.get(0);
+            EdgeUse useB = uses.get(1);
+            if (useA.triangleIndex() == useB.triangleIndex())
+                continue;
+
+            EdgeKey edgeKey = entry.getKey();
+            Triangle a = source.get(useA.triangleIndex());
+            Triangle b = source.get(useB.triangleIndex());
+
+            Vec3 thirdA = thirdVertex(a, edgeKey);
+            Vec3 thirdB = thirdVertex(b, edgeKey);
+            if (thirdA == null || thirdB == null)
+                continue;
+
+            Vec3 normalA = a.b().subtract(a.a()).cross(a.c().subtract(a.a()));
+            Vec3 normalB = b.b().subtract(b.a()).cross(b.c().subtract(b.a()));
+            if (normalA.lengthSqr() < 1.0e-12 || normalB.lengthSqr() < 1.0e-12)
+                continue;
+
+            normalA = normalA.normalize();
+            normalB = normalB.normalize();
+            if (Math.abs(normalA.dot(normalB)) < 1.0 - 1.0e-6)
+                continue;
+
+            Vec3 edge = edgeKey.second().subtract(edgeKey.first());
+            Vec3 sideAxis = normalA.cross(edge);
+
+            double sideA = thirdA.subtract(edgeKey.first()).dot(sideAxis);
+            double sideB = thirdB.subtract(edgeKey.first()).dot(sideAxis);
+            if (sideA == 0.0 || sideB == 0.0 || Math.signum(sideA) == Math.signum(sideB))
+                continue;
+
+            masks[useA.triangleIndex()] |= 1 << useA.edgeIndex();
+            masks[useB.triangleIndex()] |= 1 << useB.edgeIndex();
+        }
+
+        List<Triangle> result = new ArrayList<>(source.size());
+
+        for (int i = 0; i < source.size(); i++) {
+            Triangle t = source.get(i);
+            result.add(new Triangle(t.a(), t.b(), t.c(), masks[i]));
+        }
+
+        return List.copyOf(result);
+    }
+
+    private static void addEdgeUse(
+            Map<EdgeKey, List<EdgeUse>> edgeUses,
+            Vec3 a,
+            Vec3 b,
+            int triangleIndex,
+            int edgeIndex
+    ) {
+        EdgeKey key = EdgeKey.of(a, b);
+        edgeUses
+                .computeIfAbsent(key, ignored -> new ArrayList<>())
+                .add(new EdgeUse(triangleIndex, edgeIndex));
+    }
+
+    private static Vec3 thirdVertex(Triangle triangle, EdgeKey edge) {
+        for (Vec3 vertex : List.of(triangle.a(), triangle.b(), triangle.c())) {
+            if (!vertex.equals(edge.first()) &&
+                    !vertex.equals(edge.second()))
+                return vertex;
+        }
+
+        return null;
+    }
+
+    private record EdgeKey(Vec3 first, Vec3 second) {
+        private static EdgeKey of(Vec3 a, Vec3 b) {
+            int comparison = Double.compare(a.x, b.x);
+            if (comparison == 0)
+                comparison = Double.compare(a.y, b.y);
+            if (comparison == 0)
+                comparison = Double.compare(a.z, b.z);
+
+            return comparison <= 0
+                    ? new EdgeKey(a, b)
+                    : new EdgeKey(b, a);
+        }
+    }
 
     public static synchronized @Nullable PropGeometry get(ResourceManager resources, ResourceLocation modelId) {
         Optional<PropGeometry> cached = CACHE.get(modelId);
@@ -360,8 +468,6 @@ public final class PropGeometry {
         return new Intersection(distance, normal);
     }
 
-    private record Intersection(
-            double distance,
-            Vec3 normal
-    ) {}
+    private record Intersection(double distance, Vec3 normal) {}
+    private record EdgeUse(int triangleIndex, int edgeIndex) {}
 }
