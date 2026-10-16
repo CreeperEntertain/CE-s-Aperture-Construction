@@ -51,6 +51,7 @@ public final class PropPhysManager implements AutoCloseable {
     private static final int SUB_STEPS = 4;
     private static final double TERRAIN_BOUNDS_EPSILON = 1.0e-4;
     private static final int TERRAIN_VALIDATION_INTERVAL = 20;
+    private static final int TERRAIN_VALIDATION_BUDGET_PER_TICK = 128;
     private static final int PROP_SPATIAL_CELL_SIZE = 8;
 
     private static final int MAX_PROP_HULL_VERTICES = 32;
@@ -105,6 +106,7 @@ public final class PropPhysManager implements AutoCloseable {
     private final Map<Long, Set<Long>> terrainKeysByChunk = new HashMap<>();
 
     private final Set<Long> dirtyTerrainKeys = new HashSet<>();
+    private final ArrayDeque<Long> terrainValidationQueue = new ArrayDeque<>();
 
     private final Map<UUID, PropSpatialEntry> solidPropSpatialEntries = new HashMap<>();
     private final Map<Long, Set<UUID>> propSpatialCells = new HashMap<>();
@@ -583,15 +585,7 @@ public final class PropPhysManager implements AutoCloseable {
             coverageIterator.remove();
         }
 
-        if (++terrainValidationTicks >= TERRAIN_VALIDATION_INTERVAL) {
-            terrainValidationTicks = 0;
-            for (Map.Entry<Long, TerrainBody> entry : terrainBodies.entrySet()) {
-                BlockPos position = BlockPos.of(entry.getKey());
-                TerrainBody cached = entry.getValue();
-                if (!cached.state.equals(level.getBlockState(position)))
-                    dirtyTerrainKeys.add(entry.getKey());
-            }
-        }
+        validateTerrainBodiesIncrementally();
 
         Iterator<Long> dirtyIterator = dirtyTerrainKeys.iterator();
 
@@ -602,6 +596,30 @@ public final class PropPhysManager implements AutoCloseable {
             else
                 destroyTerrainBody(key);
             dirtyIterator.remove();
+        }
+    }
+
+    private void validateTerrainBodiesIncrementally() {
+        if (terrainValidationQueue.isEmpty()) {
+            if (++terrainValidationTicks < TERRAIN_VALIDATION_INTERVAL)
+                return;
+            terrainValidationTicks = 0;
+            terrainValidationQueue.addAll(terrainBodies.keySet());
+        }
+
+        int processed = 0;
+
+        while (processed < TERRAIN_VALIDATION_BUDGET_PER_TICK && !terrainValidationQueue.isEmpty()) {
+            long key = terrainValidationQueue.removeFirst();
+            processed++;
+            TerrainBody cached = terrainBodies.get(key);
+            if (cached == null)
+                continue;
+
+            BlockPos position = BlockPos.of(key);
+            BlockState currentState = level.getBlockState(position);
+            if (!cached.state.equals(currentState))
+                dirtyTerrainKeys.add(key);
         }
     }
 
@@ -1257,6 +1275,7 @@ public final class PropPhysManager implements AutoCloseable {
         }
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static b3ShapeDef makeShapeDefinition(
             long category,
             long mask,
@@ -1417,6 +1436,7 @@ public final class PropPhysManager implements AutoCloseable {
         terrainReferenceCounts.clear();
         terrainKeysByChunk.clear();
         dirtyTerrainKeys.clear();
+        terrainValidationQueue.clear();
 
         solidPropSpatialEntries.clear();
         propSpatialCells.clear();
