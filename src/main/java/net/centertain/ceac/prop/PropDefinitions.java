@@ -1,5 +1,6 @@
 package net.centertain.ceac.prop;
 
+import net.centertain.ceac.prop.physics.PropPhysDefinition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.phys.AABB;
@@ -25,7 +26,10 @@ public final class PropDefinitions {
                 ),
                 ToolActions.AXE_DIG,
                 -1,
-                null
+                null,
+                PropPhysDefinition.builder()
+                        .density(80.0f)
+                        .build()
         ));
     }
 
