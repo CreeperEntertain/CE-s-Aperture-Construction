@@ -94,7 +94,7 @@ public final class PropPhysDefinition {
 
 
     public static final class Builder {
-        private float density = 0.1f;
+        private float density = 1.0f;
         @Nullable private Float massOverride;
 
         private float friction = 0.2f;
