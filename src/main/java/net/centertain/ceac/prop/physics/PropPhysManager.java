@@ -112,6 +112,7 @@ public final class PropPhysManager implements AutoCloseable {
     private long playerPushImpulseTick = Long.MIN_VALUE;
     private final Set<ImpactKey> playerPushesThisTick = new HashSet<>();
     private final Map<ImpactKey, PendingPlayerPush> pendingPlayerPushes = new LinkedHashMap<>();
+    private final Map<UUID, PlayerPushMotion> pendingPlayerPushMotions = new HashMap<>();
 
     private final Map<UUID, TerrainCoverage> terrainCoverageByProp = new HashMap<>();
     private final Map<Long, Integer> terrainReferenceCounts = new HashMap<>();
@@ -256,6 +257,8 @@ public final class PropPhysManager implements AutoCloseable {
         processHitEvents();
         applyPendingPlayerPushes();
         synchronizePropTransforms();
+
+        pendingPlayerPushMotions.clear();
     }
 
     private void synchronizeProps() {
@@ -994,7 +997,8 @@ public final class PropPhysManager implements AutoCloseable {
                             direction,
                             intendedSpeed,
                             0.75,
-                            1.5
+                            1.5,
+                            requestedMovement
                     );
 
                 return;
@@ -1017,7 +1021,8 @@ public final class PropPhysManager implements AutoCloseable {
                 direction,
                 intendedSpeed,
                 0.06,
-                0.16
+                0.16,
+                requestedMovement
         );
     }
 
@@ -1094,7 +1099,8 @@ public final class PropPhysManager implements AutoCloseable {
             Vec3 direction,
             double intendedSpeed,
             double response,
-            double maxDeltaVelocity
+            double maxDeltaVelocity,
+            Vec3 requestedMovement
     ) {
         if (intendedSpeed <= 1.0e-4 || prop.mass <= 1.0e-6)
             return;
@@ -1103,6 +1109,24 @@ public final class PropPhysManager implements AutoCloseable {
         if (playerPushImpulseTick != gameTime) {
             playerPushImpulseTick = gameTime;
             playerPushesThisTick.clear();
+        }
+
+        Vec3 horizontalIntent = new Vec3(
+                requestedMovement.x,
+                0.0,
+                requestedMovement.z
+        );
+        if (horizontalIntent.lengthSqr() > 1.0e-12) {
+            PlayerPushMotion incoming = new PlayerPushMotion(horizontalIntent);
+            pendingPlayerPushMotions.merge(
+                    entity.getUUID(),
+                    incoming,
+                    (current, next) ->
+                            next.horizontalDisplacement().lengthSqr()
+                                    > current.horizontalDisplacement().lengthSqr()
+                                    ? next
+                                    : current
+            );
         }
 
         ImpactKey key = new ImpactKey(prop.prop.getId(), entity.getUUID());
@@ -1291,8 +1315,20 @@ public final class PropPhysManager implements AutoCloseable {
                 entity.getY() - entity.yo,
                 entity.getZ() - entity.zo
         );
-        if (tickDisplacement.lengthSqr() > 4.0)
+        boolean teleported = tickDisplacement.lengthSqr() > 4.0;
+        if (teleported)
             tickDisplacement = Vec3.ZERO;
+        else if (entity instanceof Player) {
+            PlayerPushMotion pushMotion = pendingPlayerPushMotions.get(entity.getUUID());
+            if (pushMotion != null) {
+                Vec3 intended = pushMotion.horizontalDisplacement();
+                tickDisplacement = new Vec3(
+                        intended.x,
+                        tickDisplacement.y,
+                        intended.z
+                );
+            }
+        }
 
         Vec3 boxVelocity = tickDisplacement.scale(1.0 / FIXED_STEP);
         Vec3 boxStartPosition = currentPosition.subtract(tickDisplacement);
@@ -2037,4 +2073,5 @@ public final class PropPhysManager implements AutoCloseable {
             double response,
             double maxDeltaVelocity
     ) {}
+    private record PlayerPushMotion(Vec3 horizontalDisplacement) {}
 }
