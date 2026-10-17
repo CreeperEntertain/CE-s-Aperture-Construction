@@ -50,6 +50,7 @@ public final class PropPhysManager implements AutoCloseable {
 
     private static final float FIXED_STEP = 1.0f / 20.0f;
     private static final int SUB_STEPS = 4;
+    private static final double ENTITY_CONTACT_SKIN = 0.01;
     private static final double TERRAIN_BOUNDS_EPSILON = 1.0e-4;
     private static final int TERRAIN_VALIDATION_INTERVAL = 20;
     private static final int TERRAIN_VALIDATION_BUDGET_PER_TICK = 128;
@@ -396,6 +397,7 @@ public final class PropPhysManager implements AutoCloseable {
                     prop.getScale(),
                     propMass,
                     physics.getRestitution(),
+                    physics.getGravityScale(),
                     prop.getTransform()
             );
         } catch (RuntimeException exception) {
@@ -943,33 +945,33 @@ public final class PropPhysManager implements AutoCloseable {
             return;
 
         Vec3 direction = blocked.scale(1.0 / Math.sqrt(blockedLengthSqr));
-        AABB endBox = entity.getBoundingBox().move(clippedMovement).inflate(0.05);
+        AABB endBox = entity.getBoundingBox().move(clippedMovement).inflate(0.1);
         double playerCenterX = (entity.getBoundingBox().minX + entity.getBoundingBox().maxX) * 0.5;
         double playerCenterZ = (entity.getBoundingBox().minZ + entity.getBoundingBox().maxZ) * 0.5;
         PropBody selected = null;
-        double bestAlignment = Double.NEGATIVE_INFINITY;
+        double nearestAlignment = Double.POSITIVE_INFINITY;
 
         for (PropBody candidate : candidates) {
             PropSpatialEntry entry = solidPropSpatialEntries.get(candidate.prop.getId());
-            if (entry == null || !entry.worldBounds.intersects(endBox))
+            if (entry == null || !entry.worldBounds.inflate(0.1).intersects(endBox))
                 continue;
 
             double propCenterX = (entry.worldBounds.minX + entry.worldBounds.maxX) * 0.5;
             double propCenterZ = (entry.worldBounds.minZ + entry.worldBounds.maxZ) * 0.5;
             double alignment = (propCenterX - playerCenterX) * direction.x + (propCenterZ - playerCenterZ) * direction.z;
-            if (alignment < -0.15 || alignment <= bestAlignment)
+            if (alignment < -0.15 || alignment >= nearestAlignment)
                 continue;
 
-            bestAlignment = alignment;
+            nearestAlignment = alignment;
             selected = candidate;
         }
         if (selected == null || selected.mass <= 1.0e-6)
             return;
 
         Vec3 entityVelocity = entity.getDeltaMovement();
-        double entitySpeed = entityVelocity.x * direction.x + entityVelocity.z * direction.z;
+        double entitySpeed = (entityVelocity.x * direction.x + entityVelocity.z * direction.z) / FIXED_STEP;
         if (entitySpeed <= 1.0e-4)
-            entitySpeed = requestedMovement.x * direction.x + requestedMovement.z * direction.z;
+            entitySpeed = (requestedMovement.x * direction.x + requestedMovement.z * direction.z) / FIXED_STEP;
         if (entitySpeed <= 1.0e-4)
             return;
 
@@ -1105,29 +1107,40 @@ public final class PropPhysManager implements AutoCloseable {
             destroyEntityBody(id);
             existing = null;
         }
+
+        Vec3 currentPosition = new Vec3(
+                entity.getX(),
+                entity.getY(),
+                entity.getZ()
+        );
+        Vec3 tickDisplacement = new Vec3(
+                entity.getX() - entity.xo,
+                entity.getY() - entity.yo,
+                entity.getZ() - entity.zo
+        );
+        if (tickDisplacement.lengthSqr() > 4.0)
+            tickDisplacement = Vec3.ZERO;
+
+        Vec3 boxVelocity = tickDisplacement.scale(1.0 / FIXED_STEP);
+        Vec3 boxStartPosition = currentPosition.subtract(tickDisplacement);
         if (existing == null) {
+            AABB hullBox = localBox.inflate(ENTITY_CONTACT_SKIN);
             List<FloatPoint> points = boxPoints(
-                    localBox.minX, localBox.minY, localBox.minZ,
-                    localBox.maxX, localBox.maxY, localBox.maxZ
+                    hullBox.minX, hullBox.minY, hullBox.minZ,
+                    hullBox.maxX, hullBox.maxY, hullBox.maxZ
             );
             b3HullData hull = createHull(points, 8);
             if (hull == null || hull.isNull())
                 return;
 
             try {
-                Vec3 velocity = entity.getDeltaMovement();
-
                 b3BodyDef bodyDefinition = b3DefaultBodyDef();
                 bodyDefinition.type(b3_kinematicBody);
                 bodyDefinition.gravityScale(0.0f);
                 bodyDefinition.enableSleep(false);
-                bodyDefinition._position(toBoxPos(new Vec3(
-                        entity.getX() - velocity.x * FIXED_STEP,
-                        entity.getY() - velocity.y * FIXED_STEP,
-                        entity.getZ() - velocity.z * FIXED_STEP
-                )));
+                bodyDefinition._position(toBoxPos(boxStartPosition));
                 bodyDefinition.rotation(identityQuat());
-                bodyDefinition.linearVelocity(toBoxVec(velocity));
+                bodyDefinition.linearVelocity(toBoxVec(boxVelocity));
 
                 b3BodyId body = b3CreateBody(world, bodyDefinition);
                 b3ShapeDef shapeDefinition = makeShapeDefinition(
@@ -1142,7 +1155,6 @@ public final class PropPhysManager implements AutoCloseable {
                 b3CreateHullShape(body, shapeDefinition, hull);
 
                 EntityBody created = new EntityBody(entity, body, localBox);
-
                 entityBodies.put(id, created);
                 entitiesByBody.put(BodyKey.of(body), created);
                 return;
@@ -1153,18 +1165,12 @@ public final class PropPhysManager implements AutoCloseable {
 
         existing.entity = entity;
 
-        Vec3 velocity = entity.getDeltaMovement();
-
         b3Body_SetTransform(
                 existing.body,
-                toBoxPos(new Vec3(
-                        entity.getX() - velocity.x * FIXED_STEP,
-                        entity.getY() - velocity.y * FIXED_STEP,
-                        entity.getZ() - velocity.z * FIXED_STEP
-                )),
+                toBoxPos(boxStartPosition),
                 identityQuat()
         );
-        b3Body_SetLinearVelocity(existing.body, toBoxVec(velocity));
+        b3Body_SetLinearVelocity(existing.body, toBoxVec(boxVelocity));
     }
 
     private void destroyEntityBody(UUID id) {
@@ -1293,14 +1299,10 @@ public final class PropPhysManager implements AutoCloseable {
         b3Pos propPosition = b3Body_GetPosition(prop.body);
         AABB entityBox = entity.getBoundingBox();
 
-        double entityCenterX = (entityBox.minX + entityBox.maxX) * 0.5;
-        double entityCenterY = (entityBox.minY + entityBox.maxY) * 0.5;
-        double entityCenterZ = (entityBox.minZ + entityBox.maxZ) * 0.5;
-
         Vec3 toEntity = new Vec3(
-                entityCenterX - propPosition.x(),
-                entityCenterY - propPosition.y(),
-                entityCenterZ - propPosition.z()
+                (entityBox.minX + entityBox.maxX) * 0.5 - propPosition.x(),
+                (entityBox.minY + entityBox.maxY) * 0.5 - propPosition.y(),
+                (entityBox.minZ + entityBox.maxZ) * 0.5 - propPosition.z()
         );
         double normalLengthSqr = normal.lengthSqr();
         if (normalLengthSqr < 1.0e-10) {
@@ -1314,34 +1316,30 @@ public final class PropPhysManager implements AutoCloseable {
         if (normal.dot(toEntity) < 0.0)
             normal = normal.scale(-1.0);
 
-        Vec3 propVelocityBefore = prop.velocityBeforeStep;
-        b3Vec3 entityBodyVelocity = b3Body_GetLinearVelocity(entityBody.body);
-        Vec3 entityVelocityBefore = new Vec3(
-                entityBodyVelocity.x(),
-                entityBodyVelocity.y(),
-                entityBodyVelocity.z()
-        );
+        Vec3 incomingPropVelocity = prop.velocityBeforeStep;
+        if (prop.motionMode == PropMotionMode.DYNAMIC)
+            incomingPropVelocity = incomingPropVelocity.add(
+                    0.0,
+                    -9.81 * FIXED_STEP * prop.gravityScale,
+                    0.0);
 
-        double propNormalSpeed = propVelocityBefore.dot(normal);
-        double entityNormalSpeed = entityVelocityBefore.dot(normal);
-        double closingSpeed = propNormalSpeed - entityNormalSpeed;
-        if (closingSpeed <= 0.01)
+        double propImpactSpeed = incomingPropVelocity.dot(normal);
+        if (propImpactSpeed <= 0.01)
             return;
 
         double entityMass = effectiveEntityMass(entity);
         double inversePropMass = prop.motionMode == PropMotionMode.DYNAMIC ? 1.0 / prop.mass : 0.0;
-        double impulse = (1.0 + prop.restitution) * closingSpeed / (inversePropMass + 1.0 / entityMass);
-        double targetEntityNormalSpeed = entityNormalSpeed + impulse / entityMass;
-
-        Vec3 currentEntityVelocity = entity.getDeltaMovement();
-        double currentEntityNormalSpeed = currentEntityVelocity.dot(normal);
-        entity.setDeltaMovement(currentEntityVelocity.add(
-                normal.scale(targetEntityNormalSpeed - currentEntityNormalSpeed)
-        ));
+        double impulse = (1.0 + prop.restitution) * propImpactSpeed / (inversePropMass + 1.0 / entityMass);
+        Vec3 entityVelocityChange = normal.scale(impulse / entityMass * FIXED_STEP);
+        entity.push(
+                entityVelocityChange.x,
+                entityVelocityChange.y,
+                entityVelocityChange.z
+        );
         if (prop.motionMode != PropMotionMode.DYNAMIC)
             return;
 
-        double targetPropNormalSpeed = propNormalSpeed - impulse / prop.mass;
+        double targetPropNormalSpeed = propImpactSpeed - impulse / prop.mass;
         b3Vec3 currentPropVelocity = b3Body_GetLinearVelocity(prop.body);
         double currentPropNormalSpeed =
                 currentPropVelocity.x() * normal.x +
@@ -1705,6 +1703,7 @@ public final class PropPhysManager implements AutoCloseable {
         private final Vec3 scale;
         private final double mass;
         private final double restitution;
+        private final double gravityScale;
         private final Matrix4f lastSyncedTransform;
         private final Matrix4f lastNetworkedTransform;
 
@@ -1724,6 +1723,7 @@ public final class PropPhysManager implements AutoCloseable {
                 Vec3 scale,
                 double mass,
                 double restitution,
+                double gravityScale,
                 Matrix4f lastSyncedTransform
         ) {
             this.prop = prop;
@@ -1735,6 +1735,7 @@ public final class PropPhysManager implements AutoCloseable {
             this.scale = scale;
             this.mass = mass;
             this.restitution = restitution;
+            this.gravityScale = gravityScale;
             this.lastSyncedTransform = new Matrix4f(lastSyncedTransform);
             this.lastNetworkedTransform = new Matrix4f(lastSyncedTransform);
             this.lastObservedTransformRevision = prop.getTransformRevision();
