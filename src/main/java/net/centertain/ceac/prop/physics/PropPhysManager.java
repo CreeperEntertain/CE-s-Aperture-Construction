@@ -905,7 +905,7 @@ public final class PropPhysManager implements AutoCloseable {
             Vec3 movement,
             Vec3 requestedMovement
     ) {
-        if (movement.lengthSqr() < 1.0e-12)
+        if (movement.lengthSqr() < 1.0e-12 && requestedMovement.lengthSqr() < 1.0e-12)
             return movement;
 
         AABB sweptBounds = PropStepManager.collisionQueryBounds(entity, movement).inflate(PUSH_CONTACT_EPSILON);
@@ -976,13 +976,21 @@ public final class PropPhysManager implements AutoCloseable {
                 0.0,
                 vanillaMovement.z - clippedMovement.z
         );
+        Vec3 horizontalIntent = new Vec3(
+                requestedMovement.x,
+                0.0,
+                requestedMovement.z
+        );
+        boolean hasBlockedMovement = blockedHorizontal.lengthSqr() >= 1.0e-8;
+        boolean hasIntent = horizontalIntent.lengthSqr() >= 1.0e-8;
 
-        if (blockedHorizontal.lengthSqr() >= 1.0e-8) {
-            Vec3 direction = blockedHorizontal.normalize();
-
+        if (hasBlockedMovement || hasIntent) {
+            Vec3 direction = hasBlockedMovement
+                    ? blockedHorizontal.normalize()
+                    : horizontalIntent.normalize();
             PropBody sideProp = findSidePushTarget(
                     entity.getBoundingBox(),
-                    vanillaMovement,
+                    requestedMovement,
                     direction,
                     candidates
             );
@@ -1004,8 +1012,6 @@ public final class PropPhysManager implements AutoCloseable {
                 return;
             }
         }
-
-        Vec3 horizontalIntent = new Vec3(requestedMovement.x, 0.0, requestedMovement.z);
         if (horizontalIntent.lengthSqr() < 1.0e-8)
             return;
 
