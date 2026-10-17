@@ -17,6 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -125,7 +126,7 @@ public final class PropPhysManager implements AutoCloseable {
 
         b3WorldDef worldDefinition = b3DefaultWorldDef();
         worldDefinition.gravity(new b3Vec3().x(0.0f).y(-9.81f).z(0.0f));
-        worldDefinition.hitEventThreshold(0.1f);
+        worldDefinition.hitEventThreshold(0.2f);
 
         this.world = b3CreateWorld(worldDefinition);
     }
@@ -231,6 +232,15 @@ public final class PropPhysManager implements AutoCloseable {
         synchronizeEntities();
 
         applyMovingBodyGravity();
+
+        for (PropBody body : propBodies.values()) {
+            b3Vec3 velocity = b3Body_GetLinearVelocity(body.body);
+            body.velocityBeforeStep = new Vec3(
+                    velocity.x(),
+                    velocity.y(),
+                    velocity.z()
+            );
+        }
 
         b3World_Step(world, FIXED_STEP, SUB_STEPS);
 
@@ -354,6 +364,8 @@ public final class PropPhysManager implements AutoCloseable {
             if (massOverride != null && hull.volume() > 1.0e-6f)
                 density = massOverride / hull.volume();
 
+            double propMass = Math.max(1.0e-3, (double) density * hull.volume());
+
             boolean sensor = prop.getCollisionMode() == PropCollisionMode.NONE;
             long category = categoryFor(prop.getCollisionMode());
             long mask = maskFor(prop.getCollisionMode());
@@ -382,6 +394,8 @@ public final class PropPhysManager implements AutoCloseable {
                     prop.getCollisionMode(),
                     prop.getMotionMode(),
                     prop.getScale(),
+                    propMass,
+                    physics.getRestitution(),
                     prop.getTransform()
             );
         } catch (RuntimeException exception) {
@@ -875,6 +889,7 @@ public final class PropPhysManager implements AutoCloseable {
 
         long stamp = ++collisionQueryStamp;
         List<PropGeometry.Triangle> obstacles = new ArrayList<>(64);
+        List<PropBody> candidateProps = new ArrayList<>();
 
         for (int x = minX; x <= maxX; x++)
             for (int y = minY; y <= maxY; y++)
@@ -882,17 +897,96 @@ public final class PropPhysManager implements AutoCloseable {
                     Set<UUID> ids = propSpatialCells.get(spatialCellKey(x, y, z));
                     if (ids == null)
                         continue;
+
                     for (UUID id : ids) {
                         PropSpatialEntry entry = solidPropSpatialEntries.get(id);
                         if (entry == null || entry.lastCollisionQueryStamp == stamp)
                             continue;
+
                         entry.lastCollisionQueryStamp = stamp;
-                        if (entry.worldBounds.intersects(sweptBounds))
-                            obstacles.addAll(entry.triangles);
+                        if (!entry.worldBounds.intersects(sweptBounds))
+                            continue;
+
+                        obstacles.addAll(entry.triangles);
+                        PropBody body = propBodies.get(id);
+                        if (
+                                body != null &&
+                                body.motionMode == PropMotionMode.DYNAMIC &&
+                                body.prop.getCollisionMode() == PropCollisionMode.SOLID
+                        )
+                            candidateProps.add(body);
                     }
                 }
 
-        return PropStepManager.clipMovement(entity, movement, obstacles);
+        Vec3 clipped = PropStepManager.clipMovement(entity, movement, obstacles);
+        applyPlayerPushImpulse(entity, movement, clipped, candidateProps);
+
+        return clipped;
+    }
+
+    private void applyPlayerPushImpulse(
+            Entity entity,
+            Vec3 requestedMovement,
+            Vec3 clippedMovement,
+            List<PropBody> candidates
+    ) {
+        if (!(entity instanceof Player) || entity.noPhysics || entity.isSpectator())
+            return;
+
+        Vec3 blocked = new Vec3(
+                requestedMovement.x - clippedMovement.x,
+                0.0,
+                requestedMovement.z - clippedMovement.z
+        );
+        double blockedLengthSqr = blocked.lengthSqr();
+        if (blockedLengthSqr < 1.0e-8)
+            return;
+
+        Vec3 direction = blocked.scale(1.0 / Math.sqrt(blockedLengthSqr));
+        AABB endBox = entity.getBoundingBox().move(clippedMovement).inflate(0.05);
+        double playerCenterX = (entity.getBoundingBox().minX + entity.getBoundingBox().maxX) * 0.5;
+        double playerCenterZ = (entity.getBoundingBox().minZ + entity.getBoundingBox().maxZ) * 0.5;
+        PropBody selected = null;
+        double bestAlignment = Double.NEGATIVE_INFINITY;
+
+        for (PropBody candidate : candidates) {
+            PropSpatialEntry entry = solidPropSpatialEntries.get(candidate.prop.getId());
+            if (entry == null || !entry.worldBounds.intersects(endBox))
+                continue;
+
+            double propCenterX = (entry.worldBounds.minX + entry.worldBounds.maxX) * 0.5;
+            double propCenterZ = (entry.worldBounds.minZ + entry.worldBounds.maxZ) * 0.5;
+            double alignment = (propCenterX - playerCenterX) * direction.x + (propCenterZ - playerCenterZ) * direction.z;
+            if (alignment < -0.15 || alignment <= bestAlignment)
+                continue;
+
+            bestAlignment = alignment;
+            selected = candidate;
+        }
+        if (selected == null || selected.mass <= 1.0e-6)
+            return;
+
+        Vec3 entityVelocity = entity.getDeltaMovement();
+        double entitySpeed = entityVelocity.x * direction.x + entityVelocity.z * direction.z;
+        if (entitySpeed <= 1.0e-4)
+            entitySpeed = requestedMovement.x * direction.x + requestedMovement.z * direction.z;
+        if (entitySpeed <= 1.0e-4)
+            return;
+
+        b3Vec3 current = b3Body_GetLinearVelocity(selected.body);
+        double propSpeed = current.x() * direction.x + current.z() * direction.z;
+        double closingSpeed = entitySpeed - propSpeed;
+        if (closingSpeed <= 1.0e-4)
+            return;
+
+        double playerMass = 80.0;
+        double impulse = (1.0 + selected.restitution) * closingSpeed / (1.0 / playerMass + 1.0 / selected.mass);
+        double velocityChange = impulse / selected.mass;
+        b3Body_SetLinearVelocity(selected.body, new b3Vec3()
+                .x((float) (current.x() + direction.x * velocityChange))
+                .y(current.y())
+                .z((float) (current.z() + direction.z * velocityChange))
+        );
     }
 
     private void updatePropSpatialIndex() {
@@ -1189,71 +1283,87 @@ public final class PropPhysManager implements AutoCloseable {
         if (approachSpeed <= 0.05f)
             return;
 
-        float direction = propIsA ? 1.0f : -1.0f;
-        double awayX = nx * direction;
-        double awayY = ny * direction;
-        double awayZ = nz * direction;
-
+        Entity entity = entityBody.entity;
+        double direction = propIsA ? 1.0 : -1.0;
+        Vec3 normal = new Vec3(
+                nx * direction,
+                ny * direction,
+                nz * direction
+        );
         b3Pos propPosition = b3Body_GetPosition(prop.body);
-        AABB entityBox = entityBody.entity.getBoundingBox();
+        AABB entityBox = entity.getBoundingBox();
 
         double entityCenterX = (entityBox.minX + entityBox.maxX) * 0.5;
         double entityCenterY = (entityBox.minY + entityBox.maxY) * 0.5;
         double entityCenterZ = (entityBox.minZ + entityBox.maxZ) * 0.5;
 
-        double toEntityX = entityCenterX - propPosition.x();
-        double toEntityY = entityCenterY - propPosition.y();
-        double toEntityZ = entityCenterZ - propPosition.z();
-
-        double dot = awayX * toEntityX + awayY * toEntityY + awayZ * toEntityZ;
-        if (dot < 0.0) {
-            awayX = -awayX;
-            awayY = -awayY;
-            awayZ = -awayZ;
+        Vec3 toEntity = new Vec3(
+                entityCenterX - propPosition.x(),
+                entityCenterY - propPosition.y(),
+                entityCenterZ - propPosition.z()
+        );
+        double normalLengthSqr = normal.lengthSqr();
+        if (normalLengthSqr < 1.0e-10) {
+            normal = toEntity;
+            normalLengthSqr = normal.lengthSqr();
         }
-
-        double normalLengthSquared = awayX * awayX + awayY * awayY + awayZ * awayZ;
-        if (normalLengthSquared < 1.0e-10) {
-            awayX = toEntityX;
-            awayY = toEntityY;
-            awayZ = toEntityZ;
-            normalLengthSquared = awayX * awayX + awayY * awayY + awayZ * awayZ;
-        }
-        if (normalLengthSquared < 1.0e-10)
+        if (normalLengthSqr < 1.0e-10)
             return;
 
-        double inverseLength = 1.0 / Math.sqrt(normalLengthSquared);
-        awayX *= inverseLength;
-        awayY *= inverseLength;
-        awayZ *= inverseLength;
-        if (awayY < -0.6 && awayX * awayX + awayZ * awayZ < 0.16) {
-            awayX = 0.0;
-            awayY = 1.0;
-            awayZ = 0.0;
-        }
+        normal = normal.scale(1.0 / Math.sqrt(normalLengthSqr));
+        if (normal.dot(toEntity) < 0.0)
+            normal = normal.scale(-1.0);
 
-        double strength;
-        if (prop.motionMode == PropMotionMode.DYNAMIC)
-            strength = clamp(approachSpeed * 0.50, 0.25, 1.75);
-        else if (prop.motionMode == PropMotionMode.MOVING) {
-            b3Vec3 velocity = b3Body_GetLinearVelocity(prop.body);
-            double propApproachSpeed = velocity.x() * awayX + velocity.y() * awayY + velocity.z() * awayZ;
-            if (propApproachSpeed <= 0.02)
-                return;
-            strength = clamp(propApproachSpeed * 0.35, 0.15, 0.9);
-        } else {
-            Vec3 entityVelocity = entityBody.entity.getDeltaMovement();
-            double movingIntoProp = entityVelocity.x * awayX + entityVelocity.y * awayY + entityVelocity.z * awayZ;
-            if (movingIntoProp >= -0.02)
-                return;
-            strength = clamp(-movingIntoProp * 0.12, 0.05, 0.4);
-        }
-
-        entityBody.entity.push(
-                awayX * strength,
-                awayY * strength,
-                awayZ * strength
+        Vec3 propVelocityBefore = prop.velocityBeforeStep;
+        b3Vec3 entityBodyVelocity = b3Body_GetLinearVelocity(entityBody.body);
+        Vec3 entityVelocityBefore = new Vec3(
+                entityBodyVelocity.x(),
+                entityBodyVelocity.y(),
+                entityBodyVelocity.z()
         );
+
+        double propNormalSpeed = propVelocityBefore.dot(normal);
+        double entityNormalSpeed = entityVelocityBefore.dot(normal);
+        double closingSpeed = propNormalSpeed - entityNormalSpeed;
+        if (closingSpeed <= 0.01)
+            return;
+
+        double entityMass = effectiveEntityMass(entity);
+        double inversePropMass = prop.motionMode == PropMotionMode.DYNAMIC ? 1.0 / prop.mass : 0.0;
+        double impulse = (1.0 + prop.restitution) * closingSpeed / (inversePropMass + 1.0 / entityMass);
+        double targetEntityNormalSpeed = entityNormalSpeed + impulse / entityMass;
+
+        Vec3 currentEntityVelocity = entity.getDeltaMovement();
+        double currentEntityNormalSpeed = currentEntityVelocity.dot(normal);
+        entity.setDeltaMovement(currentEntityVelocity.add(
+                normal.scale(targetEntityNormalSpeed - currentEntityNormalSpeed)
+        ));
+        if (prop.motionMode != PropMotionMode.DYNAMIC)
+            return;
+
+        double targetPropNormalSpeed = propNormalSpeed - impulse / prop.mass;
+        b3Vec3 currentPropVelocity = b3Body_GetLinearVelocity(prop.body);
+        double currentPropNormalSpeed =
+                currentPropVelocity.x() * normal.x +
+                currentPropVelocity.y() * normal.y +
+                currentPropVelocity.z() * normal.z;
+        double correction = targetPropNormalSpeed - currentPropNormalSpeed;
+
+        b3Body_SetLinearVelocity(prop.body, new b3Vec3()
+                .x((float) (currentPropVelocity.x() + normal.x * correction))
+                .y((float) (currentPropVelocity.y() + normal.y * correction))
+                .z((float) (currentPropVelocity.z() + normal.z * correction))
+        );
+    }
+
+    private static double effectiveEntityMass(Entity entity) {
+        if (entity instanceof Player)
+            return 80.0;
+
+        double width = entity.getBbWidth();
+        double height = entity.getBbHeight();
+
+        return Math.max(5.0, width * width * height * 40.0);
     }
 
     private void addVelocity(
@@ -1593,8 +1703,12 @@ public final class PropPhysManager implements AutoCloseable {
         private final PropCollisionMode collisionMode;
         private final PropMotionMode motionMode;
         private final Vec3 scale;
+        private final double mass;
+        private final double restitution;
         private final Matrix4f lastSyncedTransform;
         private final Matrix4f lastNetworkedTransform;
+
+        private Vec3 velocityBeforeStep = Vec3.ZERO;
         private long lastObservedTransformRevision;
 
         private final Matrix4f transformBeforeScratch = new Matrix4f();
@@ -1608,6 +1722,8 @@ public final class PropPhysManager implements AutoCloseable {
                 PropCollisionMode collisionMode,
                 PropMotionMode motionMode,
                 Vec3 scale,
+                double mass,
+                double restitution,
                 Matrix4f lastSyncedTransform
         ) {
             this.prop = prop;
@@ -1617,6 +1733,8 @@ public final class PropPhysManager implements AutoCloseable {
             this.collisionMode = collisionMode;
             this.motionMode = motionMode;
             this.scale = scale;
+            this.mass = mass;
+            this.restitution = restitution;
             this.lastSyncedTransform = new Matrix4f(lastSyncedTransform);
             this.lastNetworkedTransform = new Matrix4f(lastSyncedTransform);
             this.lastObservedTransformRevision = prop.getTransformRevision();
