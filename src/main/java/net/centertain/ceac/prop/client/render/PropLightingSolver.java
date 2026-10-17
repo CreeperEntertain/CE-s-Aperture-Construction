@@ -65,10 +65,9 @@ public final class PropLightingSolver {
             RenderType renderType
     ) {
         PoseStack.Pose pose = poseStack.last();
-        Matrix3f worldNormalMatrix = new Matrix3f(worldTransform).invert().transpose();
-        boolean ambientOcclusion = Minecraft.useAmbientOcclusion() && model.useAmbientOcclusion(state, renderType);
-
         Scratch scratch = SCRATCH.get();
+        Matrix3f worldNormalMatrix = scratch.worldNormalMatrix.set(worldTransform).invert().transpose();
+        boolean ambientOcclusion = Minecraft.useAmbientOcclusion() && model.useAmbientOcclusion(state, renderType);
         scratch.resetCache(level);
         CachedQuads cachedQuads = getOrCreateQuads(
                 propId,
@@ -174,7 +173,21 @@ public final class PropLightingSolver {
             Scratch scratch
     ) {
         int[] vertices = quad.getVertices();
-        Vector3f faceNormal = calculateFaceNormal(vertices);
+        Vector3f faceNormal = scratch.faceNormal;
+
+        boolean needsFaceNormal = false;
+
+        for (int i = 0; i < 4; i++) {
+            int normal = vertices[i * IQuadTransformer.STRIDE + IQuadTransformer.NORMAL];
+            if ((normal & 0x00FF_FFFF) == 0) {
+                needsFaceNormal = true;
+                break;
+            }
+        }
+        if (needsFaceNormal)
+            calculateFaceNormal(vertices, faceNormal, scratch);
+        else
+            faceNormal.zero();
 
         int tint = quad.isTinted()
                 ? blockColors.getColor(state, level, tintPosition, quad.getTintIndex())
@@ -186,15 +199,21 @@ public final class PropLightingSolver {
         for (int vertexIndex = 0; vertexIndex < 4; vertexIndex++) {
             int offset = vertexIndex * IQuadTransformer.STRIDE;
 
-            Vector3f localPosition = readPosition(vertices, vertexIndex);
-            Vector3f localNormal = readNormal(vertices, offset);
+            Vector3f localPosition = scratch.localPosition;
+            readPosition(vertices, vertexIndex, localPosition);
+
+            Vector3f localNormal = scratch.localNormal;
+            readNormal(vertices, offset, localNormal);
+
             if (localNormal.lengthSquared() < 1.0e-8f)
                 localNormal.set(faceNormal);
             else
                 localNormal.normalize();
 
-            Vector3f worldPosition = new Vector3f(localPosition).mulPosition(worldTransform);
-            Vector3f worldNormal = worldNormalMatrix.transform(new Vector3f(localNormal)).normalize();
+            Vector3f worldPosition = scratch.worldPosition.set(localPosition).mulPosition(worldTransform);
+            Vector3f worldNormal = scratch.worldNormal.set(localNormal);
+
+            worldNormalMatrix.transform(worldNormal).normalize();
 
             float openness = sampleShadeBrightness(
                     level,
@@ -292,37 +311,50 @@ public final class PropLightingSolver {
         }
     }
 
-    private static Vector3f readPosition(int[] vertices, int vertexIndex) {
+    private static void readPosition(
+            int[] vertices,
+            int vertexIndex,
+            Vector3f result
+    ) {
         int offset = vertexIndex * IQuadTransformer.STRIDE + IQuadTransformer.POSITION;
-        return new Vector3f(
+        result.set(
                 Float.intBitsToFloat(vertices[offset]),
                 Float.intBitsToFloat(vertices[offset + 1]),
                 Float.intBitsToFloat(vertices[offset + 2])
         );
     }
 
-    private static Vector3f readNormal(int[] vertices, int offset) {
+    private static void readNormal(
+            int[] vertices,
+            int offset,
+            Vector3f result
+    ) {
         int packedNormal = vertices[offset + IQuadTransformer.NORMAL];
-        return new Vector3f(
+        result.set(
                 ((byte) (packedNormal & 0xFF)) / 127.0f,
-                ((byte) ((packedNormal >>> 8) & 0xff)) / 127.0f,
+                ((byte) ((packedNormal >>> 8) & 0xFF)) / 127.0f,
                 ((byte) ((packedNormal >>> 16) & 0xFF)) / 127.0f
         );
     }
 
-    private static Vector3f calculateFaceNormal(int[] vertices) {
-        Vector3f a = readPosition(vertices, 0);
-        Vector3f b = readPosition(vertices, 1);
-        Vector3f c = readPosition(vertices, 2);
+    private static void calculateFaceNormal(
+            int[] vertices,
+            Vector3f result,
+            Scratch scratch
+    ) {
+        readPosition(vertices, 0, scratch.tempA);
+        readPosition(vertices, 1, scratch.tempB);
+        readPosition(vertices, 2, scratch.tempC);
 
-        Vector3f ab = new Vector3f(b).sub(a);
-        Vector3f ac = new Vector3f(c).sub(a);
+        scratch.tempAB.set(scratch.tempB).sub(scratch.tempA);
+        scratch.tempAC.set(scratch.tempC).sub(scratch.tempA);
 
-        ab.cross(ac);
-        if (ab.lengthSquared() < 1.0e-8f)
-            return new Vector3f(0.0f, 1.0f, 0.0f);
+        result.set(scratch.tempAB).cross(scratch.tempAC);
 
-        return ab.normalize();
+        if (result.lengthSquared() < 1.0e-8f)
+            result.set(0.0f, 1.0f, 0.0f);
+        else
+            result.normalize();
     }
 
     private static void sampleLight(
@@ -466,6 +498,20 @@ public final class PropLightingSolver {
 
         private final float[] nearPositive = new float[2];
         private final float[] farPositive = new float[2];
+
+        private final Matrix3f worldNormalMatrix = new Matrix3f();
+
+        private final Vector3f localPosition = new Vector3f();
+        private final Vector3f localNormal = new Vector3f();
+        private final Vector3f worldPosition = new Vector3f();
+        private final Vector3f worldNormal = new Vector3f();
+        private final Vector3f faceNormal = new Vector3f();
+
+        private final Vector3f tempA = new Vector3f();
+        private final Vector3f tempB = new Vector3f();
+        private final Vector3f tempC = new Vector3f();
+        private final Vector3f tempAB = new Vector3f();
+        private final Vector3f tempAC = new Vector3f();
 
         private int minBuildHeight;
         private int maxBuildHeight;
