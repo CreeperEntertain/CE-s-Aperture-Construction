@@ -25,7 +25,7 @@ public abstract class EntityPropCollisionMixin {
             return;
 
         Vec3 vanillaMovement = cir.getReturnValue();
-        Vec3 propMovement = PropPhysManager.clipEntityMovement(entity, vanillaMovement);
+        Vec3 propMovement = PropPhysManager.clipEntityMovement(entity, vanillaMovement, movement);
         Vec3 safeMovement = PropEntityCollision.clipAgainstBlocks(entity, propMovement);
 
         cir.setReturnValue(safeMovement);
