@@ -33,14 +33,6 @@ public final class PropStepManager {
                 .inflate(1.0e-6);
     }
 
-    public static Vec3 clipMovement(
-            Entity entity,
-            Vec3 movement,
-            Collection<PropGeometry.Triangle> triangles
-    ) {
-        return clipMovementWithResult(entity, movement, triangles).movement();
-    }
-
     public static MovementResult clipMovementWithResult(
             Entity entity,
             Vec3 movement,
