@@ -35,6 +35,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static cc.modlabs.box3d.global.Box3D.*;
@@ -792,6 +793,11 @@ public final class PropPhysManager implements AutoCloseable {
                         false,
                         0.0f
                 );
+
+                b3SurfaceMaterial material = b3DefaultSurfaceMaterial();
+                material.friction(0.2f);
+                shapeDefinition.baseMaterial(material);
+
                 b3CreateHullShape(body, shapeDefinition, hull);
                 attachedShapes++;
             } finally {
@@ -980,6 +986,7 @@ public final class PropPhysManager implements AutoCloseable {
         boolean hasBlockedMovement = blockedHorizontal.lengthSqr() >= 1.0e-8;
         boolean hasIntent = horizontalIntent.lengthSqr() >= 1.0e-8;
 
+        PropBody support = findSupportingProp(entity.getBoundingBox(), candidates);
         if (hasBlockedMovement || hasIntent) {
             Vec3 direction = hasBlockedMovement
                     ? blockedHorizontal.normalize()
@@ -991,7 +998,7 @@ public final class PropPhysManager implements AutoCloseable {
                     candidates
             );
 
-            if (sideProp != null) {
+            if (sideProp != null && support == null) {
                 double intendedSpeed = requestedMovement.x * direction.x + requestedMovement.z * direction.z;
                 intendedSpeed /= FIXED_STEP;
                 if (intendedSpeed > 1.0e-4)
@@ -1000,7 +1007,7 @@ public final class PropPhysManager implements AutoCloseable {
                             sideProp,
                             direction,
                             intendedSpeed,
-                            0.75,
+                            1,
                             1.5,
                             requestedMovement
                     );
@@ -1011,8 +1018,32 @@ public final class PropPhysManager implements AutoCloseable {
         if (horizontalIntent.lengthSqr() < 1.0e-8)
             return;
 
-        PropBody support = findSupportingProp(entity.getBoundingBox(), candidates);
-        if (support == null)
+        if (blockedHorizontal.lengthSqr() >= 1.0e-8) {
+            Vec3 direction = blockedHorizontal.normalize();
+            PropBody sideProp = findSidePushTarget(
+                    entity.getBoundingBox(),
+                    vanillaMovement,
+                    direction,
+                    candidates
+            );
+            if (sideProp != null && sideProp != support) {
+                double intendedSpeed = requestedMovement.x * direction.x + requestedMovement.z * direction.z;
+                intendedSpeed /= FIXED_STEP;
+                if (intendedSpeed > 1.0e-4) {
+                    applyPushTowardSpeed(
+                            entity,
+                            sideProp,
+                            direction,
+                            intendedSpeed,
+                            0.75,
+                            1.5,
+                            requestedMovement
+                    );
+                    return;
+                }
+            }
+        }
+        if (horizontalIntent.lengthSqr() < 1.0e-8 || support == null)
             return;
 
         Vec3 direction = horizontalIntent.normalize();
@@ -1022,8 +1053,8 @@ public final class PropPhysManager implements AutoCloseable {
                 support,
                 direction,
                 intendedSpeed,
+                0.03,
                 0.06,
-                0.16,
                 requestedMovement
         );
     }
@@ -1062,7 +1093,7 @@ public final class PropPhysManager implements AutoCloseable {
         return selected;
     }
 
-    private PropBody findSupportingProp(
+    private @Nullable PropBody findSupportingProp(
             AABB playerBox,
             List<PropBody> candidates
     ) {
@@ -1124,17 +1155,13 @@ public final class PropPhysManager implements AutoCloseable {
                     entity.getUUID(),
                     incoming,
                     (current, next) ->
-                            next.horizontalDisplacement().lengthSqr()
-                                    > current.horizontalDisplacement().lengthSqr()
+                            next.horizontalDisplacement().lengthSqr() > current.horizontalDisplacement().lengthSqr()
                                     ? next
                                     : current
             );
         }
 
         ImpactKey key = new ImpactKey(prop.prop.getId(), entity.getUUID());
-        if (playerPushesThisTick.contains(key))
-            return;
-
         b3Vec3 current = b3Body_GetLinearVelocity(prop.body);
         double currentSpeed =
                 current.x() * direction.x +
@@ -1143,7 +1170,19 @@ public final class PropPhysManager implements AutoCloseable {
         if (intendedSpeed - currentSpeed <= 1.0e-4)
             return;
 
-        playerPushesThisTick.add(key);
+        boolean alreadyQueued = playerPushesThisTick.contains(key);
+        PendingPlayerPush previous = pendingPlayerPushes.get(key);
+        if (alreadyQueued) {
+            if (previous == null)
+                return;
+            if (
+                    response < previous.response ||
+                    (response == previous.response && maxDeltaVelocity <= previous.maxDeltaVelocity)
+            )
+                return;
+        } else
+            playerPushesThisTick.add(key);
+
         pendingPlayerPushes.put(key, new PendingPlayerPush(
                 prop.prop.getId(),
                 direction,
