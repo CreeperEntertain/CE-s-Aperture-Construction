@@ -5,6 +5,7 @@ import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
 import net.centertain.ceac.prop.PropDefinitions;
 import net.centertain.ceac.prop.PropGeometry;
+import net.centertain.ceac.prop.client.render.PropLightingSolver;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
 import net.centertain.ceac.prop.enums.PropMotionMode;
 import net.centertain.ceac.prop.network.PropPushIntentPacket;
@@ -91,6 +92,7 @@ public final class ClientProps {
     }
 
     public static boolean remove(UUID id) {
+        PropLightingSolver.removePropCache(id);
         INTERPOLATIONS.remove(id);
 
         Long chunkKey = CHUNK_BY_ID.remove(id);
@@ -127,6 +129,7 @@ public final class ClientProps {
         Map<UUID, Prop> removed = PROPS_BY_CHUNK.remove(key);
         if (removed != null)
             for (UUID id : removed.keySet()) {
+                PropLightingSolver.removePropCache(id);
                 CHUNK_BY_ID.remove(id, key);
                 INTERPOLATIONS.remove(id);
             }
@@ -137,6 +140,7 @@ public final class ClientProps {
         CHUNK_BY_ID.clear();
         INTERPOLATIONS.clear();
         PENDING_PUSH_INTENTS.clear();
+        PropLightingSolver.clearPropCaches();
     }
 
     @SuppressWarnings("UnusedReturnValue")

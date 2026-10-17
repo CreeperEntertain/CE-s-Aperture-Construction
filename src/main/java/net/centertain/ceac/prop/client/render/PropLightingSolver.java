@@ -23,18 +23,35 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import java.util.List;
+import java.util.*;
 
 public final class PropLightingSolver {
     private static final float NEAR_LIGHT_OFFSET = 0.1f;
     private static final float FAR_LIGHT_OFFSET = 0.75f;
     private static final float MIN_AMBIENT_FACTOR = 0.95f;
     private static final ThreadLocal<Scratch> SCRATCH = ThreadLocal.withInitial(Scratch::new);
+    private static final Direction[] DIRECTIONS = Direction.values();
+
+    private static final Map<UUID, CachedQuads> PROP_QUAD_CACHE = new HashMap<>();
 
     private PropLightingSolver() {}
 
 
+    public static void removePropCache(UUID propId) {
+        PROP_QUAD_CACHE.remove(propId);
+    }
+
+    public static void clearPropCaches() {
+        PROP_QUAD_CACHE.clear();
+    }
+
+
+    public static void beginFrame(BlockAndTintGetter level) {
+        SCRATCH.get().resetCache(level);
+    }
+
     public static void render(
+            UUID propId,
             BlockAndTintGetter level,
             BakedModel model,
             BlockState state,
@@ -53,39 +70,71 @@ public final class PropLightingSolver {
 
         Scratch scratch = SCRATCH.get();
         scratch.resetCache(level);
-        RandomSource random = scratch.random;
+        CachedQuads cachedQuads = getOrCreateQuads(
+                propId,
+                model,
+                state,
+                seed,
+                renderType,
+                scratch.random
+        );
 
-        for (Direction side : Direction.values()) {
-            random.setSeed(seed);
-            List<BakedQuad> quads = model.getQuads(
-                    state,
-                    side,
-                    random,
-                    ModelData.EMPTY,
-                    renderType
-            );
+        for (List<BakedQuad> quads : cachedQuads.sidedQuads())
             renderQuads(
                     level, quads, state, tintPosition, pose, consumer,
                     worldTransform, worldNormalMatrix, blockColors,
                     overlay, ambientOcclusion, scratch
             );
+
+        renderQuads(
+                level, cachedQuads.unculledQuads(), state, tintPosition,
+                pose, consumer, worldTransform, worldNormalMatrix,
+                blockColors, overlay, ambientOcclusion, scratch
+        );
+    }
+
+    private static CachedQuads getOrCreateQuads(
+            UUID propId,
+            BakedModel model,
+            BlockState state,
+            long seed,
+            RenderType renderType,
+            RandomSource random
+    ) {
+        CachedQuads cached = PROP_QUAD_CACHE.get(propId);
+        if (cached != null && cached.matches(model, state, seed, renderType))
+            return cached;
+
+        List<List<BakedQuad>> sidedQuads = new ArrayList<>(DIRECTIONS.length);
+        for (Direction side : DIRECTIONS) {
+            random.setSeed(seed);
+            sidedQuads.add(List.copyOf(model.getQuads(
+                    state,
+                    side,
+                    random,
+                    ModelData.EMPTY,
+                    renderType
+            )));
         }
-
         random.setSeed(seed);
-
-        List<BakedQuad> unculledQuads = model.getQuads(
+        List<BakedQuad> unculledQuads = List.copyOf(model.getQuads(
                 state,
                 null,
                 random,
                 ModelData.EMPTY,
                 renderType
+        ));
+        cached = new CachedQuads(
+                model,
+                state,
+                seed,
+                renderType,
+                List.copyOf(sidedQuads),
+                unculledQuads
         );
 
-        renderQuads(
-                level, unculledQuads, state, tintPosition, pose, consumer,
-                worldTransform, worldNormalMatrix, blockColors,
-                overlay, ambientOcclusion, scratch
-        );
+        PROP_QUAD_CACHE.put(propId, cached);
+        return cached;
     }
 
     private static void renderQuads(
@@ -293,8 +342,8 @@ public final class PropLightingSolver {
         result[0] = 0.0f;
         result[1] = 0.0f;
 
-        int minY = level.getMinBuildHeight();
-        int maxY = level.getMaxBuildHeight() - 1;
+        int minY = scratch.minBuildHeight;
+        int maxY = scratch.maxBuildHeight;
 
         for (int dx = 0; dx <= 1; dx++) {
             float wx = dx == 0 ? 1.0f - fx : fx;
@@ -377,7 +426,31 @@ public final class PropLightingSolver {
     }
 
 
+    private record CachedQuads(
+            BakedModel model,
+            BlockState state,
+            long seed,
+            RenderType renderType,
+            List<List<BakedQuad>> sidedQuads,
+            List<BakedQuad> unculledQuads
+    ) {
+        private boolean matches(
+                BakedModel candidateModel,
+                BlockState candidateState,
+                long candidateSeed,
+                RenderType candidateRenderType
+        ) {
+            return model == candidateModel
+                    && state.equals(candidateState)
+                    && seed == candidateSeed
+                    && renderType == candidateRenderType;
+        }
+    }
+
     private static final class Scratch {
+        private static final int MAX_CACHED_POSITIONS = 65_536;
+
+
         private final BlockPos.MutableBlockPos position = new BlockPos.MutableBlockPos();
 
         private final RandomSource random = RandomSource.create();
@@ -412,7 +485,9 @@ public final class PropLightingSolver {
                 return packed;
 
             packed = LevelRenderer.getLightColor(level, pos);
-            lightCache.put(key, packed);
+            if (lightCache.size() < MAX_CACHED_POSITIONS)
+                lightCache.put(key, packed);
+
             return packed;
         }
 
@@ -424,7 +499,9 @@ public final class PropLightingSolver {
                 return shade;
 
             shade = level.getBlockState(pos).getShadeBrightness(level, pos);
-            shadeCache.put(key, shade);
+            if (shadeCache.size() < MAX_CACHED_POSITIONS)
+                shadeCache.put(key, shade);
+
             return shade;
         }
     }

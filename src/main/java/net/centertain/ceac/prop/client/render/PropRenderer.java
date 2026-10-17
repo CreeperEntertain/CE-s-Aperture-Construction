@@ -14,7 +14,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -57,6 +56,7 @@ public final class PropRenderer {
     public static void clearModelCache() {
         MODEL_CACHE.clear();
         OUTLINE_EDGE_CACHE.clear();
+        PropLightingSolver.clearPropCaches();
     }
 
     public static void render(RenderLevelStageEvent event) {
@@ -64,6 +64,7 @@ public final class PropRenderer {
         ClientLevel level = minecraft.level;
         if (level == null)
             return;
+        PropLightingSolver.beginFrame(level);
 
         Vec3 camera = event.getCamera().getPosition();
         ChunkPos center = new ChunkPos(BlockPos.containing(camera));
@@ -151,6 +152,7 @@ public final class PropRenderer {
         );
 
         PropLightingSolver.render(
+                prop.getId(),
                 level,
                 model,
                 Blocks.AIR.defaultBlockState(),
