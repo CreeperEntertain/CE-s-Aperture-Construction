@@ -254,6 +254,9 @@ public final class ClientProps {
             );
 
             Vec3 clippedMovement = steppedResult.movement();
+            if (steppedResult.steppedUp())
+                return clippedMovement;
+
             Vec3 incomingVelocity = new Vec3(
                     movement.x * 20.0,
                     0.0,
