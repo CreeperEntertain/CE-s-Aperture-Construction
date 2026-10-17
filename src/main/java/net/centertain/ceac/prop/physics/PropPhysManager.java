@@ -111,6 +111,7 @@ public final class PropPhysManager implements AutoCloseable {
 
     private long playerPushImpulseTick = Long.MIN_VALUE;
     private final Set<ImpactKey> playerPushesThisTick = new HashSet<>();
+    private final Map<ImpactKey, PendingPlayerPush> pendingPlayerPushes = new LinkedHashMap<>();
 
     private final Map<UUID, TerrainCoverage> terrainCoverageByProp = new HashMap<>();
     private final Map<Long, Integer> terrainReferenceCounts = new HashMap<>();
@@ -253,6 +254,7 @@ public final class PropPhysManager implements AutoCloseable {
         b3World_Step(world, FIXED_STEP, SUB_STEPS);
 
         processHitEvents();
+        applyPendingPlayerPushes();
         synchronizePropTransforms();
     }
 
@@ -1108,23 +1110,58 @@ public final class PropPhysManager implements AutoCloseable {
             return;
 
         b3Vec3 current = b3Body_GetLinearVelocity(prop.body);
-        double currentSpeed = current.x() * direction.x + current.y() * direction.y + current.z() * direction.z;
-        double speedDifference = intendedSpeed - currentSpeed;
-        if (speedDifference <= 1.0e-4)
-            return;
-
-        double reducedMass = PLAYER_PUSH_MASS * prop.mass / (PLAYER_PUSH_MASS + prop.mass);
-        double impulse = reducedMass * speedDifference * response;
-        double deltaVelocity = Math.min(maxDeltaVelocity, impulse / prop.mass);
-        if (deltaVelocity <= 1.0e-5)
+        double currentSpeed =
+                current.x() * direction.x +
+                current.y() * direction.y +
+                current.z() * direction.z;
+        if (intendedSpeed - currentSpeed <= 1.0e-4)
             return;
 
         playerPushesThisTick.add(key);
-        b3Body_SetLinearVelocity(prop.body, new b3Vec3()
-                .x((float) (current.x() + direction.x * deltaVelocity))
-                .y((float) (current.y() + direction.y * deltaVelocity))
-                .z((float) (current.z() + direction.z * deltaVelocity))
-        );
+        pendingPlayerPushes.put(key, new PendingPlayerPush(
+                prop.prop.getId(),
+                direction,
+                intendedSpeed,
+                response,
+                maxDeltaVelocity
+        ));
+    }
+
+    private void applyPendingPlayerPushes() {
+        try {
+            for (PendingPlayerPush push : pendingPlayerPushes.values()) {
+                PropBody prop = propBodies.get(push.propId());
+                if (
+                        prop == null ||
+                        prop.motionMode != PropMotionMode.DYNAMIC ||
+                        prop.mass <= 1.0e-6
+                )
+                    continue;
+
+                b3Vec3 current = b3Body_GetLinearVelocity(prop.body);
+                double currentSpeed =
+                        current.x() * push.direction().x +
+                        current.y() * push.direction().y +
+                        current.z() * push.direction().z;
+                double speedDifference = push.intendedSpeed() - currentSpeed;
+                if (speedDifference <= 1.0e-4)
+                    continue;
+
+                double reducedMass = PLAYER_PUSH_MASS * prop.mass / (PLAYER_PUSH_MASS + prop.mass);
+                double impulse = reducedMass * speedDifference * push.response();
+                double deltaVelocity = Math.min(push.maxDeltaVelocity(), impulse / prop.mass);
+                if (deltaVelocity <= 1.0e-5)
+                    continue;
+
+                b3Body_SetLinearVelocity(prop.body, new b3Vec3()
+                        .x((float) (current.x() + push.direction().x * deltaVelocity))
+                        .y((float) (current.y() + push.direction().y * deltaVelocity))
+                        .z((float) (current.z() + push.direction().z * deltaVelocity))
+                );
+            }
+        } finally {
+            pendingPlayerPushes.clear();
+        }
     }
 
     private void updatePropSpatialIndex() {
@@ -1993,4 +2030,11 @@ public final class PropPhysManager implements AutoCloseable {
                     maxZ == otherMaxZ;
         }
     }
+    private record PendingPlayerPush(
+            UUID propId,
+            Vec3 direction,
+            double intendedSpeed,
+            double response,
+            double maxDeltaVelocity
+    ) {}
 }
