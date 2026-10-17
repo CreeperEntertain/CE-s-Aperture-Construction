@@ -33,8 +33,16 @@ public final class PropStepManager {
             Vec3 movement,
             Collection<PropGeometry.Triangle> triangles
     ) {
+        return clipMovementWithResult(entity, movement, triangles).movement();
+    }
+
+    public static MovementResult clipMovementWithResult(
+            Entity entity,
+            Vec3 movement,
+            Collection<PropGeometry.Triangle> triangles
+    ) {
         if (triangles.isEmpty() || movement.lengthSqr() < 1.0e-12)
-            return movement;
+            return new MovementResult(movement, false);
 
         AABB startBox = entity.getBoundingBox();
         Vec3 ordinary = PropEntityCollision.clipMovementAgainstTriangles(startBox, movement, triangles);
@@ -43,33 +51,33 @@ public final class PropStepManager {
         Vec3 horizontal = new Vec3(movement.x, 0.0, movement.z);
         double requestedHorizontalSqr = horizontal.lengthSqr();
         if (requestedHorizontalSqr < 1.0e-12)
-            return ordinary;
+            return new MovementResult(ordinary, false);
 
         double stepHeight = Math.max(0.0, entity.getStepHeight());
         if (stepHeight <= STEP_EPSILON || movement.y > STEP_EPSILON)
-            return ordinary;
+            return new MovementResult(ordinary, false);
 
         boolean grounded = entity.onGround() || (movement.y < -STEP_EPSILON && ordinary.y > movement.y + STEP_EPSILON);
         if (!grounded)
-            return ordinary;
+            return new MovementResult(ordinary, false);
 
         double ordinaryProgress = horizontalProgress(ordinary, horizontal);
         if (ordinaryProgress >= requestedHorizontalSqr - STEP_EPSILON)
-            return ordinary;
+            return new MovementResult(ordinary, false);
 
         List<PropGeometry.Triangle> upwardTriangles = getUpwardCollisionTriangles(triangles);
         Vec3 upwardRequest = new Vec3(0.0, stepHeight + COLLISION_SKIN, 0.0);
         Vec3 upward = PropEntityCollision.clipMovementAgainstTriangles(startBox, upwardRequest, upwardTriangles);
         upward = clipAgainstBlocks(entity, startBox, upward);
         if (upward.y <= STEP_EPSILON)
-            return ordinary;
+            return new MovementResult(ordinary, false);
 
         AABB raisedBox = startBox.move(0.0, upward.y, 0.0);
         Vec3 steppedHorizontal = PropEntityCollision.clipMovementAgainstTriangles(raisedBox, horizontal, triangles);
         steppedHorizontal = clipAgainstBlocks(entity, raisedBox, steppedHorizontal);
         double steppedProgress = horizontalProgress(steppedHorizontal, horizontal);
         if (steppedProgress <= ordinaryProgress + STEP_EPSILON)
-            return ordinary;
+            return new MovementResult(ordinary, false);
 
         AABB advancedBox = raisedBox.move(steppedHorizontal);
         double downDistance = upward.y + COLLISION_SKIN;
@@ -77,18 +85,23 @@ public final class PropStepManager {
         Vec3 downward = PropEntityCollision.clipMovementAgainstTriangles(advancedBox, downwardRequest, triangles);
         downward = clipAgainstBlocks(entity, advancedBox, downward);
         if (downward.y <= downwardRequest.y + STEP_EPSILON)
-            return ordinary;
+            return new MovementResult(ordinary, false);
 
         double finalRise = upward.y + downward.y;
         if (finalRise < ordinary.y - COLLISION_SKIN || finalRise > stepHeight + COLLISION_SKIN + STEP_EPSILON)
-            return ordinary;
+            return new MovementResult(ordinary, false);
 
-        return new Vec3(
-                steppedHorizontal.x,
-                finalRise,
-                steppedHorizontal.z
+        return new MovementResult(
+                new Vec3(
+                        steppedHorizontal.x,
+                        finalRise,
+                        steppedHorizontal.z
+                ),
+                true
         );
     }
+
+    public record MovementResult(Vec3 movement, boolean steppedUp) {}
 
     private static List<PropGeometry.Triangle> getUpwardCollisionTriangles(Collection<PropGeometry.Triangle> triangles) {
         List<PropGeometry.Triangle> result = new ArrayList<>(triangles.size());

@@ -950,13 +950,15 @@ public final class PropPhysManager implements AutoCloseable {
                     }
                 }
 
-        Vec3 clippedMovement = PropStepManager.clipMovement(entity, movement, obstacles);
+        PropStepManager.MovementResult movementResult = PropStepManager.clipMovementWithResult(entity, movement, obstacles);
+        Vec3 clippedMovement = movementResult.movement();
 
         applyPlayerPushImpulse(
                 entity,
                 requestedMovement,
                 movement,
                 clippedMovement,
+                movementResult.steppedUp(),
                 candidateProps
         );
 
@@ -968,6 +970,7 @@ public final class PropPhysManager implements AutoCloseable {
             Vec3 requestedMovement,
             Vec3 vanillaMovement,
             Vec3 clippedMovement,
+            boolean steppedUp,
             List<PropBody> candidates
     ) {
         if (!(entity instanceof Player) || entity.noPhysics || entity.isSpectator())
@@ -984,13 +987,10 @@ public final class PropPhysManager implements AutoCloseable {
                 requestedMovement.z
         );
         boolean hasBlockedMovement = blockedHorizontal.lengthSqr() >= 1.0e-8;
-        boolean hasIntent = horizontalIntent.lengthSqr() >= 1.0e-8;
 
         PropBody support = findSupportingProp(entity.getBoundingBox(), candidates);
-        if (hasBlockedMovement || hasIntent) {
-            Vec3 direction = hasBlockedMovement
-                    ? blockedHorizontal.normalize()
-                    : horizontalIntent.normalize();
+        if (!steppedUp && hasBlockedMovement) {
+            Vec3 direction = blockedHorizontal.normalize();
             PropBody sideProp = findSidePushTarget(
                     entity.getBoundingBox(),
                     requestedMovement,
@@ -1018,7 +1018,7 @@ public final class PropPhysManager implements AutoCloseable {
         if (horizontalIntent.lengthSqr() < 1.0e-8)
             return;
 
-        if (blockedHorizontal.lengthSqr() >= 1.0e-8) {
+        if (!steppedUp && blockedHorizontal.lengthSqr() >= 1.0e-8) {
             Vec3 direction = blockedHorizontal.normalize();
             PropBody sideProp = findSidePushTarget(
                     entity.getBoundingBox(),
@@ -1106,13 +1106,12 @@ public final class PropPhysManager implements AutoCloseable {
                 continue;
 
             AABB bounds = entry.worldBounds;
-            double feetGap = playerBox.minY - bounds.maxY;
-            if (Math.abs(feetGap) > PUSH_CONTACT_EPSILON)
-                continue;
 
             double overlapX = Math.min(playerBox.maxX, bounds.maxX) - Math.max(playerBox.minX, bounds.minX);
             double overlapZ = Math.min(playerBox.maxZ, bounds.maxZ) - Math.max(playerBox.minZ, bounds.minZ);
             if (overlapX <= 0.0 || overlapZ <= 0.0)
+                continue;
+            if (!hasSupportSurfaceAtFeet(playerBox, entry.triangles))
                 continue;
 
             double overlapArea = overlapX * overlapZ;
@@ -1124,6 +1123,111 @@ public final class PropPhysManager implements AutoCloseable {
         }
 
         return selected;
+    }
+
+    private boolean hasSupportSurfaceAtFeet(
+            AABB playerBox,
+            List<PropGeometry.Triangle> triangles
+    ) {
+        double feetY = playerBox.minY;
+
+        for (PropGeometry.Triangle triangle : triangles) {
+            Vec3 a = triangle.a();
+            Vec3 b = triangle.b();
+            Vec3 c = triangle.c();
+
+            double minX = Math.min(a.x, Math.min(b.x, c.x));
+            double maxX = Math.max(a.x, Math.max(b.x, c.x));
+            double minY = Math.min(a.y, Math.min(b.y, c.y));
+            double maxY = Math.max(a.y, Math.max(b.y, c.y));
+            double minZ = Math.min(a.z, Math.min(b.z, c.z));
+            double maxZ = Math.max(a.z, Math.max(b.z, c.z));
+
+            if (maxX < playerBox.minX || minX > playerBox.maxX || maxZ < playerBox.minZ || minZ > playerBox.maxZ)
+                continue;
+            if (feetY < minY - PUSH_CONTACT_EPSILON || feetY > maxY + PUSH_CONTACT_EPSILON)
+                continue;
+
+            Vec3 normal = b.subtract(a).cross(c.subtract(a));
+            double normalLengthSqr = normal.lengthSqr();
+            if (normalLengthSqr < 1.0e-12)
+                continue;
+
+            double normalLength = Math.sqrt(normalLengthSqr);
+            if (Math.abs(normal.y) / normalLength < 1.0e-6)
+                continue;
+
+            List<HorizontalPoint> polygon = new ArrayList<>(List.of(
+                    new HorizontalPoint(a.x, a.z),
+                    new HorizontalPoint(b.x, b.z),
+                    new HorizontalPoint(c.x, c.z)
+            ));
+
+            polygon = clipHorizontalPolygon(polygon, 0, playerBox.minX, true);
+            polygon = clipHorizontalPolygon(polygon, 0, playerBox.maxX, false);
+            polygon = clipHorizontalPolygon(polygon, 1, playerBox.minZ, true);
+            polygon = clipHorizontalPolygon(polygon, 1, playerBox.maxZ, false);
+            if (polygon.isEmpty())
+                continue;
+
+            double minSurfaceY = Double.POSITIVE_INFINITY;
+            double maxSurfaceY = Double.NEGATIVE_INFINITY;
+            for (HorizontalPoint point : polygon) {
+                double surfaceY = a.y - (normal.x * (point.x() - a.x) + normal.z * (point.z() - a.z)) / normal.y;
+                minSurfaceY = Math.min(minSurfaceY, surfaceY);
+                maxSurfaceY = Math.max(maxSurfaceY, surfaceY);
+            }
+            if (
+                    feetY >= minSurfaceY - PUSH_CONTACT_EPSILON &&
+                    feetY <= maxSurfaceY + PUSH_CONTACT_EPSILON
+            )
+                return true;
+        }
+
+        return false;
+    }
+
+    private static List<HorizontalPoint> clipHorizontalPolygon(
+            List<HorizontalPoint> polygon,
+            int axis,
+            double boundary,
+            boolean keepGreater
+    ) {
+        if (polygon.isEmpty())
+            return polygon;
+
+        List<HorizontalPoint> result = new ArrayList<>(polygon.size() + 2);
+        HorizontalPoint previous = polygon.get(polygon.size() - 1);
+        double previousCoordinate = axis == 0 ? previous.x() : previous.z();
+        boolean previousInside = keepGreater
+                ? previousCoordinate >= boundary
+                : previousCoordinate <= boundary;
+
+        for (HorizontalPoint current : polygon) {
+            double currentCoordinate = axis == 0 ? current.x() : current.z();
+            boolean currentInside = keepGreater
+                    ? currentCoordinate >= boundary
+                    : currentCoordinate <= boundary;
+
+            if (currentInside != previousInside) {
+                double denominator = currentCoordinate - previousCoordinate;
+                if (Math.abs(denominator) > 1.0e-12) {
+                    double t = (boundary - previousCoordinate) / denominator;
+                    result.add(new HorizontalPoint(
+                            previous.x() + (current.x() - previous.x()) * t,
+                            previous.z() + (current.z() - previous.z()) * t
+                    ));
+                }
+            }
+            if (currentInside)
+                result.add(current);
+
+            previous = current;
+            previousCoordinate = currentCoordinate;
+            previousInside = currentInside;
+        }
+
+        return result;
     }
 
     private void applyPushTowardSpeed(
@@ -2115,4 +2219,5 @@ public final class PropPhysManager implements AutoCloseable {
             double maxDeltaVelocity
     ) {}
     private record PlayerPushMotion(Vec3 horizontalDisplacement) {}
+    private record HorizontalPoint(double x, double z) {}
 }
