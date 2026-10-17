@@ -215,20 +215,26 @@ public final class PropLightingSolver {
                     scratch,
                     scratch.nearPositive
             );
-            sampleLight(
-                    level,
-                    worldPosition.x + worldNormal.x * FAR_LIGHT_OFFSET,
-                    worldPosition.y + worldNormal.y * FAR_LIGHT_OFFSET,
-                    worldPosition.z + worldNormal.z * FAR_LIGHT_OFFSET,
-                    scratch,
-                    scratch.farPositive
-            );
 
             float nearBlock = scratch.nearPositive[0];
             float nearSky = scratch.nearPositive[1];
 
-            float farBlock = scratch.farPositive[0];
-            float farSky = scratch.farPositive[1];
+            float farBlock = nearBlock;
+            float farSky = nearSky;
+
+            if (embeddedBlend > 0.0f) {
+                sampleLight(
+                        level,
+                        worldPosition.x + worldNormal.x * FAR_LIGHT_OFFSET,
+                        worldPosition.y + worldNormal.y * FAR_LIGHT_OFFSET,
+                        worldPosition.z + worldNormal.z * FAR_LIGHT_OFFSET,
+                        scratch,
+                        scratch.farPositive
+                );
+
+                farBlock = scratch.farPositive[0];
+                farSky = scratch.farPositive[1];
+            }
 
             float blockLight = nearBlock + (Math.max(nearBlock, farBlock) - nearBlock) * embeddedBlend;
             float skyLight = nearSky + (Math.max(nearSky, farSky) - nearSky) * embeddedBlend;
