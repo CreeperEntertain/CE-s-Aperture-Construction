@@ -879,10 +879,6 @@ public final class PropPhysManager implements AutoCloseable {
             synchronizeEntityBody(entity);
     }
 
-    public static Vec3 clipEntityMovement(Entity entity, Vec3 movement) {
-        return clipEntityMovement(entity, movement, movement);
-    }
-
     public static Vec3 clipEntityMovement(
             Entity entity,
             Vec3 movement,
