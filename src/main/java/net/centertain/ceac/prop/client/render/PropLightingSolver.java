@@ -189,8 +189,8 @@ public final class PropLightingSolver {
             float farBlock = Math.max(scratch.farPositive[0], scratch.farNegative[0]);
             float farSky = Math.max(scratch.farPositive[1], scratch.farNegative[1]);
 
-            float blockLight = nearBlock + (Math.max(nearBlock, farBlock) - nearBlock) + embeddedBlend;
-            float skyLight = nearSky + (Math.max(nearSky, farSky) - nearSky) + embeddedBlend;
+            float blockLight = nearBlock + (Math.max(nearBlock, farBlock) - nearBlock) * embeddedBlend;
+            float skyLight = nearSky + (Math.max(nearSky, farSky) - nearSky) * embeddedBlend;
 
             int bakedLight = vertices[offset + IQuadTransformer.UV2];
 
@@ -246,7 +246,7 @@ public final class PropLightingSolver {
     }
 
     private static Vector3f readPosition(int[] vertices, int vertexIndex) {
-        int offset = vertexIndex * IQuadTransformer.STRIDE * IQuadTransformer.POSITION;
+        int offset = vertexIndex * IQuadTransformer.STRIDE + IQuadTransformer.POSITION;
         return new Vector3f(
                 Float.intBitsToFloat(vertices[offset]),
                 Float.intBitsToFloat(vertices[offset + 1]),
