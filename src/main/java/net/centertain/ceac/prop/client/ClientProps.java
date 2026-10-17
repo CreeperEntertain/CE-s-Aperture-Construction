@@ -1,10 +1,13 @@
 package net.centertain.ceac.prop.client;
 
+import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
 import net.centertain.ceac.prop.PropDefinitions;
 import net.centertain.ceac.prop.PropGeometry;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
+import net.centertain.ceac.prop.enums.PropMotionMode;
+import net.centertain.ceac.prop.network.PropPushIntentPacket;
 import net.centertain.ceac.prop.physics.PropEntityCollision;
 import net.centertain.ceac.prop.physics.PropStepManager;
 import net.minecraft.client.Minecraft;
@@ -15,6 +18,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -39,6 +43,8 @@ public final class ClientProps {
 
     private static final Matrix4f COLLISION_TRANSFORM = new Matrix4f();
     private static final List<PropGeometry.Triangle> COLLISION_TRIANGLES_SCRATCH = new ArrayList<>(256);
+    private static final List<PushCandidate> PUSH_CANDIDATES_SCRATCH = new ArrayList<>(16);
+    private static final Map<UUID, PushIntent> PENDING_PUSH_INTENTS = new HashMap<>();
 
     private static final Map<Long, Map<UUID, Prop>> PROPS_BY_CHUNK = new HashMap<>();
     private static final Map<UUID, Long> CHUNK_BY_ID = new HashMap<>();
@@ -69,6 +75,7 @@ public final class ClientProps {
                 .put(prop.getId(), prop);
     }
 
+    @SuppressWarnings("unused")
     private static void moveToChunk(Prop prop, long oldChunkKey, long newChunkKey) {
         Map<UUID, Prop> oldChunk = PROPS_BY_CHUNK.get(oldChunkKey);
         if (oldChunk != null) {
@@ -129,6 +136,7 @@ public final class ClientProps {
         PROPS_BY_CHUNK.clear();
         CHUNK_BY_ID.clear();
         INTERPOLATIONS.clear();
+        PENDING_PUSH_INTENTS.clear();
     }
 
     @SuppressWarnings("UnusedReturnValue")
@@ -204,7 +212,9 @@ public final class ClientProps {
         int maxChunkZ = Mth.floor(searchBounds.maxZ) >> 4;
 
         long renderTimeNanos = System.nanoTime();
+
         COLLISION_TRIANGLES_SCRATCH.clear();
+        PUSH_CANDIDATES_SCRATCH.clear();
 
         try {
             for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++)
@@ -218,25 +228,124 @@ public final class ClientProps {
                             continue;
 
                         PropGeometry geometry = PropGeometry.get(
-                                Minecraft.getInstance().getResourceManager(), definition.getModelId()
+                                Minecraft.getInstance().getResourceManager(),
+                                definition.getModelId()
                         );
                         if (geometry == null)
                             continue;
 
                         copyRenderTransformTo(prop, COLLISION_TRANSFORM, renderTimeNanos);
-                        List<PropGeometry.Triangle> triangles =
-                                PropEntityCollision.transformTriangles(geometry, COLLISION_TRANSFORM);
+                        List<PropGeometry.Triangle> triangles = PropEntityCollision.transformTriangles(
+                                geometry, COLLISION_TRANSFORM
+                        );
                         AABB bounds = PropEntityCollision.boundsOf(triangles);
-                        if (bounds.intersects(sweptBounds))
-                            COLLISION_TRIANGLES_SCRATCH.addAll(triangles);
+                        if (!bounds.intersects(sweptBounds))
+                            continue;
+
+                        COLLISION_TRIANGLES_SCRATCH.addAll(triangles);
+                        if (prop.getMotionMode() == PropMotionMode.DYNAMIC)
+                            PUSH_CANDIDATES_SCRATCH.add(new PushCandidate(prop.getId(), triangles));
                     }
 
-            return PropStepManager.clipMovement(entity, movement, COLLISION_TRIANGLES_SCRATCH);
+            PropStepManager.MovementResult steppedResult = PropStepManager.clipMovementWithResult(
+                    entity,
+                    movement,
+                    COLLISION_TRIANGLES_SCRATCH
+            );
+
+            Vec3 clippedMovement = steppedResult.movement();
+            Vec3 incomingVelocity = new Vec3(
+                    movement.x * 20.0,
+                    0.0,
+                    movement.z * 20.0
+            );
+            if (incomingVelocity.lengthSqr() < 1.0e-6 || PUSH_CANDIDATES_SCRATCH.isEmpty())
+                return clippedMovement;
+
+            List<PropEntityCollision.PropContact> pushContacts = new ArrayList<>();
+
+            for (PushCandidate candidate : PUSH_CANDIDATES_SCRATCH) {
+                List<PropEntityCollision.PropContact> contacts =
+                        PropEntityCollision.findHorizontalContacts(
+                                candidate.propId(),
+                                entity.getBoundingBox(),
+                                movement,
+                                candidate.triangles()
+                        );
+
+                for (PropEntityCollision.PropContact contact : contacts) {
+                    double closingSpeed = -incomingVelocity.dot(contact.normal());
+                    if (closingSpeed > 0.05)
+                        pushContacts.add(contact);
+                }
+            }
+            if (pushContacts.isEmpty())
+                return clippedMovement;
+
+            Vec3 ordinaryMovement = PropStepManager.clipMovementWithoutStep(
+                    entity, movement, COLLISION_TRIANGLES_SCRATCH
+            );
+            double blockedX = movement.x - ordinaryMovement.x;
+            double blockedZ = movement.z - ordinaryMovement.z;
+            if (blockedX * blockedX + blockedZ * blockedZ <= 1.0e-8)
+                return clippedMovement;
+
+            for (PropEntityCollision.PropContact contact : pushContacts)
+                queuePushIntent(contact, incomingVelocity);
+
+            return ordinaryMovement;
         } finally {
             COLLISION_TRIANGLES_SCRATCH.clear();
+            PUSH_CANDIDATES_SCRATCH.clear();
         }
     }
 
+    private static void queuePushIntent(
+            PropEntityCollision.PropContact contact,
+            Vec3 incomingVelocity
+    ) {
+        double closingSpeed = -incomingVelocity.dot(contact.normal());
+        if (!Double.isFinite(closingSpeed) || closingSpeed <= 0.05)
+            return;
+
+        PushIntent candidate = new PushIntent(
+                contact.propId(),
+                (float) incomingVelocity.x,
+                (float) incomingVelocity.z,
+                closingSpeed
+        );
+
+        PENDING_PUSH_INTENTS.merge(
+                contact.propId(),
+                candidate,
+                (previous, next) ->
+                        next.closingSpeed() > previous.closingSpeed()
+                                ? next
+                                : previous
+        );
+    }
+
+
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END)
+            return;
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null || minecraft.player == null) {
+            PENDING_PUSH_INTENTS.clear();
+            return;
+        }
+
+        for (PushIntent intent : PENDING_PUSH_INTENTS.values())
+            ModNetworking.CHANNEL.sendToServer(new PropPushIntentPacket(
+                    intent.propId(),
+                    intent.velocityX(),
+                    intent.velocityZ()
+            ));
+
+        PENDING_PUSH_INTENTS.clear();
+    }
 
     @SubscribeEvent
     public static void onChunkUnload(@NotNull ChunkEvent.Unload event) {
@@ -252,6 +361,19 @@ public final class ClientProps {
             return;
         clear();
     }
+
+
+    private record PushCandidate(
+            UUID propId,
+            List<PropGeometry.Triangle> triangles
+    ) {}
+    private record PushIntent(
+            UUID propId,
+            float velocityX,
+            float velocityZ,
+            double closingSpeed
+    ) {}
+
 
     private static final class TransformInterpolation {
         private final Vector3f fromPosition = new Vector3f();

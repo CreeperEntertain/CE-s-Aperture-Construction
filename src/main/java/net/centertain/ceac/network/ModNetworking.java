@@ -8,13 +8,16 @@ import net.centertain.ceac.material.network.SellItemPacket;
 import net.centertain.ceac.material.network.SyncCurrencyPacket;
 import net.centertain.ceac.prop.network.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
+
+import java.util.Optional;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class ModNetworking {
-    private static final String PROTOCOL_VERSION = "3";
+    private static final String PROTOCOL_VERSION = "4";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
@@ -102,6 +105,14 @@ public final class ModNetworking {
                 SyncPropTransformPacket::encode,
                 SyncPropTransformPacket::decode,
                 SyncPropTransformPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                PropPushIntentPacket.class,
+                PropPushIntentPacket::encode,
+                PropPushIntentPacket::decode,
+                PropPushIntentPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER)
         );
     }
 }

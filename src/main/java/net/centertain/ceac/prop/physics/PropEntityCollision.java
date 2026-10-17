@@ -358,6 +358,75 @@ public final class PropEntityCollision {
         );
     }
 
+    public static List<PropContact> findHorizontalContacts(
+            UUID propId,
+            AABB entityBox,
+            Vec3 movement,
+            Collection<PropGeometry.Triangle> triangles
+    ) {
+        Vec3 remaining = new Vec3(movement.x, 0.0, movement.z);
+        if (triangles.isEmpty() || remaining.lengthSqr() < 1.0e-12)
+            return List.of();
+
+        double dy = clipAxisMovement(entityBox, movement.y, 1, triangles);
+        AABB box = entityBox.move(0.0, dy, 0.0);
+        List<PropContact> contacts = new ArrayList<>(2);
+
+        for (int iteration = 0; iteration < 5 && remaining.lengthSqr() >= 1.0e-12; iteration++) {
+            AABB swept = box.expandTowards(remaining).inflate(1.0e-6);
+            Hit nearest = null;
+
+            for (PropGeometry.Triangle triangle : triangles) {
+                if (!triangleBounds(triangle).inflate(1.0e-6).intersects(swept))
+                    continue;
+
+                Hit hit = sweepTriangle(box, remaining, triangle);
+                if (hit == null || remaining.dot(hit.normal) >= -1.0e-7)
+                    continue;
+                if (!hit.faceAxis) {
+                    Vec3 faceNormal = triangle.b().subtract(triangle.a()).cross(triangle.c().subtract(triangle.a()));
+                    double normalLengthSqr = faceNormal.lengthSqr();
+                    if (normalLengthSqr < 1.0e-12)
+                        continue;
+
+                    faceNormal = faceNormal.scale(1.0 / Math.sqrt(normalLengthSqr));
+                    if (Math.abs(remaining.dot(faceNormal)) < 1.0e-7)
+                        continue;
+                }
+                if (
+                        nearest == null ||
+                        hit.time < nearest.time - 1.0e-7 ||
+                        (Math.abs(hit.time - nearest.time) <= 1.0e-7 && hit.faceAxis && !nearest.faceAxis)
+                )
+                    nearest = hit;
+            }
+            if (nearest == null)
+                break;
+
+            double time = Math.max(0.0, Math.min(1.0, nearest.time));
+            double intoSurfaceSpeed = -remaining.dot(nearest.normal);
+            if (intoSurfaceSpeed <= 1.0e-7)
+                break;
+
+            contacts.add(new PropContact(propId, nearest.normal, time));
+            time = Math.max(0.0, time - COLLISION_SKIN / intoSurfaceSpeed);
+            Vec3 step = remaining.scale(time);
+            box = box.move(step);
+            Vec3 rest = remaining.scale(1.0 - time);
+            double intoSurface = rest.dot(nearest.normal);
+            if (intoSurface < 0.0)
+                rest = rest.subtract(nearest.normal.scale(intoSurface));
+            if (rest.lengthSqr() < 1.0e-12)
+                break;
+            if (time <= 1.0e-7 && rest.distanceToSqr(remaining) < 1.0e-12)
+                break;
+
+            remaining = rest;
+        }
+
+        return contacts;
+    }
+
     private record Hit(
             double time,
             Vec3 normal,

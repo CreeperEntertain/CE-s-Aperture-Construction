@@ -14,6 +14,8 @@ public final class PropStepManager {
     private static final double COLLISION_SKIN = 1.0e-3;
     private static final double STEP_EPSILON = 1.0e-6;
 
+    public record MovementResult(Vec3 movement, boolean steppedUp) {}
+
     private PropStepManager() {}
 
 
@@ -101,7 +103,21 @@ public final class PropStepManager {
         );
     }
 
-    public record MovementResult(Vec3 movement, boolean steppedUp) {}
+    public static Vec3 clipMovementWithoutStep(
+            Entity entity,
+            Vec3 movement,
+            Collection<PropGeometry.Triangle> triangles
+    ) {
+        if (triangles.isEmpty() || movement.lengthSqr() < 1.0e-12)
+            return movement;
+
+        AABB startBox = entity.getBoundingBox();
+        Vec3 ordinary = PropEntityCollision.clipMovementAgainstTriangles(
+                startBox, movement, triangles
+        );
+
+        return clipAgainstBlocks(entity, startBox, ordinary);
+    }
 
     private static List<PropGeometry.Triangle> getUpwardCollisionTriangles(Collection<PropGeometry.Triangle> triangles) {
         List<PropGeometry.Triangle> result = new ArrayList<>(triangles.size());

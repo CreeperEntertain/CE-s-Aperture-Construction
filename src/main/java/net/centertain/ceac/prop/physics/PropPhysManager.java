@@ -53,6 +53,7 @@ public final class PropPhysManager implements AutoCloseable {
 
     private static final double ENTITY_CONTACT_SKIN = 0.01;
     private static final double PUSH_CONTACT_EPSILON = 0.025;
+    private static final double MAX_PLAYER_PUSH_SPEED = 8.0;
 
     private static final double TERRAIN_BOUNDS_EPSILON = 1.0e-4;
     private static final int TERRAIN_VALIDATION_INTERVAL = 20;
@@ -1351,6 +1352,122 @@ public final class PropPhysManager implements AutoCloseable {
         );
     }
 
+    public static void applyPlayerPush(
+            Player player,
+            UUID propId,
+            Vec3 incomingVelocity
+    ) {
+        if (!(player.level() instanceof ServerLevel serverLevel))
+            return;
+
+        PropPhysManager manager = INSTANCES.get(serverLevel);
+        if (manager == null || manager.closed)
+            return;
+
+        manager.applyPlayerPushImpulse(player, propId, incomingVelocity);
+    }
+
+    private void applyPlayerPushImpulse(
+            Player player,
+            UUID propId,
+            Vec3 incomingVelocity
+    ) {
+        if (player.level() != level || player.isRemoved() || player.isSpectator() || player.noPhysics)
+            return;
+        if (!Double.isFinite(incomingVelocity.x) || !Double.isFinite(incomingVelocity.z))
+            return;
+
+        PropBody propBody = propBodies.get(propId);
+        if (
+                propBody == null ||
+                propBody.motionMode != PropMotionMode.DYNAMIC ||
+                propBody.prop.getCollisionMode() != PropCollisionMode.SOLID
+        )
+            return;
+
+        PropSpatialEntry entry = solidPropSpatialEntries.get(propId);
+        if (
+                entry == null ||
+                !entry.worldBounds.inflate(0.25)
+                        .intersects(player.getBoundingBox().inflate(0.25))
+        )
+            return;
+
+        double speedSquared = incomingVelocity.x * incomingVelocity.x + incomingVelocity.z * incomingVelocity.z;
+        if (speedSquared < 1.0e-6)
+            return;
+
+        double speed = Math.sqrt(speedSquared);
+        if (speed > MAX_PLAYER_PUSH_SPEED)
+            incomingVelocity = incomingVelocity.scale(MAX_PLAYER_PUSH_SPEED / speed);
+
+        List<PropEntityCollision.PropContact> contacts = PropEntityCollision.findHorizontalContacts(
+                propId,
+                player.getBoundingBox(),
+                incomingVelocity.scale(FIXED_STEP),
+                entry.triangles
+        );
+        if (contacts.isEmpty())
+            return;
+
+        b3Vec3 boxVelocity = b3Body_GetLinearVelocity(propBody.body);
+        Vec3 propVelocity = new Vec3(
+                boxVelocity.x(),
+                boxVelocity.y(),
+                boxVelocity.z()
+        );
+
+        Vec3 relativeVelocity = incomingVelocity.subtract(propVelocity);
+        double playerMass = effectiveEntityMass(player);
+        double inversePlayerMass = 1.0 / playerMass;
+        double inversePropMass = 1.0 / Math.max(1.0e-3, propBody.mass);
+
+        AABB playerBounds = player.getBoundingBox();
+
+        Vec3 playerCenter = new Vec3(
+                (playerBounds.minX + playerBounds.maxX) * 0.5,
+                (playerBounds.minY + playerBounds.maxY) * 0.5,
+                (playerBounds.minZ + playerBounds.maxZ) * 0.5
+        );
+
+        for (PropEntityCollision.PropContact contact : contacts) {
+            Vec3 normal = contact.normal().normalize();
+            if (normal.x * normal.x + normal.z * normal.z < 0.09)
+                continue;
+
+            double approachSpeed = -incomingVelocity.dot(normal);
+            if (approachSpeed <= 0.05)
+                continue;
+
+            double relativeClosingSpeed = -relativeVelocity.dot(normal);
+            if (relativeClosingSpeed <= 0.05)
+                continue;
+
+            double impulseMagnitude =
+                    (1.0 + propBody.restitution) *
+                    relativeClosingSpeed /
+                    (inversePropMass + inversePlayerMass);
+            if (!Double.isFinite(impulseMagnitude) || impulseMagnitude <= 0.0)
+                continue;
+
+            Vec3 impulse = normal.scale(-impulseMagnitude);
+            double supportRadius =
+                    Math.abs(normal.x) * player.getBbWidth() * 0.5 +
+                    Math.abs(normal.y) * player.getBbHeight() * 0.5 +
+                    Math.abs(normal.z) * player.getBbWidth() * 0.5;
+            Vec3 contactPoint = playerCenter.subtract(normal.scale(supportRadius));
+
+            b3Body_ApplyLinearImpulse(
+                    propBody.body,
+                    toBoxVec(impulse),
+                    toBoxPos(contactPoint),
+                    true
+            );
+
+            return;
+        }
+    }
+
 
     private GeometryData getGeometry(ResourceLocation modelId) {
         Optional<GeometryData> cached = geometryCache.get(modelId);
@@ -1495,6 +1612,8 @@ public final class PropPhysManager implements AutoCloseable {
 
         return definition;
     }
+
+
 
     private static long categoryFor(PropCollisionMode mode) {
         return switch (mode) {
