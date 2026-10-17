@@ -14,6 +14,9 @@ public final class PropStepManager {
     private static final double COLLISION_SKIN = 1.0e-3;
     private static final double STEP_EPSILON = 1.0e-6;
 
+    private static final double MAX_WALKABLE_SLOPE_ANGLE_DEGREES = 45.0;
+    private static final double MIN_WALKABLE_NORMAL_Y_RATIO = Math.cos(Math.toRadians(MAX_WALKABLE_SLOPE_ANGLE_DEGREES));
+
     public record MovementResult(Vec3 movement, boolean steppedUp) {}
 
     private PropStepManager() {}
@@ -84,7 +87,9 @@ public final class PropStepManager {
         AABB advancedBox = raisedBox.move(steppedHorizontal);
         double downDistance = upward.y + COLLISION_SKIN;
         Vec3 downwardRequest = new Vec3(0.0, -downDistance, 0.0);
-        Vec3 downward = PropEntityCollision.clipMovementAgainstTriangles(advancedBox, downwardRequest, triangles);
+
+        List<PropGeometry.Triangle> walkableTriangles = getWalkableCollisionTriangles(triangles);
+        Vec3 downward = PropEntityCollision.clipMovementAgainstTriangles(advancedBox, downwardRequest, walkableTriangles);
         downward = clipAgainstBlocks(entity, advancedBox, downward);
         if (downward.y <= downwardRequest.y + STEP_EPSILON)
             return new MovementResult(ordinary, false);
@@ -101,6 +106,25 @@ public final class PropStepManager {
                 ),
                 true
         );
+    }
+
+    private static List<PropGeometry.Triangle> getWalkableCollisionTriangles(
+            Collection<PropGeometry.Triangle> triangles
+    ) {
+        List<PropGeometry.Triangle> result = new ArrayList<>(triangles.size());
+
+        for (PropGeometry.Triangle triangle : triangles) {
+            Vec3 normal = triangle.b().subtract(triangle.a()).cross(triangle.c().subtract(triangle.a()));
+            double lengthSqr = normal.lengthSqr();
+            if (lengthSqr < 1.0e-12)
+                continue;
+
+            double normalYRatio = Math.abs(normal.y) / Math.sqrt(lengthSqr);
+            if (normalYRatio + STEP_EPSILON >= MIN_WALKABLE_NORMAL_Y_RATIO)
+                result.add(triangle);
+        }
+
+        return result;
     }
 
     public static Vec3 clipMovementWithoutStep(
