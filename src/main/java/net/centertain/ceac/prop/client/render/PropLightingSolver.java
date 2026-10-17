@@ -2,6 +2,8 @@ package net.centertain.ceac.prop.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import it.unimi.dsi.fastutil.longs.Long2FloatOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -27,6 +29,7 @@ public final class PropLightingSolver {
     private static final float NEAR_LIGHT_OFFSET = 0.1f;
     private static final float FAR_LIGHT_OFFSET = 0.75f;
     private static final float MIN_AMBIENT_FACTOR = 0.95f;
+    private static final ThreadLocal<Scratch> SCRATCH = ThreadLocal.withInitial(Scratch::new);
 
     private PropLightingSolver() {}
 
@@ -48,8 +51,9 @@ public final class PropLightingSolver {
         Matrix3f worldNormalMatrix = new Matrix3f(worldTransform).invert().transpose();
         boolean ambientOcclusion = Minecraft.useAmbientOcclusion() && model.useAmbientOcclusion(state, renderType);
 
-        RandomSource random = RandomSource.create();
-        Scratch scratch = new Scratch();
+        Scratch scratch = SCRATCH.get();
+        scratch.resetCache(level);
+        RandomSource random = scratch.random;
 
         for (Direction side : Direction.values()) {
             random.setSeed(seed);
@@ -159,35 +163,23 @@ public final class PropLightingSolver {
                     worldPosition.x + worldNormal.x * NEAR_LIGHT_OFFSET,
                     worldPosition.y + worldNormal.y * NEAR_LIGHT_OFFSET,
                     worldPosition.z + worldNormal.z * NEAR_LIGHT_OFFSET,
-                    scratch, scratch.nearPositive
-            );
-            sampleLight(
-                    level,
-                    worldPosition.x + worldNormal.x * NEAR_LIGHT_OFFSET,
-                    worldPosition.y + worldNormal.y * NEAR_LIGHT_OFFSET,
-                    worldPosition.z + worldNormal.z * NEAR_LIGHT_OFFSET,
-                    scratch, scratch.nearNegative
+                    scratch,
+                    scratch.nearPositive
             );
             sampleLight(
                     level,
                     worldPosition.x + worldNormal.x * FAR_LIGHT_OFFSET,
                     worldPosition.y + worldNormal.y * FAR_LIGHT_OFFSET,
                     worldPosition.z + worldNormal.z * FAR_LIGHT_OFFSET,
-                    scratch, scratch.farPositive
-            );
-            sampleLight(
-                    level,
-                    worldPosition.x + worldNormal.x * FAR_LIGHT_OFFSET,
-                    worldPosition.y + worldNormal.y * FAR_LIGHT_OFFSET,
-                    worldPosition.z + worldNormal.z * FAR_LIGHT_OFFSET,
-                    scratch, scratch.farNegative
+                    scratch,
+                    scratch.farPositive
             );
 
-            float nearBlock = Math.max(scratch.nearPositive[0], scratch.nearNegative[0]);
-            float nearSky = Math.max(scratch.nearPositive[1], scratch.nearNegative[1]);
+            float nearBlock = scratch.nearPositive[0];
+            float nearSky = scratch.nearPositive[1];
 
-            float farBlock = Math.max(scratch.farPositive[0], scratch.farNegative[0]);
-            float farSky = Math.max(scratch.farPositive[1], scratch.farNegative[1]);
+            float farBlock = scratch.farPositive[0];
+            float farSky = scratch.farPositive[1];
 
             float blockLight = nearBlock + (Math.max(nearBlock, farBlock) - nearBlock) * embeddedBlend;
             float skyLight = nearSky + (Math.max(nearSky, farSky) - nearSky) * embeddedBlend;
@@ -317,7 +309,7 @@ public final class PropLightingSolver {
                             Mth.clamp(y0 + dy, minY, maxY),
                             z0 + dz
                     );
-                    int packed = LevelRenderer.getLightColor(level, samplePos);
+                    int packed = scratch.getPackedLight(level, samplePos);
 
                     result[0] += LightTexture.block(packed) * weight;
                     result[1] += LightTexture.sky(packed) * weight;
@@ -346,8 +338,8 @@ public final class PropLightingSolver {
         float fz = gz - z0;
 
         float result = 0.0f;
-        int minY = level.getMinBuildHeight();
-        int maxY = level.getMaxBuildHeight() - 1;
+        int minY = scratch.minBuildHeight;
+        int maxY = scratch.maxBuildHeight;
 
         for (int dx = 0; dx <= 1; dx++) {
             float wx = dx == 0 ? 1.0f - fx : fx;
@@ -362,8 +354,7 @@ public final class PropLightingSolver {
                             Mth.clamp(y0 + dy, minY, maxY),
                             z0 + dz
                     );
-                    BlockState sampleState = level.getBlockState(samplePos);
-                    result += sampleState.getShadeBrightness(level, samplePos) * weight;
+                    result += scratch.getShadeBrightness(level, samplePos) * weight;
                 }
             }
         }
@@ -389,9 +380,52 @@ public final class PropLightingSolver {
     private static final class Scratch {
         private final BlockPos.MutableBlockPos position = new BlockPos.MutableBlockPos();
 
+        private final RandomSource random = RandomSource.create();
+
+        private final Long2IntOpenHashMap lightCache = new Long2IntOpenHashMap(256);
+        private final Long2FloatOpenHashMap shadeCache = new Long2FloatOpenHashMap(256);
+
         private final float[] nearPositive = new float[2];
-        private final float[] nearNegative = new float[2];
         private final float[] farPositive = new float[2];
-        private final float[] farNegative = new float[2];
+
+        private int minBuildHeight;
+        private int maxBuildHeight;
+
+        private Scratch() {
+            lightCache.defaultReturnValue(-1);
+            shadeCache.defaultReturnValue(-1.0f);
+        }
+
+        private void resetCache(BlockAndTintGetter level) {
+            lightCache.clear();
+            shadeCache.clear();
+
+            minBuildHeight = level.getMinBuildHeight();
+            maxBuildHeight = level.getMaxBuildHeight() - 1;
+        }
+
+        private int getPackedLight(BlockAndTintGetter level, BlockPos pos) {
+            long key = pos.asLong();
+
+            int packed = lightCache.get(key);
+            if (packed != -1)
+                return packed;
+
+            packed = LevelRenderer.getLightColor(level, pos);
+            lightCache.put(key, packed);
+            return packed;
+        }
+
+        private float getShadeBrightness(BlockAndTintGetter level, BlockPos pos) {
+            long key = pos.asLong();
+
+            float shade = shadeCache.get(key);
+            if (shade >= 0.0f)
+                return shade;
+
+            shade = level.getBlockState(pos).getShadeBrightness(level, pos);
+            shadeCache.put(key, shade);
+            return shade;
+        }
     }
 }
