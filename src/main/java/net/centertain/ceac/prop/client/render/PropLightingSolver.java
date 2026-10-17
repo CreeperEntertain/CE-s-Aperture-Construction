@@ -26,7 +26,7 @@ import java.util.List;
 public final class PropLightingSolver {
     private static final float NEAR_LIGHT_OFFSET = 0.1f;
     private static final float FAR_LIGHT_OFFSET = 0.75f;
-    private static final float MIN_AMBIENT_FACTOR = 0.8f;
+    private static final float MIN_AMBIENT_FACTOR = 0.95f;
 
     private PropLightingSolver() {}
 
