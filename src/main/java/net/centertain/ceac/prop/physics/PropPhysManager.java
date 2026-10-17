@@ -14,8 +14,10 @@ import net.centertain.ceac.prop.network.SyncPropTransformPacket;
 import net.centertain.ceac.prop.server.PropCapabilities;
 import net.centertain.ceac.prop.server.PropManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
@@ -54,6 +56,7 @@ public final class PropPhysManager implements AutoCloseable {
     private static final double ENTITY_CONTACT_SKIN = 0.01;
     private static final double PUSH_CONTACT_EPSILON = 0.025;
     private static final double MAX_PLAYER_PUSH_SPEED = 8.0;
+    private static final double PLAYER_IMPACT_MASS = 5.0;
 
     private static final double TERRAIN_BOUNDS_EPSILON = 1.0e-4;
     private static final int TERRAIN_VALIDATION_INTERVAL = 20;
@@ -1269,21 +1272,27 @@ public final class PropPhysManager implements AutoCloseable {
             incomingPropVelocity = incomingPropVelocity.add(
                     0.0,
                     -9.81 * FIXED_STEP * prop.gravityScale,
-                    0.0);
+                    0.0
+            );
 
         double propImpactSpeed = incomingPropVelocity.dot(normal);
-        if (propImpactSpeed <= 0.01)
+        double entityImpactSpeed = entity.getDeltaMovement().scale(1.0 / FIXED_STEP).dot(normal);
+        double relativeImpactSpeed = propImpactSpeed - entityImpactSpeed;
+        if (relativeImpactSpeed <= 0.01)
             return;
 
-        double entityMass = effectiveEntityMass(entity);
-        double inversePropMass = prop.motionMode == PropMotionMode.DYNAMIC ? 1.0 / prop.mass : 0.0;
-        double impulse = (1.0 + prop.restitution) * propImpactSpeed / (inversePropMass + 1.0 / entityMass);
-        Vec3 entityVelocityChange = normal.scale(impulse / entityMass * FIXED_STEP);
+        double entityMass = entity instanceof Player ? PLAYER_IMPACT_MASS : effectiveEntityMass(entity);
+        double inversePropMass = prop.motionMode == PropMotionMode.DYNAMIC ? 1.0 / Math.max(1.0e-3, prop.mass) : 0.0;
+        double inverseEntityMass = 1.0 / entityMass;
+        double impulse = (1.0 + prop.restitution) * relativeImpactSpeed / (inversePropMass + inverseEntityMass);
+        Vec3 entityVelocityChange = normal.scale(impulse * inverseEntityMass * FIXED_STEP);
         entity.push(
                 entityVelocityChange.x,
                 entityVelocityChange.y,
                 entityVelocityChange.z
         );
+        if (entity instanceof ServerPlayer serverPlayer)
+            serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(serverPlayer));
         if (prop.motionMode != PropMotionMode.DYNAMIC)
             return;
 
