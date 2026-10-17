@@ -75,7 +75,6 @@ public final class PropRenderer {
         MultiBufferSource.BufferSource crumblingBuffers = minecraft.renderBuffers().crumblingBufferSource();
 
         VertexConsumer consumer = buffers.getBuffer(RenderType.solid());
-        ModelBlockRenderer modelRenderer = minecraft.getBlockRenderer().getModelRenderer();
         ModelManager modelManager = minecraft.getModelManager();
 
         long renderTimeNanos = System.nanoTime();
@@ -90,7 +89,6 @@ public final class PropRenderer {
                             poseStack,
                             camera,
                             level,
-                            modelRenderer,
                             consumer,
                             crumblingBuffers,
                             renderTimeNanos
@@ -107,7 +105,6 @@ public final class PropRenderer {
             PoseStack poseStack,
             Vec3 camera,
             ClientLevel level,
-            ModelBlockRenderer modelRenderer,
             VertexConsumer consumer,
             MultiBufferSource.BufferSource crumblingBuffers,
             long renderTimeNanos
@@ -153,18 +150,17 @@ public final class PropRenderer {
                 RENDER_SCALE.z
         );
 
-        modelRenderer.tesselateBlock(
+        PropLightingSolver.render(
                 level,
                 model,
                 Blocks.AIR.defaultBlockState(),
                 prop.getBlockPosition(),
                 poseStack,
                 consumer,
-                false,
-                RandomSource.create(),
+                RENDER_TRANSFORM,
+                minecraft.getBlockColors(),
                 prop.getId().getMostSignificantBits(),
                 OverlayTexture.NO_OVERLAY,
-                ModelData.EMPTY,
                 RenderType.solid()
         );
 
