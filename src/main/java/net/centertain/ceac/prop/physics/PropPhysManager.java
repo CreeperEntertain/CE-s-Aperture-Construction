@@ -1651,10 +1651,6 @@ public final class PropPhysManager implements AutoCloseable {
         return (int) Math.floor(value);
     }
 
-    private static double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
     @Override
     public void close() {
         if (closed)
