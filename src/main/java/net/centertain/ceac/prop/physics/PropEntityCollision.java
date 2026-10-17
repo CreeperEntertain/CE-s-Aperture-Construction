@@ -11,9 +11,13 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 public final class PropEntityCollision {
     private static final double COLLISION_SKIN = 1.0e-3;
+
+    public record PropContact(UUID propId, Vec3 normal, double hitTime) {}
+    public record MovementResult(Vec3 movement, List<PropContact> contacts) {}
 
     private PropEntityCollision() {}
 

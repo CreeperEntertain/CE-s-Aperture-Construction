@@ -35,7 +35,6 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 import static cc.modlabs.box3d.global.Box3D.*;
@@ -54,7 +53,6 @@ public final class PropPhysManager implements AutoCloseable {
 
     private static final double ENTITY_CONTACT_SKIN = 0.01;
     private static final double PUSH_CONTACT_EPSILON = 0.025;
-    private static final double PLAYER_PUSH_MASS = 80.0;
 
     private static final double TERRAIN_BOUNDS_EPSILON = 1.0e-4;
     private static final int TERRAIN_VALIDATION_INTERVAL = 20;
@@ -109,11 +107,6 @@ public final class PropPhysManager implements AutoCloseable {
     private final Set<UUID> coveredPropIds = new HashSet<>();
     private final Map<UUID, Entity> wantedEntities = new HashMap<>();
     private final Set<ImpactKey> handledEntityImpacts = new HashSet<>();
-
-    private long playerPushImpulseTick = Long.MIN_VALUE;
-    private final Set<ImpactKey> playerPushesThisTick = new HashSet<>();
-    private final Map<ImpactKey, PendingPlayerPush> pendingPlayerPushes = new LinkedHashMap<>();
-    private final Map<UUID, PlayerPushMotion> pendingPlayerPushMotions = new HashMap<>();
 
     private final Map<UUID, TerrainCoverage> terrainCoverageByProp = new HashMap<>();
     private final Map<Long, Integer> terrainReferenceCounts = new HashMap<>();
@@ -256,10 +249,7 @@ public final class PropPhysManager implements AutoCloseable {
         b3World_Step(world, FIXED_STEP, SUB_STEPS);
 
         processHitEvents();
-        applyPendingPlayerPushes();
         synchronizePropTransforms();
-
-        pendingPlayerPushMotions.clear();
     }
 
     private void synchronizeProps() {
@@ -921,7 +911,6 @@ public final class PropPhysManager implements AutoCloseable {
 
         long stamp = ++collisionQueryStamp;
         List<PropGeometry.Triangle> obstacles = new ArrayList<>(64);
-        List<PropBody> candidateProps = new ArrayList<>();
 
         for (int x = minX; x <= maxX; x++)
             for (int y = minY; y <= maxY; y++)
@@ -940,397 +929,12 @@ public final class PropPhysManager implements AutoCloseable {
                             continue;
 
                         obstacles.addAll(entry.triangles);
-                        PropBody body = propBodies.get(id);
-                        if (
-                                body != null &&
-                                body.motionMode == PropMotionMode.DYNAMIC &&
-                                body.prop.getCollisionMode() == PropCollisionMode.SOLID
-                        )
-                            candidateProps.add(body);
                     }
                 }
 
         PropStepManager.MovementResult movementResult = PropStepManager.clipMovementWithResult(entity, movement, obstacles);
-        Vec3 clippedMovement = movementResult.movement();
 
-        applyPlayerPushImpulse(
-                entity,
-                requestedMovement,
-                movement,
-                clippedMovement,
-                movementResult.steppedUp(),
-                candidateProps
-        );
-
-        return clippedMovement;
-    }
-
-    private void applyPlayerPushImpulse(
-            Entity entity,
-            Vec3 requestedMovement,
-            Vec3 vanillaMovement,
-            Vec3 clippedMovement,
-            boolean steppedUp,
-            List<PropBody> candidates
-    ) {
-        if (!(entity instanceof Player) || entity.noPhysics || entity.isSpectator())
-            return;
-
-        Vec3 blockedHorizontal = new Vec3(
-                vanillaMovement.x - clippedMovement.x,
-                0.0,
-                vanillaMovement.z - clippedMovement.z
-        );
-        Vec3 horizontalIntent = new Vec3(
-                requestedMovement.x,
-                0.0,
-                requestedMovement.z
-        );
-        boolean hasBlockedMovement = blockedHorizontal.lengthSqr() >= 1.0e-8;
-
-        PropBody support = findSupportingProp(entity.getBoundingBox(), candidates);
-        if (!steppedUp && hasBlockedMovement) {
-            Vec3 direction = blockedHorizontal.normalize();
-            PropBody sideProp = findSidePushTarget(
-                    entity.getBoundingBox(),
-                    requestedMovement,
-                    direction,
-                    candidates
-            );
-
-            if (sideProp != null && support == null) {
-                double intendedSpeed = requestedMovement.x * direction.x + requestedMovement.z * direction.z;
-                intendedSpeed /= FIXED_STEP;
-                if (intendedSpeed > 1.0e-4)
-                    applyPushTowardSpeed(
-                            entity,
-                            sideProp,
-                            direction,
-                            intendedSpeed,
-                            1,
-                            1.5,
-                            requestedMovement
-                    );
-
-                return;
-            }
-        }
-        if (horizontalIntent.lengthSqr() < 1.0e-8)
-            return;
-
-        if (!steppedUp && blockedHorizontal.lengthSqr() >= 1.0e-8) {
-            Vec3 direction = blockedHorizontal.normalize();
-            PropBody sideProp = findSidePushTarget(
-                    entity.getBoundingBox(),
-                    vanillaMovement,
-                    direction,
-                    candidates
-            );
-            if (sideProp != null && sideProp != support) {
-                double intendedSpeed = requestedMovement.x * direction.x + requestedMovement.z * direction.z;
-                intendedSpeed /= FIXED_STEP;
-                if (intendedSpeed > 1.0e-4) {
-                    applyPushTowardSpeed(
-                            entity,
-                            sideProp,
-                            direction,
-                            intendedSpeed,
-                            0.75,
-                            1.5,
-                            requestedMovement
-                    );
-                    return;
-                }
-            }
-        }
-        if (horizontalIntent.lengthSqr() < 1.0e-8 || support == null)
-            return;
-
-        Vec3 direction = horizontalIntent.normalize();
-        double intendedSpeed = horizontalIntent.length() / FIXED_STEP;
-        applyPushTowardSpeed(
-                entity,
-                support,
-                direction,
-                intendedSpeed,
-                0.03,
-                0.06,
-                requestedMovement
-        );
-    }
-
-    private PropBody findSidePushTarget(
-            AABB playerBox,
-            Vec3 movement,
-            Vec3 pushDirection,
-            List<PropBody> candidates
-    ) {
-        AABB sweptPlayerBox = playerBox.expandTowards(movement).inflate(PUSH_CONTACT_EPSILON);
-
-        double playerCenterX = (playerBox.minX + playerBox.maxX) * 0.5;
-        double playerCenterZ = (playerBox.minZ + playerBox.maxZ) * 0.5;
-
-        PropBody selected = null;
-        double nearestAlignment = Double.POSITIVE_INFINITY;
-
-        for (PropBody candidate : candidates) {
-            PropSpatialEntry entry = solidPropSpatialEntries.get(candidate.prop.getId());
-            if (entry == null || !entry.worldBounds.inflate(PUSH_CONTACT_EPSILON).intersects(sweptPlayerBox))
-                continue;
-
-            double propCenterX = (entry.worldBounds.minX + entry.worldBounds.maxX) * 0.5;
-            double propCenterZ = (entry.worldBounds.minZ + entry.worldBounds.maxZ) * 0.5;
-            double alignment =
-                    (propCenterX - playerCenterX) * pushDirection.x +
-                    (propCenterZ - playerCenterZ) * pushDirection.z;
-            if (alignment < -PUSH_CONTACT_EPSILON || alignment >= nearestAlignment)
-                continue;
-
-            nearestAlignment = alignment;
-            selected = candidate;
-        }
-
-        return selected;
-    }
-
-    private @Nullable PropBody findSupportingProp(
-            AABB playerBox,
-            List<PropBody> candidates
-    ) {
-        PropBody selected = null;
-        double bestOverlapArea = 0.0;
-
-        for (PropBody candidate : candidates) {
-            PropSpatialEntry entry = solidPropSpatialEntries.get(candidate.prop.getId());
-            if (entry == null)
-                continue;
-
-            AABB bounds = entry.worldBounds;
-
-            double overlapX = Math.min(playerBox.maxX, bounds.maxX) - Math.max(playerBox.minX, bounds.minX);
-            double overlapZ = Math.min(playerBox.maxZ, bounds.maxZ) - Math.max(playerBox.minZ, bounds.minZ);
-            if (overlapX <= 0.0 || overlapZ <= 0.0)
-                continue;
-            if (!hasSupportSurfaceAtFeet(playerBox, entry.triangles))
-                continue;
-
-            double overlapArea = overlapX * overlapZ;
-            if (overlapArea <= bestOverlapArea)
-                continue;
-
-            bestOverlapArea = overlapArea;
-            selected = candidate;
-        }
-
-        return selected;
-    }
-
-    private boolean hasSupportSurfaceAtFeet(
-            AABB playerBox,
-            List<PropGeometry.Triangle> triangles
-    ) {
-        double feetY = playerBox.minY;
-
-        for (PropGeometry.Triangle triangle : triangles) {
-            Vec3 a = triangle.a();
-            Vec3 b = triangle.b();
-            Vec3 c = triangle.c();
-
-            double minX = Math.min(a.x, Math.min(b.x, c.x));
-            double maxX = Math.max(a.x, Math.max(b.x, c.x));
-            double minY = Math.min(a.y, Math.min(b.y, c.y));
-            double maxY = Math.max(a.y, Math.max(b.y, c.y));
-            double minZ = Math.min(a.z, Math.min(b.z, c.z));
-            double maxZ = Math.max(a.z, Math.max(b.z, c.z));
-
-            if (maxX < playerBox.minX || minX > playerBox.maxX || maxZ < playerBox.minZ || minZ > playerBox.maxZ)
-                continue;
-            if (feetY < minY - PUSH_CONTACT_EPSILON || feetY > maxY + PUSH_CONTACT_EPSILON)
-                continue;
-
-            Vec3 normal = b.subtract(a).cross(c.subtract(a));
-            double normalLengthSqr = normal.lengthSqr();
-            if (normalLengthSqr < 1.0e-12)
-                continue;
-
-            double normalLength = Math.sqrt(normalLengthSqr);
-            if (Math.abs(normal.y) / normalLength < 1.0e-6)
-                continue;
-
-            List<HorizontalPoint> polygon = new ArrayList<>(List.of(
-                    new HorizontalPoint(a.x, a.z),
-                    new HorizontalPoint(b.x, b.z),
-                    new HorizontalPoint(c.x, c.z)
-            ));
-
-            polygon = clipHorizontalPolygon(polygon, 0, playerBox.minX, true);
-            polygon = clipHorizontalPolygon(polygon, 0, playerBox.maxX, false);
-            polygon = clipHorizontalPolygon(polygon, 1, playerBox.minZ, true);
-            polygon = clipHorizontalPolygon(polygon, 1, playerBox.maxZ, false);
-            if (polygon.isEmpty())
-                continue;
-
-            double minSurfaceY = Double.POSITIVE_INFINITY;
-            double maxSurfaceY = Double.NEGATIVE_INFINITY;
-            for (HorizontalPoint point : polygon) {
-                double surfaceY = a.y - (normal.x * (point.x() - a.x) + normal.z * (point.z() - a.z)) / normal.y;
-                minSurfaceY = Math.min(minSurfaceY, surfaceY);
-                maxSurfaceY = Math.max(maxSurfaceY, surfaceY);
-            }
-            if (
-                    feetY >= minSurfaceY - PUSH_CONTACT_EPSILON &&
-                    feetY <= maxSurfaceY + PUSH_CONTACT_EPSILON
-            )
-                return true;
-        }
-
-        return false;
-    }
-
-    private static List<HorizontalPoint> clipHorizontalPolygon(
-            List<HorizontalPoint> polygon,
-            int axis,
-            double boundary,
-            boolean keepGreater
-    ) {
-        if (polygon.isEmpty())
-            return polygon;
-
-        List<HorizontalPoint> result = new ArrayList<>(polygon.size() + 2);
-        HorizontalPoint previous = polygon.get(polygon.size() - 1);
-        double previousCoordinate = axis == 0 ? previous.x() : previous.z();
-        boolean previousInside = keepGreater
-                ? previousCoordinate >= boundary
-                : previousCoordinate <= boundary;
-
-        for (HorizontalPoint current : polygon) {
-            double currentCoordinate = axis == 0 ? current.x() : current.z();
-            boolean currentInside = keepGreater
-                    ? currentCoordinate >= boundary
-                    : currentCoordinate <= boundary;
-
-            if (currentInside != previousInside) {
-                double denominator = currentCoordinate - previousCoordinate;
-                if (Math.abs(denominator) > 1.0e-12) {
-                    double t = (boundary - previousCoordinate) / denominator;
-                    result.add(new HorizontalPoint(
-                            previous.x() + (current.x() - previous.x()) * t,
-                            previous.z() + (current.z() - previous.z()) * t
-                    ));
-                }
-            }
-            if (currentInside)
-                result.add(current);
-
-            previous = current;
-            previousCoordinate = currentCoordinate;
-            previousInside = currentInside;
-        }
-
-        return result;
-    }
-
-    private void applyPushTowardSpeed(
-            Entity entity,
-            PropBody prop,
-            Vec3 direction,
-            double intendedSpeed,
-            double response,
-            double maxDeltaVelocity,
-            Vec3 requestedMovement
-    ) {
-        if (intendedSpeed <= 1.0e-4 || prop.mass <= 1.0e-6)
-            return;
-
-        long gameTime = level.getGameTime();
-        if (playerPushImpulseTick != gameTime) {
-            playerPushImpulseTick = gameTime;
-            playerPushesThisTick.clear();
-        }
-
-        Vec3 horizontalIntent = new Vec3(
-                requestedMovement.x,
-                0.0,
-                requestedMovement.z
-        );
-        if (horizontalIntent.lengthSqr() > 1.0e-12) {
-            PlayerPushMotion incoming = new PlayerPushMotion(horizontalIntent);
-            pendingPlayerPushMotions.merge(
-                    entity.getUUID(),
-                    incoming,
-                    (current, next) ->
-                            next.horizontalDisplacement().lengthSqr() > current.horizontalDisplacement().lengthSqr()
-                                    ? next
-                                    : current
-            );
-        }
-
-        ImpactKey key = new ImpactKey(prop.prop.getId(), entity.getUUID());
-        b3Vec3 current = b3Body_GetLinearVelocity(prop.body);
-        double currentSpeed =
-                current.x() * direction.x +
-                current.y() * direction.y +
-                current.z() * direction.z;
-        if (intendedSpeed - currentSpeed <= 1.0e-4)
-            return;
-
-        boolean alreadyQueued = playerPushesThisTick.contains(key);
-        PendingPlayerPush previous = pendingPlayerPushes.get(key);
-        if (alreadyQueued) {
-            if (previous == null)
-                return;
-            if (
-                    response < previous.response ||
-                    (response == previous.response && maxDeltaVelocity <= previous.maxDeltaVelocity)
-            )
-                return;
-        } else
-            playerPushesThisTick.add(key);
-
-        pendingPlayerPushes.put(key, new PendingPlayerPush(
-                prop.prop.getId(),
-                direction,
-                intendedSpeed,
-                response,
-                maxDeltaVelocity
-        ));
-    }
-
-    private void applyPendingPlayerPushes() {
-        try {
-            for (PendingPlayerPush push : pendingPlayerPushes.values()) {
-                PropBody prop = propBodies.get(push.propId());
-                if (
-                        prop == null ||
-                        prop.motionMode != PropMotionMode.DYNAMIC ||
-                        prop.mass <= 1.0e-6
-                )
-                    continue;
-
-                b3Vec3 current = b3Body_GetLinearVelocity(prop.body);
-                double currentSpeed =
-                        current.x() * push.direction().x +
-                        current.y() * push.direction().y +
-                        current.z() * push.direction().z;
-                double speedDifference = push.intendedSpeed() - currentSpeed;
-                if (speedDifference <= 1.0e-4)
-                    continue;
-
-                double reducedMass = PLAYER_PUSH_MASS * prop.mass / (PLAYER_PUSH_MASS + prop.mass);
-                double impulse = reducedMass * speedDifference * push.response();
-                double deltaVelocity = Math.min(push.maxDeltaVelocity(), impulse / prop.mass);
-                if (deltaVelocity <= 1.0e-5)
-                    continue;
-
-                b3Body_SetLinearVelocity(prop.body, new b3Vec3()
-                        .x((float) (current.x() + push.direction().x * deltaVelocity))
-                        .y((float) (current.y() + push.direction().y * deltaVelocity))
-                        .z((float) (current.z() + push.direction().z * deltaVelocity))
-                );
-            }
-        } finally {
-            pendingPlayerPushes.clear();
-        }
+        return movementResult.movement();
     }
 
     private void updatePropSpatialIndex() {
@@ -1463,17 +1067,6 @@ public final class PropPhysManager implements AutoCloseable {
         boolean teleported = tickDisplacement.lengthSqr() > 4.0;
         if (teleported)
             tickDisplacement = Vec3.ZERO;
-        else if (entity instanceof Player) {
-            PlayerPushMotion pushMotion = pendingPlayerPushMotions.get(entity.getUUID());
-            if (pushMotion != null) {
-                Vec3 intended = pushMotion.horizontalDisplacement();
-                tickDisplacement = new Vec3(
-                        intended.x,
-                        tickDisplacement.y,
-                        intended.z
-                );
-            }
-        }
 
         Vec3 boxVelocity = tickDisplacement.scale(1.0 / FIXED_STEP);
         Vec3 boxStartPosition = currentPosition.subtract(tickDisplacement);
@@ -2211,13 +1804,4 @@ public final class PropPhysManager implements AutoCloseable {
                     maxZ == otherMaxZ;
         }
     }
-    private record PendingPlayerPush(
-            UUID propId,
-            Vec3 direction,
-            double intendedSpeed,
-            double response,
-            double maxDeltaVelocity
-    ) {}
-    private record PlayerPushMotion(Vec3 horizontalDisplacement) {}
-    private record HorizontalPoint(double x, double z) {}
 }
