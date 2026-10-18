@@ -33,6 +33,7 @@ import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
+import org.bytedeco.javacpp.IntPointer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.slf4j.Logger;
@@ -96,11 +97,18 @@ public final class PropPhysManager implements AutoCloseable {
     private final Map<UUID, PropBody> propBodies = new HashMap<>();
     private final Map<BodyKey, PropBody> propsByBody = new HashMap<>();
 
+    private static final int TERRAIN_MESH_HALO = 2;
+    private static final double TERRAIN_FACE_EPSILON = 1.0e-7;
+    private static final float TERRAIN_MESH_WELD_TOLERANCE = 1.0e-4f;
+
+    private final List<TerrainPatch> terrainPatches = new ArrayList<>();
+    private final Set<BodyKey> terrainPatchBodies = new HashSet<>();
+    private final Set<Long> terrainPatchCellKeys = new HashSet<>();
+    private final Map<Long, BlockState> terrainPatchStates = new HashMap<>();
+    private boolean terrainPatchesDirty = true;
+
     private final Map<UUID, EntityBody> entityBodies = new HashMap<>();
     private final Map<BodyKey, EntityBody> entitiesByBody = new HashMap<>();
-
-    private final Map<Long, TerrainBody> terrainBodies = new HashMap<>();
-    private final Map<BodyKey, TerrainBody> terrainByBody = new HashMap<>();
 
     private final Map<ResourceLocation, Optional<GeometryData>> geometryCache = new HashMap<>();
 
@@ -114,9 +122,6 @@ public final class PropPhysManager implements AutoCloseable {
 
     private final Map<UUID, TerrainCoverage> terrainCoverageByProp = new HashMap<>();
     private final Map<Long, Integer> terrainReferenceCounts = new HashMap<>();
-    private final Map<Long, Set<Long>> terrainKeysByChunk = new HashMap<>();
-
-    private final Set<Long> dirtyTerrainKeys = new HashSet<>();
     private final ArrayDeque<Long> terrainValidationQueue = new ArrayDeque<>();
 
     private final Map<UUID, PropSpatialEntry> solidPropSpatialEntries = new HashMap<>();
@@ -203,17 +208,17 @@ public final class PropPhysManager implements AutoCloseable {
             for (int dy = -1; dy <= 1; dy++)
                 for (int dz = -1; dz <= 1; dz++) {
                     long key = position.offset(dx, dy, dz).asLong();
-                    if (terrainReferenceCounts.containsKey(key))
-                        dirtyTerrainKeys.add(key);
+                    if (terrainPatchCellKeys.contains(key) || terrainReferenceCounts.containsKey(key)) {
+                        terrainPatchesDirty = true;
+                        return;
+                    }
                 }
     }
 
 
     private void onChunkLoaded(LevelChunk chunk) {
         loadedChunks.put(chunk.getPos().toLong(), chunk);
-        Set<Long> keys = terrainKeysByChunk.get(chunk.getPos().toLong());
-        if (keys != null)
-            dirtyTerrainKeys.addAll(keys);
+        terrainPatchesDirty = true;
     }
 
     private void onChunkUnloaded(LevelChunk chunk) {
@@ -226,12 +231,9 @@ public final class PropPhysManager implements AutoCloseable {
             writeBackTransform(body, false);
             destroyPropBody(body.prop.getId());
         }
-        for (Map.Entry<Long, TerrainBody> entry : new ArrayList<>(terrainBodies.entrySet())) {
-            TerrainBody terrain = entry.getValue();
-            if (!new ChunkPos(terrain.position).equals(chunk.getPos()))
-                continue;
-            destroyTerrainBody(entry.getKey());
-        }
+
+        destroyTerrainPatches();
+        terrainPatchesDirty = true;
     }
 
     private void tick() {
@@ -660,53 +662,16 @@ public final class PropPhysManager implements AutoCloseable {
             coverageIterator.remove();
         }
 
-        validateTerrainBodiesIncrementally();
-
-        Iterator<Long> dirtyIterator = dirtyTerrainKeys.iterator();
-        while (dirtyIterator.hasNext()) {
-            long key = dirtyIterator.next();
-            if (terrainReferenceCounts.containsKey(key))
-                refreshTerrainBody(key);
-            else
-                destroyTerrainBody(key);
-            dirtyIterator.remove();
-        }
-    }
-
-    private void validateTerrainBodiesIncrementally() {
-        if (terrainValidationQueue.isEmpty()) {
-            if (++terrainValidationTicks < TERRAIN_VALIDATION_INTERVAL)
-                return;
-            terrainValidationTicks = 0;
-            terrainValidationQueue.addAll(terrainBodies.keySet());
-        }
-
-        int processed = 0;
-
-        while (processed < TERRAIN_VALIDATION_BUDGET_PER_TICK && !terrainValidationQueue.isEmpty()) {
-            long key = terrainValidationQueue.removeFirst();
-            processed++;
-            TerrainBody cached = terrainBodies.get(key);
-            if (cached == null)
-                continue;
-
-            BlockPos position = BlockPos.of(key);
-            BlockState currentState = level.getBlockState(position);
-            if (!cached.state.equals(currentState))
-                dirtyTerrainKeys.add(key);
-        }
+        validateTerrainPatchesIncrementally();
+        if (terrainPatchesDirty)
+            rebuildTerrainPatches();
     }
 
     private void retainTerrainKey(long key) {
         int references = terrainReferenceCounts.getOrDefault(key, 0);
         terrainReferenceCounts.put(key, references + 1);
-        if (references != 0)
-            return;
-
-        BlockPos position = BlockPos.of(key);
-        long chunkKey = new ChunkPos(position).toLong();
-        terrainKeysByChunk.computeIfAbsent(chunkKey, ignored -> new HashSet<>()).add(key);
-        dirtyTerrainKeys.add(key);
+        if (references == 0)
+            terrainPatchesDirty = true;
     }
 
     private void releaseTerrainKey(long key) {
@@ -717,102 +682,492 @@ public final class PropPhysManager implements AutoCloseable {
             terrainReferenceCounts.put(key, references - 1);
             return;
         }
-
         terrainReferenceCounts.remove(key);
-        dirtyTerrainKeys.remove(key);
-        destroyTerrainBody(key);
+        terrainPatchesDirty = true;
+    }
 
-        BlockPos position = BlockPos.of(key);
-        long chunkKey = new ChunkPos(position).toLong();
+    @SuppressWarnings({"ExtractMethodRecommender", "deprecation"})
+    private void rebuildTerrainPatches() {
+        destroyTerrainPatches();
 
-        Set<Long> chunkKeys = terrainKeysByChunk.get(chunkKey);
-        if (chunkKeys != null) {
-            chunkKeys.remove(key);
-            if (chunkKeys.isEmpty())
-                terrainKeysByChunk.remove(chunkKey);
+        terrainPatchCellKeys.clear();
+        terrainPatchStates.clear();
+        terrainValidationQueue.clear();
+        terrainValidationTicks = 0;
+
+        if (terrainReferenceCounts.isEmpty()) {
+            terrainPatchesDirty = false;
+            return;
         }
-    }
 
-    private void refreshTerrainBody(long key) {
-        destroyTerrainBody(key);
-        if (terrainReferenceCounts.containsKey(key))
-            ensureTerrainBody(key);
-    }
+        Set<Long> expandedCells = new HashSet<>();
+        for (long key : terrainReferenceCounts.keySet()) {
+            BlockPos position = BlockPos.of(key);
+            for (int dx = -TERRAIN_MESH_HALO; dx <= TERRAIN_MESH_HALO; dx++)
+                for (int dy = -TERRAIN_MESH_HALO; dy <= TERRAIN_MESH_HALO; dy++)
+                    for (int dz = -TERRAIN_MESH_HALO; dz <= TERRAIN_MESH_HALO; dz++) {
+                        int y = position.getY() + dy;
+                        if (y < level.getMinBuildHeight() || y >= level.getMaxBuildHeight())
+                            continue;
+                        expandedCells.add(new BlockPos(
+                                position.getX() + dx,
+                                y,
+                                position.getZ() + dz
+                        ).asLong());
+                    }
+        }
 
-    @SuppressWarnings("deprecation")
-    private void ensureTerrainBody(long key) {
-        if (terrainBodies.containsKey(key))
-            return;
+        terrainPatchCellKeys.addAll(expandedCells);
+        Map<Long, List<TerrainBox>> boxesByCell = new HashMap<>();
 
-        BlockPos position = BlockPos.of(key);
-        if (!level.hasChunkAt(position))
-            return;
+        for (long key : expandedCells) {
+            BlockPos position = BlockPos.of(key);
 
-        BlockState state = level.getBlockState(position);
-        TerrainBody created = createTerrainBody(position, state);
-        terrainBodies.put(key, created);
-        if (created.body != null)
-            terrainByBody.put(BodyKey.of(created.body), created);
-    }
-
-    private TerrainBody createTerrainBody(BlockPos position, BlockState state) {
-        VoxelShape voxelShape = state.getCollisionShape(level, position);
-        if (voxelShape.isEmpty())
-            return new TerrainBody(position, state, null);
-
-        b3BodyDef bodyDefinition = b3DefaultBodyDef();
-        bodyDefinition.type(b3_staticBody);
-        bodyDefinition._position(new b3Pos()
-                .x(position.getX())
-                .y(position.getY())
-                .z(position.getZ())
-        );
-        bodyDefinition.rotation(identityQuat());
-
-        b3BodyId body = b3CreateBody(world, bodyDefinition);
-        int attachedShapes = 0;
-
-        for (AABB box : voxelShape.toAabbs()) {
-            List<FloatPoint> points = boxPoints(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
-            b3HullData hull = createHull(points, 8);
-            if (hull == null || hull.isNull())
+            if (!level.hasChunkAt(position))
                 continue;
 
-            try {
-                b3ShapeDef shapeDefinition = makeShapeDefinition(
-                        CATEGORY_WORLD,
-                        MASK_WORLD,
-                        false,
-                        false,
-                        false,
-                        0.0f
+            BlockState state = level.getBlockState(position);
+            terrainPatchStates.put(key, state);
+
+            VoxelShape shape = state.getCollisionShape(level, position);
+            if (shape.isEmpty())
+                continue;
+
+            List<TerrainBox> cellBoxes = new ArrayList<>();
+            for (AABB box : shape.toAabbs()) {
+                TerrainBox terrainBox = new TerrainBox(
+                        position.getX() + box.minX,
+                        position.getY() + box.minY,
+                        position.getZ() + box.minZ,
+                        position.getX() + box.maxX,
+                        position.getY() + box.maxY,
+                        position.getZ() + box.maxZ
                 );
+                if (
+                        terrainBox.maxX() - terrainBox.minX() <= TERRAIN_FACE_EPSILON ||
+                        terrainBox.maxY() - terrainBox.minY() <= TERRAIN_FACE_EPSILON ||
+                        terrainBox.maxZ() - terrainBox.minZ() <= TERRAIN_FACE_EPSILON
+                )
+                    continue;
 
-                b3SurfaceMaterial material = b3DefaultSurfaceMaterial();
-                material.friction(0.2f);
-                shapeDefinition.baseMaterial(material);
+                cellBoxes.add(terrainBox);
+            }
 
-                b3CreateHullShape(body, shapeDefinition, hull);
-                attachedShapes++;
-            } finally {
-                b3DestroyHull(hull);
+            if (!cellBoxes.isEmpty())
+                boxesByCell.put(key, cellBoxes);
+        }
+
+        Set<Long> remaining = new HashSet<>(expandedCells);
+        while (!remaining.isEmpty()) {
+            long seed = remaining.iterator().next();
+
+            Set<Long> component = new HashSet<>();
+            ArrayDeque<Long> queue = new ArrayDeque<>();
+
+            remaining.remove(seed);
+            queue.addLast(seed);
+
+            while (!queue.isEmpty()) {
+                long currentKey = queue.removeFirst();
+                component.add(currentKey);
+                BlockPos position = BlockPos.of(currentKey);
+
+                for (int dx = -1; dx <= 1; dx++) {
+                    for (int dy = -1; dy <= 1; dy++) {
+                        for (int dz = -1; dz <= 1; dz++) {
+                            if (dx == 0 && dy == 0 && dz == 0)
+                                continue;
+                            long neighborKey = new BlockPos(
+                                    position.getX() + dx,
+                                    position.getY() + dy,
+                                    position.getZ() + dz
+                            ).asLong();
+                            if (remaining.remove(neighborKey))
+                                queue.addLast(neighborKey);
+                        }
+                    }
+                }
+            }
+
+            List<TerrainBox> boxes = new ArrayList<>();
+            for (long key : component) {
+                List<TerrainBox> cellBoxes = boxesByCell.get(key);
+                if (cellBoxes != null)
+                    boxes.addAll(cellBoxes);
+            }
+
+            TerrainPatch patch = createTerrainPatch(component, boxes);
+            if (patch != null) {
+                terrainPatches.add(patch);
+                terrainPatchBodies.add(BodyKey.of(patch.body()));
             }
         }
 
-        if (attachedShapes == 0) {
-            b3DestroyBody(body);
-            return new TerrainBody(position, state, null);
-        }
-
-        return new TerrainBody(position, state, body);
+        terrainPatchesDirty = false;
     }
 
-    private void destroyTerrainBody(long key) {
-        TerrainBody body = terrainBodies.remove(key);
-        if (body == null || body.body == null)
-            return;
-        terrainByBody.remove(BodyKey.of(body.body));
-        b3DestroyBody(body.body);
+    @SuppressWarnings("deprecation")
+    private void validateTerrainPatchesIncrementally() {
+        if (terrainValidationQueue.isEmpty()) {
+            if (++terrainValidationTicks < TERRAIN_VALIDATION_INTERVAL)
+                return;
+            terrainValidationTicks = 0;
+            terrainValidationQueue.addAll(terrainPatchStates.keySet());
+        }
+
+        int processed = 0;
+        while (processed < TERRAIN_VALIDATION_BUDGET_PER_TICK && !terrainValidationQueue.isEmpty()) {
+            long key = terrainValidationQueue.removeFirst();
+            processed++;
+            BlockState cached = terrainPatchStates.get(key);
+            if (cached == null)
+                continue;
+
+            BlockPos position = BlockPos.of(key);
+            if (!level.hasChunkAt(position)) {
+                terrainPatchesDirty = true;
+                continue;
+            }
+
+            BlockState current = level.getBlockState(position);
+            if (!cached.equals(current))
+                terrainPatchesDirty = true;
+        }
+    }
+
+    private TerrainPatch createTerrainPatch(
+            Set<Long> cells,
+            List<TerrainBox> boxes
+    ) {
+        if (boxes.isEmpty())
+            return null;
+
+        int originX = Integer.MAX_VALUE;
+        int originY = Integer.MAX_VALUE;
+        int originZ = Integer.MAX_VALUE;
+        for (long key : cells) {
+            BlockPos position = BlockPos.of(key);
+            originX = Math.min(originX, position.getX());
+            originY = Math.min(originY, position.getY());
+            originZ = Math.min(originZ, position.getZ());
+        }
+
+        TerrainFaceIndex faceIndex = new TerrainFaceIndex();
+        for (TerrainBox box : boxes)
+            faceIndex.add(box);
+
+        List<FloatPoint> vertices = new ArrayList<>();
+        List<Integer> indices = new ArrayList<>();
+        Map<PointKey, Integer> vertexIndices = new HashMap<>();
+
+        for (TerrainBox box : boxes) {
+            for (int axis = 0; axis < 3; axis++) {
+                appendTerrainFace(
+                        box, axis, false, faceIndex,
+                        vertices, indices, vertexIndices,
+                        originX, originY, originZ
+                );
+                appendTerrainFace(
+                        box, axis, true, faceIndex,
+                        vertices, indices, vertexIndices,
+                        originX, originY, originZ
+                );
+            }
+        }
+        if (vertices.size() < 3 || indices.size() < 3)
+            return null;
+
+        b3MeshData mesh;
+        try (
+                b3Vec3 nativeVertices = new b3Vec3(vertices.size());
+                IntPointer nativeIndices = new IntPointer(indices.size());
+                b3MeshDef meshDefinition = new b3MeshDef()
+        ) {
+            for (int i = 0; i < vertices.size(); i++) {
+                FloatPoint point = vertices.get(i);
+
+                nativeVertices.position(i)
+                        .x(point.x())
+                        .y(point.y())
+                        .z(point.z());
+            }
+            for (int i = 0; i < indices.size(); i++)
+                nativeIndices.put(i, indices.get(i));
+
+            nativeVertices.position(0);
+            nativeIndices.position(0);
+
+            meshDefinition.vertices(nativeVertices);
+            meshDefinition.stride(0);
+            meshDefinition.indices(nativeIndices);
+            meshDefinition.materialIndices(null);
+
+            meshDefinition.vertexCount(vertices.size());
+            meshDefinition.triangleCount(indices.size() / 3);
+
+            meshDefinition.weldVertices(true);
+            meshDefinition.weldTolerance(TERRAIN_MESH_WELD_TOLERANCE);
+            meshDefinition.identifyEdges(true);
+            meshDefinition.useMedianSplit(true);
+            meshDefinition.clockWiseWinding(false);
+
+            mesh = b3CreateMesh(meshDefinition, (IntPointer) null, 0);
+        } catch (RuntimeException exception) {
+            LOGGER.error("Failed to build welded terrain mesh", exception);
+            return null;
+        }
+        if (mesh == null || mesh.isNull())
+            return null;
+
+        b3BodyId body = null;
+
+        try {
+            b3BodyDef bodyDefinition = b3DefaultBodyDef();
+            bodyDefinition.type(b3_staticBody);
+            bodyDefinition._position(new b3Pos()
+                    .x(originX)
+                    .y(originY)
+                    .z(originZ)
+            );
+            bodyDefinition.rotation(identityQuat());
+
+            body = b3CreateBody(world, bodyDefinition);
+
+            b3ShapeDef shapeDefinition = makeShapeDefinition(
+                    CATEGORY_WORLD,
+                    MASK_WORLD,
+                    false,
+                    false,
+                    false,
+                    0.0f
+            );
+
+            b3SurfaceMaterial material = b3DefaultSurfaceMaterial();
+            material.friction(0.2f);
+            shapeDefinition.baseMaterial(material);
+
+            try (b3Vec3 scale = new b3Vec3().x(1.0f).y(1.0f).z(1.0f)) {
+                b3CreateMeshShape(body, shapeDefinition, mesh, scale);
+            }
+            return new TerrainPatch(body, mesh);
+        } catch (RuntimeException exception) {
+            if (body != null)
+                b3DestroyBody(body);
+            b3DestroyMesh(mesh);
+            LOGGER.error("Failed to attach welded terrain mesh", exception);
+            return null;
+        }
+    }
+
+    private static void appendTerrainFace(
+            TerrainBox box,
+            int axis,
+            boolean positive,
+            TerrainFaceIndex faceIndex,
+            List<FloatPoint> vertices,
+            List<Integer> indices,
+            Map<PointKey, Integer> vertexIndices,
+            int originX,
+            int originY,
+            int originZ
+    ) {
+        double plane = positive ? box.max(axis) : box.min(axis);
+
+        int uAxis = axis == 0 ? 1 : 0;
+        int vAxis = axis == 2 ? 1 : 2;
+
+        double minU = box.min(uAxis);
+        double maxU = box.max(uAxis);
+        double minV = box.min(vAxis);
+        double maxV = box.max(vAxis);
+
+        TreeSet<Double> uCuts = new TreeSet<>();
+        TreeSet<Double> vCuts = new TreeSet<>();
+
+        uCuts.add(minU);
+        uCuts.add(maxU);
+        vCuts.add(minV);
+        vCuts.add(maxV);
+
+        List<TerrainBox> overlappingNeighbors = new ArrayList<>();
+
+        for (TerrainBox neighbor : faceIndex.touching(axis, plane, positive)) {
+            if (neighbor == box)
+                continue;
+
+            double overlapMinU = Math.max(minU, neighbor.min(uAxis));
+            double overlapMaxU = Math.min(maxU, neighbor.max(uAxis));
+            double overlapMinV = Math.max(minV, neighbor.min(vAxis));
+            double overlapMaxV = Math.min(maxV, neighbor.max(vAxis));
+            if (
+                    overlapMaxU - overlapMinU <= TERRAIN_FACE_EPSILON ||
+                    overlapMaxV - overlapMinV <= TERRAIN_FACE_EPSILON
+            )
+                continue;
+
+            overlappingNeighbors.add(neighbor);
+
+            uCuts.add(overlapMinU);
+            uCuts.add(overlapMaxU);
+            vCuts.add(overlapMinV);
+            vCuts.add(overlapMaxV);
+        }
+
+        List<Double> us = new ArrayList<>(uCuts);
+        List<Double> vs = new ArrayList<>(vCuts);
+
+        for (int ui = 0; ui + 1 < us.size(); ui++) {
+            double u0 = us.get(ui);
+            double u1 = us.get(ui + 1);
+            if (u1 - u0 <= TERRAIN_FACE_EPSILON)
+                continue;
+
+            for (int vi = 0; vi + 1 < vs.size(); vi++) {
+                double v0 = vs.get(vi);
+                double v1 = vs.get(vi + 1);
+                if (v1 - v0 <= TERRAIN_FACE_EPSILON)
+                    continue;
+
+                double middleU = (u0 + u1) * 0.5;
+                double middleV = (v0 + v1) * 0.5;
+                boolean hidden = false;
+
+                for (TerrainBox neighbor : overlappingNeighbors)
+                    if (
+                            middleU > neighbor.min(uAxis) &&
+                            middleU < neighbor.max(uAxis) &&
+                            middleV > neighbor.min(vAxis) &&
+                            middleV < neighbor.max(vAxis)
+                    ) {
+                        hidden = true;
+                        break;
+                    }
+                if (hidden)
+                    continue;
+
+                appendTerrainQuad(
+                        axis, positive, plane,
+                        u0, u1, v0, v1,
+                        vertices, indices, vertexIndices,
+                        originX, originY, originZ
+                );
+            }
+        }
+    }
+
+    private static void appendTerrainQuad(
+            int axis,
+            boolean positive,
+            double plane,
+            double u0,
+            double u1,
+            double v0,
+            double v1,
+            List<FloatPoint> vertices,
+            List<Integer> indices,
+            Map<PointKey, Integer> vertexIndices,
+            int originX,
+            int originY,
+            int originZ
+    ) {
+        double[][] points;
+
+        if (axis == 0)
+            // X-facing surface
+            // u=Y, v=Z
+            points = positive ? new double[][] {
+                    { plane, u0, v0 },
+                    { plane, u1, v0 },
+                    { plane, u1, v1 },
+                    { plane, u0, v1 }
+            } : new double[][] {
+                    { plane, u0, v0 },
+                    { plane, u0, v1 },
+                    { plane, u1, v1 },
+                    { plane, u1, v0 }
+            };
+        else if (axis == 1)
+            // Y-facing surface
+            // u=X, v=Z
+            points = positive ? new double[][] {
+                    { u0, plane, v0 },
+                    { u0, plane, v1 },
+                    { u1, plane, v1 },
+                    { u1, plane, v0 }
+            } : new double[][] {
+                    { u0, plane, v0 },
+                    { u1, plane, v0 },
+                    { u1, plane, v1 },
+                    { u0, plane, v1 }
+            };
+        else
+            // Z-facing surface
+            // u=X, v=Y
+            points = positive ? new double[][] {
+                    { u0, v0, plane },
+                    { u1, v0, plane },
+                    { u1, v1, plane },
+                    { u0, v1, plane }
+            } : new double[][] {
+                    { u0, v0, plane },
+                    { u0, v1, plane },
+                    { u1, v1, plane },
+                    { u1, v0, plane }
+            };
+
+        int first = terrainVertexIndex(points[0], vertices, vertexIndices, originX, originY, originZ);
+        int second = terrainVertexIndex(points[1], vertices, vertexIndices, originX, originY, originZ);
+        int third = terrainVertexIndex(points[2], vertices, vertexIndices, originX, originY, originZ);
+        int fourth = terrainVertexIndex(points[3], vertices, vertexIndices, originX, originY, originZ);
+
+        indices.add(first);
+        indices.add(second);
+        indices.add(third);
+
+        indices.add(first);
+        indices.add(third);
+        indices.add(fourth);
+    }
+
+    private static int terrainVertexIndex(
+            double[] worldPoint,
+            List<FloatPoint> vertices,
+            Map<PointKey, Integer> vertexIndices,
+            int originX,
+            int originY,
+            int originZ
+    ) {
+        float x = (float) (worldPoint[0] - originX);
+        float y = (float) (worldPoint[1] - originY);
+        float z = (float) (worldPoint[2] - originZ);
+        PointKey key = new PointKey(
+                Float.floatToIntBits(x),
+                Float.floatToIntBits(y),
+                Float.floatToIntBits(z)
+        );
+        Integer existing = vertexIndices.get(key);
+        if (existing != null)
+            return existing;
+
+        int index = vertices.size();
+        vertices.add(new FloatPoint(x, y, z));
+        vertexIndices.put(key, index);
+
+        return index;
+    }
+
+    private void destroyTerrainPatches() {
+        for (TerrainPatch patch : terrainPatches) {
+            terrainPatchBodies.remove(BodyKey.of(patch.body()));
+            b3DestroyBody(patch.body());
+            b3DestroyMesh(patch.mesh());
+        }
+        terrainPatches.clear();
+        terrainPatchBodies.clear();
+    }
+
+    private static long terrainPlaneKey(double coordinate) {
+        return Math.round(coordinate * 1_000_000.0);
     }
 
     private void synchronizeEntities() {
@@ -862,7 +1217,6 @@ public final class PropPhysManager implements AutoCloseable {
         }
 
         Iterator<Map.Entry<UUID, EntityBody>> iterator = entityBodies.entrySet().iterator();
-
         while (iterator.hasNext()) {
             Map.Entry<UUID, EntityBody> entry = iterator.next();
             if (wantedEntities.containsKey(entry.getKey()))
@@ -874,7 +1228,6 @@ public final class PropPhysManager implements AutoCloseable {
             b3DestroyBody(body.body);
             iterator.remove();
         }
-
         for (Entity entity : wantedEntities.values())
             synchronizeEntityBody(entity);
     }
@@ -1189,12 +1542,12 @@ public final class PropPhysManager implements AutoCloseable {
             }
             if (propA != null && propA.motionMode == PropMotionMode.MOVING && (
                     propB != null && propB.motionMode == PropMotionMode.STATIC ||
-                    terrainByBody.containsKey(keyB)
+                    terrainPatchBodies.contains(keyB)
             ))
                 clipMovingVelocity(propA, true, nx, ny, nz);
             if (propB != null && propB.motionMode == PropMotionMode.MOVING && (
                     propA != null && propA.motionMode == PropMotionMode.STATIC ||
-                    terrainByBody.containsKey(keyA)
+                    terrainPatchBodies.contains(keyA)
             ))
                 clipMovingVelocity(propB, false, nx, ny, nz);
         }
@@ -1738,8 +2091,7 @@ public final class PropPhysManager implements AutoCloseable {
         }
         for (UUID id : new ArrayList<>(entityBodies.keySet()))
             destroyEntityBody(id);
-        for (Long key : new ArrayList<>(terrainBodies.keySet()))
-            destroyTerrainBody(key);
+        destroyTerrainPatches();
 
         b3DestroyWorld(world);
 
@@ -1754,8 +2106,9 @@ public final class PropPhysManager implements AutoCloseable {
 
         terrainCoverageByProp.clear();
         terrainReferenceCounts.clear();
-        terrainKeysByChunk.clear();
-        dirtyTerrainKeys.clear();
+        terrainValidationQueue.clear();
+        terrainPatchCellKeys.clear();
+        terrainPatchStates.clear();
         terrainValidationQueue.clear();
 
         solidPropSpatialEntries.clear();
@@ -1895,9 +2248,67 @@ public final class PropPhysManager implements AutoCloseable {
         }
     }
 
-    private record TerrainBody(BlockPos position, BlockState state, b3BodyId body) {
-        private TerrainBody {
-            position = position.immutable();
+    private record TerrainPatch(b3BodyId body, b3MeshData mesh) {}
+    private record TerrainBox(
+            double minX, double minY, double minZ,
+            double maxX, double maxY, double maxZ
+    ) {
+        private double min(int axis) {
+            return switch (axis) {
+                case 0 -> minX;
+                case 1 -> minY;
+                default -> minZ;
+            };
+        }
+        private double max(int axis) {
+            return switch (axis) {
+                case 0 -> maxX;
+                case 1 -> maxY;
+                default -> maxZ;
+            };
+        }
+    }
+    private static final class TerrainFaceIndex {
+        private final Map<Long, List<TerrainBox>>[] minPlanes = newPlaneMaps();
+        private final Map<Long, List<TerrainBox>>[] maxPlanes = newPlaneMaps();
+
+        @SuppressWarnings("unchecked")
+        private static Map<Long, List<TerrainBox>>[] newPlaneMaps() {
+            return new Map[] {
+                    new HashMap<>(),
+                    new HashMap<>(),
+                    new HashMap<>()
+            };
+        }
+
+        private void add(TerrainBox box) {
+            addPlane(minPlanes[0], box.minX(), box);
+            addPlane(minPlanes[1], box.minY(), box);
+            addPlane(minPlanes[2], box.minZ(), box);
+
+            addPlane(maxPlanes[0], box.maxX(), box);
+            addPlane(maxPlanes[1], box.maxY(), box);
+            addPlane(maxPlanes[2], box.maxZ(), box);
+        }
+
+        private static void addPlane(
+                Map<Long, List<TerrainBox>> planes,
+                double coordinate,
+                TerrainBox box
+        ) {
+            planes.computeIfAbsent(
+                    terrainPlaneKey(coordinate),
+                    ignored -> new ArrayList<>()
+            ).add(box);
+        }
+
+        private List<TerrainBox> touching(
+                int axis,
+                double plane,
+                boolean positive
+        ) {
+            Map<Long, List<TerrainBox>> planes = positive ? minPlanes[axis] : maxPlanes[axis];
+            return planes.getOrDefault(terrainPlaneKey(plane), List.of());
         }
     }
     private record FloatPoint(float x, float y, float z) {}
