@@ -1,7 +1,6 @@
 package net.centertain.ceac.prop.physics;
 
 import cc.modlabs.box3d.*;
-import com.mojang.logging.LogUtils;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
 import net.centertain.ceac.prop.PropDefinitions;
@@ -15,21 +14,17 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.bytedeco.javacpp.IntPointer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import org.slf4j.Logger;
 
 import java.util.*;
 
@@ -42,8 +37,6 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
         bus = Mod.EventBusSubscriber.Bus.FORGE
 )
 public final class PropPhysManager implements AutoCloseable {
-    private static final Logger LOGGER = LogUtils.getLogger();
-
     private static final float FIXED_STEP = 1.0f / 20.0f;
     private static final int SUB_STEPS = 4;
 
@@ -52,9 +45,6 @@ public final class PropPhysManager implements AutoCloseable {
     private static final double MAX_PLAYER_PUSH_SPEED = 8.0;
     private static final double PLAYER_IMPACT_MASS = 5.0;
 
-    private static final double TERRAIN_BOUNDS_EPSILON = 1.0e-4;
-    private static final int TERRAIN_VALIDATION_INTERVAL = 20;
-    private static final int TERRAIN_VALIDATION_BUDGET_PER_TICK = 128;
     private static final int PROP_SPATIAL_CELL_SIZE = 8;
 
     static final int MAX_PROP_HULL_VERTICES = 32;
@@ -64,10 +54,6 @@ public final class PropPhysManager implements AutoCloseable {
     private static final long CATEGORY_PASSIVE_PROP = 1L << 2;
     private static final long CATEGORY_ENTITY = 1L << 3;
 
-    private static final long MASK_WORLD =
-            CATEGORY_SOLID_PROP |
-            CATEGORY_PASSIVE_PROP |
-            CATEGORY_ENTITY;
     private static final long MASK_SOLID_PROP =
             CATEGORY_WORLD |
             CATEGORY_SOLID_PROP |
@@ -88,16 +74,7 @@ public final class PropPhysManager implements AutoCloseable {
     final Map<Long, LevelChunk> loadedChunks = new LinkedHashMap<>();
 
     private final PropBodyManager propBodyManager = new PropBodyManager(this);
-
-    private static final int TERRAIN_MESH_HALO = 2;
-    private static final double TERRAIN_FACE_EPSILON = 1.0e-7;
-    private static final float TERRAIN_MESH_WELD_TOLERANCE = 1.0e-4f;
-
-    private final List<TerrainPatch> terrainPatches = new ArrayList<>();
-    private final Set<BodyKey> terrainPatchBodies = new HashSet<>();
-    private final Set<Long> terrainPatchCellKeys = new HashSet<>();
-    private final Map<Long, BlockState> terrainPatchStates = new HashMap<>();
-    private boolean terrainPatchesDirty = true;
+    private final TerrainCollisionManager terrainCollisionManager = new TerrainCollisionManager(this);
 
     private final Map<UUID, EntityBody> entityBodies = new HashMap<>();
     private final Map<BodyKey, EntityBody> entitiesByBody = new HashMap<>();
@@ -108,15 +85,10 @@ public final class PropPhysManager implements AutoCloseable {
     private final Map<UUID, Entity> wantedEntities = new HashMap<>();
     private final Set<ImpactKey> handledEntityImpacts = new HashSet<>();
 
-    private final Map<UUID, TerrainCoverage> terrainCoverageByProp = new HashMap<>();
-    private final Map<Long, Integer> terrainReferenceCounts = new HashMap<>();
-    private final ArrayDeque<Long> terrainValidationQueue = new ArrayDeque<>();
-
     private final Map<UUID, PropSpatialEntry> solidPropSpatialEntries = new HashMap<>();
     private final Map<Long, Set<UUID>> propSpatialCells = new HashMap<>();
     private final Set<UUID> spatialSeenProps = new HashSet<>();
 
-    private int terrainValidationTicks;
     private long spatialQueryStamp;
     private long collisionQueryStamp;
 
@@ -141,6 +113,9 @@ public final class PropPhysManager implements AutoCloseable {
     }
     Map<Long, LevelChunk> loadedChunks() {
         return loadedChunks;
+    }
+    List<Prop> activeProps() {
+        return propBodyManager.activeProps();
     }
 
 
@@ -199,25 +174,13 @@ public final class PropPhysManager implements AutoCloseable {
             return;
         PropPhysManager manager = INSTANCES.get(serverLevel);
         if (manager != null && !manager.closed)
-            manager.markTerrainDirtyAround(event.getPos());
-    }
-
-    private void markTerrainDirtyAround(BlockPos position) {
-        for (int dx = -1; dx <= 1; dx++)
-            for (int dy = -1; dy <= 1; dy++)
-                for (int dz = -1; dz <= 1; dz++) {
-                    long key = position.offset(dx, dy, dz).asLong();
-                    if (terrainPatchCellKeys.contains(key) || terrainReferenceCounts.containsKey(key)) {
-                        terrainPatchesDirty = true;
-                        return;
-                    }
-                }
+            manager.terrainCollisionManager.markTerrainDirtyAround(event.getPos());
     }
 
 
     private void onChunkLoaded(LevelChunk chunk) {
         loadedChunks.put(chunk.getPos().toLong(), chunk);
-        terrainPatchesDirty = true;
+        terrainCollisionManager.onChunkLoaded();
     }
 
     private void onChunkUnloaded(LevelChunk chunk) {
@@ -231,13 +194,12 @@ public final class PropPhysManager implements AutoCloseable {
             propBodyManager.destroyPropBody(body.prop.getId());
         }
 
-        destroyTerrainPatches();
-        terrainPatchesDirty = true;
+        terrainCollisionManager.onChunkUnloaded();
     }
 
     private void tick() {
         propBodyManager.synchronizeProps();
-        synchronizeTerrain();
+        terrainCollisionManager.synchronizeTerrain();
         synchronizeEntities();
 
         applyMovingBodyGravity();
@@ -255,609 +217,6 @@ public final class PropPhysManager implements AutoCloseable {
 
         processHitEvents();
         propBodyManager.synchronizePropTransforms();
-    }
-
-    private void synchronizeTerrain() {
-        coveredPropIds.clear();
-
-        for (Prop prop : propBodyManager.activeProps()) {
-            if (prop.getCollisionMode() == PropCollisionMode.NONE)
-                continue;
-
-            PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
-            if (definition == null)
-                continue;
-
-            GeometryData geometry = getGeometry(definition.getModelId());
-            if (geometry == null)
-                continue;
-
-            UUID propId = prop.getId();
-            long transformRevision = prop.getTransformRevision();
-            TerrainCoverage previous = terrainCoverageByProp.get(propId);
-            if (
-                    previous != null &&
-                    previous.definitionId().equals(prop.getDefinitionId()) &&
-                    previous.transformRevision() == transformRevision
-            ) {
-                coveredPropIds.add(propId);
-                continue;
-            }
-
-            AABB bounds = worldBounds(geometry, prop.getTransform());
-            if (
-                    !Double.isFinite(bounds.minX)
-                    || !Double.isFinite(bounds.minY)
-                    || !Double.isFinite(bounds.minZ)
-                    || !Double.isFinite(bounds.maxX)
-                    || !Double.isFinite(bounds.maxY)
-                    || !Double.isFinite(bounds.maxZ)
-                    || bounds.minX > bounds.maxX
-                    || bounds.minY > bounds.maxY
-                    || bounds.minZ > bounds.maxZ
-            )
-                continue;
-
-            int minX = floor(bounds.minX - TERRAIN_BOUNDS_EPSILON);
-            int minY = Math.max(level.getMinBuildHeight(), floor(bounds.minY - TERRAIN_BOUNDS_EPSILON));
-            int minZ = floor(bounds.minZ - TERRAIN_BOUNDS_EPSILON);
-            int maxX = floor(bounds.maxX + TERRAIN_BOUNDS_EPSILON);
-            int maxY = Math.min(level.getMaxBuildHeight() - 1, floor(bounds.maxY + TERRAIN_BOUNDS_EPSILON));
-            int maxZ = floor(bounds.maxZ + TERRAIN_BOUNDS_EPSILON);
-            if (minY > maxY)
-                continue;
-
-            coveredPropIds.add(propId);
-            if (previous != null && previous.matches(minX, minY, minZ, maxX, maxY, maxZ)) {
-                terrainCoverageByProp.put(propId, new TerrainCoverage(
-                        minX, minY, minZ,
-                        maxX, maxY, maxZ,
-                        prop.getDefinitionId(),
-                        transformRevision,
-                        previous.keys()
-                ));
-                continue;
-            }
-
-            Set<Long> nextKeys = new HashSet<>();
-            for (int x = minX; x <= maxX; x++)
-                for (int y = minY; y <= maxY; y++)
-                    for (int z = minZ; z <= maxZ; z++)
-                        nextKeys.add(new BlockPos(x, y, z).asLong());
-            if (previous != null)
-                for (Long key : previous.keys())
-                    if (!nextKeys.contains(key))
-                        releaseTerrainKey(key);
-            for (Long key : nextKeys)
-                if (previous == null || !previous.keys().contains(key))
-                    retainTerrainKey(key);
-
-            terrainCoverageByProp.put(propId, new TerrainCoverage(
-                    minX, minY, minZ,
-                    maxX, maxY, maxZ,
-                    prop.getDefinitionId(),
-                    transformRevision,
-                    nextKeys
-            ));
-        }
-
-        Iterator<Map.Entry<UUID, TerrainCoverage>> coverageIterator = terrainCoverageByProp.entrySet().iterator();
-
-        while (coverageIterator.hasNext()) {
-            Map.Entry<UUID, TerrainCoverage> entry = coverageIterator.next();
-            if (coveredPropIds.contains(entry.getKey()))
-                continue;
-            for (Long key : entry.getValue().keys())
-                releaseTerrainKey(key);
-            coverageIterator.remove();
-        }
-
-        validateTerrainPatchesIncrementally();
-        if (terrainPatchesDirty)
-            rebuildTerrainPatches();
-    }
-
-    private void retainTerrainKey(long key) {
-        int references = terrainReferenceCounts.getOrDefault(key, 0);
-        terrainReferenceCounts.put(key, references + 1);
-        if (references == 0)
-            terrainPatchesDirty = true;
-    }
-
-    private void releaseTerrainKey(long key) {
-        Integer references = terrainReferenceCounts.get(key);
-        if (references == null)
-            return;
-        if (references > 1) {
-            terrainReferenceCounts.put(key, references - 1);
-            return;
-        }
-        terrainReferenceCounts.remove(key);
-        terrainPatchesDirty = true;
-    }
-
-    @SuppressWarnings({"ExtractMethodRecommender", "deprecation"})
-    private void rebuildTerrainPatches() {
-        destroyTerrainPatches();
-
-        terrainPatchCellKeys.clear();
-        terrainPatchStates.clear();
-        terrainValidationQueue.clear();
-        terrainValidationTicks = 0;
-
-        if (terrainReferenceCounts.isEmpty()) {
-            terrainPatchesDirty = false;
-            return;
-        }
-
-        Set<Long> expandedCells = new HashSet<>();
-        for (long key : terrainReferenceCounts.keySet()) {
-            BlockPos position = BlockPos.of(key);
-            for (int dx = -TERRAIN_MESH_HALO; dx <= TERRAIN_MESH_HALO; dx++)
-                for (int dy = -TERRAIN_MESH_HALO; dy <= TERRAIN_MESH_HALO; dy++)
-                    for (int dz = -TERRAIN_MESH_HALO; dz <= TERRAIN_MESH_HALO; dz++) {
-                        int y = position.getY() + dy;
-                        if (y < level.getMinBuildHeight() || y >= level.getMaxBuildHeight())
-                            continue;
-                        expandedCells.add(new BlockPos(
-                                position.getX() + dx,
-                                y,
-                                position.getZ() + dz
-                        ).asLong());
-                    }
-        }
-
-        terrainPatchCellKeys.addAll(expandedCells);
-        Map<Long, List<TerrainBox>> boxesByCell = new HashMap<>();
-
-        for (long key : expandedCells) {
-            BlockPos position = BlockPos.of(key);
-
-            if (!level.hasChunkAt(position))
-                continue;
-
-            BlockState state = level.getBlockState(position);
-            terrainPatchStates.put(key, state);
-
-            VoxelShape shape = state.getCollisionShape(level, position);
-            if (shape.isEmpty())
-                continue;
-
-            List<TerrainBox> cellBoxes = new ArrayList<>();
-            for (AABB box : shape.toAabbs()) {
-                TerrainBox terrainBox = new TerrainBox(
-                        position.getX() + box.minX,
-                        position.getY() + box.minY,
-                        position.getZ() + box.minZ,
-                        position.getX() + box.maxX,
-                        position.getY() + box.maxY,
-                        position.getZ() + box.maxZ
-                );
-                if (
-                        terrainBox.maxX() - terrainBox.minX() <= TERRAIN_FACE_EPSILON ||
-                        terrainBox.maxY() - terrainBox.minY() <= TERRAIN_FACE_EPSILON ||
-                        terrainBox.maxZ() - terrainBox.minZ() <= TERRAIN_FACE_EPSILON
-                )
-                    continue;
-
-                cellBoxes.add(terrainBox);
-            }
-
-            if (!cellBoxes.isEmpty())
-                boxesByCell.put(key, cellBoxes);
-        }
-
-        Set<Long> remaining = new HashSet<>(expandedCells);
-        while (!remaining.isEmpty()) {
-            long seed = remaining.iterator().next();
-
-            Set<Long> component = new HashSet<>();
-            ArrayDeque<Long> queue = new ArrayDeque<>();
-
-            remaining.remove(seed);
-            queue.addLast(seed);
-
-            while (!queue.isEmpty()) {
-                long currentKey = queue.removeFirst();
-                component.add(currentKey);
-                BlockPos position = BlockPos.of(currentKey);
-
-                for (int dx = -1; dx <= 1; dx++) {
-                    for (int dy = -1; dy <= 1; dy++) {
-                        for (int dz = -1; dz <= 1; dz++) {
-                            if (dx == 0 && dy == 0 && dz == 0)
-                                continue;
-                            long neighborKey = new BlockPos(
-                                    position.getX() + dx,
-                                    position.getY() + dy,
-                                    position.getZ() + dz
-                            ).asLong();
-                            if (remaining.remove(neighborKey))
-                                queue.addLast(neighborKey);
-                        }
-                    }
-                }
-            }
-
-            List<TerrainBox> boxes = new ArrayList<>();
-            for (long key : component) {
-                List<TerrainBox> cellBoxes = boxesByCell.get(key);
-                if (cellBoxes != null)
-                    boxes.addAll(cellBoxes);
-            }
-
-            TerrainPatch patch = createTerrainPatch(component, boxes);
-            if (patch != null) {
-                terrainPatches.add(patch);
-                terrainPatchBodies.add(BodyKey.of(patch.body()));
-            }
-        }
-
-        terrainPatchesDirty = false;
-    }
-
-    @SuppressWarnings("deprecation")
-    private void validateTerrainPatchesIncrementally() {
-        if (terrainValidationQueue.isEmpty()) {
-            if (++terrainValidationTicks < TERRAIN_VALIDATION_INTERVAL)
-                return;
-            terrainValidationTicks = 0;
-            terrainValidationQueue.addAll(terrainPatchStates.keySet());
-        }
-
-        int processed = 0;
-        while (processed < TERRAIN_VALIDATION_BUDGET_PER_TICK && !terrainValidationQueue.isEmpty()) {
-            long key = terrainValidationQueue.removeFirst();
-            processed++;
-            BlockState cached = terrainPatchStates.get(key);
-            if (cached == null)
-                continue;
-
-            BlockPos position = BlockPos.of(key);
-            if (!level.hasChunkAt(position)) {
-                terrainPatchesDirty = true;
-                continue;
-            }
-
-            BlockState current = level.getBlockState(position);
-            if (!cached.equals(current))
-                terrainPatchesDirty = true;
-        }
-    }
-
-    private TerrainPatch createTerrainPatch(
-            Set<Long> cells,
-            List<TerrainBox> boxes
-    ) {
-        if (boxes.isEmpty())
-            return null;
-
-        int originX = Integer.MAX_VALUE;
-        int originY = Integer.MAX_VALUE;
-        int originZ = Integer.MAX_VALUE;
-        for (long key : cells) {
-            BlockPos position = BlockPos.of(key);
-            originX = Math.min(originX, position.getX());
-            originY = Math.min(originY, position.getY());
-            originZ = Math.min(originZ, position.getZ());
-        }
-
-        TerrainFaceIndex faceIndex = new TerrainFaceIndex();
-        for (TerrainBox box : boxes)
-            faceIndex.add(box);
-
-        List<FloatPoint> vertices = new ArrayList<>();
-        List<Integer> indices = new ArrayList<>();
-        Map<PointKey, Integer> vertexIndices = new HashMap<>();
-
-        for (TerrainBox box : boxes) {
-            for (int axis = 0; axis < 3; axis++) {
-                appendTerrainFace(
-                        box, axis, false, faceIndex,
-                        vertices, indices, vertexIndices,
-                        originX, originY, originZ
-                );
-                appendTerrainFace(
-                        box, axis, true, faceIndex,
-                        vertices, indices, vertexIndices,
-                        originX, originY, originZ
-                );
-            }
-        }
-        if (vertices.size() < 3 || indices.size() < 3)
-            return null;
-
-        b3MeshData mesh;
-        try (
-                b3Vec3 nativeVertices = new b3Vec3(vertices.size());
-                IntPointer nativeIndices = new IntPointer(indices.size());
-                b3MeshDef meshDefinition = new b3MeshDef()
-        ) {
-            for (int i = 0; i < vertices.size(); i++) {
-                FloatPoint point = vertices.get(i);
-
-                nativeVertices.position(i)
-                        .x(point.x())
-                        .y(point.y())
-                        .z(point.z());
-            }
-            for (int i = 0; i < indices.size(); i++)
-                nativeIndices.put(i, indices.get(i));
-
-            nativeVertices.position(0);
-            nativeIndices.position(0);
-
-            meshDefinition.vertices(nativeVertices);
-            meshDefinition.stride(0);
-            meshDefinition.indices(nativeIndices);
-            meshDefinition.materialIndices(null);
-
-            meshDefinition.vertexCount(vertices.size());
-            meshDefinition.triangleCount(indices.size() / 3);
-
-            meshDefinition.weldVertices(true);
-            meshDefinition.weldTolerance(TERRAIN_MESH_WELD_TOLERANCE);
-            meshDefinition.identifyEdges(true);
-            meshDefinition.useMedianSplit(true);
-            meshDefinition.clockWiseWinding(false);
-
-            mesh = b3CreateMesh(meshDefinition, (IntPointer) null, 0);
-        } catch (RuntimeException exception) {
-            LOGGER.error("Failed to build welded terrain mesh", exception);
-            return null;
-        }
-        if (mesh == null || mesh.isNull())
-            return null;
-
-        b3BodyId body = null;
-
-        try {
-            b3BodyDef bodyDefinition = b3DefaultBodyDef();
-            bodyDefinition.type(b3_staticBody);
-            bodyDefinition._position(new b3Pos()
-                    .x(originX)
-                    .y(originY)
-                    .z(originZ)
-            );
-            bodyDefinition.rotation(identityQuat());
-
-            body = b3CreateBody(world, bodyDefinition);
-
-            b3ShapeDef shapeDefinition = makeShapeDefinition(
-                    CATEGORY_WORLD,
-                    MASK_WORLD,
-                    false,
-                    false,
-                    false,
-                    0.0f
-            );
-
-            b3SurfaceMaterial material = b3DefaultSurfaceMaterial();
-            material.friction(0.2f);
-            shapeDefinition.baseMaterial(material);
-
-            try (b3Vec3 scale = new b3Vec3().x(1.0f).y(1.0f).z(1.0f)) {
-                b3CreateMeshShape(body, shapeDefinition, mesh, scale);
-            }
-            return new TerrainPatch(body, mesh);
-        } catch (RuntimeException exception) {
-            if (body != null)
-                b3DestroyBody(body);
-            b3DestroyMesh(mesh);
-            LOGGER.error("Failed to attach welded terrain mesh", exception);
-            return null;
-        }
-    }
-
-    private static void appendTerrainFace(
-            TerrainBox box,
-            int axis,
-            boolean positive,
-            TerrainFaceIndex faceIndex,
-            List<FloatPoint> vertices,
-            List<Integer> indices,
-            Map<PointKey, Integer> vertexIndices,
-            int originX,
-            int originY,
-            int originZ
-    ) {
-        double plane = positive ? box.max(axis) : box.min(axis);
-
-        int uAxis = axis == 0 ? 1 : 0;
-        int vAxis = axis == 2 ? 1 : 2;
-
-        double minU = box.min(uAxis);
-        double maxU = box.max(uAxis);
-        double minV = box.min(vAxis);
-        double maxV = box.max(vAxis);
-
-        TreeSet<Double> uCuts = new TreeSet<>();
-        TreeSet<Double> vCuts = new TreeSet<>();
-
-        uCuts.add(minU);
-        uCuts.add(maxU);
-        vCuts.add(minV);
-        vCuts.add(maxV);
-
-        List<TerrainBox> overlappingNeighbors = new ArrayList<>();
-
-        for (TerrainBox neighbor : faceIndex.touching(axis, plane, positive)) {
-            if (neighbor == box)
-                continue;
-
-            double overlapMinU = Math.max(minU, neighbor.min(uAxis));
-            double overlapMaxU = Math.min(maxU, neighbor.max(uAxis));
-            double overlapMinV = Math.max(minV, neighbor.min(vAxis));
-            double overlapMaxV = Math.min(maxV, neighbor.max(vAxis));
-            if (
-                    overlapMaxU - overlapMinU <= TERRAIN_FACE_EPSILON ||
-                    overlapMaxV - overlapMinV <= TERRAIN_FACE_EPSILON
-            )
-                continue;
-
-            overlappingNeighbors.add(neighbor);
-
-            uCuts.add(overlapMinU);
-            uCuts.add(overlapMaxU);
-            vCuts.add(overlapMinV);
-            vCuts.add(overlapMaxV);
-        }
-
-        List<Double> us = new ArrayList<>(uCuts);
-        List<Double> vs = new ArrayList<>(vCuts);
-
-        for (int ui = 0; ui + 1 < us.size(); ui++) {
-            double u0 = us.get(ui);
-            double u1 = us.get(ui + 1);
-            if (u1 - u0 <= TERRAIN_FACE_EPSILON)
-                continue;
-
-            for (int vi = 0; vi + 1 < vs.size(); vi++) {
-                double v0 = vs.get(vi);
-                double v1 = vs.get(vi + 1);
-                if (v1 - v0 <= TERRAIN_FACE_EPSILON)
-                    continue;
-
-                double middleU = (u0 + u1) * 0.5;
-                double middleV = (v0 + v1) * 0.5;
-                boolean hidden = false;
-
-                for (TerrainBox neighbor : overlappingNeighbors)
-                    if (
-                            middleU > neighbor.min(uAxis) &&
-                            middleU < neighbor.max(uAxis) &&
-                            middleV > neighbor.min(vAxis) &&
-                            middleV < neighbor.max(vAxis)
-                    ) {
-                        hidden = true;
-                        break;
-                    }
-                if (hidden)
-                    continue;
-
-                appendTerrainQuad(
-                        axis, positive, plane,
-                        u0, u1, v0, v1,
-                        vertices, indices, vertexIndices,
-                        originX, originY, originZ
-                );
-            }
-        }
-    }
-
-    private static void appendTerrainQuad(
-            int axis,
-            boolean positive,
-            double plane,
-            double u0,
-            double u1,
-            double v0,
-            double v1,
-            List<FloatPoint> vertices,
-            List<Integer> indices,
-            Map<PointKey, Integer> vertexIndices,
-            int originX,
-            int originY,
-            int originZ
-    ) {
-        double[][] points;
-
-        if (axis == 0)
-            // X-facing surface
-            // u=Y, v=Z
-            points = positive ? new double[][] {
-                    { plane, u0, v0 },
-                    { plane, u1, v0 },
-                    { plane, u1, v1 },
-                    { plane, u0, v1 }
-            } : new double[][] {
-                    { plane, u0, v0 },
-                    { plane, u0, v1 },
-                    { plane, u1, v1 },
-                    { plane, u1, v0 }
-            };
-        else if (axis == 1)
-            // Y-facing surface
-            // u=X, v=Z
-            points = positive ? new double[][] {
-                    { u0, plane, v0 },
-                    { u0, plane, v1 },
-                    { u1, plane, v1 },
-                    { u1, plane, v0 }
-            } : new double[][] {
-                    { u0, plane, v0 },
-                    { u1, plane, v0 },
-                    { u1, plane, v1 },
-                    { u0, plane, v1 }
-            };
-        else
-            // Z-facing surface
-            // u=X, v=Y
-            points = positive ? new double[][] {
-                    { u0, v0, plane },
-                    { u1, v0, plane },
-                    { u1, v1, plane },
-                    { u0, v1, plane }
-            } : new double[][] {
-                    { u0, v0, plane },
-                    { u0, v1, plane },
-                    { u1, v1, plane },
-                    { u1, v0, plane }
-            };
-
-        int first = terrainVertexIndex(points[0], vertices, vertexIndices, originX, originY, originZ);
-        int second = terrainVertexIndex(points[1], vertices, vertexIndices, originX, originY, originZ);
-        int third = terrainVertexIndex(points[2], vertices, vertexIndices, originX, originY, originZ);
-        int fourth = terrainVertexIndex(points[3], vertices, vertexIndices, originX, originY, originZ);
-
-        indices.add(first);
-        indices.add(second);
-        indices.add(third);
-
-        indices.add(first);
-        indices.add(third);
-        indices.add(fourth);
-    }
-
-    private static int terrainVertexIndex(
-            double[] worldPoint,
-            List<FloatPoint> vertices,
-            Map<PointKey, Integer> vertexIndices,
-            int originX,
-            int originY,
-            int originZ
-    ) {
-        float x = (float) (worldPoint[0] - originX);
-        float y = (float) (worldPoint[1] - originY);
-        float z = (float) (worldPoint[2] - originZ);
-        PointKey key = new PointKey(
-                Float.floatToIntBits(x),
-                Float.floatToIntBits(y),
-                Float.floatToIntBits(z)
-        );
-        Integer existing = vertexIndices.get(key);
-        if (existing != null)
-            return existing;
-
-        int index = vertices.size();
-        vertices.add(new FloatPoint(x, y, z));
-        vertexIndices.put(key, index);
-
-        return index;
-    }
-
-    private void destroyTerrainPatches() {
-        for (TerrainPatch patch : terrainPatches) {
-            terrainPatchBodies.remove(BodyKey.of(patch.body()));
-            b3DestroyBody(patch.body());
-            b3DestroyMesh(patch.mesh());
-        }
-        terrainPatches.clear();
-        terrainPatchBodies.clear();
-    }
-
-    private static long terrainPlaneKey(double coordinate) {
-        return Math.round(coordinate * 1_000_000.0);
     }
 
     private void synchronizeEntities() {
@@ -1232,12 +591,12 @@ public final class PropPhysManager implements AutoCloseable {
             }
             if (propA != null && propA.motionMode == PropMotionMode.MOVING && (
                     propB != null && propB.motionMode == PropMotionMode.STATIC ||
-                    terrainPatchBodies.contains(keyB)
+                    terrainCollisionManager.terrainPatchBodies.contains(keyB)
             ))
                 clipMovingVelocity(propA, true, nx, ny, nz);
             if (propB != null && propB.motionMode == PropMotionMode.MOVING && (
                     propA != null && propA.motionMode == PropMotionMode.STATIC ||
-                    terrainPatchBodies.contains(keyA)
+                    terrainCollisionManager.terrainPatchBodies.contains(keyA)
             ))
                 clipMovingVelocity(propB, false, nx, ny, nz);
         }
@@ -1537,7 +896,7 @@ public final class PropPhysManager implements AutoCloseable {
         return data;
     }
 
-    private static AABB worldBounds(GeometryData geometry, Matrix4f transform) {
+    static AABB worldBounds(GeometryData geometry, Matrix4f transform) {
         double cx = (geometry.minX + geometry.maxX) * 0.5;
         double cy = (geometry.minY + geometry.maxY) * 0.5;
         double cz = (geometry.minZ + geometry.maxZ) * 0.5;
@@ -1782,7 +1141,7 @@ public final class PropPhysManager implements AutoCloseable {
         }
         for (UUID id : new ArrayList<>(entityBodies.keySet()))
             destroyEntityBody(id);
-        destroyTerrainPatches();
+        terrainCollisionManager.clear();
 
         b3DestroyWorld(world);
 
@@ -1793,13 +1152,6 @@ public final class PropPhysManager implements AutoCloseable {
         coveredPropIds.clear();
         wantedEntities.clear();
         handledEntityImpacts.clear();
-
-        terrainCoverageByProp.clear();
-        terrainReferenceCounts.clear();
-        terrainValidationQueue.clear();
-        terrainPatchCellKeys.clear();
-        terrainPatchStates.clear();
-        terrainValidationQueue.clear();
 
         solidPropSpatialEntries.clear();
         propSpatialCells.clear();
@@ -1889,69 +1241,6 @@ public final class PropPhysManager implements AutoCloseable {
         }
     }
 
-    private record TerrainPatch(b3BodyId body, b3MeshData mesh) {}
-    private record TerrainBox(
-            double minX, double minY, double minZ,
-            double maxX, double maxY, double maxZ
-    ) {
-        private double min(int axis) {
-            return switch (axis) {
-                case 0 -> minX;
-                case 1 -> minY;
-                default -> minZ;
-            };
-        }
-        private double max(int axis) {
-            return switch (axis) {
-                case 0 -> maxX;
-                case 1 -> maxY;
-                default -> maxZ;
-            };
-        }
-    }
-    private static final class TerrainFaceIndex {
-        private final Map<Long, List<TerrainBox>>[] minPlanes = newPlaneMaps();
-        private final Map<Long, List<TerrainBox>>[] maxPlanes = newPlaneMaps();
-
-        @SuppressWarnings("unchecked")
-        private static Map<Long, List<TerrainBox>>[] newPlaneMaps() {
-            return new Map[] {
-                    new HashMap<>(),
-                    new HashMap<>(),
-                    new HashMap<>()
-            };
-        }
-
-        private void add(TerrainBox box) {
-            addPlane(minPlanes[0], box.minX(), box);
-            addPlane(minPlanes[1], box.minY(), box);
-            addPlane(minPlanes[2], box.minZ(), box);
-
-            addPlane(maxPlanes[0], box.maxX(), box);
-            addPlane(maxPlanes[1], box.maxY(), box);
-            addPlane(maxPlanes[2], box.maxZ(), box);
-        }
-
-        private static void addPlane(
-                Map<Long, List<TerrainBox>> planes,
-                double coordinate,
-                TerrainBox box
-        ) {
-            planes.computeIfAbsent(
-                    terrainPlaneKey(coordinate),
-                    ignored -> new ArrayList<>()
-            ).add(box);
-        }
-
-        private List<TerrainBox> touching(
-                int axis,
-                double plane,
-                boolean positive
-        ) {
-            Map<Long, List<TerrainBox>> planes = positive ? minPlanes[axis] : maxPlanes[axis];
-            return planes.getOrDefault(terrainPlaneKey(plane), List.of());
-        }
-    }
     record FloatPoint(float x, float y, float z) {}
     private record PointKey(int x, int y, int z) {}
     private record ImpactKey(UUID propId, UUID entityId) {}
@@ -1962,26 +1251,6 @@ public final class PropPhysManager implements AutoCloseable {
                     id.world0(),
                     id.generation()
             );
-        }
-    }
-    private record TerrainCoverage(
-            int minX, int minY, int minZ,
-            int maxX, int maxY, int maxZ,
-            ResourceLocation definitionId,
-            long transformRevision,
-            Set<Long> keys
-    ) {
-        private boolean matches(
-                int otherMinX, int otherMinY, int otherMinZ,
-                int otherMaxX, int otherMaxY, int otherMaxZ
-        ) {
-            return
-                    minX == otherMinX &&
-                    minY == otherMinY &&
-                    minZ == otherMinZ &&
-                    maxX == otherMaxX &&
-                    maxY == otherMaxY &&
-                    maxZ == otherMaxZ;
         }
     }
 }
