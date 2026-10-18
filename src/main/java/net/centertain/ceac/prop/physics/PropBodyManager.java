@@ -274,7 +274,7 @@ public final class PropBodyManager {
         if (PropPhysManager.sameTransform(before, after))
             return;
 
-        manager.updatePropSpatialEntry(body.prop);
+        manager.propSpatialIndex.updatePropSpatialEntry(body.prop);
         body.ownerChunk.setUnsaved(true);
 
         boolean migrated = movePropToCurrentChunk(body);

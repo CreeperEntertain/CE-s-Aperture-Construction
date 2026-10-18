@@ -2,8 +2,6 @@ package net.centertain.ceac.prop.physics;
 
 import cc.modlabs.box3d.*;
 import net.centertain.ceac.prop.Prop;
-import net.centertain.ceac.prop.PropDefinition;
-import net.centertain.ceac.prop.PropDefinitions;
 import net.centertain.ceac.prop.PropGeometry;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
 import net.centertain.ceac.prop.enums.PropMotionMode;
@@ -45,8 +43,6 @@ public final class PropPhysManager implements AutoCloseable {
     private static final double MAX_PLAYER_PUSH_SPEED = 8.0;
     private static final double PLAYER_IMPACT_MASS = 5.0;
 
-    private static final int PROP_SPATIAL_CELL_SIZE = 8;
-
     static final int MAX_PROP_HULL_VERTICES = 32;
 
     private static final long CATEGORY_WORLD = 1L;
@@ -76,18 +72,12 @@ public final class PropPhysManager implements AutoCloseable {
     private final PropBodyManager propBodyManager = new PropBodyManager(this);
     private final TerrainCollisionManager terrainCollisionManager = new TerrainCollisionManager(this);
     private final EntityBodyManager entityBodyManager = new EntityBodyManager(this);
+    final PropSpatialIndex propSpatialIndex = new PropSpatialIndex(this);
 
     private final Map<ResourceLocation, Optional<GeometryData>> geometryCache = new HashMap<>();
 
     private final Map<UUID, Entity> wantedEntities = new HashMap<>();
     private final Set<ImpactKey> handledEntityImpacts = new HashSet<>();
-
-    private final Map<UUID, PropSpatialEntry> solidPropSpatialEntries = new HashMap<>();
-    private final Map<Long, Set<UUID>> propSpatialCells = new HashMap<>();
-    private final Set<UUID> spatialSeenProps = new HashSet<>();
-
-    private long spatialQueryStamp;
-    private long collisionQueryStamp;
 
     private boolean closed;
 
@@ -217,7 +207,7 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     private void synchronizeEntities() {
-        updatePropSpatialIndex();
+        propSpatialIndex.updatePropSpatialIndex();
         wantedEntities.clear();
 
         for (Entity entity : level.getAllEntities()) {
@@ -234,18 +224,18 @@ public final class PropPhysManager implements AutoCloseable {
             int maxY = spatialCell(searchBounds.maxY);
             int maxZ = spatialCell(searchBounds.maxZ);
 
-            long queryStamp = ++spatialQueryStamp;
+            long queryStamp = propSpatialIndex.nextSpatialQueryStamp();
             boolean found = false;
 
             for (int x = minX; x <= maxX && !found; x++) {
                 for (int y = minY; y <= maxY && !found; y++) {
                     for (int z = minZ; z <= maxZ && !found; z++) {
-                        Set<UUID> candidates = propSpatialCells.get(spatialCellKey(x, y, z));
+                        Set<UUID> candidates = propSpatialIndex.cells().get(spatialCellKey(x, y, z));
                         if (candidates == null)
                             continue;
 
                         for (UUID propId : candidates) {
-                            PropSpatialEntry candidate = solidPropSpatialEntries.get(propId);
+                            PropSpatialIndex.PropSpatialEntry candidate = propSpatialIndex.entry(propId);
                             if (candidate == null || candidate.lastQueryStamp == queryStamp)
                                 continue;
 
@@ -299,18 +289,18 @@ public final class PropPhysManager implements AutoCloseable {
         int maxY = spatialCell(sweptBounds.maxY);
         int maxZ = spatialCell(sweptBounds.maxZ);
 
-        long stamp = ++collisionQueryStamp;
+        long stamp = propSpatialIndex.nextCollisionQueryStamp();
         List<PropGeometry.Triangle> obstacles = new ArrayList<>(64);
 
         for (int x = minX; x <= maxX; x++)
             for (int y = minY; y <= maxY; y++)
                 for (int z = minZ; z <= maxZ; z++) {
-                    Set<UUID> ids = propSpatialCells.get(spatialCellKey(x, y, z));
+                    Set<UUID> ids = propSpatialIndex.cells().get(spatialCellKey(x, y, z));
                     if (ids == null)
                         continue;
 
                     for (UUID id : ids) {
-                        PropSpatialEntry entry = solidPropSpatialEntries.get(id);
+                        PropSpatialIndex.PropSpatialEntry entry = propSpatialIndex.entry(id);
                         if (entry == null || entry.lastCollisionQueryStamp == stamp)
                             continue;
 
@@ -327,98 +317,8 @@ public final class PropPhysManager implements AutoCloseable {
         return movementResult.movement();
     }
 
-    private void updatePropSpatialIndex() {
-        spatialSeenProps.clear();
-
-        for (Prop prop : propBodyManager.activeProps())
-            if (updatePropSpatialEntry(prop))
-                spatialSeenProps.add(prop.getId());
-
-        Iterator<Map.Entry<UUID, PropSpatialEntry>> iterator = solidPropSpatialEntries.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<UUID, PropSpatialEntry> entry = iterator.next();
-            if (spatialSeenProps.contains(entry.getKey()))
-                continue;
-            removePropSpatialEntry(entry.getKey(), entry.getValue());
-            iterator.remove();
-        }
-    }
-
-    boolean updatePropSpatialEntry(Prop prop) {
-        if (prop.getCollisionMode() != PropCollisionMode.SOLID)
-            return false;
-
-        PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
-        if (definition == null)
-            return false;
-
-        GeometryData geometry = getGeometry(definition.getModelId());
-        if (geometry == null)
-            return false;
-
-        UUID id = prop.getId();
-        long transformRevision = prop.getTransformRevision();
-        PropSpatialEntry existing = solidPropSpatialEntries.get(id);
-        if (existing != null
-                && existing.definitionId.equals(prop.getDefinitionId())
-                && existing.transformRevision == transformRevision) {
-            return true;
-        }
-        Matrix4f transform = prop.getTransform();
-        if (existing != null)
-            removePropSpatialEntry(id, existing);
-        List<PropGeometry.Triangle> worldTriangles = PropEntityCollision.transformTriangles(geometry.geometry, transform);
-        if (worldTriangles.isEmpty())
-            return false;
-
-        AABB bounds = PropEntityCollision.boundsOf(worldTriangles);
-        AABB interactionBounds = bounds.inflate(1.0);
-
-        int minX = spatialCell(bounds.minX);
-        int minY = spatialCell(bounds.minY);
-        int minZ = spatialCell(bounds.minZ);
-        int maxX = spatialCell(bounds.maxX);
-        int maxY = spatialCell(bounds.maxY);
-        int maxZ = spatialCell(bounds.maxZ);
-
-        Set<Long> cellKeys = new HashSet<>();
-
-        for (int x = minX; x <= maxX; x++)
-            for (int y = minY; y <= maxY; y++)
-                for (int z = minZ; z <= maxZ; z++) {
-                    long key = spatialCellKey(x, y, z);
-                    cellKeys.add(key);
-                    propSpatialCells.computeIfAbsent(key, ignored -> new HashSet<>()).add(id);
-                }
-
-        PropSpatialEntry updated = new PropSpatialEntry(
-                prop.getDefinitionId(),
-                transformRevision,
-                interactionBounds,
-                bounds,
-                cellKeys,
-                worldTriangles
-        );
-
-        solidPropSpatialEntries.put(id, updated);
-        return true;
-    }
-
-    private void removePropSpatialEntry(UUID id, PropSpatialEntry entry) {
-        for (long key : entry.cellKeys) {
-            Set<UUID> bucket = propSpatialCells.get(key);
-            if (bucket == null)
-                continue;
-
-            bucket.remove(id);
-
-            if (bucket.isEmpty())
-                propSpatialCells.remove(key);
-        }
-    }
-
     private static int spatialCell(double coordinate) {
-        return floor(coordinate / PROP_SPATIAL_CELL_SIZE);
+        return floor(coordinate / PropSpatialIndex.PROP_SPATIAL_CELL_SIZE);
     }
 
     private static long spatialCellKey(int x, int y, int z) {
@@ -687,7 +587,7 @@ public final class PropPhysManager implements AutoCloseable {
         )
             return;
 
-        PropSpatialEntry entry = solidPropSpatialEntries.get(propId);
+        PropSpatialIndex.PropSpatialEntry entry = propSpatialIndex.entry(propId);
         if (
                 entry == null ||
                 !entry.worldBounds.inflate(0.25)
@@ -1043,9 +943,7 @@ public final class PropPhysManager implements AutoCloseable {
         wantedEntities.clear();
         handledEntityImpacts.clear();
 
-        solidPropSpatialEntries.clear();
-        propSpatialCells.clear();
-        spatialSeenProps.clear();
+        propSpatialIndex.clear();
     }
 
 
@@ -1088,34 +986,6 @@ public final class PropPhysManager implements AutoCloseable {
             this.maxX = maxX;
             this.maxY = maxY;
             this.maxZ = maxZ;
-        }
-    }
-
-    private static final class PropSpatialEntry {
-        private final ResourceLocation definitionId;
-        private final AABB interactionBounds;
-        private final Set<Long> cellKeys;
-        private final long transformRevision;
-        private final AABB worldBounds;
-        private long lastCollisionQueryStamp;
-        private final List<PropGeometry.Triangle> triangles;
-
-        private long lastQueryStamp;
-
-        private PropSpatialEntry(
-                ResourceLocation definitionId,
-                long transformRevision,
-                AABB interactionBounds,
-                AABB worldBounds,
-                Set<Long> cellKeys,
-                List<PropGeometry.Triangle> triangles
-        ) {
-            this.definitionId = definitionId;
-            this.transformRevision = transformRevision;
-            this.interactionBounds = interactionBounds;
-            this.worldBounds = worldBounds;
-            this.cellKeys = cellKeys;
-            this.triangles = List.copyOf(triangles);
         }
     }
 
