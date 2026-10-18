@@ -366,24 +366,36 @@ public final class TerrainCollisionManager {
         for (TerrainBox box : boxes)
             faceIndex.add(box);
 
+        List<TerrainQuad> quads = new ArrayList<>();
+        for (TerrainBox box : boxes)
+            for (int axis = 0; axis < 3; axis++) {
+                appendTerrainFace(box, axis, false, faceIndex, quads);
+                appendTerrainFace(box, axis, true, faceIndex, quads);
+            }
+        if (quads.isEmpty())
+            return null;
+        quads = mergeTerrainQuads(quads);
+
         List<PropPhysGeometry.FloatPoint> vertices = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
         Map<TerrainPointKey, Integer> vertexIndices = new HashMap<>();
 
-        for (TerrainBox box : boxes) {
-            for (int axis = 0; axis < 3; axis++) {
-                appendTerrainFace(
-                        box, axis, false, faceIndex,
-                        vertices, indices, vertexIndices,
-                        originX, originY, originZ
-                );
-                appendTerrainFace(
-                        box, axis, true, faceIndex,
-                        vertices, indices, vertexIndices,
-                        originX, originY, originZ
-                );
-            }
-        }
+        for (TerrainQuad quad : quads)
+            emitTerrainQuad(
+                    quad.axis(),
+                    quad.positive(),
+                    quad.plane(),
+                    quad.minU(),
+                    quad.maxU(),
+                    quad.minV(),
+                    quad.maxV(),
+                    vertices,
+                    indices,
+                    vertexIndices,
+                    originX,
+                    originY,
+                    originZ
+            );
         if (vertices.size() < 3 || indices.size() < 3)
             return null;
 
@@ -474,12 +486,7 @@ public final class TerrainCollisionManager {
             int axis,
             boolean positive,
             TerrainFaceIndex faceIndex,
-            List<PropPhysGeometry.FloatPoint> vertices,
-            List<Integer> indices,
-            Map<TerrainPointKey, Integer> vertexIndices,
-            int originX,
-            int originY,
-            int originZ
+            List<TerrainQuad> quads
     ) {
         double plane = positive ? box.max(axis) : box.min(axis);
 
@@ -491,17 +498,10 @@ public final class TerrainCollisionManager {
         double minV = box.min(vAxis);
         double maxV = box.max(vAxis);
 
-        TreeSet<Double> uCuts = new TreeSet<>();
-        TreeSet<Double> vCuts = new TreeSet<>();
+        List<TerrainBox> candidates = faceIndex.touching(box, axis, plane, positive);
+        List<TerrainBox> overlappingNeighbors = null;
 
-        uCuts.add(minU);
-        uCuts.add(maxU);
-        vCuts.add(minV);
-        vCuts.add(maxV);
-
-        List<TerrainBox> overlappingNeighbors = new ArrayList<>();
-
-        for (TerrainBox neighbor : faceIndex.touching(axis, plane, positive)) {
+        for (TerrainBox neighbor : candidates) {
             if (neighbor == box)
                 continue;
 
@@ -514,58 +514,249 @@ public final class TerrainCollisionManager {
                     overlapMaxV - overlapMinV <= TERRAIN_FACE_EPSILON
             )
                 continue;
+            if (overlappingNeighbors == null)
+                overlappingNeighbors = new ArrayList<>();
 
             overlappingNeighbors.add(neighbor);
-
-            uCuts.add(overlapMinU);
-            uCuts.add(overlapMaxU);
-            vCuts.add(overlapMinV);
-            vCuts.add(overlapMaxV);
+        }
+        if (overlappingNeighbors == null) {
+            quads.add(new TerrainQuad(axis, positive, plane, minU, maxU, minV, maxV));
+            return;
         }
 
-        List<Double> us = new ArrayList<>(uCuts);
-        List<Double> vs = new ArrayList<>(vCuts);
+        int cutCapacity = 2 + overlappingNeighbors.size() * 2;
+        double[] uCuts = new double[cutCapacity];
+        double[] vCuts = new double[cutCapacity];
 
-        for (int ui = 0; ui + 1 < us.size(); ui++) {
-            double u0 = us.get(ui);
-            double u1 = us.get(ui + 1);
-            if (u1 - u0 <= TERRAIN_FACE_EPSILON)
+        uCuts[0] = minU;
+        uCuts[1] = maxU;
+        vCuts[0] = minV;
+        vCuts[1] = maxV;
+
+        int cutCount = 2;
+
+        for (TerrainBox neighbor : overlappingNeighbors) {
+            uCuts[cutCount] = Math.max(minU, neighbor.min(uAxis));
+            uCuts[cutCount + 1] = Math.min(maxU, neighbor.max(uAxis));
+
+            vCuts[cutCount] = Math.max(minV, neighbor.min(vAxis));
+            vCuts[cutCount + 1] = Math.min(maxV, neighbor.max(vAxis));
+
+            cutCount += 2;
+        }
+
+        int uCount = sortUnique(uCuts, cutCount);
+        int vCount = sortUnique(vCuts, cutCount);
+
+        int uSegments = uCount - 1;
+        int vSegments = vCount - 1;
+        if (uSegments <= 0 || vSegments <= 0)
+            return;
+
+        byte[] faceState = new byte[uSegments * vSegments];
+
+        for (TerrainBox neighbor : overlappingNeighbors) {
+            double overlapMinU = Math.max(minU, neighbor.min(uAxis));
+            double overlapMaxU = Math.min(maxU, neighbor.max(uAxis));
+            double overlapMinV = Math.max(minV, neighbor.min(vAxis));
+            double overlapMaxV = Math.min(maxV, neighbor.max(vAxis));
+
+            int u0 = Arrays.binarySearch(uCuts, 0, uCount, overlapMinU);
+            int u1 = Arrays.binarySearch(uCuts, 0, uCount, overlapMaxU);
+            int v0 = Arrays.binarySearch(vCuts, 0, vCount, overlapMinV);
+            int v1 = Arrays.binarySearch(vCuts, 0, vCount, overlapMaxV);
+            if (u0 < 0 || u1 < 0 || v0 < 0 || v1 < 0)
                 continue;
 
-            for (int vi = 0; vi + 1 < vs.size(); vi++) {
-                double v0 = vs.get(vi);
-                double v1 = vs.get(vi + 1);
-                if (v1 - v0 <= TERRAIN_FACE_EPSILON)
-                    continue;
-
-                double middleU = (u0 + u1) * 0.5;
-                double middleV = (v0 + v1) * 0.5;
-                boolean hidden = false;
-
-                for (TerrainBox neighbor : overlappingNeighbors)
-                    if (
-                            middleU > neighbor.min(uAxis) &&
-                            middleU < neighbor.max(uAxis) &&
-                            middleV > neighbor.min(vAxis) &&
-                            middleV < neighbor.max(vAxis)
-                    ) {
-                        hidden = true;
-                        break;
-                    }
-                if (hidden)
-                    continue;
-
-                appendTerrainQuad(
-                        axis, positive, plane,
-                        u0, u1, v0, v1,
-                        vertices, indices, vertexIndices,
-                        originX, originY, originZ
-                );
+            for (int ui = u0; ui < u1; ui++) {
+                int rowStart = ui * vSegments;
+                for (int vi = v0; vi < v1; vi++)
+                    faceState[rowStart + vi] = 1;
             }
         }
+
+        for (int ui = 0; ui < uSegments; ui++)
+            for (int vi = 0; vi < vSegments; vi++) {
+                int index = ui * vSegments + vi;
+                if (faceState[index] != 0)
+                    continue;
+
+                int vEnd = vi + 1;
+                while (vEnd < vSegments && faceState[ui * vSegments + vEnd] == 0)
+                    vEnd++;
+
+                int uEnd = ui + 1;
+                while (uEnd < uSegments) {
+                    boolean canExtend = true;
+                    int nextRow = uEnd * vSegments;
+                    for (int v = vi; v < vEnd; v++)
+                        if (faceState[nextRow + v] != 0) {
+                            canExtend = false;
+                            break;
+                        }
+                    if (!canExtend)
+                        break;
+                    uEnd++;
+                }
+                for (int u = ui; u < uEnd; u++) {
+                    int rowStart = u * vSegments;
+                    for (int v = vi; v < vEnd; v++)
+                        faceState[rowStart + v] = 2;
+                }
+
+                quads.add(new TerrainQuad(
+                        axis,
+                        positive,
+                        plane,
+                        uCuts[ui],
+                        uCuts[uEnd],
+                        vCuts[vi],
+                        vCuts[vEnd]
+                ));
+            }
     }
 
-    private static void appendTerrainQuad(
+    private static int sortUnique(double[] values, int length) {
+        Arrays.sort(values, 0, length);
+        int uniqueCount = 0;
+
+        for (int i = 0; i < length; i++) {
+            double value = values[i];
+            if (
+                    uniqueCount == 0 ||
+                    Double.compare(values[uniqueCount - 1], value) != 0
+            )
+                values[uniqueCount++] = value;
+        }
+
+        return uniqueCount;
+    }
+
+    private static List<TerrainQuad> mergeTerrainQuads(List<TerrainQuad> source) {
+        List<TerrainQuad> merged = source;
+
+        for (int pass = 0; pass < 2; pass++) {
+            int previousSize = merged.size();
+
+            merged = mergeTerrainQuadsAlongU(merged);
+            merged = mergeTerrainQuadsAlongV(merged);
+            if (merged.size() == previousSize)
+                break;
+        }
+
+        return merged;
+    }
+
+    private static List<TerrainQuad> mergeTerrainQuadsAlongU(List<TerrainQuad> source) {
+        List<TerrainQuad> sorted = new ArrayList<>(source);
+
+        sorted.sort((a, b) -> {
+            int c = compareTerrainQuadPlane(a, b);
+            if (c != 0) return c;
+            c = Double.compare(a.minV, b.minV);
+            if (c != 0) return c;
+            c = Double.compare(a.maxV, b.maxV);
+            if (c != 0) return c;
+            c = Double.compare(a.minU, b.minU);
+            if (c != 0) return c;
+            return Double.compare(a.maxU, b.maxU);
+        });
+
+        List<TerrainQuad> merged = new ArrayList<>(sorted.size());
+
+        for (TerrainQuad quad : sorted) {
+            if (!merged.isEmpty()) {
+                int lastIndex = merged.size() - 1;
+                TerrainQuad previous = merged.get(lastIndex);
+
+                if (
+                        sameTerrainQuadPlane(previous, quad) &&
+                        Double.compare(previous.minV, quad.minV) == 0 &&
+                        Double.compare(previous.maxV, quad.maxV) == 0 &&
+                        Double.compare(previous.maxU, quad.minU) == 0
+                ) {
+                    merged.set(lastIndex, new TerrainQuad(
+                            previous.axis,
+                            previous.positive,
+                            previous.plane,
+                            previous.minU,
+                            quad.maxU,
+                            previous.minV,
+                            previous.maxV
+                    ));
+                    continue;
+                }
+            }
+
+            merged.add(quad);
+        }
+
+        return merged;
+    }
+
+    private static List<TerrainQuad> mergeTerrainQuadsAlongV(List<TerrainQuad> source) {
+        List<TerrainQuad> sorted = new ArrayList<>(source);
+
+        sorted.sort((a, b) -> {
+            int c = compareTerrainQuadPlane(a, b);
+            if (c != 0) return c;
+            c = Double.compare(a.minU, b.minU);
+            if (c != 0) return c;
+            c = Double.compare(a.maxU, b.maxU);
+            if (c != 0) return c;
+            c = Double.compare(a.minV, b.minV);
+            if (c != 0) return c;
+            return Double.compare(a.maxV, b.maxV);
+        });
+
+        List<TerrainQuad> merged = new ArrayList<>(sorted.size());
+
+        for (TerrainQuad quad : sorted) {
+            if (!merged.isEmpty()) {
+                int lastIndex = merged.size() - 1;
+                TerrainQuad previous = merged.get(lastIndex);
+
+                if (
+                        sameTerrainQuadPlane(previous, quad) &&
+                        Double.compare(previous.minU, quad.minU) == 0 &&
+                        Double.compare(previous.maxU, quad.maxU) == 0 &&
+                        Double.compare(previous.maxV, quad.minV) == 0
+                ) {
+                    merged.set(lastIndex, new TerrainQuad(
+                            previous.axis,
+                            previous.positive,
+                            previous.plane,
+                            previous.minU,
+                            previous.maxU,
+                            previous.minV,
+                            quad.maxV
+                    ));
+                    continue;
+                }
+            }
+
+            merged.add(quad);
+        }
+
+        return merged;
+    }
+
+    private static int compareTerrainQuadPlane(TerrainQuad a, TerrainQuad b) {
+        int c = Integer.compare(a.axis, b.axis);
+        if (c != 0) return c;
+        c = Boolean.compare(a.positive, b.positive);
+        if (c != 0) return c;
+        return Double.compare(a.plane, b.plane);
+    }
+
+    private static boolean sameTerrainQuadPlane(TerrainQuad a, TerrainQuad b) {
+        return
+                a.axis == b.axis &&
+                a.positive == b.positive &&
+                Double.compare(a.plane, b.plane) == 0;
+    }
+
+    private static void emitTerrainQuad(
             int axis,
             boolean positive,
             double plane,
@@ -580,55 +771,54 @@ public final class TerrainCollisionManager {
             int originY,
             int originZ
     ) {
-        double[][] points;
+        int first;
+        int second;
+        int third;
+        int fourth;
 
-        if (axis == 0)
+        if (axis == 0) {
             // X-facing surface
             // u=Y, v=Z
-            points = positive ? new double[][] {
-                    { plane, u0, v0 },
-                    { plane, u1, v0 },
-                    { plane, u1, v1 },
-                    { plane, u0, v1 }
-            } : new double[][] {
-                    { plane, u0, v0 },
-                    { plane, u0, v1 },
-                    { plane, u1, v1 },
-                    { plane, u1, v0 }
-            };
-        else if (axis == 1)
+            if (positive) {
+                first = terrainVertexIndex(plane, u0, v0, vertices, vertexIndices, originX, originY, originZ);
+                second = terrainVertexIndex(plane, u1, v0, vertices, vertexIndices, originX, originY, originZ);
+                third = terrainVertexIndex(plane, u1, v1, vertices, vertexIndices, originX, originY, originZ);
+                fourth = terrainVertexIndex(plane, u0, v1, vertices, vertexIndices, originX, originY, originZ);
+            } else {
+                first = terrainVertexIndex(plane, u0, v0, vertices, vertexIndices, originX, originY, originZ);
+                second = terrainVertexIndex(plane, u0, v1, vertices, vertexIndices, originX, originY, originZ);
+                third = terrainVertexIndex(plane, u1, v1, vertices, vertexIndices, originX, originY, originZ);
+                fourth = terrainVertexIndex(plane, u1, v0, vertices, vertexIndices, originX, originY, originZ);
+            }
+        } else if (axis == 1) {
             // Y-facing surface
             // u=X, v=Z
-            points = positive ? new double[][] {
-                    { u0, plane, v0 },
-                    { u0, plane, v1 },
-                    { u1, plane, v1 },
-                    { u1, plane, v0 }
-            } : new double[][] {
-                    { u0, plane, v0 },
-                    { u1, plane, v0 },
-                    { u1, plane, v1 },
-                    { u0, plane, v1 }
-            };
-        else
+            if (positive) {
+                first = terrainVertexIndex(u0, plane, v0, vertices, vertexIndices, originX, originY, originZ);
+                second = terrainVertexIndex(u0, plane, v1, vertices, vertexIndices, originX, originY, originZ);
+                third = terrainVertexIndex(u1, plane, v1, vertices, vertexIndices, originX, originY, originZ);
+                fourth = terrainVertexIndex(u1, plane, v0, vertices, vertexIndices, originX, originY, originZ);
+            } else {
+                first = terrainVertexIndex(u0, plane, v0, vertices, vertexIndices, originX, originY, originZ);
+                second = terrainVertexIndex(u1, plane, v0, vertices, vertexIndices, originX, originY, originZ);
+                third = terrainVertexIndex(u1, plane, v1, vertices, vertexIndices, originX, originY, originZ);
+                fourth = terrainVertexIndex(u0, plane, v1, vertices, vertexIndices, originX, originY, originZ);
+            }
+        } else {
             // Z-facing surface
             // u=X, v=Y
-            points = positive ? new double[][] {
-                    { u0, v0, plane },
-                    { u1, v0, plane },
-                    { u1, v1, plane },
-                    { u0, v1, plane }
-            } : new double[][] {
-                    { u0, v0, plane },
-                    { u0, v1, plane },
-                    { u1, v1, plane },
-                    { u1, v0, plane }
-            };
-
-        int first = terrainVertexIndex(points[0], vertices, vertexIndices, originX, originY, originZ);
-        int second = terrainVertexIndex(points[1], vertices, vertexIndices, originX, originY, originZ);
-        int third = terrainVertexIndex(points[2], vertices, vertexIndices, originX, originY, originZ);
-        int fourth = terrainVertexIndex(points[3], vertices, vertexIndices, originX, originY, originZ);
+            if (positive) {
+                first = terrainVertexIndex(u0, v0, plane, vertices, vertexIndices, originX, originY, originZ);
+                second = terrainVertexIndex(u1, v0, plane, vertices, vertexIndices, originX, originY, originZ);
+                third = terrainVertexIndex(u1, v1, plane, vertices, vertexIndices, originX, originY, originZ);
+                fourth = terrainVertexIndex(u0, v1, plane, vertices, vertexIndices, originX, originY, originZ);
+            } else {
+                first = terrainVertexIndex(u0, v0, plane, vertices, vertexIndices, originX, originY, originZ);
+                second = terrainVertexIndex(u0, v1, plane, vertices, vertexIndices, originX, originY, originZ);
+                third = terrainVertexIndex(u1, v1, plane, vertices, vertexIndices, originX, originY, originZ);
+                fourth = terrainVertexIndex(u1, v0, plane, vertices, vertexIndices, originX, originY, originZ);
+            }
+        }
 
         indices.add(first);
         indices.add(second);
@@ -640,27 +830,31 @@ public final class TerrainCollisionManager {
     }
 
     private static int terrainVertexIndex(
-            double[] worldPoint,
+            double x,
+            double y,
+            double z,
             List<PropPhysGeometry.FloatPoint> vertices,
             Map<TerrainPointKey, Integer> vertexIndices,
             int originX,
             int originY,
             int originZ
     ) {
-        float x = (float) (worldPoint[0] - originX);
-        float y = (float) (worldPoint[1] - originY);
-        float z = (float) (worldPoint[2] - originZ);
+        float localX = (float) (x - originX);
+        float localY = (float) (y - originY);
+        float localZ = (float) (z - originZ);
+
         TerrainPointKey key = new TerrainPointKey(
-                Float.floatToIntBits(x),
-                Float.floatToIntBits(y),
-                Float.floatToIntBits(z)
+                Float.floatToIntBits(localX),
+                Float.floatToIntBits(localY),
+                Float.floatToIntBits(localZ)
         );
+
         Integer existing = vertexIndices.get(key);
         if (existing != null)
             return existing;
 
         int index = vertices.size();
-        vertices.add(new PropPhysGeometry.FloatPoint(x, y, z));
+        vertices.add(new PropPhysGeometry.FloatPoint(localX, localY, localZ));
         vertexIndices.put(key, index);
 
         return index;
@@ -695,11 +889,14 @@ public final class TerrainCollisionManager {
 
 
     private static final class TerrainFaceIndex {
-        private final Map<Long, List<TerrainBox>>[] minPlanes = newPlaneMaps();
-        private final Map<Long, List<TerrainBox>>[] maxPlanes = newPlaneMaps();
+        private final Map<TerrainFaceBucketKey, List<TerrainBox>>[] minPlanes =
+                newPlaneMaps();
+
+        private final Map<TerrainFaceBucketKey, List<TerrainBox>>[] maxPlanes =
+                newPlaneMaps();
 
         @SuppressWarnings("unchecked")
-        private static Map<Long, List<TerrainBox>>[] newPlaneMaps() {
+        private static Map<TerrainFaceBucketKey, List<TerrainBox>>[] newPlaneMaps() {
             return new Map[] {
                     new HashMap<>(),
                     new HashMap<>(),
@@ -708,33 +905,113 @@ public final class TerrainCollisionManager {
         }
 
         private void add(TerrainBox box) {
-            addPlane(minPlanes[0], box.minX(), box);
-            addPlane(minPlanes[1], box.minY(), box);
-            addPlane(minPlanes[2], box.minZ(), box);
+            for (int axis = 0; axis < 3; axis++) {
+                int uAxis = axis == 0 ? 1 : 0;
+                int vAxis = axis == 2 ? 1 : 2;
 
-            addPlane(maxPlanes[0], box.maxX(), box);
-            addPlane(maxPlanes[1], box.maxY(), box);
-            addPlane(maxPlanes[2], box.maxZ(), box);
+                addFace(
+                        minPlanes[axis],
+                        box.min(axis),
+                        box,
+                        uAxis,
+                        vAxis
+                );
+
+                addFace(
+                        maxPlanes[axis],
+                        box.max(axis),
+                        box,
+                        uAxis,
+                        vAxis
+                );
+            }
         }
 
-        private static void addPlane(
-                Map<Long, List<TerrainBox>> planes,
-                double coordinate,
-                TerrainBox box
+        private static void addFace(
+                Map<TerrainFaceBucketKey, List<TerrainBox>> index,
+                double plane,
+                TerrainBox box,
+                int uAxis,
+                int vAxis
         ) {
-            planes.computeIfAbsent(
-                    terrainPlaneKey(coordinate),
-                    ignored -> new ArrayList<>()
-            ).add(box);
+            long planeKey = terrainPlaneKey(plane);
+
+            int firstU = firstBucket(box.min(uAxis));
+            int lastU = lastBucket(box.max(uAxis));
+            int firstV = firstBucket(box.min(vAxis));
+            int lastV = lastBucket(box.max(vAxis));
+
+            for (int u = firstU; u <= lastU; u++) {
+                for (int v = firstV; v <= lastV; v++) {
+                    TerrainFaceBucketKey key =
+                            new TerrainFaceBucketKey(planeKey, u, v);
+
+                    index.computeIfAbsent(
+                            key,
+                            ignored -> new ArrayList<>()
+                    ).add(box);
+                }
+            }
         }
 
         private List<TerrainBox> touching(
+                TerrainBox box,
                 int axis,
                 double plane,
                 boolean positive
         ) {
-            Map<Long, List<TerrainBox>> planes = positive ? minPlanes[axis] : maxPlanes[axis];
-            return planes.getOrDefault(terrainPlaneKey(plane), List.of());
+            Map<TerrainFaceBucketKey, List<TerrainBox>> index =
+                    positive ? minPlanes[axis] : maxPlanes[axis];
+
+            int uAxis = axis == 0 ? 1 : 0;
+            int vAxis = axis == 2 ? 1 : 2;
+
+            int firstU = firstBucket(box.min(uAxis));
+            int lastU = lastBucket(box.max(uAxis));
+            int firstV = firstBucket(box.min(vAxis));
+            int lastV = lastBucket(box.max(vAxis));
+
+            long planeKey = terrainPlaneKey(plane);
+
+            if (firstU > lastU || firstV > lastV)
+                return List.of();
+
+            if (firstU == lastU && firstV == lastV) {
+                return index.getOrDefault(
+                        new TerrainFaceBucketKey(planeKey, firstU, firstV),
+                        List.of()
+                );
+            }
+
+            // A box can span multiple buckets. Deduplicate candidates that
+            // were indexed in more than one bucket.
+            Set<TerrainBox> seen = new HashSet<>();
+            List<TerrainBox> result = new ArrayList<>();
+
+            for (int u = firstU; u <= lastU; u++) {
+                for (int v = firstV; v <= lastV; v++) {
+                    List<TerrainBox> bucket = index.get(
+                            new TerrainFaceBucketKey(planeKey, u, v)
+                    );
+
+                    if (bucket == null)
+                        continue;
+
+                    for (TerrainBox candidate : bucket)
+                        if (seen.add(candidate))
+                            result.add(candidate);
+                }
+            }
+
+            return result.isEmpty() ? List.of() : result;
+        }
+
+        private static int firstBucket(double min) {
+            return (int) Math.floor(min + TERRAIN_FACE_EPSILON);
+        }
+
+        private static int lastBucket(double max) {
+            return (int) Math.floor(max - TERRAIN_FACE_EPSILON);
         }
     }
 
@@ -780,4 +1057,14 @@ public final class TerrainCollisionManager {
                     maxZ == otherMaxZ;
         }
     }
+    private record TerrainQuad(
+            int axis,
+            boolean positive,
+            double plane,
+            double minU,
+            double maxU,
+            double minV,
+            double maxV
+    ) {}
+    private record TerrainFaceBucketKey(long planeKey, int uCell, int vCell) {}
 }
