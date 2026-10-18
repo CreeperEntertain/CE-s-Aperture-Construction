@@ -37,10 +37,10 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
         bus = Mod.EventBusSubscriber.Bus.FORGE
 )
 public final class PropPhysManager implements AutoCloseable {
-    private static final float FIXED_STEP = 1.0f / 20.0f;
+    static final float FIXED_STEP = 1.0f / 20.0f;
     private static final int SUB_STEPS = 4;
 
-    private static final double ENTITY_CONTACT_SKIN = 0.01;
+    static final double ENTITY_CONTACT_SKIN = 0.01;
     private static final double PUSH_CONTACT_EPSILON = 0.025;
     private static final double MAX_PLAYER_PUSH_SPEED = 8.0;
     private static final double PLAYER_IMPACT_MASS = 5.0;
@@ -52,7 +52,7 @@ public final class PropPhysManager implements AutoCloseable {
     private static final long CATEGORY_WORLD = 1L;
     private static final long CATEGORY_SOLID_PROP = 1L << 1;
     private static final long CATEGORY_PASSIVE_PROP = 1L << 2;
-    private static final long CATEGORY_ENTITY = 1L << 3;
+    static final long CATEGORY_ENTITY = 1L << 3;
 
     private static final long MASK_SOLID_PROP =
             CATEGORY_WORLD |
@@ -61,7 +61,7 @@ public final class PropPhysManager implements AutoCloseable {
 
     private static final long MASK_PASSIVE_PROP = CATEGORY_WORLD;
 
-    private static final long MASK_ENTITY =
+    static final long MASK_ENTITY =
             CATEGORY_WORLD |
             CATEGORY_SOLID_PROP |
             CATEGORY_ENTITY;
@@ -75,9 +75,7 @@ public final class PropPhysManager implements AutoCloseable {
 
     private final PropBodyManager propBodyManager = new PropBodyManager(this);
     private final TerrainCollisionManager terrainCollisionManager = new TerrainCollisionManager(this);
-
-    private final Map<UUID, EntityBody> entityBodies = new HashMap<>();
-    private final Map<BodyKey, EntityBody> entitiesByBody = new HashMap<>();
+    private final EntityBodyManager entityBodyManager = new EntityBodyManager(this);
 
     private final Map<ResourceLocation, Optional<GeometryData>> geometryCache = new HashMap<>();
 
@@ -265,20 +263,7 @@ public final class PropPhysManager implements AutoCloseable {
             }
         }
 
-        Iterator<Map.Entry<UUID, EntityBody>> iterator = entityBodies.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<UUID, EntityBody> entry = iterator.next();
-            if (wantedEntities.containsKey(entry.getKey()))
-                continue;
-
-            EntityBody body = entry.getValue();
-
-            entitiesByBody.remove(BodyKey.of(body.body));
-            b3DestroyBody(body.body);
-            iterator.remove();
-        }
-        for (Entity entity : wantedEntities.values())
-            synchronizeEntityBody(entity);
+        entityBodyManager.synchronizeEntities(wantedEntities.values());
     }
 
     public static Vec3 clipEntityMovement(
@@ -441,99 +426,6 @@ public final class PropPhysManager implements AutoCloseable {
         return new BlockPos(x, y, z).asLong();
     }
 
-    private void synchronizeEntityBody(Entity entity) {
-        UUID id = entity.getUUID();
-        EntityBody existing = entityBodies.get(id);
-
-        AABB worldBox = entity.getBoundingBox();
-        AABB localBox = new AABB(
-                worldBox.minX - entity.getX(),
-                worldBox.minY - entity.getY(),
-                worldBox.minZ - entity.getZ(),
-                worldBox.maxX - entity.getX(),
-                worldBox.maxY - entity.getY(),
-                worldBox.maxZ - entity.getZ()
-        );
-
-        if (existing != null && !sameBox(existing.localBox, localBox)) {
-            destroyEntityBody(id);
-            existing = null;
-        }
-
-        Vec3 currentPosition = new Vec3(
-                entity.getX(),
-                entity.getY(),
-                entity.getZ()
-        );
-        Vec3 tickDisplacement = new Vec3(
-                entity.getX() - entity.xo,
-                entity.getY() - entity.yo,
-                entity.getZ() - entity.zo
-        );
-        boolean teleported = tickDisplacement.lengthSqr() > 4.0;
-        if (teleported)
-            tickDisplacement = Vec3.ZERO;
-
-        Vec3 boxVelocity = tickDisplacement.scale(1.0 / FIXED_STEP);
-        Vec3 boxStartPosition = currentPosition.subtract(tickDisplacement);
-        if (existing == null) {
-            AABB hullBox = localBox.inflate(ENTITY_CONTACT_SKIN);
-            List<FloatPoint> points = boxPoints(
-                    hullBox.minX, hullBox.minY, hullBox.minZ,
-                    hullBox.maxX, hullBox.maxY, hullBox.maxZ
-            );
-            b3HullData hull = createHull(points, 8);
-            if (hull == null || hull.isNull())
-                return;
-
-            try {
-                b3BodyDef bodyDefinition = b3DefaultBodyDef();
-                bodyDefinition.type(b3_kinematicBody);
-                bodyDefinition.gravityScale(0.0f);
-                bodyDefinition.enableSleep(false);
-                bodyDefinition._position(toBoxPos(boxStartPosition));
-                bodyDefinition.rotation(identityQuat());
-                bodyDefinition.linearVelocity(toBoxVec(boxVelocity));
-
-                b3BodyId body = b3CreateBody(world, bodyDefinition);
-                b3ShapeDef shapeDefinition = makeShapeDefinition(
-                        CATEGORY_ENTITY,
-                        MASK_ENTITY,
-                        false,
-                        false,
-                        true,
-                        0.0f
-                );
-
-                b3CreateHullShape(body, shapeDefinition, hull);
-
-                EntityBody created = new EntityBody(entity, body, localBox);
-                entityBodies.put(id, created);
-                entitiesByBody.put(BodyKey.of(body), created);
-                return;
-            } finally {
-                b3DestroyHull(hull);
-            }
-        }
-
-        existing.entity = entity;
-
-        b3Body_SetTransform(
-                existing.body,
-                toBoxPos(boxStartPosition),
-                identityQuat()
-        );
-        b3Body_SetLinearVelocity(existing.body, toBoxVec(boxVelocity));
-    }
-
-    private void destroyEntityBody(UUID id) {
-        EntityBody removed = entityBodies.remove(id);
-        if (removed == null)
-            return;
-        entitiesByBody.remove(BodyKey.of(removed.body));
-        b3DestroyBody(removed.body);
-    }
-
     private void applyMovingBodyGravity() {
         for (PropBodyManager.PropBody body : propBodyManager.propBodies().values()) {
             if (body.motionMode != PropMotionMode.MOVING)
@@ -569,8 +461,8 @@ public final class PropPhysManager implements AutoCloseable {
 
             PropBodyManager.PropBody propA = propBodyManager.propsByBody().get(keyA);
             PropBodyManager.PropBody propB = propBodyManager.propsByBody().get(keyB);
-            EntityBody entityA = entitiesByBody.get(keyA);
-            EntityBody entityB = entitiesByBody.get(keyB);
+            EntityBodyManager.EntityBody entityA = entityBodyManager.entitiesByBody().get(keyA);
+            EntityBodyManager.EntityBody entityB = entityBodyManager.entitiesByBody().get(keyB);
 
             float nx = hit.normal().x();
             float ny = hit.normal().y();
@@ -630,7 +522,7 @@ public final class PropPhysManager implements AutoCloseable {
 
     private void handleEntityImpact(
             PropBodyManager.PropBody prop,
-            EntityBody entityBody,
+            EntityBodyManager.EntityBody entityBody,
             boolean propIsA,
             float nx,
             float ny,
@@ -953,7 +845,7 @@ public final class PropPhysManager implements AutoCloseable {
         unique.putIfAbsent(key, new FloatPoint(x, y, z));
     }
 
-    private static List<FloatPoint> boxPoints(
+    static List<FloatPoint> boxPoints(
             double minX,
             double minY,
             double minZ,
@@ -1050,7 +942,7 @@ public final class PropPhysManager implements AutoCloseable {
         };
     }
 
-    private static b3Vec3 toBoxVec(Vec3 vector) {
+    static b3Vec3 toBoxVec(Vec3 vector) {
         return new b3Vec3()
                 .x((float) vector.x)
                 .y((float) vector.y)
@@ -1115,6 +1007,7 @@ public final class PropPhysManager implements AutoCloseable {
                 Float.compare(a.m33(), b.m33()) == 0;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     static boolean sameBox(AABB a, AABB b) {
         return
                 Double.compare(a.minX, b.minX) == 0 &&
@@ -1139,8 +1032,7 @@ public final class PropPhysManager implements AutoCloseable {
             propBodyManager.writeBackTransform(body, false);
             propBodyManager.destroyPropBody(body.prop.getId());
         }
-        for (UUID id : new ArrayList<>(entityBodies.keySet()))
-            destroyEntityBody(id);
+        entityBodyManager.clear();
         terrainCollisionManager.clear();
 
         b3DestroyWorld(world);
@@ -1158,18 +1050,6 @@ public final class PropPhysManager implements AutoCloseable {
         spatialSeenProps.clear();
     }
 
-
-    private static final class EntityBody {
-        private Entity entity;
-        private final b3BodyId body;
-        private final AABB localBox;
-
-        private EntityBody(Entity entity, b3BodyId body, AABB localBox) {
-            this.entity = entity;
-            this.body = body;
-            this.localBox = localBox;
-        }
-    }
 
     static final class GeometryData {
         final PropGeometry geometry;
