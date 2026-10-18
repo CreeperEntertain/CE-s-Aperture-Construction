@@ -46,11 +46,9 @@ public final class PropBodyManager {
     Map<UUID, PropBody> propBodies() {
         return propBodies;
     }
-
     Map<PropPhysManager.BodyKey, PropBody> propsByBody() {
         return propsByBody;
     }
-
     List<Prop> activeProps() {
         return activeProps;
     }
