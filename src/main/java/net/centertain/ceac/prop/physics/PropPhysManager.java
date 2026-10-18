@@ -79,7 +79,6 @@ public final class PropPhysManager implements AutoCloseable {
 
     private final Map<ResourceLocation, Optional<GeometryData>> geometryCache = new HashMap<>();
 
-    private final Set<UUID> coveredPropIds = new HashSet<>();
     private final Map<UUID, Entity> wantedEntities = new HashMap<>();
     private final Set<ImpactKey> handledEntityImpacts = new HashSet<>();
 
@@ -1041,7 +1040,6 @@ public final class PropPhysManager implements AutoCloseable {
         geometryCache.clear();
 
         propBodyManager.activeProps().clear();
-        coveredPropIds.clear();
         wantedEntities.clear();
         handledEntityImpacts.clear();
 
