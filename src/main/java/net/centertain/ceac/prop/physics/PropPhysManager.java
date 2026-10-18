@@ -64,7 +64,7 @@ public final class PropPhysManager implements AutoCloseable {
     private static final int TERRAIN_VALIDATION_BUDGET_PER_TICK = 128;
     private static final int PROP_SPATIAL_CELL_SIZE = 8;
 
-    private static final int MAX_PROP_HULL_VERTICES = 32;
+    static final int MAX_PROP_HULL_VERTICES = 32;
 
     private static final long CATEGORY_WORLD = 1L;
     private static final long CATEGORY_SOLID_PROP = 1L << 1;
@@ -89,10 +89,10 @@ public final class PropPhysManager implements AutoCloseable {
 
     private static final Map<ServerLevel, PropPhysManager> INSTANCES = new IdentityHashMap<>();
 
-    private final ServerLevel level;
-    private final b3WorldId world;
+    final ServerLevel level;
+    final b3WorldId world;
 
-    private final Map<Long, LevelChunk> loadedChunks = new LinkedHashMap<>();
+    final Map<Long, LevelChunk> loadedChunks = new LinkedHashMap<>();
 
     private final Map<UUID, PropBody> propBodies = new HashMap<>();
     private final Map<BodyKey, PropBody> propsByBody = new HashMap<>();
@@ -1311,7 +1311,7 @@ public final class PropPhysManager implements AutoCloseable {
         }
     }
 
-    private boolean updatePropSpatialEntry(Prop prop) {
+    boolean updatePropSpatialEntry(Prop prop) {
         if (prop.getCollisionMode() != PropCollisionMode.SOLID)
             return false;
 
@@ -1831,7 +1831,7 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
 
-    private GeometryData getGeometry(ResourceLocation modelId) {
+    GeometryData getGeometry(ResourceLocation modelId) {
         Optional<GeometryData> cached = geometryCache.get(modelId);
         if (cached != null)
             return cached.orElse(null);
@@ -1874,7 +1874,7 @@ public final class PropPhysManager implements AutoCloseable {
         );
     }
 
-    private static List<FloatPoint> scaledUniqueVertices(PropGeometry geometry, Vec3 scale) {
+    static List<FloatPoint> scaledUniqueVertices(PropGeometry geometry, Vec3 scale) {
         Map<PointKey, FloatPoint> unique = new LinkedHashMap<>();
         for (PropGeometry.Triangle triangle : geometry.getTriangles()) {
             addScaledVertex(unique, triangle.a(), scale);
@@ -1924,7 +1924,7 @@ public final class PropPhysManager implements AutoCloseable {
         );
     }
 
-    private static b3HullData createHull(
+    static b3HullData createHull(
             List<FloatPoint> vertices,
             int maxVertices
     ) {
@@ -1951,7 +1951,7 @@ public final class PropPhysManager implements AutoCloseable {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static b3ShapeDef makeShapeDefinition(
+    static b3ShapeDef makeShapeDefinition(
             long category,
             long mask,
             boolean sensor,
@@ -1977,7 +1977,7 @@ public final class PropPhysManager implements AutoCloseable {
 
 
 
-    private static long categoryFor(PropCollisionMode mode) {
+    static long categoryFor(PropCollisionMode mode) {
         return switch (mode) {
             case NONE -> 0L;
             case PASSIVE -> CATEGORY_PASSIVE_PROP;
@@ -1985,7 +1985,7 @@ public final class PropPhysManager implements AutoCloseable {
         };
     }
 
-    private static long maskFor(PropCollisionMode mode) {
+    static long maskFor(PropCollisionMode mode) {
         return switch (mode) {
             case NONE -> 0L;
             case PASSIVE -> MASK_PASSIVE_PROP;
@@ -1993,7 +1993,7 @@ public final class PropPhysManager implements AutoCloseable {
         };
     }
 
-    private static int toBodyType(PropMotionMode mode) {
+    static int toBodyType(PropMotionMode mode) {
         return switch (mode) {
             case STATIC -> b3_staticBody;
             case MOVING -> b3_kinematicBody;
@@ -2008,21 +2008,21 @@ public final class PropPhysManager implements AutoCloseable {
                 .z((float) vector.z);
     }
 
-    private static b3Pos toBoxPos(Vec3 vector) {
+    static b3Pos toBoxPos(Vec3 vector) {
         return new b3Pos()
                 .x((float) vector.x)
                 .y((float) vector.y)
                 .z((float) vector.z);
     }
 
-    private static b3Quat toBoxQuat(Quaternionf rotation) {
+    static b3Quat toBoxQuat(Quaternionf rotation) {
         Quaternionf q = new Quaternionf(rotation).normalize();
         return new b3Quat()
                 .v(new b3Vec3().x(q.x).y(q.y).z(q.z))
                 .s(q.w);
     }
 
-    private static Quaternionf fromBoxQuat(b3Quat rotation) {
+    static Quaternionf fromBoxQuat(b3Quat rotation) {
         b3Vec3 vector = rotation.v();
         return new Quaternionf(
                 vector.x(),
@@ -2032,20 +2032,21 @@ public final class PropPhysManager implements AutoCloseable {
         ).normalize();
     }
 
-    private static b3Quat identityQuat() {
+    static b3Quat identityQuat() {
         return new b3Quat()
                 .v(new b3Vec3().x(0.0f).y(0.0f).z(0.0f))
                 .s(1.0f);
     }
 
-    private static boolean sameScale(Vec3 a, Vec3 b) {
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    static boolean sameScale(Vec3 a, Vec3 b) {
         return
                 Double.compare(a.x, b.x) == 0 &&
                 Double.compare(a.y, b.y) == 0 &&
                 Double.compare(a.z, b.z) == 0;
     }
 
-    private static boolean sameTransform(Matrix4f a, Matrix4f b) {
+    static boolean sameTransform(Matrix4f a, Matrix4f b) {
         return
                 Float.compare(a.m00(), b.m00()) == 0 &&
                 Float.compare(a.m01(), b.m01()) == 0 &&
@@ -2065,7 +2066,7 @@ public final class PropPhysManager implements AutoCloseable {
                 Float.compare(a.m33(), b.m33()) == 0;
     }
 
-    private static boolean sameBox(AABB a, AABB b) {
+    static boolean sameBox(AABB a, AABB b) {
         return
                 Double.compare(a.minX, b.minX) == 0 &&
                 Double.compare(a.minY, b.minY) == 0 &&
@@ -2075,7 +2076,7 @@ public final class PropPhysManager implements AutoCloseable {
                 Double.compare(a.maxZ, b.maxZ) == 0;
     }
 
-    private static int floor(double value) {
+    static int floor(double value) {
         return (int) Math.floor(value);
     }
 
@@ -2178,8 +2179,8 @@ public final class PropPhysManager implements AutoCloseable {
         }
     }
 
-    private static final class GeometryData {
-        private final PropGeometry geometry;
+    static final class GeometryData {
+        final PropGeometry geometry;
         private final double minX;
         private final double minY;
         private final double minZ;
@@ -2311,11 +2312,11 @@ public final class PropPhysManager implements AutoCloseable {
             return planes.getOrDefault(terrainPlaneKey(plane), List.of());
         }
     }
-    private record FloatPoint(float x, float y, float z) {}
+    record FloatPoint(float x, float y, float z) {}
     private record PointKey(int x, int y, int z) {}
     private record ImpactKey(UUID propId, UUID entityId) {}
-    private record BodyKey(int index1, int world0, int generation) {
-        private static BodyKey of(b3BodyId id) {
+    record BodyKey(int index1, int world0, int generation) {
+        static BodyKey of(b3BodyId id) {
             return new BodyKey(
                     id.index1(),
                     id.world0(),
