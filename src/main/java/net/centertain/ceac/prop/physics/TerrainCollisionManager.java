@@ -7,6 +7,7 @@ import net.centertain.ceac.prop.PropDefinition;
 import net.centertain.ceac.prop.PropDefinitions;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -27,6 +28,9 @@ public final class TerrainCollisionManager {
     private static final double TERRAIN_FACE_EPSILON = 1.0e-7;
     private static final float TERRAIN_MESH_WELD_TOLERANCE = 1.0e-4f;
 
+    private static final int TERRAIN_TILE_SIZE = 16;
+    private static final int TERRAIN_TILE_GUARD = 2;
+
     private static final long CATEGORY_WORLD = 1L;
     private static final long CATEGORY_SOLID_PROP = 1L << 1;
     private static final long CATEGORY_PASSIVE_PROP = 1L << 2;
@@ -39,15 +43,16 @@ public final class TerrainCollisionManager {
 
     private final PropPhysManager manager;
 
-    private final List<TerrainPatch> terrainPatches = new ArrayList<>();
+    private final Map<TerrainTileKey, TerrainPatch> terrainPatches = new HashMap<>();
     final Set<PropPhysManager.BodyKey> terrainPatchBodies = new HashSet<>();
-    private final Set<Long> terrainPatchCellKeys = new HashSet<>();
     private final Map<Long, BlockState> terrainPatchStates = new HashMap<>();
-    private boolean terrainPatchesDirty = true;
+    private final Map<TerrainTileKey, Set<Long>> terrainStateKeysByTile = new HashMap<>();
+    private final Set<TerrainTileKey> dirtyTerrainTiles = new HashSet<>();
 
     private final Set<UUID> coveredPropIds = new HashSet<>();
     private final Map<UUID, TerrainCoverage> terrainCoverageByProp = new HashMap<>();
     private final Map<Long, Integer> terrainReferenceCounts = new HashMap<>();
+    private final Map<Long, Integer> terrainMeshReferenceCounts = new HashMap<>();
     private final ArrayDeque<Long> terrainValidationQueue = new ArrayDeque<>();
 
     private int terrainValidationTicks;
@@ -58,24 +63,30 @@ public final class TerrainCollisionManager {
 
 
     void markTerrainDirtyAround(BlockPos position) {
-        for (int dx = -1; dx <= 1; dx++)
-            for (int dy = -1; dy <= 1; dy++)
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
                 for (int dz = -1; dz <= 1; dz++) {
-                    long key = position.offset(dx, dy, dz).asLong();
-                    if (terrainPatchCellKeys.contains(key) || terrainReferenceCounts.containsKey(key)) {
-                        terrainPatchesDirty = true;
-                        return;
-                    }
+                    BlockPos affected = position.offset(dx, dy, dz);
+                    long key = affected.asLong();
+                    if (
+                            terrainMeshReferenceCounts.containsKey(key) ||
+                            terrainPatchStates.containsKey(key)
+                    )
+                        markTerrainTileAroundCell(affected);
                 }
+            }
+        }
     }
 
-    void onChunkLoaded() {
-        terrainPatchesDirty = true;
+    void onChunkLoaded(ChunkPos chunkPos) {
+        markTerrainTilesAroundChunk(chunkPos);
     }
 
-    void onChunkUnloaded() {
-        destroyTerrainPatches();
-        terrainPatchesDirty = true;
+    void onChunkUnloaded(ChunkPos chunkPos) {
+        markTerrainTilesAroundChunk(chunkPos);
+        for (TerrainTileKey tile : new ArrayList<>(dirtyTerrainTiles))
+            if (terrainPatches.containsKey(tile))
+                destroyTerrainPatch(tile);
     }
 
     void synchronizeTerrain() {
@@ -174,145 +185,196 @@ public final class TerrainCollisionManager {
         }
 
         validateTerrainPatchesIncrementally();
-        if (terrainPatchesDirty)
-            rebuildTerrainPatches();
+        rebuildTerrainPatches();
     }
 
     private void retainTerrainKey(long key) {
-        int references = terrainReferenceCounts.getOrDefault(key, 0);
-        terrainReferenceCounts.put(key, references + 1);
-        if (references == 0)
-            terrainPatchesDirty = true;
+        terrainReferenceCounts.merge(key, 1, Integer::sum);
+
+        BlockPos position = BlockPos.of(key);
+
+        for (int dx = -TERRAIN_MESH_HALO; dx <= TERRAIN_MESH_HALO; dx++)
+            for (int dy = -TERRAIN_MESH_HALO; dy <= TERRAIN_MESH_HALO; dy++)
+                for (int dz = -TERRAIN_MESH_HALO; dz <= TERRAIN_MESH_HALO; dz++) {
+                    int y = position.getY() + dy;
+                    if (
+                            y < manager.level.getMinBuildHeight() ||
+                            y >= manager.level.getMaxBuildHeight()
+                    )
+                        continue;
+
+                    BlockPos meshPosition = new BlockPos(
+                            position.getX() + dx,
+                            y,
+                            position.getZ() + dz
+                    );
+
+                    long meshKey = meshPosition.asLong();
+                    int references = terrainMeshReferenceCounts.getOrDefault(meshKey, 0);
+
+                    terrainMeshReferenceCounts.put(meshKey, references + 1);
+                    if (references == 0)
+                        markTerrainTileAroundCell(meshPosition);
+                }
     }
 
     private void releaseTerrainKey(long key) {
         Integer references = terrainReferenceCounts.get(key);
         if (references == null)
             return;
-        if (references > 1) {
+        if (references > 1)
             terrainReferenceCounts.put(key, references - 1);
-            return;
-        }
-        terrainReferenceCounts.remove(key);
-        terrainPatchesDirty = true;
+        else
+            terrainReferenceCounts.remove(key);
+
+        BlockPos position = BlockPos.of(key);
+
+        for (int dx = -TERRAIN_MESH_HALO; dx <= TERRAIN_MESH_HALO; dx++)
+            for (int dy = -TERRAIN_MESH_HALO; dy <= TERRAIN_MESH_HALO; dy++)
+                for (int dz = -TERRAIN_MESH_HALO; dz <= TERRAIN_MESH_HALO; dz++) {
+                    int y = position.getY() + dy;
+                    if (
+                            y < manager.level.getMinBuildHeight() ||
+                            y >= manager.level.getMaxBuildHeight()
+                    )
+                        continue;
+
+                    BlockPos meshPosition = new BlockPos(
+                            position.getX() + dx,
+                            y,
+                            position.getZ() + dz
+                    );
+
+                    long meshKey = meshPosition.asLong();
+                    Integer meshReferences = terrainMeshReferenceCounts.get(meshKey);
+                    if (meshReferences == null)
+                        continue;
+
+                    if (meshReferences > 1) {
+                        terrainMeshReferenceCounts.put(meshKey, meshReferences - 1);
+                    } else {
+                        terrainMeshReferenceCounts.remove(meshKey);
+                        removeTerrainState(meshKey);
+                        markTerrainTileAroundCell(meshPosition);
+                    }
+                }
     }
 
-    @SuppressWarnings({"ExtractMethodRecommender", "deprecation"})
     private void rebuildTerrainPatches() {
-        destroyTerrainPatches();
-
-        terrainPatchCellKeys.clear();
-        terrainPatchStates.clear();
-        terrainValidationQueue.clear();
-        terrainValidationTicks = 0;
-
-        if (terrainReferenceCounts.isEmpty()) {
-            terrainPatchesDirty = false;
+        if (dirtyTerrainTiles.isEmpty())
             return;
-        }
 
-        Set<Long> expandedCells = new HashSet<>();
-        for (long key : terrainReferenceCounts.keySet()) {
-            BlockPos position = BlockPos.of(key);
-            for (int dx = -TERRAIN_MESH_HALO; dx <= TERRAIN_MESH_HALO; dx++)
-                for (int dy = -TERRAIN_MESH_HALO; dy <= TERRAIN_MESH_HALO; dy++)
-                    for (int dz = -TERRAIN_MESH_HALO; dz <= TERRAIN_MESH_HALO; dz++) {
-                        int y = position.getY() + dy;
-                        if (y < manager.level.getMinBuildHeight() || y >= manager.level.getMaxBuildHeight())
-                            continue;
-                        expandedCells.add(new BlockPos(
-                                position.getX() + dx,
-                                y,
-                                position.getZ() + dz
-                        ).asLong());
-                    }
-        }
+        List<TerrainTileKey> dirty = new ArrayList<>(dirtyTerrainTiles);
+        dirtyTerrainTiles.clear();
 
-        terrainPatchCellKeys.addAll(expandedCells);
-        Map<Long, List<TerrainBox>> boxesByCell = new HashMap<>();
+        for (TerrainTileKey tile : dirty)
+            rebuildTerrainPatch(tile);
+    }
 
-        for (long key : expandedCells) {
-            BlockPos position = BlockPos.of(key);
+    @SuppressWarnings("deprecation")
+    private void rebuildTerrainPatch(TerrainTileKey tile) {
+        destroyTerrainPatch(tile);
 
-            if (!manager.level.hasChunkAt(position))
-                continue;
+        int tileMinX = tile.x() * TERRAIN_TILE_SIZE;
+        int tileMinY = tile.y() * TERRAIN_TILE_SIZE;
+        int tileMinZ = tile.z() * TERRAIN_TILE_SIZE;
 
-            BlockState state = manager.level.getBlockState(position);
-            terrainPatchStates.put(key, state);
+        int tileMaxX = tileMinX + TERRAIN_TILE_SIZE - 1;
+        int tileMaxY = tileMinY + TERRAIN_TILE_SIZE - 1;
+        int tileMaxZ = tileMinZ + TERRAIN_TILE_SIZE - 1;
 
-            VoxelShape shape = state.getCollisionShape(manager.level, position);
-            if (shape.isEmpty())
-                continue;
+        int coreMinY = Math.max(manager.level.getMinBuildHeight(), tileMinY);
+        int coreMaxY = Math.min(manager.level.getMaxBuildHeight() - 1, tileMaxY);
+        if (coreMinY > coreMaxY)
+            return;
 
-            List<TerrainBox> cellBoxes = new ArrayList<>();
-            for (AABB box : shape.toAabbs()) {
-                TerrainBox terrainBox = new TerrainBox(
-                        position.getX() + box.minX,
-                        position.getY() + box.minY,
-                        position.getZ() + box.minZ,
-                        position.getX() + box.maxX,
-                        position.getY() + box.maxY,
-                        position.getZ() + box.maxZ
-                );
-                if (
-                        terrainBox.maxX() - terrainBox.minX() <= TERRAIN_FACE_EPSILON ||
+        Set<Long> cells = new HashSet<>();
+
+        for (int x = tileMinX; x <= tileMaxX; x++)
+            for (int y = coreMinY; y <= coreMaxY; y++)
+                for (int z = tileMinZ; z <= tileMaxZ; z++) {
+                    long key = new BlockPos(x, y, z).asLong();
+                    if (terrainMeshReferenceCounts.containsKey(key))
+                        cells.add(key);
+                }
+        if (cells.isEmpty())
+            return;
+
+        int contextMinX = tileMinX - TERRAIN_TILE_GUARD;
+        int contextMaxX = tileMaxX + TERRAIN_TILE_GUARD;
+        int contextMinY = Math.max(manager.level.getMinBuildHeight(), tileMinY - TERRAIN_TILE_GUARD);
+        int contextMaxY = Math.min(manager.level.getMaxBuildHeight() - 1, tileMaxY + TERRAIN_TILE_GUARD);
+        int contextMinZ = tileMinZ - TERRAIN_TILE_GUARD;
+        int contextMaxZ = tileMaxZ + TERRAIN_TILE_GUARD;
+
+        List<TerrainBox> boxes = new ArrayList<>();
+        Map<Long, BlockState> nextStates = new HashMap<>();
+        boolean hasOwnedCollisionBox = false;
+
+        for (int x = contextMinX; x <= contextMaxX; x++)
+            for (int y = contextMinY; y <= contextMaxY; y++)
+                for (int z = contextMinZ; z <= contextMaxZ; z++) {
+                    long key = new BlockPos(x, y, z).asLong();
+                    if (!terrainMeshReferenceCounts.containsKey(key))
+                        continue;
+
+                    BlockPos position = BlockPos.of(key);
+                    if (
+                            !manager.level.hasChunkAt(position) ||
+                            !manager.loadedChunks.containsKey(new ChunkPos(position).toLong())
+                    )
+                        continue;
+
+                    BlockState state = manager.level.getBlockState(position);
+
+                    boolean ownedCell =
+                            x >= tileMinX && x <= tileMaxX &&
+                            y >= coreMinY && y <= coreMaxY &&
+                            z >= tileMinZ && z <= tileMaxZ;
+                    if (ownedCell)
+                        nextStates.put(key, state);
+
+                    VoxelShape shape = state.getCollisionShape(manager.level, position);
+                    if (shape.isEmpty())
+                        continue;
+
+                    List<TerrainBox> cellBoxes = new ArrayList<>();
+
+                    for (AABB box : shape.toAabbs()) {
+                        TerrainBox terrainBox = new TerrainBox(
+                                x + box.minX,
+                                y + box.minY,
+                                z + box.minZ,
+                                x + box.maxX,
+                                y + box.maxY,
+                                z + box.maxZ
+                        );
+                        if (
+                                terrainBox.maxX() - terrainBox.minX() <= TERRAIN_FACE_EPSILON ||
                                 terrainBox.maxY() - terrainBox.minY() <= TERRAIN_FACE_EPSILON ||
                                 terrainBox.maxZ() - terrainBox.minZ() <= TERRAIN_FACE_EPSILON
-                )
-                    continue;
+                        )
+                            continue;
 
-                cellBoxes.add(terrainBox);
-            }
+                        cellBoxes.add(terrainBox);
+                    }
+                    if (cellBoxes.isEmpty())
+                        continue;
 
-            if (!cellBoxes.isEmpty())
-                boxesByCell.put(key, cellBoxes);
-        }
-
-        Set<Long> remaining = new HashSet<>(expandedCells);
-        while (!remaining.isEmpty()) {
-            long seed = remaining.iterator().next();
-
-            Set<Long> component = new HashSet<>();
-            ArrayDeque<Long> queue = new ArrayDeque<>();
-
-            remaining.remove(seed);
-            queue.addLast(seed);
-
-            while (!queue.isEmpty()) {
-                long currentKey = queue.removeFirst();
-                component.add(currentKey);
-                BlockPos position = BlockPos.of(currentKey);
-
-                for (int dx = -1; dx <= 1; dx++)
-                    for (int dy = -1; dy <= 1; dy++)
-                        for (int dz = -1; dz <= 1; dz++) {
-                            if (dx == 0 && dy == 0 && dz == 0)
-                                continue;
-                            long neighborKey = new BlockPos(
-                                    position.getX() + dx,
-                                    position.getY() + dy,
-                                    position.getZ() + dz
-                            ).asLong();
-                            if (remaining.remove(neighborKey))
-                                queue.addLast(neighborKey);
-                        }
-            }
-
-            List<TerrainBox> boxes = new ArrayList<>();
-            for (long key : component) {
-                List<TerrainBox> cellBoxes = boxesByCell.get(key);
-                if (cellBoxes != null)
                     boxes.addAll(cellBoxes);
-            }
+                    if (ownedCell)
+                        hasOwnedCollisionBox = true;
+                }
 
-            TerrainPatch patch = createTerrainPatch(component, boxes);
-            if (patch != null) {
-                terrainPatches.add(patch);
-                terrainPatchBodies.add(PropPhysManager.BodyKey.of(patch.body()));
-            }
+        replaceTerrainStatesForTile(tile, nextStates);
+        if (!hasOwnedCollisionBox)
+            return;
+
+        TerrainPatch patch = createTerrainPatch(cells, boxes);
+        if (patch != null) {
+            terrainPatches.put(tile, patch);
+            terrainPatchBodies.add(PropPhysManager.BodyKey.of(patch.body()));
         }
-
-        terrainPatchesDirty = false;
     }
 
     @SuppressWarnings("deprecation")
@@ -325,7 +387,11 @@ public final class TerrainCollisionManager {
         }
 
         int processed = 0;
-        while (processed < TERRAIN_VALIDATION_BUDGET_PER_TICK && !terrainValidationQueue.isEmpty()) {
+
+        while (
+                processed < TERRAIN_VALIDATION_BUDGET_PER_TICK &&
+                !terrainValidationQueue.isEmpty()
+        ) {
             long key = terrainValidationQueue.removeFirst();
             processed++;
             BlockState cached = terrainPatchStates.get(key);
@@ -333,15 +399,109 @@ public final class TerrainCollisionManager {
                 continue;
 
             BlockPos position = BlockPos.of(key);
-            if (!manager.level.hasChunkAt(position)) {
-                terrainPatchesDirty = true;
+            if (
+                    !manager.level.hasChunkAt(position) ||
+                    !manager.loadedChunks.containsKey(new ChunkPos(position).toLong())
+            ) {
+                markTerrainTileAroundCell(position);
                 continue;
             }
 
             BlockState current = manager.level.getBlockState(position);
             if (!cached.equals(current))
-                terrainPatchesDirty = true;
+                markTerrainTileAroundCell(position);
         }
+    }
+
+    private static TerrainTileKey terrainTileKey(BlockPos position) {
+        return new TerrainTileKey(
+                Math.floorDiv(position.getX(), TERRAIN_TILE_SIZE),
+                Math.floorDiv(position.getY(), TERRAIN_TILE_SIZE),
+                Math.floorDiv(position.getZ(), TERRAIN_TILE_SIZE)
+        );
+    }
+
+    private void markTerrainTileAroundCell(BlockPos position) {
+        int minTileX = Math.floorDiv(position.getX() - 1, TERRAIN_TILE_SIZE);
+        int maxTileX = Math.floorDiv(position.getX() + 1, TERRAIN_TILE_SIZE);
+
+        int minTileY = Math.floorDiv(position.getY() - 1, TERRAIN_TILE_SIZE);
+        int maxTileY = Math.floorDiv(position.getY() + 1, TERRAIN_TILE_SIZE);
+
+        int minTileZ = Math.floorDiv(position.getZ() - 1, TERRAIN_TILE_SIZE);
+        int maxTileZ = Math.floorDiv(position.getZ() + 1, TERRAIN_TILE_SIZE);
+
+        for (int x = minTileX; x <= maxTileX; x++)
+            for (int y = minTileY; y <= maxTileY; y++)
+                for (int z = minTileZ; z <= maxTileZ; z++)
+                    dirtyTerrainTiles.add(new TerrainTileKey(x, y, z));
+    }
+
+    private void markTerrainTilesAroundChunk(ChunkPos chunkPos) {
+        int minX = chunkPos.getMinBlockX() - TERRAIN_TILE_GUARD - 1;
+        int maxX = chunkPos.getMaxBlockX() + TERRAIN_TILE_GUARD + 1;
+        int minZ = chunkPos.getMinBlockZ() - TERRAIN_TILE_GUARD - 1;
+        int maxZ = chunkPos.getMaxBlockZ() + TERRAIN_TILE_GUARD + 1;
+
+        for (long key : terrainMeshReferenceCounts.keySet()) {
+            BlockPos position = BlockPos.of(key);
+            if (
+                    position.getX() < minX ||
+                    position.getX() > maxX ||
+                    position.getZ() < minZ ||
+                    position.getZ() > maxZ
+            )
+                continue;
+
+            markTerrainTileAroundCell(position);
+        }
+    }
+
+    private void replaceTerrainStatesForTile(
+            TerrainTileKey tile,
+            Map<Long, BlockState> nextStates
+    ) {
+        removeTerrainStatesForTile(tile);
+        if (nextStates.isEmpty())
+            return;
+
+        Set<Long> keys = new HashSet<>(nextStates.keySet());
+
+        terrainPatchStates.putAll(nextStates);
+        terrainStateKeysByTile.put(tile, keys);
+    }
+
+    private void removeTerrainStatesForTile(TerrainTileKey tile) {
+        Set<Long> keys = terrainStateKeysByTile.remove(tile);
+        if (keys == null)
+            return;
+        for (long key : keys)
+            terrainPatchStates.remove(key);
+    }
+
+    private void removeTerrainState(long key) {
+        terrainPatchStates.remove(key);
+        TerrainTileKey tile = terrainTileKey(BlockPos.of(key));
+        Set<Long> keys = terrainStateKeysByTile.get(tile);
+        if (keys == null)
+            return;
+
+        keys.remove(key);
+        if (keys.isEmpty())
+            terrainStateKeysByTile.remove(tile);
+    }
+
+    private void destroyTerrainPatch(TerrainTileKey tile) {
+        TerrainPatch patch = terrainPatches.remove(tile);
+
+        if (patch != null) {
+            terrainPatchBodies.remove(PropPhysManager.BodyKey.of(patch.body()));
+
+            b3DestroyBody(patch.body());
+            b3DestroyMesh(patch.mesh());
+        }
+
+        removeTerrainStatesForTile(tile);
     }
 
     @SuppressWarnings("resource")
@@ -861,8 +1021,7 @@ public final class TerrainCollisionManager {
     }
 
     void destroyTerrainPatches() {
-        for (TerrainPatch patch : terrainPatches) {
-            terrainPatchBodies.remove(PropPhysManager.BodyKey.of(patch.body()));
+        for (TerrainPatch patch : terrainPatches.values()) {
             b3DestroyBody(patch.body());
             b3DestroyMesh(patch.mesh());
         }
@@ -876,11 +1035,14 @@ public final class TerrainCollisionManager {
         coveredPropIds.clear();
         terrainCoverageByProp.clear();
         terrainReferenceCounts.clear();
+        terrainMeshReferenceCounts.clear();
+
         terrainValidationQueue.clear();
-        terrainPatchCellKeys.clear();
         terrainPatchStates.clear();
+        terrainStateKeysByTile.clear();
+        dirtyTerrainTiles.clear();
+
         terrainValidationTicks = 0;
-        terrainPatchesDirty = true;
     }
 
     private static long terrainPlaneKey(double coordinate) {
@@ -1067,4 +1229,5 @@ public final class TerrainCollisionManager {
             double maxV
     ) {}
     private record TerrainFaceBucketKey(long planeKey, int uCell, int vCell) {}
+    private record TerrainTileKey(int x, int y, int z) {}
 }

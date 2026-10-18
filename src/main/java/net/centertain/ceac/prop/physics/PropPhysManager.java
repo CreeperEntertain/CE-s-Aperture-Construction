@@ -143,7 +143,7 @@ public final class PropPhysManager implements AutoCloseable {
 
     private void onChunkLoaded(LevelChunk chunk) {
         loadedChunks.put(chunk.getPos().toLong(), chunk);
-        terrainCollisionManager.onChunkLoaded();
+        terrainCollisionManager.onChunkLoaded(chunk.getPos());
     }
 
     private void onChunkUnloaded(LevelChunk chunk) {
@@ -157,7 +157,7 @@ public final class PropPhysManager implements AutoCloseable {
             propBodyManager.destroyPropBody(body.prop.getId());
         }
 
-        terrainCollisionManager.onChunkUnloaded();
+        terrainCollisionManager.onChunkUnloaded(chunk.getPos());
     }
 
     private void tick() {
