@@ -98,8 +98,8 @@ public final class TerrainCollisionManager {
             TerrainCoverage previous = terrainCoverageByProp.get(propId);
             if (
                     previous != null &&
-                            previous.definitionId().equals(prop.getDefinitionId()) &&
-                            previous.transformRevision() == transformRevision
+                    previous.definitionId().equals(prop.getDefinitionId()) &&
+                    previous.transformRevision() == transformRevision
             ) {
                 coveredPropIds.add(propId);
                 continue;
@@ -107,15 +107,15 @@ public final class TerrainCollisionManager {
 
             AABB bounds = PropPhysManager.worldBounds(geometry, prop.getTransform());
             if (
-                    !Double.isFinite(bounds.minX)
-                            || !Double.isFinite(bounds.minY)
-                            || !Double.isFinite(bounds.minZ)
-                            || !Double.isFinite(bounds.maxX)
-                            || !Double.isFinite(bounds.maxY)
-                            || !Double.isFinite(bounds.maxZ)
-                            || bounds.minX > bounds.maxX
-                            || bounds.minY > bounds.maxY
-                            || bounds.minZ > bounds.maxZ
+                    !Double.isFinite(bounds.minX) ||
+                    !Double.isFinite(bounds.minY) ||
+                    !Double.isFinite(bounds.minZ) ||
+                    !Double.isFinite(bounds.maxX) ||
+                    !Double.isFinite(bounds.maxY) ||
+                    !Double.isFinite(bounds.maxZ) ||
+                    bounds.minX > bounds.maxX ||
+                    bounds.minY > bounds.maxY ||
+                    bounds.minZ > bounds.maxZ
             )
                 continue;
 
