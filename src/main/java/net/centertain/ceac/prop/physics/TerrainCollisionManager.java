@@ -89,7 +89,7 @@ public final class TerrainCollisionManager {
             if (definition == null)
                 continue;
 
-            PropPhysManager.GeometryData geometry = manager.getGeometry(definition.getModelId());
+            PropPhysGeometry.GeometryData geometry = manager.getGeometry(definition.getModelId());
             if (geometry == null)
                 continue;
 
@@ -105,7 +105,7 @@ public final class TerrainCollisionManager {
                 continue;
             }
 
-            AABB bounds = PropPhysManager.worldBounds(geometry, prop.getTransform());
+            AABB bounds = PropPhysGeometry.worldBounds(geometry, prop.getTransform());
             if (
                     !Double.isFinite(bounds.minX) ||
                     !Double.isFinite(bounds.minY) ||
@@ -119,12 +119,12 @@ public final class TerrainCollisionManager {
             )
                 continue;
 
-            int minX = PropPhysManager.floor(bounds.minX - TERRAIN_BOUNDS_EPSILON);
-            int minY = Math.max(manager.level.getMinBuildHeight(), PropPhysManager.floor(bounds.minY - TERRAIN_BOUNDS_EPSILON));
-            int minZ = PropPhysManager.floor(bounds.minZ - TERRAIN_BOUNDS_EPSILON);
-            int maxX = PropPhysManager.floor(bounds.maxX + TERRAIN_BOUNDS_EPSILON);
-            int maxY = Math.min(manager.level.getMaxBuildHeight() - 1, PropPhysManager.floor(bounds.maxY + TERRAIN_BOUNDS_EPSILON));
-            int maxZ = PropPhysManager.floor(bounds.maxZ + TERRAIN_BOUNDS_EPSILON);
+            int minX = PropPhysGeometry.floor(bounds.minX - TERRAIN_BOUNDS_EPSILON);
+            int minY = Math.max(manager.level.getMinBuildHeight(), PropPhysGeometry.floor(bounds.minY - TERRAIN_BOUNDS_EPSILON));
+            int minZ = PropPhysGeometry.floor(bounds.minZ - TERRAIN_BOUNDS_EPSILON);
+            int maxX = PropPhysGeometry.floor(bounds.maxX + TERRAIN_BOUNDS_EPSILON);
+            int maxY = Math.min(manager.level.getMaxBuildHeight() - 1, PropPhysGeometry.floor(bounds.maxY + TERRAIN_BOUNDS_EPSILON));
+            int maxZ = PropPhysGeometry.floor(bounds.maxZ + TERRAIN_BOUNDS_EPSILON);
             if (minY > maxY)
                 continue;
 
@@ -366,7 +366,7 @@ public final class TerrainCollisionManager {
         for (TerrainBox box : boxes)
             faceIndex.add(box);
 
-        List<PropPhysManager.FloatPoint> vertices = new ArrayList<>();
+        List<PropPhysGeometry.FloatPoint> vertices = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
         Map<TerrainPointKey, Integer> vertexIndices = new HashMap<>();
 
@@ -394,7 +394,7 @@ public final class TerrainCollisionManager {
                 b3MeshDef meshDefinition = new b3MeshDef()
         ) {
             for (int i = 0; i < vertices.size(); i++) {
-                PropPhysManager.FloatPoint point = vertices.get(i);
+                PropPhysGeometry.FloatPoint point = vertices.get(i);
 
                 nativeVertices.position(i)
                         .x(point.x())
@@ -439,11 +439,11 @@ public final class TerrainCollisionManager {
                     .y(originY)
                     .z(originZ)
             );
-            bodyDefinition.rotation(PropPhysManager.identityQuat());
+            bodyDefinition.rotation(PropPhysGeometry.identityQuat());
 
             body = b3CreateBody(manager.world, bodyDefinition);
 
-            b3ShapeDef shapeDefinition = PropPhysManager.makeShapeDefinition(
+            b3ShapeDef shapeDefinition = PropPhysGeometry.makeShapeDefinition(
                     CATEGORY_WORLD,
                     MASK_WORLD,
                     false,
@@ -474,7 +474,7 @@ public final class TerrainCollisionManager {
             int axis,
             boolean positive,
             TerrainFaceIndex faceIndex,
-            List<PropPhysManager.FloatPoint> vertices,
+            List<PropPhysGeometry.FloatPoint> vertices,
             List<Integer> indices,
             Map<TerrainPointKey, Integer> vertexIndices,
             int originX,
@@ -573,7 +573,7 @@ public final class TerrainCollisionManager {
             double u1,
             double v0,
             double v1,
-            List<PropPhysManager.FloatPoint> vertices,
+            List<PropPhysGeometry.FloatPoint> vertices,
             List<Integer> indices,
             Map<TerrainPointKey, Integer> vertexIndices,
             int originX,
@@ -641,7 +641,7 @@ public final class TerrainCollisionManager {
 
     private static int terrainVertexIndex(
             double[] worldPoint,
-            List<PropPhysManager.FloatPoint> vertices,
+            List<PropPhysGeometry.FloatPoint> vertices,
             Map<TerrainPointKey, Integer> vertexIndices,
             int originX,
             int originY,
@@ -660,7 +660,7 @@ public final class TerrainCollisionManager {
             return existing;
 
         int index = vertices.size();
-        vertices.add(new PropPhysManager.FloatPoint(x, y, z));
+        vertices.add(new PropPhysGeometry.FloatPoint(x, y, z));
         vertexIndices.put(key, index);
 
         return index;

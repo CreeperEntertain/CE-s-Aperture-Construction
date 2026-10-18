@@ -95,11 +95,11 @@ public final class PropBodyManager {
                 existing.collisionMode != prop.getCollisionMode() ||
                 existing.motionMode != prop.getMotionMode();
         if (!rebuild && existing.lastObservedTransformRevision != transformRevision)
-            rebuild = !PropPhysManager.sameScale(existing.scale, prop.getScale());
+            rebuild = !PropPhysGeometry.sameScale(existing.scale, prop.getScale());
         if (rebuild) {
             destroyPropBody(prop.getId());
 
-            PropPhysManager.GeometryData geometry = manager.getGeometry(definition.getModelId());
+            PropPhysGeometry.GeometryData geometry = manager.getGeometry(definition.getModelId());
             if (geometry == null)
                 return;
 
@@ -121,8 +121,8 @@ public final class PropBodyManager {
 
         b3Body_SetTransform(
                 existing.body,
-                PropPhysManager.toBoxPos(prop.getPosition()),
-                PropPhysManager.toBoxQuat(prop.getRotationQuat())
+                PropPhysGeometry.toBoxPos(prop.getPosition()),
+                PropPhysGeometry.toBoxQuat(prop.getRotationQuat())
         );
 
         existing.lastSyncedTransform.set(currentTransform);
@@ -133,15 +133,15 @@ public final class PropBodyManager {
             Prop prop,
             LevelChunk ownerChunk,
             PropDefinition definition,
-            PropPhysManager.GeometryData geometry
+            PropPhysGeometry.GeometryData geometry
     ) {
-        List<PropPhysManager.FloatPoint> vertices = PropPhysManager.scaledUniqueVertices(geometry.geometry, prop.getScale());
+        List<PropPhysGeometry.FloatPoint> vertices = PropPhysGeometry.scaledUniqueVertices(geometry.geometry, prop.getScale());
         if (vertices.size() < 4) {
             LOGGER.warn("Prop {} has fewer than four unique collision vertices", prop.getDefinitionId());
             return null;
         }
 
-        b3HullData hull = PropPhysManager.createHull(vertices, PropPhysManager.MAX_PROP_HULL_VERTICES);
+        b3HullData hull = PropPhysGeometry.createHull(vertices, PropPhysGeometry.MAX_PROP_HULL_VERTICES);
         if (hull == null || hull.isNull()) {
             LOGGER.warn("Could not create Box3D convex hull for prop {}", prop.getDefinitionId());
             return null;
@@ -153,9 +153,9 @@ public final class PropBodyManager {
             PropPhysDefinition physics = definition.getPhysDefinition();
 
             b3BodyDef bodyDefinition = b3DefaultBodyDef();
-            bodyDefinition.type(PropPhysManager.toBodyType(prop.getMotionMode()));
-            bodyDefinition._position(PropPhysManager.toBoxPos(prop.getPosition()));
-            bodyDefinition.rotation(PropPhysManager.toBoxQuat(prop.getRotationQuat()));
+            bodyDefinition.type(PropPhysGeometry.toBodyType(prop.getMotionMode()));
+            bodyDefinition._position(PropPhysGeometry.toBoxPos(prop.getPosition()));
+            bodyDefinition.rotation(PropPhysGeometry.toBoxQuat(prop.getRotationQuat()));
             bodyDefinition.linearDamping(physics.getLinearDamping());
             bodyDefinition.angularDamping(physics.getAngularDamping());
             bodyDefinition.gravityScale(physics.getGravityScale());
@@ -173,10 +173,10 @@ public final class PropBodyManager {
             double propMass = Math.max(1.0e-3, (double) density * hull.volume());
 
             boolean sensor = prop.getCollisionMode() == PropCollisionMode.NONE;
-            long category = PropPhysManager.categoryFor(prop.getCollisionMode());
-            long mask = PropPhysManager.maskFor(prop.getCollisionMode());
+            long category = PropPhysGeometry.categoryFor(prop.getCollisionMode());
+            long mask = PropPhysGeometry.maskFor(prop.getCollisionMode());
 
-            b3ShapeDef shapeDefinition = PropPhysManager.makeShapeDefinition(
+            b3ShapeDef shapeDefinition = PropPhysGeometry.makeShapeDefinition(
                     category,
                     mask,
                     sensor,
@@ -259,7 +259,7 @@ public final class PropBodyManager {
 
         b3Pos position = b3Body_GetPosition(body.body);
         b3Quat rotation = b3Body_GetRotation(body.body);
-        Quaternionf quaternion = PropPhysManager.fromBoxQuat(rotation);
+        Quaternionf quaternion = PropPhysGeometry.fromBoxQuat(rotation);
 
         body.prop.setPosition(new Vec3(
                 position.x(),
@@ -271,7 +271,7 @@ public final class PropBodyManager {
 
         body.prop.copyTransformTo(after);
         body.lastSyncedTransform.set(after);
-        if (PropPhysManager.sameTransform(before, after))
+        if (PropPhysGeometry.sameTransform(before, after))
             return;
 
         manager.propSpatialIndex.updatePropSpatialEntry(body.prop);

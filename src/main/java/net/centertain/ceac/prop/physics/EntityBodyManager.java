@@ -11,7 +11,6 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 import static cc.modlabs.box3d.global.Box3D.*;
-import static net.centertain.ceac.prop.physics.PropPhysManager.toBoxVec;
 
 public final class EntityBodyManager {
     private final PropPhysManager manager;
@@ -63,7 +62,7 @@ public final class EntityBodyManager {
                 worldBox.maxZ - entity.getZ()
         );
 
-        if (existing != null && !PropPhysManager.sameBox(existing.localBox, localBox)) {
+        if (existing != null && !PropPhysGeometry.sameBox(existing.localBox, localBox)) {
             destroyEntityBody(id);
             existing = null;
         }
@@ -86,11 +85,11 @@ public final class EntityBodyManager {
         Vec3 boxStartPosition = currentPosition.subtract(tickDisplacement);
         if (existing == null) {
             AABB hullBox = localBox.inflate(PropPhysManager.ENTITY_CONTACT_SKIN);
-            List<PropPhysManager.FloatPoint> points = PropPhysManager.boxPoints(
+            List<PropPhysGeometry.FloatPoint> points = PropPhysGeometry.boxPoints(
                     hullBox.minX, hullBox.minY, hullBox.minZ,
                     hullBox.maxX, hullBox.maxY, hullBox.maxZ
             );
-            b3HullData hull = PropPhysManager.createHull(points, 8);
+            b3HullData hull = PropPhysGeometry.createHull(points, 8);
             if (hull == null || hull.isNull())
                 return;
 
@@ -99,12 +98,12 @@ public final class EntityBodyManager {
                 bodyDefinition.type(b3_kinematicBody);
                 bodyDefinition.gravityScale(0.0f);
                 bodyDefinition.enableSleep(false);
-                bodyDefinition._position(PropPhysManager.toBoxPos(boxStartPosition));
-                bodyDefinition.rotation(PropPhysManager.identityQuat());
-                bodyDefinition.linearVelocity(toBoxVec(boxVelocity));
+                bodyDefinition._position(PropPhysGeometry.toBoxPos(boxStartPosition));
+                bodyDefinition.rotation(PropPhysGeometry.identityQuat());
+                bodyDefinition.linearVelocity(PropPhysGeometry.toBoxVec(boxVelocity));
 
                 b3BodyId body = b3CreateBody(manager.world, bodyDefinition);
-                b3ShapeDef shapeDefinition = PropPhysManager.makeShapeDefinition(
+                b3ShapeDef shapeDefinition = PropPhysGeometry.makeShapeDefinition(
                         PropPhysManager.CATEGORY_ENTITY,
                         PropPhysManager.MASK_ENTITY,
                         false,
@@ -128,10 +127,10 @@ public final class EntityBodyManager {
 
         b3Body_SetTransform(
                 existing.body,
-                PropPhysManager.toBoxPos(boxStartPosition),
-                PropPhysManager.identityQuat()
+                PropPhysGeometry.toBoxPos(boxStartPosition),
+                PropPhysGeometry.identityQuat()
         );
-        b3Body_SetLinearVelocity(existing.body, toBoxVec(boxVelocity));
+        b3Body_SetLinearVelocity(existing.body, PropPhysGeometry.toBoxVec(boxVelocity));
     }
 
     void destroyEntityBody(UUID id) {

@@ -67,7 +67,7 @@ public final class PropSpatialIndex {
         if (definition == null)
             return false;
 
-        PropPhysManager.GeometryData geometry = manager.getGeometry(definition.getModelId());
+        PropPhysGeometry.GeometryData geometry = manager.getGeometry(definition.getModelId());
         if (geometry == null)
             return false;
 
@@ -132,7 +132,7 @@ public final class PropSpatialIndex {
     }
 
     static int spatialCell(double coordinate) {
-        return PropPhysManager.floor(coordinate / PROP_SPATIAL_CELL_SIZE);
+        return PropPhysGeometry.floor(coordinate / PROP_SPATIAL_CELL_SIZE);
     }
 
     static long spatialCellKey(int x, int y, int z) {

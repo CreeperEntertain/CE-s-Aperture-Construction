@@ -352,8 +352,8 @@ public final class PropCollisionHandler {
 
             b3Body_ApplyLinearImpulse(
                     propBody.body,
-                    PropPhysManager.toBoxVec(impulse),
-                    PropPhysManager.toBoxPos(contactPoint),
+                    PropPhysGeometry.toBoxVec(impulse),
+                    PropPhysGeometry.toBoxPos(contactPoint),
                     true
             );
 
