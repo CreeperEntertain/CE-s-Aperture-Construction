@@ -39,27 +39,29 @@ void main() {
     bool higherPriorityNeighbor = false;
 
     if (effectClass != 0) {
-        for (int y = -1; y <= 1; y++)
-        for (int x = -1; x <= 1; x++) {
-            if (x == 0 && y == 0)
-            continue;
+        for (int y = -3; y <= 3; y++)
+            for (int x = -3; x <= 3; x++) {
+                if (x == 0 && y == 0)
+                    continue;
+                if (x * x + y * y > 9)
+                    continue;
 
-            ivec2 neighborPixel = clamp(
-                    pixel + ivec2(x, y),
-                    ivec2(0),
-                    size - ivec2(1)
-            );
+                ivec2 neighborPixel = clamp(
+                        pixel + ivec2(x, y),
+                        ivec2(0),
+                        size - ivec2(1)
+                );
 
-            int neighborClass = classifyPixel(neighborPixel);
+                int neighborClass = classifyPixel(neighborPixel);
 
-            if (neighborClass == effectClass)
-                continue;
+                if (neighborClass == effectClass)
+                    continue;
 
-            if (neighborClass == 0 || effectClass < neighborClass)
-                boundary = true;
-            else
-                higherPriorityNeighbor = true;
-        }
+                if (neighborClass == 0 || effectClass < neighborClass)
+                    boundary = true;
+                else
+                    higherPriorityNeighbor = true;
+            }
     }
 
     if (boundary && !higherPriorityNeighbor) {
@@ -72,7 +74,7 @@ void main() {
             return;
         }
         if (effectClass == 3) {
-            fragColor = vec4(0.2, 0.2, 0.2, 1.0);
+            fragColor = vec4(0.5, 0.5, 0.5, 1.0);
             return;
         }
     }
