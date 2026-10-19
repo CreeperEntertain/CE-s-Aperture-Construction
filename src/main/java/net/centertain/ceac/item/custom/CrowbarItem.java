@@ -31,8 +31,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class CrowbarItem extends BasicItem {
+    private static final Map<Player, Integer> LAST_SWING_SOUND_TICK = new WeakHashMap<>();
+
     public CrowbarItem(Properties properties) {
         super(
                 properties.durability(250),
@@ -85,8 +89,15 @@ public class CrowbarItem extends BasicItem {
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
         if (!(entity instanceof Player player) || player.level().isClientSide)
             return false;
-        if (!startsSwing(player))
-            return false;
+        int tick = player.tickCount;
+        synchronized (LAST_SWING_SOUND_TICK) {
+            Integer lastTick = LAST_SWING_SOUND_TICK.get(player);
+            if (lastTick != null && lastTick == tick)
+                return false;
+            if (!startsSwing(player))
+                return false;
+            LAST_SWING_SOUND_TICK.put(player, tick);
+        }
 
         Level level = player.level();
         double reach = player.getBlockReach();
