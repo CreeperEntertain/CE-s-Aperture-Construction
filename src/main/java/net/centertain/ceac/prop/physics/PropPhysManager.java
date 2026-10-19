@@ -47,6 +47,7 @@ public final class PropPhysManager implements AutoCloseable {
     final Map<Long, LevelChunk> loadedChunks = new LinkedHashMap<>();
 
     private final Map<ResourceLocation, Optional<PropPhysGeometry.GeometryData>> geometryCache = new HashMap<>();
+    private final Map<ResourceLocation, Optional<b3MeshData>> collisionMeshCache = new HashMap<>();
 
     private final Map<UUID, Entity> wantedEntities = new HashMap<>();
 
@@ -346,6 +347,23 @@ public final class PropPhysManager implements AutoCloseable {
         return data;
     }
 
+    b3MeshData getCollisionMesh(
+            ResourceLocation modelId,
+            PropPhysGeometry.GeometryData geometry
+    ) {
+        Optional<b3MeshData> cached = collisionMeshCache.get(modelId);
+        if (cached != null)
+            return cached.orElse(null);
+
+        b3MeshData mesh = PropPhysGeometry.createCollisionMesh(geometry.geometry);
+        if (mesh != null && mesh.isNull())
+            mesh = null;
+
+        collisionMeshCache.put(modelId, Optional.ofNullable(mesh));
+
+        return mesh;
+    }
+
     @Override
     public void close() {
         if (closed)
@@ -360,6 +378,15 @@ public final class PropPhysManager implements AutoCloseable {
         terrainCollisionManager.clear();
 
         b3DestroyWorld(world);
+
+        for (Optional<b3MeshData> cached : collisionMeshCache.values()) {
+            if (cached.isEmpty())
+                continue;
+            b3MeshData mesh = cached.get();
+            if (!mesh.isNull())
+                b3DestroyMesh(mesh);
+        }
+        collisionMeshCache.clear();
 
         loadedChunks.clear();
         geometryCache.clear();

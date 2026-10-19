@@ -47,20 +47,20 @@ public final class PropEntityCollision {
         double maxY = Double.NEGATIVE_INFINITY;
         double maxZ = Double.NEGATIVE_INFINITY;
 
-        for (PropGeometry.Triangle triangle : triangles)
-            for (Vec3 vertex : List.of(
-                    triangle.a(),
-                    triangle.b(),
-                    triangle.c()
-            )) {
-                minX = Math.min(minX, vertex.x);
-                minY = Math.min(minY, vertex.y);
-                minZ = Math.min(minZ, vertex.z);
+        for (PropGeometry.Triangle triangle : triangles) {
+            Vec3 a = triangle.a();
+            Vec3 b = triangle.b();
+            Vec3 c = triangle.c();
 
-                maxX = Math.max(maxX, vertex.x);
-                maxY = Math.max(maxY, vertex.y);
-                maxZ = Math.max(maxZ, vertex.z);
-            }
+            minX = Math.min(minX, Math.min(a.x, Math.min(b.x, c.x)));
+            minY = Math.min(minY, Math.min(a.y, Math.min(b.y, c.y)));
+            minZ = Math.min(minZ, Math.min(a.z, Math.min(b.z, c.z)));
+
+            maxX = Math.max(maxX, Math.max(a.x, Math.max(b.x, c.x)));
+            maxY = Math.max(maxY, Math.max(a.y, Math.max(b.y, c.y)));
+            maxZ = Math.max(maxZ, Math.max(a.z, Math.max(b.z, c.z)));
+        }
+
 
         return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
     }

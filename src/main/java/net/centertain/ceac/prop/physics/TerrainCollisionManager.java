@@ -5,13 +5,16 @@ import com.mojang.logging.LogUtils;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
 import net.centertain.ceac.prop.PropDefinitions;
+import net.centertain.ceac.prop.PropGeometry;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.bytedeco.javacpp.IntPointer;
+import org.joml.Matrix4f;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -116,7 +119,8 @@ public final class TerrainCollisionManager {
                 continue;
             }
 
-            AABB bounds = PropPhysGeometry.worldBounds(geometry, prop.getTransform());
+            Matrix4f transform = prop.getTransform();
+            AABB bounds = PropPhysGeometry.worldBounds(geometry, transform);
             if (
                     !Double.isFinite(bounds.minX) ||
                     !Double.isFinite(bounds.minY) ||
@@ -131,27 +135,29 @@ public final class TerrainCollisionManager {
                 continue;
 
             int minX = PropPhysGeometry.floor(bounds.minX - TERRAIN_BOUNDS_EPSILON);
-            int minY = Math.max(manager.level.getMinBuildHeight(), PropPhysGeometry.floor(bounds.minY - TERRAIN_BOUNDS_EPSILON));
+            int minY = Math.max(
+                    manager.level.getMinBuildHeight(),
+                    PropPhysGeometry.floor(bounds.minY - TERRAIN_BOUNDS_EPSILON)
+            );
             int minZ = PropPhysGeometry.floor(bounds.minZ - TERRAIN_BOUNDS_EPSILON);
+
             int maxX = PropPhysGeometry.floor(bounds.maxX + TERRAIN_BOUNDS_EPSILON);
-            int maxY = Math.min(manager.level.getMaxBuildHeight() - 1, PropPhysGeometry.floor(bounds.maxY + TERRAIN_BOUNDS_EPSILON));
+            int maxY = Math.min(
+                    manager.level.getMaxBuildHeight() - 1,
+                    PropPhysGeometry.floor(bounds.maxY + TERRAIN_BOUNDS_EPSILON)
+            );
             int maxZ = PropPhysGeometry.floor(bounds.maxZ + TERRAIN_BOUNDS_EPSILON);
             if (minY > maxY)
                 continue;
 
             coveredPropIds.add(propId);
-            if (previous != null && previous.matches(minX, minY, minZ, maxX, maxY, maxZ)) {
-                terrainCoverageByProp.put(propId, new TerrainCoverage(
-                        minX, minY, minZ,
-                        maxX, maxY, maxZ,
-                        prop.getDefinitionId(),
-                        transformRevision,
-                        previous.keys()
-                ));
-                continue;
-            }
 
-            Set<Long> nextKeys = new HashSet<>();
+            Set<Long> nextKeys = geometryCoverageKeys(
+                    geometry.geometry,
+                    transform,
+                    minY,
+                    maxY
+            );
             for (int x = minX; x <= maxX; x++)
                 for (int y = minY; y <= maxY; y++)
                     for (int z = minZ; z <= maxZ; z++)
@@ -186,6 +192,171 @@ public final class TerrainCollisionManager {
 
         validateTerrainPatchesIncrementally();
         rebuildTerrainPatches();
+    }
+
+    private Set<Long> geometryCoverageKeys(
+            PropGeometry geometry,
+            Matrix4f transform,
+            int minBuildY,
+            int maxBuildY
+    ) {
+        Set<Long> keys = new HashSet<>();
+
+        for (PropGeometry.Triangle triangle : geometry.getTriangles()) {
+            Vec3 a = triangle.a();
+            Vec3 b = triangle.b();
+            Vec3 c = triangle.c();
+
+            double ax = transform.m00() * a.x + transform.m10() * a.y + transform.m20() * a.z + transform.m30();
+            double ay = transform.m01() * a.x + transform.m11() * a.y + transform.m21() * a.z + transform.m31();
+            double az = transform.m02() * a.x + transform.m12() * a.y + transform.m22() * a.z + transform.m32();
+
+            double bx = transform.m00() * b.x + transform.m10() * b.y + transform.m20() * b.z + transform.m30();
+            double by = transform.m01() * b.x + transform.m11() * b.y + transform.m21() * b.z + transform.m31();
+            double bz = transform.m02() * b.x + transform.m12() * b.y + transform.m22() * b.z + transform.m32();
+
+            double cx = transform.m00() * c.x + transform.m10() * c.y + transform.m20() * c.z + transform.m30();
+            double cy = transform.m01() * c.x + transform.m11() * c.y + transform.m21() * c.z + transform.m31();
+            double cz = transform.m02() * c.x + transform.m12() * c.y + transform.m22() * c.z + transform.m32();
+
+            if (
+                    !Double.isFinite(ax) || !Double.isFinite(ay) || !Double.isFinite(az) ||
+                    !Double.isFinite(bx) || !Double.isFinite(by) || !Double.isFinite(bz) ||
+                    !Double.isFinite(cx) || !Double.isFinite(cy) || !Double.isFinite(cz)
+            )
+                continue;
+
+            int x0 = PropPhysGeometry.floor(Math.min(ax, Math.min(bx, cx)) - TERRAIN_BOUNDS_EPSILON);
+            int x1 = PropPhysGeometry.floor(Math.max(ax, Math.max(bx, cx)) + TERRAIN_BOUNDS_EPSILON);
+
+            int y0 = Math.max(minBuildY, PropPhysGeometry.floor(Math.min(ay, Math.min(by, cy)) - TERRAIN_BOUNDS_EPSILON));
+            int y1 = Math.min(maxBuildY, PropPhysGeometry.floor(Math.max(ay, Math.max(by, cy)) + TERRAIN_BOUNDS_EPSILON));
+
+            int z0 = PropPhysGeometry.floor(Math.min(az, Math.min(bz, cz)) - TERRAIN_BOUNDS_EPSILON);
+            int z1 = PropPhysGeometry.floor(Math.max(az, Math.max(bz, cz)) + TERRAIN_BOUNDS_EPSILON);
+
+            if (y0 > y1)
+                continue;
+
+            for (int x = x0; x <= x1; x++)
+                for (int y = y0; y <= y1; y++)
+                    for (int z = z0; z <= z1; z++)
+                        if (triangleIntersectsUnitCell(
+                                ax, ay, az,
+                                bx, by, bz,
+                                cx, cy, cz,
+                                x, y, z
+                        ))
+                            keys.add(BlockPos.asLong(x, y, z));
+        }
+
+        return keys;
+    }
+
+    private static boolean triangleIntersectsUnitCell(
+            double ax, double ay, double az,
+            double bx, double by, double bz,
+            double cx, double cy, double cz,
+            int cellX, int cellY, int cellZ
+    ) {
+        double centerX = cellX + 0.5;
+        double centerY = cellY + 0.5;
+        double centerZ = cellZ + 0.5;
+
+        ax -= centerX;
+        ay -= centerY;
+        az -= centerZ;
+
+        bx -= centerX;
+        by -= centerY;
+        bz -= centerZ;
+
+        cx -= centerX;
+        cy -= centerY;
+        cz -= centerZ;
+
+        double minX = Math.min(ax, Math.min(bx, cx));
+        double maxX = Math.max(ax, Math.max(bx, cx));
+        double minY = Math.min(ay, Math.min(by, cy));
+        double maxY = Math.max(ay, Math.max(by, cy));
+        double minZ = Math.min(az, Math.min(bz, cz));
+        double maxZ = Math.max(az, Math.max(bz, cz));
+
+        double epsilon = TERRAIN_BOUNDS_EPSILON;
+        if (
+                minX > 0.5 + epsilon || maxX < -0.5 - epsilon ||
+                minY > 0.5 + epsilon || maxY < -0.5 - epsilon ||
+                minZ > 0.5 + epsilon || maxZ < -0.5 - epsilon
+        )
+            return false;
+
+        double abx = bx - ax;
+        double aby = by - ay;
+        double abz = bz - az;
+
+        double bcx = cx - bx;
+        double bcy = cy - by;
+        double bcz = cz - bz;
+
+        double cax = ax - cx;
+        double cay = ay - cy;
+        double caz = az - cz;
+
+        double acx = cx - ax;
+        double acy = cy - ay;
+        double acz = cz - az;
+
+        double nx = aby * acz - abz * acy;
+        double ny = abz * acx - abx * acz;
+        double nz = abx * acy - aby * acx;
+        if (!axisOverlapsUnitBox(
+                nx, ny, nz,
+                ax, ay, az,
+                bx, by, bz,
+                cx, cy, cz
+        ))
+            return false;
+
+        return
+                edgeAxesOverlap(abx, aby, abz, ax, ay, az, bx, by, bz, cx, cy, cz) &&
+                edgeAxesOverlap(bcx, bcy, bcz, ax, ay, az, bx, by, bz, cx, cy, cz) &&
+                edgeAxesOverlap(cax, cay, caz, ax, ay, az, bx, by, bz, cx, cy, cz);
+    }
+
+    private static boolean edgeAxesOverlap(
+            double ex, double ey, double ez,
+            double ax, double ay, double az,
+            double bx, double by, double bz,
+            double cx, double cy, double cz
+    ) {
+        return axisOverlapsUnitBox(
+                0.0, -ez, ey,
+                ax, ay, az, bx, by, bz, cx, cy, cz
+        ) && axisOverlapsUnitBox(
+                ez, 0.0, -ex,
+                ax, ay, az, bx, by, bz, cx, cy, cz
+        ) && axisOverlapsUnitBox(
+                -ey, ex, 0.0,
+                ax, ay, az, bx, by, bz, cx, cy, cz
+        );
+    }
+
+    private static boolean axisOverlapsUnitBox(
+            double axisX, double axisY, double axisZ,
+            double ax, double ay, double az,
+            double bx, double by, double bz,
+            double cx, double cy, double cz
+    ) {
+        double projectionA = axisX * ax + axisY * ay + axisZ * az;
+        double projectionB = axisX * bx + axisY * by + axisZ * bz;
+        double projectionC = axisX * cx + axisY * cy + axisZ * cz;
+
+        double minProjection = Math.min(projectionA, Math.min(projectionB, projectionC));
+        double maxProjection = Math.max(projectionA, Math.max(projectionB, projectionC));
+
+        double radius = 0.5 * (Math.abs(axisX) + Math.abs(axisY) + Math.abs(axisZ)) + TERRAIN_BOUNDS_EPSILON;
+
+        return minProjection <= radius && maxProjection >= -radius;
     }
 
     private void retainTerrainKey(long key) {

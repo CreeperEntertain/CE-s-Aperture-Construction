@@ -135,21 +135,48 @@ public final class PropBodyManager {
             PropDefinition definition,
             PropPhysGeometry.GeometryData geometry
     ) {
-        List<PropPhysGeometry.FloatPoint> vertices = PropPhysGeometry.scaledUniqueVertices(geometry.geometry, prop.getScale());
-        if (vertices.size() < 4) {
-            LOGGER.warn("Prop {} has fewer than four unique collision vertices", prop.getDefinitionId());
+        boolean useTriangleMesh = prop.getMotionMode() == PropMotionMode.STATIC;
+        Vec3 scale = prop.getScale();
+        if (useTriangleMesh && (
+                Math.abs(scale.x) < 1.0e-6 ||
+                Math.abs(scale.y) < 1.0e-6 ||
+                Math.abs(scale.z) < 1.0e-6
+        )) {
+            LOGGER.warn("Cannot create triangle mesh for prop {} with a near-zero scale", prop.getDefinitionId());
             return null;
         }
 
-        b3HullData hull = PropPhysGeometry.createHull(vertices, PropPhysGeometry.MAX_PROP_HULL_VERTICES);
-        if (hull == null || hull.isNull()) {
-            LOGGER.warn("Could not create Box3D convex hull for prop {}", prop.getDefinitionId());
-            return null;
-        }
-
+        b3HullData hull = null;
+        b3MeshData mesh = null;
         b3BodyId body = null;
 
         try {
+            double shapeVolume;
+
+            if (useTriangleMesh) {
+                mesh = manager.getCollisionMesh(definition.getModelId(), geometry);
+                if (mesh == null || mesh.isNull()) {
+                    LOGGER.warn("Could not create Box3D triangle mesh for prop {}", prop.getDefinitionId());
+                    return null;
+                }
+                shapeVolume = geometry.geometry.getVolume() * Math.abs(scale.x * scale.y * scale.z);
+            } else {
+                List<PropPhysGeometry.FloatPoint> vertices =
+                        PropPhysGeometry.scaledUniqueVertices(geometry.geometry, scale);
+                if (vertices.size() < 4) {
+                    LOGGER.warn("Prop {} has fewer than four unique collision vertices", prop.getDefinitionId());
+                    return null;
+                }
+
+                hull = PropPhysGeometry.createHull(vertices, PropPhysGeometry.MAX_PROP_HULL_VERTICES);
+                if (hull == null || hull.isNull()) {
+                    LOGGER.warn("Could not create Box3D convex hull for prop {}", prop.getDefinitionId());
+                    return null;
+                }
+
+                shapeVolume = hull.volume();
+            }
+
             PropPhysDefinition physics = definition.getPhysDefinition();
 
             b3BodyDef bodyDefinition = b3DefaultBodyDef();
@@ -167,10 +194,15 @@ public final class PropBodyManager {
 
             float density = physics.getDensity();
             Float massOverride = physics.getMassOverride();
-            if (massOverride != null && hull.volume() > 1.0e-6f)
-                density = massOverride / hull.volume();
+            if (massOverride != null && shapeVolume > 1.0e-6)
+                density = (float) (massOverride / shapeVolume);
 
-            double propMass = Math.max(1.0e-3, (double) density * hull.volume());
+            double propMass = Math.max(
+                    1.0e-3,
+                    massOverride != null
+                            ? massOverride.doubleValue()
+                            : (double) density * shapeVolume
+            );
 
             boolean sensor = prop.getCollisionMode() == PropCollisionMode.NONE;
             long category = PropPhysGeometry.categoryFor(prop.getCollisionMode());
@@ -190,7 +222,16 @@ public final class PropBodyManager {
             material.restitution(physics.getRestitution());
             shapeDefinition.baseMaterial(material);
 
-            b3CreateHullShape(body, shapeDefinition, hull);
+            if (useTriangleMesh) {
+                b3CreateMeshShape(
+                        body,
+                        shapeDefinition,
+                        mesh,
+                        PropPhysGeometry.toBoxVec(scale)
+                );
+            } else {
+                b3CreateHullShape(body, shapeDefinition, hull);
+            }
 
             return new PropBody(
                     prop,
@@ -199,7 +240,7 @@ public final class PropBodyManager {
                     prop.getDefinitionId(),
                     prop.getCollisionMode(),
                     prop.getMotionMode(),
-                    prop.getScale(),
+                    scale,
                     propMass,
                     physics.getRestitution(),
                     physics.getGravityScale(),
@@ -211,7 +252,8 @@ public final class PropBodyManager {
             LOGGER.error("Failed to create physics body for prop {}", prop.getId(), exception);
             return null;
         } finally {
-            b3DestroyHull(hull);
+            if (hull != null && !hull.isNull())
+                b3DestroyHull(hull);
         }
     }
 

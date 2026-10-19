@@ -6,6 +6,7 @@ import net.centertain.ceac.prop.enums.PropCollisionMode;
 import net.centertain.ceac.prop.enums.PropMotionMode;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.bytedeco.javacpp.IntPointer;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
@@ -18,7 +19,7 @@ import static cc.modlabs.box3d.global.Box3D.*;
 
 @SuppressWarnings("resource")
 public final class PropPhysGeometry {
-    static final int MAX_PROP_HULL_VERTICES = 32;
+    static final int MAX_PROP_HULL_VERTICES = 128;
 
     private static final long CATEGORY_WORLD = 1L;
     private static final long CATEGORY_SOLID_PROP = 1L << 1;
@@ -135,6 +136,128 @@ public final class PropPhysGeometry {
                     Math.min(maxVertices, vertices.size())
             );
         }
+    }
+
+    static b3MeshData createCollisionMesh(PropGeometry geometry) {
+        List<PropGeometry.Triangle> triangles = geometry.getTriangles();
+
+        Map<PointKey, Integer> vertexIndices = new LinkedHashMap<>();
+        List<FloatPoint> vertices = new ArrayList<>(triangles.size());
+        int[] indices = new int[triangles.size() * 3];
+        int indexCount = 0;
+
+        for (PropGeometry.Triangle triangle : triangles) {
+            Vec3 a = triangle.a();
+            Vec3 b = triangle.b();
+            Vec3 c = triangle.c();
+
+            float ax = (float) a.x;
+            float ay = (float) a.y;
+            float az = (float) a.z;
+
+            float bx = (float) b.x;
+            float by = (float) b.y;
+            float bz = (float) b.z;
+
+            float cx = (float) c.x;
+            float cy = (float) c.y;
+            float cz = (float) c.z;
+
+            if (
+                    !Float.isFinite(ax) || !Float.isFinite(ay) || !Float.isFinite(az) ||
+                    !Float.isFinite(bx) || !Float.isFinite(by) || !Float.isFinite(bz) ||
+                    !Float.isFinite(cx) || !Float.isFinite(cy) || !Float.isFinite(cz)
+            )
+                continue;
+
+            double abx = (double) bx - ax;
+            double aby = (double) by - ay;
+            double abz = (double) bz - az;
+
+            double acx = (double) cx - ax;
+            double acy = (double) cy - ay;
+            double acz = (double) cz - az;
+
+            double normalX = aby * acz - abz * acy;
+            double normalY = abz * acx - abx * acz;
+            double normalZ = abx * acy - aby * acx;
+
+            double areaSqr = normalX * normalX + normalY * normalY + normalZ * normalZ;
+            if (!Double.isFinite(areaSqr) || areaSqr < 1.0e-20)
+                continue;
+
+            int ia = meshVertexIndex(vertexIndices, vertices, ax, ay, az);
+            int ib = meshVertexIndex(vertexIndices, vertices, bx, by, bz);
+            int ic = meshVertexIndex(vertexIndices, vertices, cx, cy, cz);
+            if (ia == ib || ib == ic || ic == ia)
+                continue;
+
+            indices[indexCount++] = ia;
+            indices[indexCount++] = ib;
+            indices[indexCount++] = ic;
+        }
+
+        int triangleCount = indexCount / 3;
+        if (vertices.size() < 3 || triangleCount == 0)
+            return null;
+
+        try (
+                b3Vec3 nativeVertices = new b3Vec3(vertices.size());
+                IntPointer nativeIndices = new IntPointer(indexCount);
+                b3MeshDef definition = new b3MeshDef()
+        ) {
+            for (int i = 0; i < vertices.size(); i++) {
+                FloatPoint point = vertices.get(i);
+                nativeVertices.position(i).x(point.x).y(point.y).z(point.z);
+            }
+            for (int i = 0; i < indexCount; i++)
+                nativeIndices.position(i).put(indices[i]);
+
+            definition.vertices(nativeVertices);
+            definition.stride(0L);
+            definition.indices(nativeIndices);
+            definition.materialIndices(null);
+            definition.weldTolerance(1.0e-5f);
+            definition.vertexCount(vertices.size());
+            definition.triangleCount(triangleCount);
+            definition.weldVertices(true);
+            definition.useMedianSplit(false);
+            definition.identifyEdges(true);
+            definition.clockWiseWinding(false);
+
+            b3MeshData mesh = b3CreateMesh(definition, (IntPointer) null, 0);
+
+            return mesh != null && !mesh.isNull() ? mesh : null;
+        }
+    }
+
+    private static int meshVertexIndex(
+            Map<PointKey, Integer> vertexIndices,
+            List<FloatPoint> vertices,
+            float x,
+            float y,
+            float z
+    ) {
+        // -0 assignment force removal
+        // for identical position deduplication
+        if (x == 0.0f) x = 0.0f;
+        if (y == 0.0f) y = 0.0f;
+        if (z == 0.0f) z = 0.0f;
+
+        PointKey key = new PointKey(
+                Float.floatToIntBits(x),
+                Float.floatToIntBits(y),
+                Float.floatToIntBits(z)
+        );
+        Integer existing = vertexIndices.get(key);
+        if (existing != null)
+            return existing;
+
+        int index = vertices.size();
+        vertices.add(new FloatPoint(x, y, z));
+        vertexIndices.put(key, index);
+
+        return index;
     }
 
     @SuppressWarnings("SameParameterValue")
