@@ -469,6 +469,7 @@ public final class PropPreviewer {
         drawSegment(consumer, pose, normalMatrix, start, end, OUTLINE_COLOR);
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static void drawSegment(
             VertexConsumer consumer,
             Matrix4f pose,
