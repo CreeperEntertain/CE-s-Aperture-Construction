@@ -203,15 +203,6 @@ public class CrowbarItem extends BasicItem {
 
         ItemStack stack = context.getItemInHand();
         stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(context.getHand()));
-        // TODO: Fix duplicate sound
-        level.playSound(
-                null,
-                pos,
-                ModSounds.CROWBAR_CLANK.get(),
-                SoundSource.BLOCKS,
-                Mathworks.randomBetween(0.9f, 1.1f),
-                Mathworks.randomBetween(0.9f, 1.1f)
-        );
 
         return InteractionResult.SUCCESS;
     }
