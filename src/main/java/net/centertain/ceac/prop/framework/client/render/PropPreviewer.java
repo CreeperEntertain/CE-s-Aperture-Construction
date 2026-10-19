@@ -183,42 +183,19 @@ public final class PropPreviewer {
         if (captureCollision) {
             VertexConsumer collisionConsumer = buffers.getBuffer(PropCollisionHatching.CAPTURE_TYPE);
 
-            for (PropGeometry.Triangle triangle : geometry.getTriangles()) {
-                Vec3 a = triangle.a();
-                Vec3 b = triangle.b();
-                Vec3 c = triangle.c();
+            emitTriangles(collisionConsumer, geometry, poseMatrix);
+            buffers.endBatch(PropCollisionHatching.CAPTURE_TYPE);
+            PropCollisionHatching.beginPropDepthCapture();
 
-                collisionConsumer
-                        .vertex(
-                                poseMatrix,
-                                (float) a.x,
-                                (float) a.y,
-                                (float) a.z
-                        )
-                        .endVertex();
-                collisionConsumer
-                        .vertex(
-                                poseMatrix,
-                                (float) b.x,
-                                (float) b.y,
-                                (float) b.z
-                        )
-                        .endVertex();
-                collisionConsumer
-                        .vertex(
-                                poseMatrix,
-                                (float) c.x,
-                                (float) c.y,
-                                (float) c.z
-                        )
-                        .endVertex();
-            }
+            VertexConsumer depthConsumer = buffers.getBuffer(PropCollisionHatching.DEPTH_TYPE);
+
+            emitTriangles(depthConsumer, geometry, poseMatrix);
+            buffers.endBatch(PropCollisionHatching.DEPTH_TYPE);
         }
 
         poseStack.popPose();
 
         if (captureCollision) {
-            buffers.endBatch(PropCollisionHatching.CAPTURE_TYPE);
             PropCollisionHatching.finishAndRender();
         }
 
@@ -329,6 +306,22 @@ public final class PropPreviewer {
         }
 
         return true;
+    }
+
+    private static void emitTriangles(
+            VertexConsumer consumer,
+            PropGeometry geometry,
+            Matrix4f poseMatrix
+    ) {
+        for (PropGeometry.Triangle triangle : geometry.getTriangles()) {
+            Vec3 a = triangle.a();
+            Vec3 b = triangle.b();
+            Vec3 c = triangle.c();
+
+            consumer.vertex(poseMatrix, (float) a.x, (float) a.y, (float) a.z).endVertex();
+            consumer.vertex(poseMatrix, (float) b.x, (float) b.y, (float) b.z).endVertex();
+            consumer.vertex(poseMatrix, (float) c.x, (float) c.y, (float) c.z).endVertex();
+        }
     }
 
     private static void drawVisibleParts(

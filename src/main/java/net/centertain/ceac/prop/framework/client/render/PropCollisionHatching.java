@@ -46,8 +46,30 @@ public final class PropCollisionHatching {
                     .createCompositeState(false)
     );
 
+    public static final RenderType DEPTH_TYPE = RenderType.create(
+            "ceac_prop_collision_depth",
+            DefaultVertexFormat.POSITION,
+            VertexFormat.Mode.TRIANGLES,
+            65536,
+            false,
+            false,
+            RenderType.CompositeState.builder()
+                    .setShaderState(new RenderStateShard.ShaderStateShard(
+                            PropCollisionShaders::getDepth
+                    ))
+                    .setDepthTestState(new RenderStateShard.DepthTestStateShard(
+                            "lequal", GL11.GL_LEQUAL
+                    ))
+                    .setCullState(new RenderStateShard.CullStateShard(false))
+                    .setWriteMaskState(new RenderStateShard.WriteMaskStateShard(
+                            false, true
+                    ))
+                    .createCompositeState(false)
+    );
+
     private static RenderTarget worldDepthTarget;
     private static RenderTarget visibleDepthTarget;
+    private static RenderTarget propDepthTarget;
     private static boolean worldDepthReady;
 
     private static int crossingsTexture;
@@ -110,7 +132,12 @@ public final class PropCollisionHatching {
     }
 
     public static void finishAndRender() {
-        if (crossingsTexture == 0 || worldDepthTarget == null || visibleDepthTarget == null)
+        if (
+                crossingsTexture == 0 ||
+                worldDepthTarget == null ||
+                visibleDepthTarget == null ||
+                propDepthTarget == null
+        )
             return;
 
         GL42.glMemoryBarrier(GL42.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL42.GL_TEXTURE_FETCH_BARRIER_BIT);
@@ -129,15 +156,18 @@ public final class PropCollisionHatching {
 
         int worldDepth = worldDepthTarget.getDepthTextureId();
         int visibleDepth = visibleDepthTarget.getDepthTextureId();
+        int propDepth = propDepthTarget.getDepthTextureId();
 
         RenderSystem.setShader(() -> shader);
         RenderSystem.setShaderTexture(0, worldDepth);
         RenderSystem.setShaderTexture(1, visibleDepth);
         RenderSystem.setShaderTexture(2, crossingsTexture);
+        RenderSystem.setShaderTexture(3, propDepth);
 
         shader.setSampler("SceneDepth", worldDepth);
         shader.setSampler("VisibleDepth", visibleDepth);
         shader.setSampler("Crossings", crossingsTexture);
+        shader.setSampler("PropDepth", propDepth);
 
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
@@ -177,6 +207,11 @@ public final class PropCollisionHatching {
             visibleDepthTarget.resize(width, height, Minecraft.ON_OSX);
         } else if (visibleDepthTarget.width != width || visibleDepthTarget.height != height)
             visibleDepthTarget.resize(width, height, Minecraft.ON_OSX);
+        if (propDepthTarget == null) {
+            propDepthTarget = new TextureTarget(width, height, true, Minecraft.ON_OSX);
+            propDepthTarget.resize(width, height, Minecraft.ON_OSX);
+        } else if (propDepthTarget.width != width || propDepthTarget.height != height)
+            propDepthTarget.resize(width, height, Minecraft.ON_OSX);
         if (crossingsTexture != 0 && targetWidth == width && targetHeight == height)
             return;
 
@@ -244,5 +279,12 @@ public final class PropCollisionHatching {
             GL11.glDeleteTextures(crossingsTexture);
             crossingsTexture = 0;
         }
+    }
+
+    public static void beginPropDepthCapture() {
+        if (propDepthTarget == null)
+            return;
+        propDepthTarget.clear(Minecraft.ON_OSX);
+        propDepthTarget.bindWrite(true);
     }
 }
