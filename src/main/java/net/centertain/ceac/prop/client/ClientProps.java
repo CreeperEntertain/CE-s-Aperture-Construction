@@ -3,7 +3,7 @@ package net.centertain.ceac.prop.client;
 import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
-import net.centertain.ceac.prop.PropDefinitions;
+import net.centertain.ceac.prop.ModProps;
 import net.centertain.ceac.prop.PropGeometry;
 import net.centertain.ceac.prop.client.render.PropLightingSolver;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
@@ -227,7 +227,7 @@ public final class ClientProps {
                         if (prop.getCollisionMode() != PropCollisionMode.SOLID)
                             continue;
 
-                        PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+                        PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
                         if (definition == null)
                             continue;
 

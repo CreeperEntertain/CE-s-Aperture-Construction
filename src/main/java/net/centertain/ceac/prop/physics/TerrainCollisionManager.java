@@ -4,7 +4,7 @@ import cc.modlabs.box3d.*;
 import com.mojang.logging.LogUtils;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
-import net.centertain.ceac.prop.PropDefinitions;
+import net.centertain.ceac.prop.ModProps;
 import net.centertain.ceac.prop.PropGeometry;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
 import net.minecraft.core.BlockPos;
@@ -99,7 +99,7 @@ public final class TerrainCollisionManager {
             if (prop.getCollisionMode() == PropCollisionMode.NONE)
                 continue;
 
-            PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+            PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
             if (definition == null)
                 continue;
 

@@ -2,7 +2,7 @@ package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
-import net.centertain.ceac.prop.PropTypes;
+import net.centertain.ceac.prop.ModProps;
 import net.centertain.ceac.prop.enums.PropMotionMode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -45,7 +45,7 @@ public class PropPlacerItem extends Item {
             );
             Prop prop = new Prop(
                     UUID.randomUUID(),
-                    PropTypes.TEST_PROP,
+                    ModProps.TEST_PROP.getId(),
                     transform,
                     PropCollisionMode.SOLID,
                     PropMotionMode.DYNAMIC

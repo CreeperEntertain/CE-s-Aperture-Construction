@@ -56,7 +56,7 @@ public final class PropTargeting {
         for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++)
             for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++)
                 for (Prop prop : ClientProps.getInChunk(chunkX, chunkZ)) {
-                    PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+                    PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
                     if (definition == null || !definition.isTargetable())
                         continue;
 

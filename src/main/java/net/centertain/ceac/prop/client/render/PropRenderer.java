@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
-import net.centertain.ceac.prop.PropDefinitions;
+import net.centertain.ceac.prop.ModProps;
 import net.centertain.ceac.prop.client.ClientPropMiningProgress;
 import net.centertain.ceac.prop.client.ClientProps;
 import net.centertain.ceac.prop.client.PropMiningClient;
@@ -126,7 +126,7 @@ public final class PropRenderer {
         if (!minecraft.levelRenderer.getFrustum().isVisible(bounds))
             return;
 
-        PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+        PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
         if (definition == null)
             return;
 
@@ -443,7 +443,7 @@ public final class PropRenderer {
 
     public static void renderOutline(RenderHighlightEvent.Block event, Prop prop) {
         Minecraft minecraft = Minecraft.getInstance();
-        PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+        PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
         if (definition == null || minecraft.level == null)
             return;
 

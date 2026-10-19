@@ -115,7 +115,7 @@ public final class PropMiningClient {
         else
             minecraft.player.swing(InteractionHand.MAIN_HAND);
 
-        PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+        PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
         boolean creative = minecraft.player.getAbilities().instabuild;
         if (definition != null && (creative || definition.getMinable())) {
             predictedProgress += PropMiningMath.getDestroyProgress(

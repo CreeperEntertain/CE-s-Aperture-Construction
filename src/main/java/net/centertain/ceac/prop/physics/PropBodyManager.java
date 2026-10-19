@@ -5,7 +5,7 @@ import com.mojang.logging.LogUtils;
 import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.prop.Prop;
 import net.centertain.ceac.prop.PropDefinition;
-import net.centertain.ceac.prop.PropDefinitions;
+import net.centertain.ceac.prop.ModProps;
 import net.centertain.ceac.prop.enums.PropCollisionMode;
 import net.centertain.ceac.prop.enums.PropMotionMode;
 import net.centertain.ceac.prop.network.SyncPropPacket;
@@ -82,7 +82,7 @@ public final class PropBodyManager {
     }
 
     private void synchronizeProp(Prop prop, LevelChunk ownerChunk) {
-        PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+        PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
         if (definition == null) {
             destroyPropBody(prop.getId());
             return;

@@ -6,15 +6,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 public final class PropRaycast {
     private static final double EPSILON = 1.0e-5;
@@ -65,7 +61,7 @@ public final class PropRaycast {
                 if (chunk == null)
                     continue;
                 for (Prop prop : PropCapabilities.get(chunk).getProps().values()) {
-                    PropDefinition definition = PropDefinitions.get(prop.getDefinitionId()).orElse(null);
+                    PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
                     if (definition == null || !definition.isTargetable())
                         continue;
 

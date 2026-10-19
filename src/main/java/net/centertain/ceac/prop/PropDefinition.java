@@ -9,8 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-@SuppressWarnings("ClassCanBeRecord")
-public final class PropDefinition {
+public abstract class PropDefinition {
     private final ResourceLocation modelId;
     private final SoundType soundType;
     private final float destroyTime;
