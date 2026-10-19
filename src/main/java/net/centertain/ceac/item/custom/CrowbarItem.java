@@ -132,7 +132,7 @@ public class CrowbarItem extends BasicItem {
         else if (blockHit.getType() != HitResult.Type.MISS)
             playSound(level, ModSounds.CROWBAR_CLANK.get(), blockHit.getLocation());
         else
-            playSound(level, ModSounds.CROWBAR_SWING.get(), player.getEyePosition());
+            playCenteredSwingSound(player);
 
         return false;
     }
@@ -153,6 +153,28 @@ public class CrowbarItem extends BasicItem {
             return 6 + (1 + fatigue.getAmplifier()) * 2;
 
         return 6;
+    }
+
+    private void playCenteredSwingSound(Player player) {
+        SoundEvent sound = ModSounds.CROWBAR_SWING.get();
+        SoundSource source = SoundSource.BLOCKS;
+
+        float volume = Mathworks.randomBetween(0.9f, 1.1f);
+        float pitch = Mathworks.randomBetween(0.9f, 1.1f);
+
+        Vec3 position = player.getEyePosition();
+
+        player.level().playSound(
+                player,
+                position.x,
+                position.y,
+                position.z,
+                sound,
+                source,
+                volume,
+                pitch
+        );
+        player.playNotifySound(sound, source, volume, pitch);
     }
 
     private void playSound(
