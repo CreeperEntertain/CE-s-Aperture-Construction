@@ -235,7 +235,7 @@ public final class PropPreviewer {
             Vec3 camera
     ) {
         if (edge.adjacent.size() == 1)
-            return true;
+            return false;
 
         boolean facingCamera = false;
         boolean facingAway = false;
@@ -260,10 +260,10 @@ public final class PropPreviewer {
             else if (facing < -FACING_EPSILON)
                 facingAway = true;
             if (facingCamera && facingAway)
-                return true;
+                return false;
         }
 
-        return false;
+        return true;
     }
 
     private static void drawVisibleParts(
