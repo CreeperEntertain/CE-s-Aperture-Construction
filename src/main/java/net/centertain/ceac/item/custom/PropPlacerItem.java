@@ -1,11 +1,13 @@
 package net.centertain.ceac.item.custom;
 
 import net.centertain.ceac.prop.framework.Prop;
+import net.centertain.ceac.prop.framework.client.render.PropPreviewer;
 import net.centertain.ceac.prop.framework.enums.PropCollisionMode;
 import net.centertain.ceac.prop.ModProps;
 import net.centertain.ceac.prop.framework.enums.PropMotionMode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -22,6 +24,27 @@ import java.util.UUID;
 public class PropPlacerItem extends Item {
     public PropPlacerItem(Properties properties) {
         super(properties);
+    }
+
+
+    @Override
+    public void inventoryTick(
+            @NotNull ItemStack stack,
+            @NotNull Level level,
+            @NotNull Entity entity,
+            int slot,
+            boolean selected
+    ) {
+        super.inventoryTick(stack, level, entity, slot, selected);
+        if (!(level.isClientSide && entity instanceof Player player))
+            return;
+
+        boolean offhand = player.getOffhandItem() == stack;
+        if (!selected && !offhand)
+            return;
+        if (offhand && player.getMainHandItem().getItem() instanceof PropPlacerItem)
+            return;
+        PropPreviewer.render(ModProps.TEST_PROP.getId());
     }
 
     @Override
