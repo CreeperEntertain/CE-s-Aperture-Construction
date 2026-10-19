@@ -1,0 +1,20 @@
+{
+  "vertex": "ceac:prop_collision_resolve",
+  "fragment": "ceac:prop_collision_resolve",
+
+  "attributes": [
+    "Position"
+  ],
+
+  "samplers": [
+    {
+      "name": "SceneDepth"
+    },
+    {
+      "name": "VisibleDepth"
+    },
+    {
+      "name": "Crossings"
+    }
+  ]
+}
