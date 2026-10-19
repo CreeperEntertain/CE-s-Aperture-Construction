@@ -1,7 +1,7 @@
 package net.centertain.ceac.client.mixin;
 
-import net.centertain.ceac.prop.physics.PropEntityCollision;
-import net.centertain.ceac.prop.physics.PropPhysManager;
+import net.centertain.ceac.prop.framework.physics.PropEntityCollision;
+import net.centertain.ceac.prop.framework.physics.PropPhysManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;

@@ -1,7 +1,7 @@
 package net.centertain.ceac.client.mixin;
 
-import net.centertain.ceac.prop.PropHitResult;
-import net.centertain.ceac.prop.client.PropMiningClient;
+import net.centertain.ceac.prop.framework.common.PropHitResult;
+import net.centertain.ceac.prop.framework.client.PropMiningClient;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

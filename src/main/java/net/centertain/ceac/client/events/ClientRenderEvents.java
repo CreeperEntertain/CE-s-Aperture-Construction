@@ -7,7 +7,7 @@ import net.centertain.ceac.decal.client.render.DecalRenderer;
 import net.centertain.ceac.material.preview.MaterialPlacement;
 import net.centertain.ceac.material.preview.MaterialPreviewer;
 import net.centertain.ceac.phys_screen.utility.PhysRenderHelper;
-import net.centertain.ceac.prop.client.render.PropRenderer;
+import net.centertain.ceac.prop.framework.client.render.PropRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;

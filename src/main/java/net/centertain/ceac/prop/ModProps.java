@@ -1,5 +1,6 @@
 package net.centertain.ceac.prop;
 
+import net.centertain.ceac.prop.framework.PropDefinition;
 import net.centertain.ceac.prop.props.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;

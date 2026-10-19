@@ -1,8 +1,8 @@
 package net.centertain.ceac.prop.props;
 
-import net.centertain.ceac.prop.PropDefinition;
+import net.centertain.ceac.prop.framework.PropDefinition;
 import net.centertain.ceac.prop.ModPropModels;
-import net.centertain.ceac.prop.physics.PropPhysDefinition;
+import net.centertain.ceac.prop.framework.physics.PropPhysDefinition;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraftforge.common.ToolActions;
 

@@ -6,7 +6,7 @@ import net.centertain.ceac.material.network.BuyItemPacket;
 import net.centertain.ceac.material.network.MaterialOffsetPacket;
 import net.centertain.ceac.material.network.SellItemPacket;
 import net.centertain.ceac.material.network.SyncCurrencyPacket;
-import net.centertain.ceac.prop.network.*;
+import net.centertain.ceac.prop.framework.network.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;

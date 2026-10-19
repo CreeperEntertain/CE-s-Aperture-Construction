@@ -2,8 +2,8 @@ package net.centertain.ceac.client.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.phys_screen.framework.GameRendererViewOffsetAccessor;
-import net.centertain.ceac.prop.PropHitResult;
-import net.centertain.ceac.prop.client.PropTargeting;
+import net.centertain.ceac.prop.framework.common.PropHitResult;
+import net.centertain.ceac.prop.framework.client.PropTargeting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import org.joml.Matrix4f;

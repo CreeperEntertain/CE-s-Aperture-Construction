@@ -1,6 +1,6 @@
 package net.centertain.ceac.client.mixin;
 
-import net.centertain.ceac.prop.client.PropMiningClient;
+import net.centertain.ceac.prop.framework.client.PropMiningClient;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

@@ -1,7 +1,7 @@
 package net.centertain.ceac.client.mixin;
 
-import net.centertain.ceac.prop.client.ClientProps;
-import net.centertain.ceac.prop.physics.PropEntityCollision;
+import net.centertain.ceac.prop.framework.client.ClientProps;
+import net.centertain.ceac.prop.framework.physics.PropEntityCollision;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;

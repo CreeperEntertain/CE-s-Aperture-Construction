@@ -1,9 +1,9 @@
 package net.centertain.ceac.item.custom;
 
-import net.centertain.ceac.prop.Prop;
-import net.centertain.ceac.prop.enums.PropCollisionMode;
+import net.centertain.ceac.prop.framework.Prop;
+import net.centertain.ceac.prop.framework.enums.PropCollisionMode;
 import net.centertain.ceac.prop.ModProps;
-import net.centertain.ceac.prop.enums.PropMotionMode;
+import net.centertain.ceac.prop.framework.enums.PropMotionMode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
