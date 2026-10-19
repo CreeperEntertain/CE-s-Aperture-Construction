@@ -4,7 +4,6 @@ import net.centertain.ceac.prop.physics.PropPhysDefinition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.ToolAction;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,7 +16,6 @@ public final class PropDefinition {
     private final float destroyTime;
     private final boolean targetable;
     private final boolean minable;
-    private final AABB localHitbox;
     @Nullable private final ToolAction effectiveToolAction;
     private final int requiredToolLevel;
     @Nullable private final Item dropItem;
@@ -29,7 +27,6 @@ public final class PropDefinition {
             float destroyTime,
             boolean targetable,
             boolean minable,
-            AABB localHitbox,
             @Nullable ToolAction effectiveToolAction,
             int requiredToolLevel,
             @Nullable Item dropItem
@@ -40,7 +37,6 @@ public final class PropDefinition {
                 destroyTime,
                 targetable,
                 minable,
-                localHitbox,
                 effectiveToolAction,
                 requiredToolLevel,
                 dropItem,
@@ -54,7 +50,6 @@ public final class PropDefinition {
             float destroyTime,
             boolean targetable,
             boolean minable,
-            AABB localHitbox,
             @Nullable ToolAction effectiveToolAction,
             int requiredToolLevel,
             @Nullable Item dropItem,
@@ -71,7 +66,6 @@ public final class PropDefinition {
         this.destroyTime = destroyTime;
         this.targetable = targetable;
         this.minable = minable;
-        this.localHitbox = Objects.requireNonNull(localHitbox);
         this.effectiveToolAction = effectiveToolAction;
         this.requiredToolLevel = requiredToolLevel;
         this.dropItem = dropItem;
@@ -93,9 +87,6 @@ public final class PropDefinition {
     }
     public boolean getMinable() {
         return minable;
-    }
-    public AABB getLocalHitbox() {
-        return localHitbox;
     }
     public @Nullable ToolAction getEffectiveToolAction() {
         return effectiveToolAction;
