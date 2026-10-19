@@ -1014,13 +1014,13 @@ public class TextInput implements Element, Hoverable, GuiEventListener {
     private void ensureCursorVisible() {
         int cursor = textHelper.getCursorPos();
         double cursorX = font.width(text.substring(0, cursor));
-        double visibleWIdth = getContentWidth() / textScale;
+        double visibleWidth = getContentWidth() / textScale;
         double cursorMargin = 1.0 / textScale;
 
         if (cursorX < displayOffset)
             displayOffset = cursorX;
-        else if (cursorX > displayOffset + visibleWIdth - cursorMargin)
-            displayOffset = cursorX - visibleWIdth + cursorMargin;
+        else if (cursorX > displayOffset + visibleWidth - cursorMargin)
+            displayOffset = cursorX - visibleWidth + cursorMargin;
 
         clampDisplayOffset();
     }
