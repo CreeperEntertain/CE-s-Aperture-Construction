@@ -8,6 +8,10 @@ import net.centertain.ceac.decal.server.DecalBreakage;
 import net.centertain.ceac.material.preview.MaterialPlacement;
 import net.centertain.ceac.material.shapes.MaterialShapeSoundEvents;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeSelectionOutline;
+import net.centertain.ceac.prop.framework.common.PropHitResult;
+import net.centertain.ceac.prop.framework.client.ClientPropMiningProgress;
+import net.centertain.ceac.prop.framework.client.PropMiningClient;
+import net.centertain.ceac.prop.framework.client.render.PropRenderer;
 import net.centertain.ceac.utility.Soundworks;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -20,6 +24,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.NotNull;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
@@ -60,6 +65,8 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientDecals.clear();
+        ClientPropMiningProgress.clear();
+        PropMiningClient.reset();
     }
 
     @SubscribeEvent
@@ -91,5 +98,14 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void onPlaySound(PlaySoundEvent event) {
         MaterialShapeSoundEvents.handleGeneralSoundEvents(event);
+    }
+
+    @SubscribeEvent
+    public static void onPropHighlight(@NotNull RenderHighlightEvent.Block event) {
+        if (!(event.getTarget() instanceof PropHitResult hit))
+            return;
+
+        event.setCanceled(true);
+        PropRenderer.renderOutline(event, hit.getProp());
     }
 }

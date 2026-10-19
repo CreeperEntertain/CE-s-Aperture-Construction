@@ -7,6 +7,7 @@ import net.centertain.ceac.decal.client.render.DecalRenderer;
 import net.centertain.ceac.material.preview.MaterialPlacement;
 import net.centertain.ceac.material.preview.MaterialPreviewer;
 import net.centertain.ceac.phys_screen.utility.PhysRenderHelper;
+import net.centertain.ceac.prop.framework.client.render.PropRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -31,6 +32,9 @@ public final class ClientRenderEvents {
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
         PoseStack poseStack = event.getPoseStack();
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES)
+            PropRenderer.render(event);
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS)
             decalRendering(event, poseStack, bufferSource);

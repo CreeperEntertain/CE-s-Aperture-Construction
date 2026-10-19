@@ -162,6 +162,10 @@ repositories {
     maven {
         url = uri("https://maven.wso2.org/nexus/content/repositories/public/")
     }
+    maven {
+        name = 'ModLabs'
+        url = uri('https://repo-api.modlabs.cc/repo/maven/maven-public/')
+    }
 }
 
 dependencies {
@@ -188,13 +192,18 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
+    jarJar minecraftLibrary(group: "org.msgpack", name: "msgpack-core", version: "0.8.16") {
+        jarJar.ranged(it, "[0.8.16,0.8.17)")
+    }
+
     jarJar minecraftLibrary(group: "dev.thecodewarrior", name: "bitfont", version: "0.4.0-beta.3") {
         exclude group: "org.jetbrains", module: "annotations"
         jarJar.ranged(it, "[0.4.0-beta.3,)")
     }
 
-    jarJar minecraftLibrary(group: "org.msgpack", name: "msgpack-core", version: "0.8.16") {
-        jarJar.ranged(it, "[0.8.16,0.8.17)")
+    jarJar minecraftLibrary(group: "cc.modlabs", name: "box3d4j", version: "git-8128d74-1.0.2") {
+        exclude group: "org.bytedeco", module: "javacpp"
+        jarJar.ranged(it, "[git-8128d74-1.0.2,)")
     }
 }
 

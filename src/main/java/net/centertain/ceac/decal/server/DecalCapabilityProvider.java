@@ -1,6 +1,6 @@
 package net.centertain.ceac.decal.server;
 
-import net.centertain.ceac.decal.ModCapabilities;
+import net.centertain.ceac.decal.ModDecalCapabilities;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -24,7 +24,7 @@ public class DecalCapabilityProvider implements ICapabilitySerializable<Compound
             @NotNull Capability<T> capability,
             @Nullable Direction side
     ) {
-        if (capability == ModCapabilities.DECALS)
+        if (capability == ModDecalCapabilities.DECALS)
             return optional.cast();
         return LazyOptional.empty();
     }

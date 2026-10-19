@@ -4,16 +4,22 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "ceac.refmap.json",
   "client": [
+    "EntityPropCollisionClientMixin",
     "ForgeBlockModelRendererMixin",
     "GameRendererAccessor",
     "GameRendererMixin",
     "LevelRendererAccessor",
     "LevelRendererMixin",
     "LightTextureAccessor",
+    "MinecraftMixin",
+    "MultiPlayerGameModeMixin",
     "RenderSystemMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
-  "minVersion": "0.8"
+  "minVersion": "0.8",
+  "mixins": [
+    "EntityPropCollisionMixin"
+  ]
 }

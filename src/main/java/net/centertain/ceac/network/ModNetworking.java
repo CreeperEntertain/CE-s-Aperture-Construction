@@ -6,14 +6,18 @@ import net.centertain.ceac.material.network.BuyItemPacket;
 import net.centertain.ceac.material.network.MaterialOffsetPacket;
 import net.centertain.ceac.material.network.SellItemPacket;
 import net.centertain.ceac.material.network.SyncCurrencyPacket;
+import net.centertain.ceac.prop.framework.network.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
+
+import java.util.Optional;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class ModNetworking {
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "4";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
@@ -66,6 +70,49 @@ public final class ModNetworking {
                 BuyItemPacket::encode,
                 BuyItemPacket::decode,
                 BuyItemPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                SyncPropPacket.class,
+                SyncPropPacket::encode,
+                SyncPropPacket::decode,
+                SyncPropPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                PropMiningPacket.class,
+                PropMiningPacket::encode,
+                PropMiningPacket::decode,
+                PropMiningPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                PropMiningProgressPacket.class,
+                PropMiningProgressPacket::encode,
+                PropMiningProgressPacket::decode,
+                PropMiningProgressPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                PropBreakParticlesPacket.class,
+                PropBreakParticlesPacket::encode,
+                PropBreakParticlesPacket::decode,
+                PropBreakParticlesPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                SyncPropTransformPacket.class,
+                SyncPropTransformPacket::encode,
+                SyncPropTransformPacket::decode,
+                SyncPropTransformPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                PropPushIntentPacket.class,
+                PropPushIntentPacket::encode,
+                PropPushIntentPacket::decode,
+                PropPushIntentPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER)
         );
     }
 }
