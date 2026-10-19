@@ -180,6 +180,10 @@ public final class PropPreviewer {
 
         boolean captureCollision = PropCollisionHatching.begin();
 
+        List<PropGeometry.Triangle> clippedTriangles = captureCollision
+                ? PropCollisionClipGeometry.build(geometry, transform, minecraft.level)
+                : List.of();
+
         if (captureCollision) {
             VertexConsumer collisionConsumer = buffers.getBuffer(PropCollisionHatching.CAPTURE_TYPE);
 
@@ -195,9 +199,19 @@ public final class PropPreviewer {
 
         poseStack.popPose();
 
-        if (captureCollision) {
-            PropCollisionHatching.finishAndRender();
+        if (captureCollision && !clippedTriangles.isEmpty()) {
+            poseStack.pushPose();
+            poseStack.translate(-camera.x, -camera.y, -camera.z);
+
+            VertexConsumer clipConsumer = buffers.getBuffer(PropCollisionHatching.CLIP_CAPTURE_TYPE);
+            emitTriangles(clipConsumer, clippedTriangles, poseStack.last().pose());
+            buffers.endBatch(PropCollisionHatching.CLIP_CAPTURE_TYPE);
+
+            poseStack.popPose();
         }
+
+        if (captureCollision)
+            PropCollisionHatching.finishAndRender();
 
         PoseStack outlinePoseStack = event.getPoseStack();
         outlinePoseStack.pushPose();
@@ -306,6 +320,22 @@ public final class PropPreviewer {
         }
 
         return true;
+    }
+
+    private static void emitTriangles(
+            VertexConsumer consumer,
+            List<PropGeometry.Triangle> triangles,
+            Matrix4f poseMatrix
+    ) {
+        for (PropGeometry.Triangle triangle : triangles) {
+            Vec3 a = triangle.a();
+            Vec3 b = triangle.b();
+            Vec3 c = triangle.c();
+
+            consumer.vertex(poseMatrix, (float) a.x, (float) a.y, (float) a.z).endVertex();
+            consumer.vertex(poseMatrix, (float) b.x, (float) b.y, (float) b.z).endVertex();
+            consumer.vertex(poseMatrix, (float) c.x, (float) c.y, (float) c.z).endVertex();
+        }
     }
 
     private static void emitTriangles(

@@ -4,6 +4,7 @@ uniform sampler2D SceneDepth;
 uniform sampler2D VisibleDepth;
 uniform usampler2D Crossings;
 uniform sampler2D PropDepth;
+uniform usampler2D ClipMask;
 
 out vec4 fragColor;
 
@@ -26,7 +27,10 @@ void main() {
         if (stripe > 1.5 * textureScale || cuts < 4.0 * textureScale)
             discard;
 
-        fragColor = vec4(0.5, 0.5, 0.5, 0.5);
+        if (texelFetch(ClipMask, pixel, 0).r != 0u)
+            fragColor = vec4(1.0, 0.35, 0.02, 0.5);
+        else
+            fragColor = vec4(0.5, 0.5, 0.5, 0.5);
         return;
     }
 

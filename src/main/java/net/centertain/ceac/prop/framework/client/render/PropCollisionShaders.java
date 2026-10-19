@@ -19,6 +19,7 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 )
 public final class PropCollisionShaders {
     private static ShaderInstance capture;
+    private static ShaderInstance clipCapture;
     private static ShaderInstance resolve;
     private static ShaderInstance depth;
 
@@ -34,6 +35,14 @@ public final class PropCollisionShaders {
                         DefaultVertexFormat.POSITION
                 ),
                 shader -> capture = shader
+        );
+        event.registerShader(
+                new ShaderInstance(
+                        event.getResourceProvider(),
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "prop_collision_clip_capture"),
+                        DefaultVertexFormat.POSITION
+                ),
+                shader -> clipCapture = shader
         );
         event.registerShader(
                 new ShaderInstance(
@@ -55,6 +64,9 @@ public final class PropCollisionShaders {
 
     public static ShaderInstance getCapture() {
         return capture;
+    }
+    public static ShaderInstance getClipCapture() {
+        return clipCapture;
     }
     public static ShaderInstance getResolve() {
         return resolve;
