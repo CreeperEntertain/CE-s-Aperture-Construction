@@ -248,8 +248,8 @@ public final class MaterialPreviewer {
         double[][] uv = new double[vertices.size()][2];
 
         for (int i = 0; i < vertices.size(); i++) {
-            uv[i][0] = (getTextureU(projection, vertices.get(i)) - minU) / uSize;
-            uv[i][1] = (getTextureV(projection, vertices.get(i)) - minV) / vSize;
+            uv[i][0] = getTextureU(projection, vertices.get(i));
+            uv[i][1] = getTextureV(projection, vertices.get(i));
         }
 
         int i0 = -1;
