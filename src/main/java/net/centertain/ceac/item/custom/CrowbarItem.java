@@ -13,6 +13,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffectUtil;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -48,7 +51,6 @@ public class CrowbarItem extends BasicItem {
         super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
     }
 
-    @SuppressWarnings("resource")
     @Override
     public boolean hurtEnemy(
             @NotNull ItemStack stack,
@@ -79,10 +81,11 @@ public class CrowbarItem extends BasicItem {
         return false;
     }
 
-    @SuppressWarnings("resource")
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
         if (!(entity instanceof Player player) || player.level().isClientSide)
+            return false;
+        if (!startsSwing(player))
             return false;
 
         Level level = player.level();
@@ -121,6 +124,24 @@ public class CrowbarItem extends BasicItem {
             playSound(level, ModSounds.CROWBAR_SWING.get(), player.getEyePosition());
 
         return false;
+    }
+
+    private static boolean startsSwing(LivingEntity entity) {
+        return
+                !entity.swinging ||
+                entity.swingTime >= currentSwingDuration(entity) / 2 ||
+                entity.swingTime < 0;
+    }
+
+    private static int currentSwingDuration(LivingEntity entity) {
+        if (MobEffectUtil.hasDigSpeed(entity))
+            return 6 - (1 + MobEffectUtil.getDigSpeedAmplification(entity));
+
+        MobEffectInstance fatigue = entity.getEffect(MobEffects.DIG_SLOWDOWN);
+        if (fatigue != null)
+            return 6 + (1 + fatigue.getAmplifier()) * 2;
+
+        return 6;
     }
 
     private void playSound(
@@ -182,6 +203,7 @@ public class CrowbarItem extends BasicItem {
 
         ItemStack stack = context.getItemInHand();
         stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(context.getHand()));
+        // TODO: Fix duplicate sound
         level.playSound(
                 null,
                 pos,
