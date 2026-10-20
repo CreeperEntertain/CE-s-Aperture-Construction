@@ -21,10 +21,7 @@ import net.minecraftforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 final class PropCollisionClipGeometry {
     private static final double CLIP_EPSILON = 1.0e-4;
@@ -39,6 +36,8 @@ final class PropCollisionClipGeometry {
             0.3713906763541037,
             0.6947465906068658
     ).normalize();
+
+    private static final Map<BakedModel, Map<Long, CachedPropMesh>> MODEL_MESH_CACHE = new WeakHashMap<>();
 
     private PropCollisionClipGeometry() {}
 
@@ -121,15 +120,16 @@ final class PropCollisionClipGeometry {
                         continue;
 
                     BakedModel model = minecraft.getModelManager().getModel(definition.getModelId());
-                    List<PropGeometry.Triangle> localTriangles = getModelTriangles(
-                            model, prop.getId().getMostSignificantBits()
-                    );
+                    CachedPropMesh localMesh = getModelMesh(model, prop.getId().getMostSignificantBits());
+                    if (localMesh.triangles.isEmpty() || Math.abs(localMesh.signedVolume) <= MIN_VOLUME)
+                        continue;
 
-                    PropMesh propMesh = createPropMesh(
-                            localTriangles,
-                            propTransform
-                    );
-                    if (propMesh == null || !previewBounds.intersects(propMesh.bounds))
+                    AABB propBounds = transformBounds(localMesh.localBounds, propTransform);
+                    if (!previewBounds.intersects(propBounds))
+                        continue;
+
+                    PropMesh propMesh = createPropMesh(localMesh, propTransform, propBounds);
+                    if (propMesh == null)
                         continue;
 
                     for (PropGeometry.Triangle previewTriangle : previewTriangles) {
@@ -157,8 +157,16 @@ final class PropCollisionClipGeometry {
                 }
     }
 
+    private static CachedPropMesh getModelMesh(
+            BakedModel model,
+            long seed
+    ) {
+        return MODEL_MESH_CACHE
+                .computeIfAbsent(model, ignored -> new HashMap<>())
+                .computeIfAbsent(seed, ignored -> buildModelMesh(model, seed));
+    }
 
-    private static List<PropGeometry.Triangle> getModelTriangles(
+    private static CachedPropMesh buildModelMesh(
             BakedModel model,
             long seed
     ) {
@@ -188,7 +196,20 @@ final class PropCollisionClipGeometry {
                 RenderType.solid()
         ), triangles);
 
-        return List.copyOf(triangles);
+        List<PropGeometry.Triangle> immutableTriangles = List.copyOf(triangles);
+        if (immutableTriangles.isEmpty())
+            return new CachedPropMesh(
+                    immutableTriangles,
+                    new AABB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+                    0.0
+            );
+
+        double signedVolume = 0.0;
+
+        for (PropGeometry.Triangle triangle : immutableTriangles)
+            signedVolume += triangle.a().dot(triangle.b().cross(triangle.c())) / 6.0;
+
+        return new CachedPropMesh(immutableTriangles, boundsOf(immutableTriangles), signedVolume);
     }
 
 
@@ -225,32 +246,18 @@ final class PropCollisionClipGeometry {
 
 
     private static PropMesh createPropMesh(
-            List<PropGeometry.Triangle> localTriangles,
-            Matrix4f transform
+            CachedPropMesh localMesh,
+            Matrix4f transform,
+            AABB worldBounds
     ) {
-        if (localTriangles.isEmpty())
-            return null;
-
-        double signedVolume = 0.0;
-        for (PropGeometry.Triangle triangle : localTriangles)
-            signedVolume += triangle.a().dot(triangle.b().cross(triangle.c())) / 6.0;
-        if (Math.abs(signedVolume) <= MIN_VOLUME)
-            return null;
-
         Matrix4f inverseTransform = new Matrix4f(transform);
         if (Math.abs(inverseTransform.determinant()) < MIN_VOLUME)
             return null;
 
         inverseTransform.invert();
+        List<PropGeometry.Triangle> worldTriangles = transformTriangles(localMesh.triangles, transform);
 
-        List<PropGeometry.Triangle> worldTriangles = transformTriangles(localTriangles, transform);
-
-        return new PropMesh(
-                localTriangles,
-                worldTriangles,
-                inverseTransform,
-                boundsOf(worldTriangles)
-        );
+        return new PropMesh(localMesh.triangles, worldTriangles, inverseTransform, worldBounds);
     }
 
 
@@ -373,6 +380,7 @@ final class PropCollisionClipGeometry {
     }
 
 
+    @SuppressWarnings("SameParameterValue")
     private static double rayTriangleDistance(
             Vec3 origin,
             Vec3 direction,
@@ -488,6 +496,36 @@ final class PropCollisionClipGeometry {
                     triangle.smoothEdgeMask()
             ));
         return List.copyOf(result);
+    }
+
+    private static AABB transformBounds(AABB bounds, Matrix4f transform) {
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double minZ = Double.POSITIVE_INFINITY;
+
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        double maxZ = Double.NEGATIVE_INFINITY;
+
+        for (int corner = 0; corner < 8; corner++) {
+            Vec3 local = new Vec3(
+                    (corner & 1) == 0 ? bounds.minX : bounds.maxX,
+                    (corner & 2) == 0 ? bounds.minY : bounds.maxY,
+                    (corner & 4) == 0 ? bounds.minZ : bounds.maxZ
+            );
+
+            Vec3 world = transformPoint(local, transform);
+
+            minX = Math.min(minX, world.x);
+            minY = Math.min(minY, world.y);
+            minZ = Math.min(minZ, world.z);
+
+            maxX = Math.max(maxX, world.x);
+            maxY = Math.max(maxY, world.y);
+            maxZ = Math.max(maxZ, world.z);
+        }
+
+        return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
 
@@ -654,5 +692,10 @@ final class PropCollisionClipGeometry {
             List<PropGeometry.Triangle> worldTriangles,
             Matrix4f inverseTransform,
             AABB bounds
+    ) {}
+    private record CachedPropMesh(
+            List<PropGeometry.Triangle> triangles,
+            AABB localBounds,
+            double signedVolume
     ) {}
 }
