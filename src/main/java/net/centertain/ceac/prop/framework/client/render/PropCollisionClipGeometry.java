@@ -28,10 +28,11 @@ import java.util.Map;
 
 final class PropCollisionClipGeometry {
     private static final double CLIP_EPSILON = 1.0e-4;
+    private static final double SURFACE_CONTACT_EPSILON_SQUARED = 1.0e-8;
     private static final double RAY_EPSILON = 1.0e-7;
     private static final double MIN_VOLUME = 1.0e-12;
 
-    private static final int MAX_PROP_CLIP_SUBDIVISION = 7;
+    private static final int MAX_PROP_CLIP_SUBDIVISION = 5;
 
     private static final Vec3 INSIDE_RAY_DIRECTION = new Vec3(
             1.0,
@@ -267,11 +268,33 @@ final class PropCollisionClipGeometry {
         if (maxEdgeSquared <= 1.0e-16)
             return;
 
+        Vec3 center = a.add(b).add(c).scale(1.0 / 3.0);
+        if (
+                depth == 0 &&
+                isWithinSurfaceDistance(
+                        a,
+                        mesh.worldTriangles,
+                        SURFACE_CONTACT_EPSILON_SQUARED
+                ) && isWithinSurfaceDistance(
+                        b,
+                        mesh.worldTriangles,
+                        SURFACE_CONTACT_EPSILON_SQUARED
+                ) && isWithinSurfaceDistance(
+                        c,
+                        mesh.worldTriangles,
+                        SURFACE_CONTACT_EPSILON_SQUARED
+                ) && isWithinSurfaceDistance(
+                        center,
+                        mesh.worldTriangles,
+                        SURFACE_CONTACT_EPSILON_SQUARED
+                )
+        )
+            return;
+
         boolean nearSurface =
                 isWithinSurfaceDistance(a, mesh.worldTriangles, maxEdgeSquared) ||
                 isWithinSurfaceDistance(b, mesh.worldTriangles, maxEdgeSquared) ||
                 isWithinSurfaceDistance(c, mesh.worldTriangles, maxEdgeSquared);
-        Vec3 center = a.add(b).add(c).scale(1.0 / 3.0);
 
         if (!nearSurface) {
             if (containsWorldPoint(mesh, center))
