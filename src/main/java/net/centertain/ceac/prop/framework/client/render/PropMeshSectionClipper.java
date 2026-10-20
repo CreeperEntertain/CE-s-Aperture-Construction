@@ -15,6 +15,8 @@ import net.minecraftforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.locationtech.jts.geom.*;
+import org.locationtech.jts.operation.overlayng.OverlayNG;
+import org.locationtech.jts.operation.overlayng.OverlayNGRobust;
 import org.locationtech.jts.operation.polygonize.Polygonizer;
 import org.locationtech.jts.operation.union.UnaryUnionOp;
 import org.locationtech.jts.triangulate.polygon.PolygonTriangulator;
@@ -23,17 +25,19 @@ import java.util.*;
 
 final class PropMeshSectionClipper {
     private static final double MIN_VOLUME = 1.0e-12;
-    private static final double PLANE_EPSILON = 1.0e-7;
+    private static final double PLANE_EPSILON = 1.0e-6;
     private static final double PLANE_EPSILON_SQUARED = PLANE_EPSILON * PLANE_EPSILON;
-    private static final double PROBE_DISTANCE = 1.0e-5;
+    private static final double PROBE_DISTANCE = 1.0e-4;
+    private static final double MIN_SEGMENT_LENGTH = 1.0e-6;
+    private static final double PROJECTION_GRID = 1.0e-5;
     private static final double RAY_EPSILON = 1.0e-9;
-    private static final double MIN_SEGMENT_LENGTH = 1.0e-9;
-    private static final double PROJECTION_GRID = 1.0e-7;
     private static final int BVH_LEAF_SIZE = 8;
 
-    private static final Vec3 INSIDE_RAY_DIRECTION = new Vec3(
-            1.0, 0.3713906763541037, 0.6947465906068658
-    ).normalize();
+    private static final Vec3[] INSIDE_RAY_DIRECTIONS = {
+            new Vec3(1.0, 0.3713906763541037, 0.6947465906068658).normalize(),
+            new Vec3(0.2137, 1.0, 0.4289).normalize(),
+            new Vec3(0.5923, 0.1871, 1.0).normalize()
+    };
 
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
 
@@ -238,7 +242,7 @@ final class PropMeshSectionClipper {
             return;
 
         LineString segment = GEOMETRY_FACTORY.createLineString(new Coordinate[] { ca, cb });
-        Geometry clipped = segment.intersection(clipPolygon);
+        Geometry clipped = OverlayNGRobust.overlay(segment, clipPolygon, OverlayNG.INTERSECTION);
         collectLineStrings(clipped, linework);
     }
 
@@ -324,21 +328,26 @@ final class PropMeshSectionClipper {
         if (mesh.root == null)
             return false;
 
-        List<Double> hits = new ArrayList<>();
-        collectRayHits(mesh.root, point, INSIDE_RAY_DIRECTION, hits);
-        hits.sort(Double::compare);
-        int uniqueHits = 0;
-        double previous = Double.NEGATIVE_INFINITY;
+        int insideVotes = 0;
+        for (Vec3 direction : INSIDE_RAY_DIRECTIONS) {
+            List<Double> hits = new ArrayList<>();
+            collectRayHits(mesh.root, point, direction, hits);
+            hits.sort(Double::compare);
+            int uniqueHits = 0;
+            double previous = Double.NEGATIVE_INFINITY;
 
-        for (double hit : hits) {
-            double tolerance = Math.max(1.0e-6, Math.abs(hit) * 1.0e-6);
-            if (uniqueHits == 0 || Math.abs(hit - previous) > tolerance) {
-                uniqueHits++;
-                previous = hit;
+            for (double hit : hits) {
+                double tolerance = Math.max(1.0e-6, Math.abs(hit) * 1.0e-6);
+                if (uniqueHits == 0 || Math.abs(hit - previous) > tolerance) {
+                    uniqueHits++;
+                    previous = hit;
+                }
             }
+            if ((uniqueHits & 1) != 0)
+                insideVotes++;
         }
 
-        return (uniqueHits & 1) != 0;
+        return insideVotes >= 2;
     }
 
     private static void collectRayHits(
@@ -665,9 +674,9 @@ final class PropMeshSectionClipper {
 
                 AABB bounds = triangleBounds(triangle);
                 Vec3 centroid = new Vec3(
-                        (bounds.minX + bounds.maxX) * 5.0,
-                        (bounds.minY + bounds.maxZ) * 5.0,
-                        (bounds.minZ + bounds.maxZ) * 5.0
+                        (bounds.minX + bounds.maxX) * 0.5,
+                        (bounds.minY + bounds.maxZ) * 0.5,
+                        (bounds.minZ + bounds.maxZ) * 0.5
                 );
 
                 entries.add(new Entry(triangle, bounds, centroid));
