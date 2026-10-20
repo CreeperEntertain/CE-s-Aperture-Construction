@@ -175,12 +175,12 @@ final class PropMeshSectionClipper {
             double longest = first.distanceToSqr(second);
 
             for (int i = 0; i < points.size(); i++)
-                for (int j = 0; j < points.size(); j++) {
-                    double distance = points.get(i).distanceToSqr(points.get(j));
+                for (Vec3 point : points) {
+                    double distance = points.get(i).distanceToSqr(point);
                     if (distance > longest) {
                         longest = distance;
                         first = points.get(i);
-                        second = points.get(j);
+                        second = point;
                     }
                 }
             if (longest <= PLANE_EPSILON_SQUARED)
@@ -616,9 +616,6 @@ final class PropMeshSectionClipper {
             case 1 -> v.y;
             default -> v.z;
         };
-    }
-    private static double component(AABB b, int axis) {
-        return (minComponent(b, axis) + maxComponent(b, axis)) * 0.5;
     }
 
     private static double minComponent(AABB b, int axis) {
