@@ -148,7 +148,7 @@ public final class PropCollisionHatching {
         GL42.glBindImageTexture(0, crossingsTexture, 0, false, 0, GL15.GL_READ_WRITE, GL30.GL_R32UI);
         GL42.glBindImageTexture(1, clipMaskTexture, 0, false, 0, GL15.GL_READ_WRITE, GL30.GL_R32UI);
 
-        capture.setSampler("SceneDepth", worldDepthTarget.getDepthTextureId());
+        capture.setSampler("SceneDepth", visibleDepthTarget.getDepthTextureId());
 
         return true;
     }
@@ -178,19 +178,19 @@ public final class PropCollisionHatching {
 
         main.bindWrite(false);
 
-        int worldDepth = worldDepthTarget.getDepthTextureId();
+        int sceneDepth = visibleDepthTarget.getDepthTextureId();
         int visibleDepth = visibleDepthTarget.getDepthTextureId();
         int propDepth = propDepthTarget.getDepthTextureId();
         int clipMask = clipMaskTexture;
 
         RenderSystem.setShader(() -> shader);
-        RenderSystem.setShaderTexture(0, worldDepth);
+        RenderSystem.setShaderTexture(0, sceneDepth);
         RenderSystem.setShaderTexture(1, visibleDepth);
         RenderSystem.setShaderTexture(2, crossingsTexture);
         RenderSystem.setShaderTexture(3, propDepth);
         RenderSystem.setShaderTexture(4, clipMask);
 
-        shader.setSampler("SceneDepth", worldDepth);
+        shader.setSampler("SceneDepth", sceneDepth);
         shader.setSampler("VisibleDepth", visibleDepth);
         shader.setSampler("Crossings", crossingsTexture);
         shader.setSampler("PropDepth", propDepth);
