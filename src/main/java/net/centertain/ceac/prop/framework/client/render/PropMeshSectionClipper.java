@@ -672,16 +672,17 @@ final class PropMeshSectionClipper {
         double c21 = a01 * a20 - a00 * a21;
         double c22 = a00 * a11 - a01 * a10;
 
-        double determinant = a00 * c00 + a01 * c01 + a02 * c02;
+        double determinant = a00 * c00 + a01 * c10 + a02 * c20;
+
         if (Math.abs(determinant) < 1.0e-12)
             throw new IllegalArgumentException("Singular prop transform");
 
         double inverseDeterminant = 1.0 / determinant;
 
         return new Vec3(
-                (c00 * x + c10 * y + c20 * z) * inverseDeterminant,
-                (c01 * x + c11 * y + c21 * z) * inverseDeterminant,
-                (c02 * x + c12 * y + c22 * z) * inverseDeterminant
+                (c00 * x + c01 * y + c02 * z) * inverseDeterminant,
+                (c10 * x + c11 * y + c12 * z) * inverseDeterminant,
+                (c20 * x + c21 * y + c22 * z) * inverseDeterminant
         );
     }
 
