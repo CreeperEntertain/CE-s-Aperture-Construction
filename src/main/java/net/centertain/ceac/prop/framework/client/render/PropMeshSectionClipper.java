@@ -141,44 +141,54 @@ final class PropMeshSectionClipper {
         if (trianglePolygon.getArea() <= 1.0e-14)
             return;
 
+        double meshExtent = Math.max(mesh.localBounds.maxX - mesh.localBounds.minX, Math.max(
+                mesh.localBounds.maxY - mesh.localBounds.minY,
+                mesh.localBounds.maxZ - mesh.localBounds.minZ
+        ));
+        double sectionOffset = Math.max(PLANE_EPSILON * 8.0, meshExtent * 1.0e-5);
+        Vec3[] sectionPlanePoints = { a.add(normal.scale(sectionOffset)), a.subtract(normal.scale(sectionOffset)) };
         List<Geometry> linework = new ArrayList<>();
         linework.add(trianglePolygon.getExteriorRing());
-        AABB queryBounds = triangleBounds(preview).inflate(PLANE_EPSILON * 4.0);
+
+        AABB queryBounds = triangleBounds(preview).inflate(PLANE_EPSILON * 4.0 + sectionOffset);
+
         List<Entry> candidates = new ArrayList<>();
         query(mesh.root, queryBounds, candidates);
 
-        for (Entry entry : candidates) {
-            PlaneSection section = intersectTriangleWithPlane(entry.triangle, a, normal);
-            if (section.coplanar) {
-                PropGeometry.Triangle t = entry.triangle;
-                appendClippedSegment(t.a(), t.b(), a, u, v, trianglePolygon, linework);
-                appendClippedSegment(t.b(), t.c(), a, u, v, trianglePolygon, linework);
-                appendClippedSegment(t.c(), t.a(), a, u, v, trianglePolygon, linework);
-                continue;
-            }
+        for (Entry entry : candidates)
+            for (Vec3 sectionPlanePoint : sectionPlanePoints) {
+                PlaneSection section = intersectTriangleWithPlane(entry.triangle, sectionPlanePoint, normal);
 
-            List<Vec3> points = section.points;
-            if (points.size() < 2)
-                continue;
-
-            Vec3 first = points.get(0);
-            Vec3 second = points.get(1);
-            double longest = first.distanceToSqr(second);
-
-            for (int i = 0; i < points.size(); i++)
-                for (Vec3 point : points) {
-                    double distance = points.get(i).distanceToSqr(point);
-                    if (distance > longest) {
-                        longest = distance;
-                        first = points.get(i);
-                        second = point;
-                    }
+                if (section.coplanar) {
+                    PropGeometry.Triangle t = entry.triangle;
+                    appendClippedSegment(t.a(), t.b(), a, u, v, trianglePolygon, linework);
+                    appendClippedSegment(t.b(), t.c(), a, u, v, trianglePolygon, linework);
+                    appendClippedSegment(t.c(), t.a(), a, u, v, trianglePolygon, linework);
+                    continue;
                 }
-            if (longest <= INTERSECTION_EPSILON_SQUARED)
-                continue;
 
-            appendClippedSegment(first, second, a, u, v, trianglePolygon, linework);
-        }
+                List<Vec3> points = section.points;
+                if (points.size() < 2)
+                    continue;
+
+                Vec3 first = points.get(0);
+                Vec3 second = points.get(1);
+                double longest = first.distanceToSqr(second);
+
+                for (int i = 0; i < points.size(); i++)
+                    for (Vec3 point : points) {
+                        double distance = points.get(i).distanceToSqr(point);
+                        if (distance > longest) {
+                            longest = distance;
+                            first = points.get(i);
+                            second = point;
+                        }
+                    }
+                if (longest <= INTERSECTION_EPSILON_SQUARED)
+                    continue;
+
+                appendClippedSegment(first, second, a, u, v, trianglePolygon, linework);
+            }
 
         Geometry noded = UnaryUnionOp.union(linework);
 
