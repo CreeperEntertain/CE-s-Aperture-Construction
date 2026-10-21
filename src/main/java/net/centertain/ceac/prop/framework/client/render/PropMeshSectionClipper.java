@@ -179,11 +179,7 @@ final class PropMeshSectionClipper {
             appendClippedSegment(first, second, a, u, v, trianglePolygon, linework);
         }
 
-        Geometry noded = OverlayNGRobust.overlay(
-                GEOMETRY_FACTORY.createGeometryCollection(linework.toArray(Geometry[]::new)),
-                GEOMETRY_FACTORY.createPoint(),
-                OverlayNG.UNION
-        );
+        Geometry noded = UnaryUnionOp.union(linework);
 
         Polygonizer polygonizer = new Polygonizer(true);
         polygonizer.add(noded);
