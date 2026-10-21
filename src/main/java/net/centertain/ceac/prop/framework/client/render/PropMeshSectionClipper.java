@@ -714,7 +714,7 @@ final class PropMeshSectionClipper {
                 AABB bounds = triangleBounds(triangle);
                 Vec3 centroid = new Vec3(
                         (bounds.minX + bounds.maxX) * 0.5,
-                        (bounds.minY + bounds.maxZ) * 0.5,
+                        (bounds.minY + bounds.maxY) * 0.5,
                         (bounds.minZ + bounds.maxZ) * 0.5
                 );
 
