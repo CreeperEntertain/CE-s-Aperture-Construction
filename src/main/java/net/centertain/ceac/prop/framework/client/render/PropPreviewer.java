@@ -174,7 +174,7 @@ public final class PropPreviewer {
         poseStack.scale(scale.x, scale.y, scale.z);
 
         PoseStack.Pose pose = poseStack.last();
-        Matrix4f poseMatrix = pose.pose();
+        Matrix4f poseMatrix = new Matrix4f(pose.pose());
 
         var buffers = minecraft.renderBuffers().bufferSource();
 
