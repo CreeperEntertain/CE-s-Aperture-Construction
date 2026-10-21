@@ -208,10 +208,10 @@ final class PropMeshSectionClipper {
             Geometry triangulated = PolygonTriangulator.triangulate(face);
             for (int i = 0; i < triangulated.getNumGeometries(); i++) {
                 Geometry part = triangulated.getGeometryN(i);
-                if (!(part instanceof  Polygon trianglePolygonPart))
+                if (!(part instanceof Polygon trianglePart))
                     continue;
 
-                Coordinate[] coordinates = trianglePolygonPart.getExteriorRing().getCoordinates();
+                Coordinate[] coordinates = trianglePart.getExteriorRing().getCoordinates();
                 if (coordinates.length < 4)
                     continue;
 

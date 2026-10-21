@@ -181,8 +181,9 @@ public final class PropPreviewer {
         boolean captureCollision = PropCollisionHatching.begin();
 
         List<PropGeometry.Triangle> clippedTriangles = captureCollision
-                ? PropCollisionClipGeometry.build(geometry, transform, minecraft.level, camera, System.nanoTime())
-                : List.of();
+                ? PropCollisionClipGeometry.build(
+                        geometry, transform, minecraft.level, camera, PropRenderer.getFrameRenderTimeNanos()
+                ) : List.of();
 
         if (captureCollision) {
             VertexConsumer collisionConsumer = buffers.getBuffer(PropCollisionHatching.CAPTURE_TYPE);

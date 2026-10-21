@@ -51,7 +51,14 @@ public final class PropRenderer {
 
     private static final double CRACK_OVERLAY_OFFSET = 0.001;
 
+    private static long frameRenderTimeNanos;
+
     private PropRenderer() {}
+
+    static long getFrameRenderTimeNanos() {
+        return frameRenderTimeNanos;
+    }
+
 
     public static void clearModelCache() {
         MODEL_CACHE.clear();
@@ -79,6 +86,7 @@ public final class PropRenderer {
         ModelManager modelManager = minecraft.getModelManager();
 
         long renderTimeNanos = System.nanoTime();
+        frameRenderTimeNanos = renderTimeNanos;
 
         for (int chunkX = center.x - chunkRadius; chunkX <= center.x + chunkRadius; chunkX++)
             for (int chunkZ = center.z - chunkRadius; chunkZ <= center.z + chunkRadius; chunkZ++)
