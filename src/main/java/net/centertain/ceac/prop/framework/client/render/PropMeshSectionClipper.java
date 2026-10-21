@@ -649,15 +649,15 @@ final class PropMeshSectionClipper {
 
     private static Vec3 inverseTransformPoint(Vec3 point, Matrix4f transform) {
         double a00 = transform.m00();
-        double a01 = transform.m01();
-        double a02 = transform.m02();
+        double a01 = transform.m10();
+        double a02 = transform.m20();
 
-        double a10 = transform.m10();
+        double a10 = transform.m01();
         double a11 = transform.m11();
-        double a12 = transform.m12();
+        double a12 = transform.m21();
 
-        double a20 = transform.m20();
-        double a21 = transform.m21();
+        double a20 = transform.m02();
+        double a21 = transform.m12();
         double a22 = transform.m22();
 
         double x = point.x - transform.m30();
