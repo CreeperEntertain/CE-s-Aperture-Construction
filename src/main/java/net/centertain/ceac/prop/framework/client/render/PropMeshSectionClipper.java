@@ -40,6 +40,7 @@ final class PropMeshSectionClipper {
     };
 
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
+    private static final PrecisionModel SNAP_MODEL = new PrecisionModel(Math.rint(1.0 / PROJECTION_GRID));
 
     private static final Map<BakedModel, ModelCache> MODEL_CACHE = new WeakHashMap<>();
 
@@ -190,7 +191,13 @@ final class PropMeshSectionClipper {
                 appendClippedSegment(first, second, a, u, v, trianglePolygon, linework);
             }
 
-        Geometry noded = UnaryUnionOp.union(linework);
+        @SuppressWarnings("SuspiciousToArrayCall") // Shut up
+        Geometry noded = OverlayNG.overlay(
+                GEOMETRY_FACTORY.createMultiLineString(linework.toArray(new LineString[0])),
+                GEOMETRY_FACTORY.createLineString(),
+                OverlayNG.UNION,
+                SNAP_MODEL
+        );
 
         Polygonizer polygonizer = new Polygonizer(true);
         polygonizer.add(noded);
