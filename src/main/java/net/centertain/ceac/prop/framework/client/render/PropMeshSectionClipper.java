@@ -25,9 +25,10 @@ import java.util.*;
 final class PropMeshSectionClipper {
     private static final double MIN_VOLUME = 1.0e-12;
     private static final double PLANE_EPSILON = 1.0e-6;
-    private static final double PLANE_EPSILON_SQUARED = PLANE_EPSILON * PLANE_EPSILON;
+    private static final double INTERSECTION_EPSILON = 1.0e-10;
+    private static final double INTERSECTION_EPSILON_SQUARED = INTERSECTION_EPSILON * INTERSECTION_EPSILON;
     private static final double PROBE_DISTANCE = 1.0e-4;
-    private static final double MIN_SEGMENT_LENGTH = 1.0e-6;
+    private static final double MIN_SEGMENT_LENGTH = 1.0e-10;
     private static final double PROJECTION_GRID = 1.0e-5;
     private static final double RAY_EPSILON = 1.0e-9;
     private static final int BVH_LEAF_SIZE = 8;
@@ -173,7 +174,7 @@ final class PropMeshSectionClipper {
                         second = point;
                     }
                 }
-            if (longest <= PLANE_EPSILON_SQUARED)
+            if (longest <= INTERSECTION_EPSILON_SQUARED)
                 continue;
 
             appendClippedSegment(first, second, a, u, v, trianglePolygon, linework);
@@ -281,7 +282,7 @@ final class PropMeshSectionClipper {
 
     private static void addUnique(List<Vec3> points, Vec3 point) {
         for (Vec3 existing : points)
-            if (existing.distanceToSqr(point) <= PLANE_EPSILON_SQUARED)
+            if (existing.distanceToSqr(point) <= INTERSECTION_EPSILON_SQUARED)
                 return;
         points.add(point);
     }
@@ -308,10 +309,26 @@ final class PropMeshSectionClipper {
         return origin.add(u.scale(x)).add(v.scale(y));
     }
 
-    private static boolean containsNearPlane(Mesh mesh, Vec3 point, Vec3 normal) {
-        return
-                containsPoint(mesh, point.add(normal.scale(PROBE_DISTANCE))) ||
-                containsPoint(mesh, point.subtract(normal.scale(PROBE_DISTANCE)));
+    private static boolean containsNearPlane(
+            Mesh mesh,
+            Vec3 point,
+            Vec3 normal
+    ) {
+        if (containsAtDistance(mesh, point, normal, PROBE_DISTANCE))
+            return true;
+        if (containsAtDistance(mesh, point, normal, PLANE_EPSILON * 16.0))
+            return true;
+        return containsAtDistance(mesh, point, normal, PLANE_EPSILON * 4.0);
+    }
+
+    private static boolean containsAtDistance(
+            Mesh mesh,
+            Vec3 point,
+            Vec3 normal,
+            double distance
+    ) {
+        Vec3 offset = normal.scale(distance);
+        return containsPoint(mesh, point.add(offset)) || containsPoint(mesh, point.subtract(offset));
     }
 
     private static boolean containsPoint(Mesh mesh, Vec3 point) {
