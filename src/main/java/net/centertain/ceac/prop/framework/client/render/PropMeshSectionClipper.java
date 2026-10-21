@@ -318,26 +318,27 @@ final class PropMeshSectionClipper {
         if (mesh.root == null)
             return false;
 
-        int insideVotes = 0;
-        for (Vec3 direction : INSIDE_RAY_DIRECTIONS) {
-            List<Double> hits = new ArrayList<>();
-            collectRayHits(mesh.root, point, direction, hits);
-            hits.sort(Double::compare);
-            int uniqueHits = 0;
-            double previous = Double.NEGATIVE_INFINITY;
+        double solidAngle = 0.0;
 
-            for (double hit : hits) {
-                double tolerance = Math.max(1.0e-6, Math.abs(hit) * 1.0e-6);
-                if (uniqueHits == 0 || Math.abs(hit - previous) > tolerance) {
-                    uniqueHits++;
-                    previous = hit;
-                }
-            }
-            if ((uniqueHits & 1) != 0)
-                insideVotes++;
+        for (PropGeometry.Triangle triangle : mesh.triangles) {
+            Vec3 a = triangle.a().subtract(point);
+            Vec3 b = triangle.b().subtract(point);
+            Vec3 c = triangle.c().subtract(point);
+
+            double lengthA = a.length();
+            double lengthB = b.length();
+            double lengthC = c.length();
+
+            if (lengthA < 1.0e-12 || lengthB < 1.0e-12 || lengthC < 1.0e-12)
+                return true;
+
+            double numerator = a.dot(b.cross(c));
+            double denominator = lengthA * lengthB * lengthC + a.dot(b) * lengthC + b.dot(c) * lengthA + c.dot(a) * lengthB;
+
+            solidAngle += 2.0 * Math.atan2(numerator, denominator);
         }
 
-        return insideVotes >= 2;
+        return Math.abs(solidAngle) > 2.0 * Math.PI;
     }
 
     private static void collectRayHits(
