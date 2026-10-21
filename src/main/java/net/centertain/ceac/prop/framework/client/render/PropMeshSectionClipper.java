@@ -13,7 +13,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.operation.overlayng.OverlayNG;
 import org.locationtech.jts.operation.overlayng.OverlayNGRobust;
@@ -67,15 +66,6 @@ final class PropMeshSectionClipper {
 
             return mesh;
         }
-    }
-
-    static PropGeometry.Triangle transformTriangle(PropGeometry.Triangle triangle, Matrix4f transform) {
-        return new PropGeometry.Triangle(
-                transformPoint(triangle.a(), transform),
-                transformPoint(triangle.b(), transform),
-                transformPoint(triangle.c(), transform),
-                triangle.smoothEdgeMask()
-        );
     }
 
     static AABB worldBounds(Mesh mesh, Matrix4f transform) {
@@ -633,14 +623,64 @@ final class PropMeshSectionClipper {
         };
     }
 
-    private static Vec3 transformPoint(Vec3 point, Matrix4f transform) {
-        Vector3f result = new Vector3f(
-                (float) point.x,
-                (float) point.y,
-                (float) point.z
+    static PropGeometry.Triangle transformTriangleToLocal(
+            PropGeometry.Triangle triangle,
+            Matrix4f localToWorld
+    ) {
+        return new PropGeometry.Triangle(
+                inverseTransformPoint(triangle.a(), localToWorld),
+                inverseTransformPoint(triangle.b(), localToWorld),
+                inverseTransformPoint(triangle.c(), localToWorld),
+                triangle.smoothEdgeMask()
         );
-        result.mulPosition(transform);
-        return new Vec3(result.x, result.y, result.z);
+    }
+
+    private static Vec3 transformPoint(Vec3 point, Matrix4f transform) {
+        return new Vec3(
+                transform.m00() * point.x + transform.m10() * point.y + transform.m20() * point.z + transform.m30(),
+                transform.m01() * point.x + transform.m11() * point.y + transform.m21() * point.z + transform.m31(),
+                transform.m02() * point.x + transform.m12() * point.y + transform.m22() * point.z + transform.m32()
+        );
+    }
+
+    private static Vec3 inverseTransformPoint(Vec3 point, Matrix4f transform) {
+        double a00 = transform.m00();
+        double a01 = transform.m01();
+        double a02 = transform.m02();
+
+        double a10 = transform.m10();
+        double a11 = transform.m11();
+        double a12 = transform.m12();
+
+        double a20 = transform.m20();
+        double a21 = transform.m21();
+        double a22 = transform.m22();
+
+        double x = point.x - transform.m30();
+        double y = point.y - transform.m31();
+        double z = point.z - transform.m32();
+
+        double c00 = a11 * a22 - a12 * a21;
+        double c01 = a02 * a21 - a01 * a22;
+        double c02 = a01 * a12 - a02 * a11;
+
+        double c10 = a12 * a20 - a10 * a22;
+        double c11 = a00 * a22 - a02 * a20;
+        double c12 = a02 * a10 - a00 * a12;
+
+        double c20 = a10 * a21 - a11 * a20;
+        double c21 = a01 * a20 - a00 * a21;
+        double c22 = a00 * a11 - a01 * a10;
+
+        double determinant = a00 * c00 + a01 * c10 + a02 * c20;
+        if (Math.abs(determinant) < 1.0e-12)
+            throw new IllegalArgumentException("Singular prop transform");
+
+        return new Vec3(
+                (c00 * x + c01 * y + c02 * z) / determinant,
+                (c10 * x + c11 * y + c12 * z) / determinant,
+                (c20 * x + c21 * y + c22 * z) / determinant
+        );
     }
 
 

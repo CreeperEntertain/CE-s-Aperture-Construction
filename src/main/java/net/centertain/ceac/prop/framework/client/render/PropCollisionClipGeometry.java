@@ -12,7 +12,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import java.util.*;
 
@@ -111,18 +110,12 @@ final class PropCollisionClipGeometry {
                     if (!previewBounds.intersects(propBounds))
                         continue;
 
-                    Matrix4f inverseTransform = new Matrix4f(propTransform);
-                    if (Math.abs(inverseTransform.determinant()) < MIN_VOLUME)
-                        continue;
-
-                    inverseTransform.invert();
-
                     for (PropGeometry.Triangle previewTriangle : previewTriangles) {
                         if (!triangleBounds(previewTriangle).intersects(propBounds))
                             continue;
 
-                        PropGeometry.Triangle localPreview = PropMeshSectionClipper.transformTriangle(
-                                previewTriangle, inverseTransform
+                        PropGeometry.Triangle localPreview = PropMeshSectionClipper.transformTriangleToLocal(
+                                previewTriangle, propTransform
                         );
                         if (!triangleBounds(localPreview).inflate(1.0e-6).intersects(mesh.localBounds()))
                             continue;
@@ -297,12 +290,10 @@ final class PropCollisionClipGeometry {
     }
 
     private static Vec3 transformPoint(Vec3 point, Matrix4f transform) {
-        Vector3f result = new Vector3f(
-                (float) point.x,
-                (float) point.y,
-                (float) point.z
+        return new Vec3(
+                transform.m00() * point.x + transform.m10() * point.y + transform.m20() * point.z + transform.m30(),
+                transform.m01() * point.x + transform.m11() * point.y + transform.m21() * point.z + transform.m31(),
+                transform.m02() * point.x + transform.m12() * point.y + transform.m22() * point.z + transform.m32()
         );
-        result.mulPosition(transform);
-        return new Vec3(result.x, result.y, result.z);
     }
 }
