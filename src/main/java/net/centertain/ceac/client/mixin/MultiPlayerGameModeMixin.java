@@ -64,6 +64,6 @@ public abstract class MultiPlayerGameModeMixin {
                 new PropUsePacket(propHit.getProp().getId(), hand)
         );
 
-        cir.setReturnValue(InteractionResult.CONSUME);
+        cir.setReturnValue(InteractionResult.SUCCESS);
     }
 }

@@ -3,6 +3,7 @@ package net.centertain.ceac.prop.framework.server;
 import net.centertain.ceac.item.custom.PropPlacerItem;
 import net.centertain.ceac.prop.framework.Prop;
 import net.centertain.ceac.prop.framework.PropDefinition;
+import net.centertain.ceac.prop.framework.common.PropHitResult;
 import net.centertain.ceac.prop.framework.common.PropRaycast;
 import net.centertain.ceac.prop.framework.common.PropUseContext;
 import net.centertain.ceac.prop.framework.network.PropUsePacket;
@@ -42,25 +43,29 @@ public final class PropInteractionManager {
             return;
 
         ItemStack stack = player.getItemInHand(packet.getHand());
-        if (stack.getItem() instanceof PropPlacerItem placer) {
-            placer.placeAt(
-                    player.level(),
-                    player,
-                    packet.getHand(),
-                    target.location(),
-                    target.face()
-            );
-            return;
-        }
-
-        Vec3 insideSurface = target.location().subtract(
-                target.face().getStepX() * 1.0e-4,
-                target.face().getStepY() * 1.0e-4,
-                target.face().getStepZ() * 1.0e-4
+        BlockPos hitPos = BlockPos.containing(target.location());
+        BlockHitResult surfaceHit = new BlockHitResult(
+                target.location(),
+                target.face(),
+                hitPos,
+                false
         );
-        BlockPos placementPos = BlockPos.containing(insideSurface).relative(target.face());
-        BlockHitResult placementHit = new BlockHitResult(target.location(), target.face(), placementPos, false);
-        InteractionResult itemResult = stack.useOn(new UseOnContext(player, packet.getHand(), placementHit));
+        PropHitResult propHit = new PropHitResult(
+                target.location(),
+                target.face(),
+                hitPos,
+                false,
+                target.prop(),
+                surfaceHit
+        );
+        InteractionResult itemResult = player.gameMode.useItemOn(
+                player,
+                player.level(),
+                stack,
+                packet.getHand(),
+                propHit
+        );
+
         if (itemResult == InteractionResult.PASS)
             player.gameMode.useItem(player, player.level(), stack, packet.getHand());
     }
