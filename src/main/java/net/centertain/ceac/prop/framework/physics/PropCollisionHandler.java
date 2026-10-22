@@ -87,6 +87,12 @@ public final class PropCollisionHandler {
                 if (handledEntityImpacts.add(impact))
                     handleEntityImpact(propB, entityA, false, nx, ny, nz, speed);
             }
+
+            if (propA != null && terrainCollisionManager.terrainPatchBodies.contains(keyB))
+                manager.playImpactSound(propA, speed);
+            if (propB != null && terrainCollisionManager.terrainPatchBodies.contains(keyA))
+                manager.playImpactSound(propB, speed);
+
             if (propA != null && propA.motionMode == PropMotionMode.MOVING && (
                     propB != null && propB.motionMode == PropMotionMode.STATIC ||
                     terrainCollisionManager.terrainPatchBodies.contains(keyB)

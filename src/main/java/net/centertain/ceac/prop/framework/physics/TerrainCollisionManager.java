@@ -791,7 +791,7 @@ public final class TerrainCollisionManager {
                     MASK_WORLD,
                     false,
                     false,
-                    false,
+                    true,
                     0.0f
             );
 
