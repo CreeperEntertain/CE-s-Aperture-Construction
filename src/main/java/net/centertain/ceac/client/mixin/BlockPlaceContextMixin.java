@@ -7,16 +7,17 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(BlockPlaceContext.class)
 public abstract class BlockPlaceContextMixin {
+    @Unique
+    private static final double PLACEMENT_GRACE = 1.0 / 16.0;
+
+
     @Shadow @Final @Mutable
     private BlockPos relativePos;
 
@@ -36,7 +37,20 @@ public abstract class BlockPlaceContextMixin {
             return;
 
         Direction face = hit.getDirection();
-        Vec3 insideSurface = hit.getLocation().subtract(
+        Vec3 location = hit.getLocation();
+
+        double x = location.x;
+        double y = location.y;
+        double z = location.z;
+
+        switch (face.getAxis()) {
+            case X -> x = ceac$snapToBlockBoundary(x);
+            case Y -> y = ceac$snapToBlockBoundary(y);
+            case Z -> z = ceac$snapToBlockBoundary(z);
+        }
+
+        Vec3 snappedLocation = new Vec3(x, y, z);
+        Vec3 insideSurface = snappedLocation.subtract(
                 face.getStepX() * 1.0e-4,
                 face.getStepY() * 1.0e-4,
                 face.getStepZ() * 1.0e-4
@@ -44,5 +58,12 @@ public abstract class BlockPlaceContextMixin {
 
         this.relativePos = BlockPos.containing(insideSurface).relative(face);
         this.replaceClicked = false;
+    }
+
+
+    @Unique
+    private static double ceac$snapToBlockBoundary(double coordinate) {
+        double boundary = Math.rint(coordinate);
+        return Math.abs(coordinate - boundary) <= PLACEMENT_GRACE ? boundary : coordinate;
     }
 }
