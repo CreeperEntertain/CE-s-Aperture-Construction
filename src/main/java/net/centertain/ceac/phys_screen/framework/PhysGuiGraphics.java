@@ -2,7 +2,7 @@ package net.centertain.ceac.phys_screen.framework;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.centertain.ceac.client.mixin.GameRendererAccessor;
+import net.centertain.ceac.mixin.GameRendererAccessor;
 import net.centertain.ceac.client.render.CeacRenderTypes;
 import net.centertain.ceac.client.render.ClippingVertexConsumer;
 import net.minecraft.client.Camera;

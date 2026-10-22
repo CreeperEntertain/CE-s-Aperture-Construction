@@ -1,7 +1,6 @@
 package net.centertain.ceac.phys_screen.utility;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.centertain.ceac.client.mixin.GameRendererAccessor;
 import net.centertain.ceac.phys_screen.framework.PhysGuiGraphics;
 import net.centertain.ceac.phys_screen.framework.PhysScreen;
 import net.minecraft.client.Camera;

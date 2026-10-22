@@ -1,4 +1,4 @@
-package net.centertain.ceac.client.mixin;
+package net.centertain.ceac.mixin;
 
 import net.centertain.ceac.prop.framework.common.PropHitResult;
 import net.centertain.ceac.prop.framework.client.PropMiningClient;

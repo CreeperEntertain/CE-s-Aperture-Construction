@@ -1,4 +1,4 @@
-package net.centertain.ceac.client.mixin;
+package net.centertain.ceac.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.centertain.ceac.phys_screen.framework.GameRendererViewOffsetAccessor;

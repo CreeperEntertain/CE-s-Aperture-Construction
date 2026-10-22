@@ -1,4 +1,4 @@
-package net.centertain.ceac.client.mixin;
+package net.centertain.ceac.mixin;
 
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;

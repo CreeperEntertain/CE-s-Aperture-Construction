@@ -1,4 +1,4 @@
-package net.centertain.ceac.client.mixin;
+package net.centertain.ceac.mixin;
 
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
