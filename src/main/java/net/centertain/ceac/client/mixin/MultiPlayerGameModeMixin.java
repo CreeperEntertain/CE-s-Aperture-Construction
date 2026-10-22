@@ -10,6 +10,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -60,10 +63,16 @@ public abstract class MultiPlayerGameModeMixin {
         if (!(hitResult instanceof PropHitResult propHit))
             return;
 
-        ModNetworking.CHANNEL.sendToServer(
-                new PropUsePacket(propHit.getProp().getId(), hand)
-        );
+        ItemStack stack = player.getItemInHand(hand);
+        InteractionResult result = InteractionResult.SUCCESS;
+        if (stack.getItem() instanceof BlockItem) {
+            result = stack.useOn(new UseOnContext(player, hand, propHit));
+            if (result == InteractionResult.PASS)
+                result = InteractionResult.CONSUME;
+        }
 
-        cir.setReturnValue(InteractionResult.SUCCESS);
+        ModNetworking.CHANNEL.sendToServer(new PropUsePacket(propHit.getProp().getId(), hand));
+
+        cir.setReturnValue(result);
     }
 }
