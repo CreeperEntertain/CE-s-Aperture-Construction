@@ -3,8 +3,11 @@ package net.centertain.ceac.server.events;
 import net.centertain.ceac.material.PlayerCurrency;
 import net.centertain.ceac.material.network.SyncCurrencyPacket;
 import net.centertain.ceac.network.ModNetworking;
+import net.centertain.ceac.prop.framework.common.PropHitResult;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
@@ -27,5 +30,12 @@ public class ServerForgeEvents {
                 PacketDistributor.PLAYER.with(() -> player),
                 new SyncCurrencyPacket(PlayerCurrency.get(player))
         );
+    }
+
+    @SubscribeEvent
+    public static void onPropRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (!(event.getHitVec() instanceof PropHitResult))
+            return;
+        event.setUseBlock(Event.Result.DENY);
     }
 }
