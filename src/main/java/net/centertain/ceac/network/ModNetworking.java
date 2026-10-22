@@ -114,5 +114,13 @@ public final class ModNetworking {
                 PropPushIntentPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_SERVER)
         );
+        CHANNEL.registerMessage(
+                packetId++,
+                PropUsePacket.class,
+                PropUsePacket::encode,
+                PropUsePacket::decode,
+                PropUsePacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_SERVER)
+        );
     }
 }

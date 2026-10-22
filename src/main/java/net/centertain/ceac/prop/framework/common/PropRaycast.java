@@ -6,6 +6,7 @@ import net.centertain.ceac.prop.framework.PropDefinition;
 import net.centertain.ceac.prop.framework.PropGeometry;
 import net.centertain.ceac.prop.framework.server.PropCapabilities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ClipContext;
@@ -25,10 +26,10 @@ public final class PropRaycast {
             Prop prop,
             PropDefinition definition,
             Vec3 location,
+            Direction face,
             double distance
     ) {}
 
-    @SuppressWarnings("resource")
     public static @Nullable Target findTarget(
             @NotNull ServerPlayer player,
             double reach
@@ -90,7 +91,17 @@ public final class PropRaycast {
                         continue;
 
                     closestPropDistance = distance;
-                    closest = new Target(prop, definition, hit.location(), distance);
+                    closest = new Target(
+                            prop,
+                            definition,
+                            hit.location(),
+                            Direction.getNearest(
+                                    hit.normal().x,
+                                    hit.normal().y,
+                                    hit.normal().z
+                            ),
+                            distance
+                    );
                 }
             }
 

@@ -1,7 +1,9 @@
 package net.centertain.ceac.prop.framework;
 
+import net.centertain.ceac.prop.framework.common.PropUseContext;
 import net.centertain.ceac.prop.framework.physics.PropPhysDefinition;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraftforge.common.ToolAction;
@@ -98,5 +100,10 @@ public abstract class PropDefinition {
     }
     public PropPhysDefinition getPhysDefinition() {
         return physDefinition;
+    }
+
+
+    public InteractionResult use(PropUseContext context) {
+        return InteractionResult.PASS;
     }
 }
