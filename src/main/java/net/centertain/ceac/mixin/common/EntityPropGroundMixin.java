@@ -22,7 +22,9 @@ public abstract class EntityPropGroundMixin {
             return true;
 
         Entity entity = (Entity) (Object) this;
-        if (entity.level().isClientSide || entity.noPhysics || entity.isSpectator())
+        if (entity.level().isClientSide)
+            return vanillaGrounded;
+        if (entity.noPhysics || entity.isSpectator())
             return false;
 
         Vec3 velocity = entity.getDeltaMovement();

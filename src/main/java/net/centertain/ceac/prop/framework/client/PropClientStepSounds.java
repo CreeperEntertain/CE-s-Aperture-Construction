@@ -52,7 +52,7 @@ public final class PropClientStepSounds {
         if (minecraft.level == null)
             return;
 
-        List<Prop> nearbyProps = new ArrayList<>();
+        List<Prop> nearbyProps = getNearbyProps(player);
         SoundType soundType = PropStepSoundLookup.findSoundType(
                 player,
                 nearbyProps,
@@ -70,6 +70,30 @@ public final class PropClientStepSounds {
         );
         event.setNewVolume(soundType.getVolume() * 0.15f);
         event.setNewPitch(soundType.getPitch());
+    }
+
+    public static boolean playPropStepSound(LocalPlayer player) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null || minecraft.player != player)
+            return false;
+        if (!player.level().isClientSide || !player.onGround() || player.noPhysics || player.isSpectator())
+            return false;
+
+        SoundType soundType = PropStepSoundLookup.findSoundType(
+                player,
+                getNearbyProps(player),
+                minecraft.getResourceManager()
+        );
+        if (soundType == null)
+            return false;
+
+        player.playSound(
+                soundType.getStepSound(),
+                soundType.getVolume() * 0.15f,
+                soundType.getPitch()
+        );
+
+        return true;
     }
 
     private static List<Prop> getNearbyProps(LocalPlayer player) {

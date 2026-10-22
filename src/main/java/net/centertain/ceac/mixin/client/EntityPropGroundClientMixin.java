@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(Entity.class)
-public class EntityPropGroundClientMixin {
+public abstract class EntityPropGroundClientMixin {
     @ModifyArg(
             method = "move",
             at = @At(
