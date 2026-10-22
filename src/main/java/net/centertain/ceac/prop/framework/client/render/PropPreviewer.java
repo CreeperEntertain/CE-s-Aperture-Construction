@@ -182,7 +182,7 @@ public final class PropPreviewer {
 
         List<PropGeometry.Triangle> clippedTriangles = captureCollision
                 ? PropCollisionClipGeometry.build(
-                        geometry, transform, minecraft.level, camera, PropRenderer.getFrameRenderTimeNanos()
+                        geometry, transform, minecraft.level
                 ) : List.of();
 
         if (captureCollision) {
