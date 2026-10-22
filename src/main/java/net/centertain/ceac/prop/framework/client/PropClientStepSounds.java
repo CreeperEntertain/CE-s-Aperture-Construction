@@ -4,8 +4,8 @@ import net.centertain.ceac.prop.framework.Prop;
 import net.centertain.ceac.prop.framework.common.PropStepSoundLookup;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -14,6 +14,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class PropClientStepSounds {
+    private PropClientStepSounds() {}
+
+
+    public static boolean isSupportedByProp(Entity entity) {
+        if (!(entity instanceof LocalPlayer player))
+            return false;
+        if (!entity.level().isClientSide || entity.noPhysics || entity.isSpectator())
+            return false;
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level == null || minecraft.player != player)
+            return false;
+
+        List<Prop> nearbyProps = getNearbyProps(player);
+
+        return PropStepSoundLookup.isSupportedByProp(
+                player,
+                nearbyProps,
+                minecraft.getResourceManager()
+        );
+    }
+
     public static void playStepSounds(PlayLevelSoundEvent event) {
         if (!(event instanceof PlayLevelSoundEvent.AtEntity entityEvent))
             return;
@@ -30,13 +52,7 @@ public final class PropClientStepSounds {
         if (minecraft.level == null)
             return;
 
-        int chunkX = player.blockPosition().getX() >> 4;
-        int chunkZ = player.blockPosition().getZ() >> 4;
         List<Prop> nearbyProps = new ArrayList<>();
-        for (int x = chunkX - 1; x <= chunkX + 1; x++)
-            for (int z = chunkZ - 1; z <= chunkZ + 1; z++)
-                nearbyProps.addAll(ClientProps.getInChunk(x, z));
-
         SoundType soundType = PropStepSoundLookup.findSoundType(
                 player,
                 nearbyProps,
@@ -54,5 +70,18 @@ public final class PropClientStepSounds {
         );
         event.setNewVolume(soundType.getVolume() * 0.15f);
         event.setNewPitch(soundType.getPitch());
+    }
+
+    private static List<Prop> getNearbyProps(LocalPlayer player) {
+        int chunkX = player.blockPosition().getX() >> 4;
+        int chunkZ = player.blockPosition().getZ() >> 4;
+
+        List<Prop> nearbyProps = new ArrayList<>();
+
+        for (int x = chunkX - 1; x <= chunkX + 1; x++)
+            for (int z = chunkZ - 1; z <= chunkZ + 1; z++)
+                nearbyProps.addAll(ClientProps.getInChunk(x, z));
+
+        return nearbyProps;
     }
 }

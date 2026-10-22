@@ -14,24 +14,32 @@ public final class PropStepSoundServer {
     private PropStepSoundServer() {}
 
 
-    public static boolean playIfOnProp(Entity entity) {
-        if (entity.level().isClientSide || !entity.onGround())
+    public static boolean isSupportedByProp(Entity entity) {
+        if (entity.level().isClientSide)
+            return false;
+        if (entity.noPhysics || entity.isSpectator())
             return false;
         if (!(entity.level() instanceof ServerLevel level))
             return false;
 
-        int chunkX = entity.blockPosition().getX() >> 4;
-        int chunkZ = entity.blockPosition().getZ() >> 4;
+        List<Prop> nearbyProps = getNearbyProps(entity, level);
 
-        List<Prop> nearbyProps = new ArrayList<>();
+        return PropStepSoundLookup.isSupportedByProp(
+                entity,
+                nearbyProps,
+                level.getServer().getResourceManager()
+        );
+    }
 
-        for (int x = chunkX - 1; x <= chunkX + 1; x++)
-            for (int z = chunkZ - 1; z <= chunkZ + 1; z++) {
-                LevelChunk chunk = level.getChunkSource().getChunkNow(x, z);
-                if (chunk != null)
-                    nearbyProps.addAll(PropCapabilities.get(chunk).getProps().values());
-            }
+    public static boolean playIfOnProp(Entity entity) {
+        if (entity.level().isClientSide || !entity.onGround())
+            return false;
+        if (entity.noPhysics || entity.isSpectator())
+            return false;
+        if (!(entity.level() instanceof ServerLevel level))
+            return false;
 
+        List<Prop> nearbyProps = getNearbyProps(entity, level);
         SoundType soundType = PropStepSoundLookup.findSoundType(
                 entity,
                 nearbyProps,
@@ -45,7 +53,22 @@ public final class PropStepSoundServer {
                 soundType.getVolume() * 0.15f,
                 soundType.getPitch()
         );
-
         return true;
+    }
+
+    private static List<Prop> getNearbyProps(Entity entity, ServerLevel level) {
+        int chunkX = entity.blockPosition().getX() >> 4;
+        int chunkZ = entity.blockPosition().getZ() >> 4;
+
+        List<Prop> nearbyProps = new ArrayList<>();
+
+        for (int x = chunkX - 1; x <= chunkX + 1; x++)
+            for (int z = chunkZ - 1; z <= chunkZ + 1; z++) {
+                LevelChunk chunk = level.getChunkSource().getChunkNow(x, z);
+                if (chunk != null)
+                    nearbyProps.addAll(PropCapabilities.get(chunk).getProps().values());
+            }
+
+        return nearbyProps;
     }
 }

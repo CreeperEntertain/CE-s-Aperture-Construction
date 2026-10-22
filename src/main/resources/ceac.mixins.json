@@ -5,6 +5,7 @@
   "refmap": "ceac.refmap.json",
   "client": [
     "client.EntityPropCollisionClientMixin",
+    "client.EntityPropGroundClientMixin",
     "client.ForgeBlockModelRendererMixin",
     "client.GameRendererAccessor",
     "client.GameRendererMixin",
@@ -22,6 +23,7 @@
   "mixins": [
     "common.BlockPlaceContextMixin",
     "common.EntityPropCollisionMixin",
+    "common.EntityPropGroundMixin",
     "common.EntityPropStepSoundMixin",
     "common.PlayerPropStepSoundMixin",
     "common.UseOnContextAccessor"

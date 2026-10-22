@@ -16,26 +16,45 @@ import org.joml.Matrix4f;
 public final class PropStepSoundLookup {
     private static final double RAY_START = 0.02;
     private static final double RAY_LENGTH = 0.1;
-    private static final double MIN_UPWARD_NORMAL = 0.6;
+    private static final double MAX_BELOW_FEET = 0.08;
+    private static final double MIN_WALKABLE_NORMAL_Y = Math.cos(Math.toRadians(45.0));
 
     private PropStepSoundLookup() {}
 
+
+    public static boolean isSupportedByProp(
+            Entity entity,
+            Iterable<Prop> props,
+            ResourceManager resources
+    ) {
+        if (entity.noPhysics || entity.isSpectator())
+            return false;
+        return findSupportingDefinition(entity, props, resources) != null;
+    }
 
     public static SoundType findSoundType(
             Entity entity,
             Iterable<Prop> props,
             ResourceManager resources
     ) {
-        if (!entity.onGround() || entity.noPhysics || entity.isSpectator())
+        if (entity.noPhysics || entity.isSpectator())
             return null;
 
+        PropDefinition definition = findSupportingDefinition(entity, props, resources);
+
+        return definition == null ? null : definition.getSoundType();
+    }
+
+    private static PropDefinition findSupportingDefinition(Entity entity, Iterable<Prop> props, ResourceManager resources) {
         AABB box = entity.getBoundingBox();
         double footY = box.minY;
-        Vec3[] samplePoints = getSamplePoints(box, footY);
 
+        Vec3[] samplePoints = getSamplePoints(box, footY);
         Vec3 down = new Vec3(0.0, -1.0, 0.0);
+
         double closestDistance = Double.POSITIVE_INFINITY;
-        SoundType closestSound = null;
+        PropDefinition closestDefinition = null;
+
         Matrix4f transform = new Matrix4f();
 
         for (Prop prop : props) {
@@ -62,17 +81,21 @@ public final class PropStepSoundLookup {
                     continue;
 
                 double verticality = Math.abs(hit.normal().y) / normalLength;
-                if (verticality < MIN_UPWARD_NORMAL)
+                if (verticality < MIN_WALKABLE_NORMAL_Y)
                     continue;
-                if (hit.location().y < footY - 0.08)
+
+                double surfaceY = hit.location().y;
+                if (surfaceY < footY - MAX_BELOW_FEET)
+                    continue;
+                if (surfaceY > footY + RAY_START)
                     continue;
 
                 closestDistance = hit.distance();
-                closestSound = definition.getSoundType();
+                closestDefinition = definition;
             }
         }
 
-        return closestSound;
+        return closestDefinition;
     }
 
     private static @NotNull Vec3[] getSamplePoints(AABB box, double footY) {
