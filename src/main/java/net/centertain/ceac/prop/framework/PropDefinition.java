@@ -103,6 +103,7 @@ public abstract class PropDefinition {
     }
 
 
+    @SuppressWarnings("unused")
     public InteractionResult use(PropUseContext context) {
         return InteractionResult.PASS;
     }
