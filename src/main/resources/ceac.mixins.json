@@ -22,6 +22,8 @@
   "mixins": [
     "common.BlockPlaceContextMixin",
     "common.EntityPropCollisionMixin",
+    "common.EntityPropStepSoundMixin",
+    "common.PlayerPropStepSoundMixin",
     "common.UseOnContextAccessor"
   ]
 }

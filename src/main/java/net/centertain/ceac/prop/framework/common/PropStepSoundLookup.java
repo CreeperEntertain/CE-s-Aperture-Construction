@@ -1,0 +1,98 @@
+package net.centertain.ceac.prop.framework.common;
+
+import net.centertain.ceac.prop.ModProps;
+import net.centertain.ceac.prop.framework.Prop;
+import net.centertain.ceac.prop.framework.PropDefinition;
+import net.centertain.ceac.prop.framework.PropGeometry;
+import net.centertain.ceac.prop.framework.enums.PropCollisionMode;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
+
+public final class PropStepSoundLookup {
+    private static final double RAY_START = 0.02;
+    private static final double RAY_LENGTH = 0.1;
+    private static final double MIN_UPWARD_NORMAL = 0.6;
+
+    private PropStepSoundLookup() {}
+
+
+    public static SoundType findSoundType(
+            Entity entity,
+            Iterable<Prop> props,
+            ResourceManager resources
+    ) {
+        if (!entity.onGround() || entity.noPhysics || entity.isSpectator())
+            return null;
+
+        AABB box = entity.getBoundingBox();
+        double footY = box.minY;
+        Vec3[] samplePoints = getSamplePoints(box, footY);
+
+        Vec3 down = new Vec3(0.0, -1.0, 0.0);
+        double closestDistance = Double.POSITIVE_INFINITY;
+        SoundType closestSound = null;
+        Matrix4f transform = new Matrix4f();
+
+        for (Prop prop : props) {
+            if (prop.getCollisionMode() != PropCollisionMode.SOLID)
+                continue;
+
+            PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
+            if (definition == null)
+                continue;
+
+            PropGeometry geometry = PropGeometry.get(resources, definition.getModelId());
+            if (geometry == null)
+                continue;
+
+            prop.copyTransformTo(transform);
+
+            for (Vec3 sample : samplePoints) {
+                PropGeometry.RayHit hit = geometry.raycast(sample, down, transform, RAY_LENGTH);
+                if (hit == null || hit.distance() >= closestDistance)
+                    continue;
+
+                double normalLength = hit.normal().length();
+                if (normalLength < 1.0e-8)
+                    continue;
+
+                double verticality = Math.abs(hit.normal().y) / normalLength;
+                if (verticality < MIN_UPWARD_NORMAL)
+                    continue;
+                if (hit.location().y < footY - 0.08)
+                    continue;
+
+                closestDistance = hit.distance();
+                closestSound = definition.getSoundType();
+            }
+        }
+
+        return closestSound;
+    }
+
+    private static @NotNull Vec3[] getSamplePoints(AABB box, double footY) {
+        double centerX = (box.minX + box.maxX) * 0.5;
+        double centerZ = (box.minZ + box.maxZ) * 0.5;
+
+        double insetX = Math.min(0.08, (box.maxX - box.minX) * 0.2);
+        double insetZ = Math.min(0.08, (box.maxZ - box.minZ) * 0.2);
+
+        double minX = box.minX + insetX;
+        double maxX = box.maxX - insetX;
+        double minZ = box.minZ + insetZ;
+        double maxZ = box.maxZ - insetZ;
+
+        return new Vec3[]{
+                new Vec3(centerX, footY + RAY_START, centerZ),
+                new Vec3(minX, footY + RAY_START, minZ),
+                new Vec3(minX, footY + RAY_START, maxZ),
+                new Vec3(maxX, footY + RAY_START, minZ),
+                new Vec3(maxX, footY + RAY_START, maxZ)
+        };
+    }
+}

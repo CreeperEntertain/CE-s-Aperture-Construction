@@ -8,6 +8,7 @@ import net.centertain.ceac.decal.server.DecalBreakage;
 import net.centertain.ceac.material.preview.MaterialPlacement;
 import net.centertain.ceac.material.shapes.MaterialShapeSoundEvents;
 import net.centertain.ceac.material.shapes.utility.MaterialShapeSelectionOutline;
+import net.centertain.ceac.prop.framework.client.PropClientStepSounds;
 import net.centertain.ceac.prop.framework.common.PropHitResult;
 import net.centertain.ceac.prop.framework.client.ClientPropMiningProgress;
 import net.centertain.ceac.prop.framework.client.PropMiningClient;
@@ -93,6 +94,7 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void onPlayLevelSound(PlayLevelSoundEvent event) {
         MaterialShapeSoundEvents.handleLevelSoundEvents(event);
+        PropClientStepSounds.playStepSounds(event);
     }
 
     @SubscribeEvent
