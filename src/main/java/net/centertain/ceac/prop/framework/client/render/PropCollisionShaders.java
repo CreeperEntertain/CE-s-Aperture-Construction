@@ -22,6 +22,8 @@ public final class PropCollisionShaders {
     private static ShaderInstance clipCapture;
     private static ShaderInstance resolve;
     private static ShaderInstance depth;
+    private static ShaderInstance volumeCapture;
+    private static ShaderInstance volumeAccumulate;
 
     private PropCollisionShaders() {}
 
@@ -60,6 +62,22 @@ public final class PropCollisionShaders {
                 ),
                 shader -> depth = shader
         );
+        event.registerShader(
+                new ShaderInstance(
+                        event.getResourceProvider(),
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "prop_collision_volume_capture"),
+                        DefaultVertexFormat.POSITION
+                ),
+                shader -> volumeCapture = shader
+        );
+        event.registerShader(
+                new ShaderInstance(
+                        event.getResourceProvider(),
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "prop_collision_volume_accumulate"),
+                        DefaultVertexFormat.POSITION
+                ),
+                shader -> volumeAccumulate = shader
+        );
     }
 
     public static ShaderInstance getCapture() {
@@ -73,5 +91,11 @@ public final class PropCollisionShaders {
     }
     public static ShaderInstance getDepth() {
         return depth;
+    }
+    public static ShaderInstance getVolumeCapture() {
+        return volumeCapture;
+    }
+    public static ShaderInstance getVolumeAccumulate() {
+        return volumeAccumulate;
     }
 }

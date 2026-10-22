@@ -1,0 +1,8 @@
+{
+  "vertex": "ceac:prop_collision_resolve",
+  "fragment": "ceac:prop_collision_volume_accumulate",
+
+  "attributes": [
+    "Position"
+  ]
+}

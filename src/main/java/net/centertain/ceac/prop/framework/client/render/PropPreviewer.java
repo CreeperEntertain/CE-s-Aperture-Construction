@@ -7,13 +7,18 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.centertain.ceac.item.custom.PropPlacerItem;
 import net.centertain.ceac.prop.ModProps;
+import net.centertain.ceac.prop.framework.Prop;
 import net.centertain.ceac.prop.framework.PropDefinition;
 import net.centertain.ceac.prop.framework.PropGeometry;
+import net.centertain.ceac.prop.framework.client.ClientProps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -50,6 +55,8 @@ public final class PropPreviewer {
 
     private static ResourceLocation activeDefinitionId;
     private static boolean seenThisTick;
+
+    private static final Matrix4f PROP_VOLUME_TRANSFORM = new Matrix4f();
 
     private static final RenderType SILHOUETTE_LINES = RenderType.create(
             "ceac_prop_preview_silhouette",
@@ -210,7 +217,8 @@ public final class PropPreviewer {
 
             poseStack.popPose();
         }
-
+        if (captureCollision)
+            capturePlacedPropVolumes(minecraft, poseStack, camera, buffers);
         if (captureCollision)
             PropCollisionHatching.finishAndRender();
 
@@ -253,6 +261,71 @@ public final class PropPreviewer {
         outlinePoseStack.popPose();
 
         buffers.endBatch(SILHOUETTE_LINES);
+    }
+
+    private static void capturePlacedPropVolumes(
+            Minecraft minecraft,
+            PoseStack poseStack,
+            Vec3 camera,
+            MultiBufferSource.BufferSource buffers
+    ) {
+        if (!PropCollisionHatching.beginPropVolumeCapture())
+            return;
+
+        long renderTimeNanos = PropRenderer.getFrameRenderTimeNanos();
+        if (renderTimeNanos == 0L)
+            renderTimeNanos = System.nanoTime();
+
+        ChunkPos center = new ChunkPos(BlockPos.containing(camera));
+        int chunkRadius = minecraft.options.renderDistance().get() + 1;
+
+        int batchCount = 0;
+        PropCollisionHatching.beginPropParityBatch();
+
+        for (int chunkX = center.x - chunkRadius; chunkX <= center.x + chunkRadius; chunkX++)
+            for (int chunkZ = center.z - chunkRadius; chunkZ <= center.z + chunkRadius; chunkZ++)
+                for (Prop prop : ClientProps.getInChunk(chunkX, chunkZ)) {
+                    PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
+                    if (definition == null)
+                        continue;
+
+                    PropGeometry geometry = PropGeometry.get(minecraft.getResourceManager(), definition.getModelId());
+                    if (geometry == null || geometry.getTriangles().isEmpty())
+                        continue;
+
+                    ClientProps.copyRenderTransformTo(prop, PROP_VOLUME_TRANSFORM, renderTimeNanos);
+
+                    Vector3f translation = PROP_VOLUME_TRANSFORM.getTranslation(new Vector3f());
+                    Quaternionf rotation = PROP_VOLUME_TRANSFORM.getUnnormalizedRotation(new Quaternionf()).normalize();
+                    Vector3f scale = PROP_VOLUME_TRANSFORM.getScale(new Vector3f());
+
+                    poseStack.pushPose();
+                    poseStack.translate(
+                            translation.x - camera.x,
+                            translation.y - camera.y,
+                            translation.z - camera.z
+                    );
+                    poseStack.mulPose(rotation);
+                    poseStack.scale(scale.x, scale.y, scale.z);
+
+                    PropCollisionHatching.setPropVolumeBit(1 << batchCount);
+
+                    VertexConsumer consumer = buffers.getBuffer(PropCollisionHatching.PROP_VOLUME_CAPTURE_TYPE);
+                    emitTriangles(consumer, geometry, poseStack.last().pose());
+
+                    poseStack.popPose();
+                    buffers.endBatch(PropCollisionHatching.PROP_VOLUME_CAPTURE_TYPE);
+
+                    batchCount++;
+
+                    if (batchCount == 31) {
+                        PropCollisionHatching.accumulatePropParityBatch(buffers);
+                        PropCollisionHatching.beginPropParityBatch();
+                        batchCount = 0;
+                    }
+                }
+        if (batchCount > 0)
+            PropCollisionHatching.accumulatePropParityBatch(buffers);
     }
 
     private static List<MeshEdge> buildEdges(PropGeometry geometry) {

@@ -5,6 +5,7 @@ uniform sampler2D VisibleDepth;
 uniform usampler2D Crossings;
 uniform sampler2D PropDepth;
 uniform usampler2D ClipMask;
+uniform usampler2D PropInsideMask;
 
 out vec4 fragColor;
 
@@ -14,7 +15,11 @@ int classifyPixel(ivec2 pixel) {
     float worldDepth = texelFetch(SceneDepth, pixel, 0).r;
     float propDepth = texelFetch(PropDepth, pixel, 0).r;
 
-    if (worldDepth >= 1.0 || propDepth >= 1.0)
+    if (propDepth >= 1.0)
+        return 0;
+    if (texelFetch(PropInsideMask, pixel, 0).r != 0u)
+        return 2;
+    if (worldDepth >= 1.0)
         return 0;
 
     if (propDepth > worldDepth + 0.00001) {
@@ -82,7 +87,21 @@ void main() {
     float worldDepth = texelFetch(SceneDepth, pixel, 0).r;
     float propDepth = texelFetch(PropDepth, pixel, 0).r;
 
-    if (worldDepth >= 1.0 || propDepth >= 1.0)
+    if (propDepth >= 1.0)
+        discard;
+
+    if (texelFetch(PropInsideMask, pixel, 0).r != 0u) {
+        float stripe = mod(gl_FragCoord.x + gl_FragCoord.y, 10.0 * textureScale);
+        float cuts = mod(gl_FragCoord.x - gl_FragCoord.y, 15.0 * textureScale);
+
+        if (stripe > 1.5 * textureScale || cuts < 4.0 * textureScale)
+            discard;
+
+        fragColor = vec4(1.0, 0.35, 0.02, 0.5);
+            return;
+    }
+
+    if (worldDepth >= 1.0)
         discard;
 
     uint crossings = texelFetch(Crossings, pixel, 0).r;
