@@ -113,6 +113,8 @@ public final class PropCollisionHandler {
                 b.prop.getCollisionMode() != PropCollisionMode.SOLID
         )
             return;
+        manager.playImpactSound(a, approachSpeed);
+        manager.playImpactSound(b, approachSpeed);
         if (
                 a.motionMode == PropMotionMode.DYNAMIC &&
                 b.motionMode == PropMotionMode.MOVING
@@ -179,6 +181,8 @@ public final class PropCollisionHandler {
         double relativeImpactSpeed = propImpactSpeed - entityImpactSpeed;
         if (relativeImpactSpeed <= 0.01)
             return;
+
+        manager.playImpactSound(prop, approachSpeed);
 
         double entityMass = entity instanceof Player ? PLAYER_IMPACT_MASS : effectiveEntityMass(entity);
         double inversePropMass = prop.motionMode == PropMotionMode.DYNAMIC ? 1.0 / Math.max(1.0e-3, prop.mass) : 0.0;

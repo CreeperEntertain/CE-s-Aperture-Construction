@@ -2,10 +2,14 @@ package net.centertain.ceac.prop.framework.server;
 
 import net.centertain.ceac.prop.framework.Prop;
 import net.centertain.ceac.prop.framework.common.PropStepSoundLookup;
+import net.centertain.ceac.prop.framework.enums.PropMotionMode;
+import net.centertain.ceac.prop.framework.physics.PropPhysManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +17,39 @@ import java.util.List;
 public final class PropStepSoundServer {
     private PropStepSoundServer() {}
 
+
+    public static void playLandingImpact(
+            Entity entity,
+            AABB impactBox,
+            Vec3 impactPosition,
+            double impactSpeed
+    ) {
+        if (entity.level().isClientSide || entity.noPhysics || entity.isSpectator())
+            return;
+        if (!(entity.level() instanceof ServerLevel level))
+            return;
+
+        List<Prop> nearbyProps = getNearbyProps(entity, level);
+        Prop supportingProp = PropStepSoundLookup.findSupportingProp(
+                entity,
+                impactBox,
+                nearbyProps,
+                level.getServer().getResourceManager()
+        );
+        if (supportingProp == null)
+            return;
+        if (supportingProp.getMotionMode() == PropMotionMode.DYNAMIC)
+            return;
+
+        double relativeImpactSpeed = PropPhysManager.relativeVerticalImpactSpeed(level, supportingProp, impactSpeed);
+
+        PropPhysManager.playEntityPropImpactSound(
+                level,
+                supportingProp,
+                impactPosition,
+                relativeImpactSpeed
+        );
+    }
 
     public static boolean isSupportedByProp(Entity entity) {
         if (entity.level().isClientSide)

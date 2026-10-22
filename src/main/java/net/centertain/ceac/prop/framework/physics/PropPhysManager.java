@@ -1,14 +1,19 @@
 package net.centertain.ceac.prop.framework.physics;
 
 import cc.modlabs.box3d.*;
+import net.centertain.ceac.prop.ModProps;
 import net.centertain.ceac.prop.framework.Prop;
+import net.centertain.ceac.prop.framework.PropDefinition;
 import net.centertain.ceac.prop.framework.PropGeometry;
+import net.centertain.ceac.prop.framework.enums.PropCollisionMode;
 import net.centertain.ceac.prop.framework.enums.PropMotionMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -51,6 +56,8 @@ public final class PropPhysManager implements AutoCloseable {
 
     private final Map<UUID, Entity> wantedEntities = new HashMap<>();
 
+    private final Map<UUID, Long> lastImpactSoundTick = new HashMap<>();
+
     private final PropBodyManager propBodyManager = new PropBodyManager(this);
     private final TerrainCollisionManager terrainCollisionManager = new TerrainCollisionManager(this);
     private final EntityBodyManager entityBodyManager = new EntityBodyManager(this);
@@ -82,6 +89,79 @@ public final class PropPhysManager implements AutoCloseable {
         return propBodyManager.activeProps();
     }
 
+
+    public static void playEntityPropImpactSound(
+            ServerLevel level,
+            Prop prop,
+            Vec3 impactPosition,
+            double relativeImpactSpeed
+    ) {
+        PropPhysManager manager = INSTANCES.get(level);
+        if (manager == null || manager.closed)
+            return;
+        manager.playImpactSound(prop, impactPosition, relativeImpactSpeed);
+    }
+
+    void playImpactSound(PropBodyManager.PropBody body, double relativeImpactSpeed) {
+        b3Pos position = b3Body_GetPosition(body.body);
+        playImpactSound(
+                body.prop,
+                new Vec3(position.x(), position.y(), position.z()),
+                relativeImpactSpeed
+        );
+    }
+
+    private void playImpactSound(Prop prop, Vec3 impactPosition, double relativeImpactSpeed) {
+        if (prop.getCollisionMode() != PropCollisionMode.SOLID)
+            return;
+        if (!Double.isFinite(relativeImpactSpeed) || relativeImpactSpeed < 0.2)
+            return;
+
+        PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
+        if (definition == null)
+            return;
+
+        long gameTime = level.getGameTime();
+        Long previousSoundTick = lastImpactSoundTick.get(prop.getId());
+        if (previousSoundTick != null && previousSoundTick == gameTime)
+            return;
+
+        lastImpactSoundTick.put(prop.getId(), gameTime);
+        if (lastImpactSoundTick.size() > 2048)
+            lastImpactSoundTick.entrySet().removeIf(entry -> entry.getValue() < gameTime - 2);
+
+        SoundType soundType = definition.getSoundType();
+        float impactStrength = (float) Math.max(0.12, Math.min(1.0, relativeImpactSpeed / 8.0));
+
+        level.playSound(
+                null,
+                impactPosition.x,
+                impactPosition.y,
+                impactPosition.z,
+                soundType.getFallSound(),
+                SoundSource.BLOCKS,
+                soundType.getVolume() * 0.5f * impactStrength,
+                soundType.getPitch() * 0.75f
+        );
+    }
+
+    public static double relativeVerticalImpactSpeed(
+            ServerLevel level,
+            Prop prop,
+            double entityImpactSpeed
+    ) {
+        PropPhysManager manager = INSTANCES.get(level);
+        if (manager == null || manager.closed)
+            return entityImpactSpeed;
+
+        PropBodyManager.PropBody body = manager.propBodyManager.propBodies().get(prop.getId());
+        if (body == null || body.motionMode == PropMotionMode.STATIC)
+            return entityImpactSpeed;
+
+        double propDeltaY = prop.getPosition().y - body.lastSyncedTransform.m31();
+
+        return Math.max(0.0, entityImpactSpeed + propDeltaY * 20.0);
+    }
 
     private static PropPhysManager getOrCreate(ServerLevel level) {
         return INSTANCES.computeIfAbsent(level, PropPhysManager::new);
@@ -396,6 +476,8 @@ public final class PropPhysManager implements AutoCloseable {
         collisionHandler.clear();
 
         propSpatialIndex.clear();
+
+        lastImpactSoundTick.clear();
     }
 
 

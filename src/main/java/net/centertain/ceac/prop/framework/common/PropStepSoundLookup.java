@@ -40,9 +40,71 @@ public final class PropStepSoundLookup {
         if (entity.noPhysics || entity.isSpectator())
             return null;
 
-        PropDefinition definition = findSupportingDefinition(entity, props, resources);
+        Prop prop = findSupportingProp(entity, entity.getBoundingBox(), props, resources);
+        if (prop == null)
+            return null;
+
+        PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
 
         return definition == null ? null : definition.getSoundType();
+    }
+
+    public static Prop findSupportingProp(
+            Entity entity,
+            AABB box,
+            Iterable<Prop> props,
+            ResourceManager resources
+    ) {
+        if (entity.noPhysics || entity.isSpectator())
+            return null;
+
+        double footY = box.minY;
+        Vec3[] samplePoints = getSamplePoints(box, footY);
+        Vec3 down = new Vec3(0.0, -1.0, 0.0);
+
+        double closestDistance = Double.POSITIVE_INFINITY;
+        Prop closestProp = null;
+        Matrix4f transform = new Matrix4f();
+
+        for (Prop prop : props) {
+            if (prop.getCollisionMode() != PropCollisionMode.SOLID)
+                continue;
+
+            PropDefinition definition = ModProps.get(prop.getDefinitionId()).orElse(null);
+            if (definition == null)
+                continue;
+
+            PropGeometry geometry = PropGeometry.get(resources, definition.getModelId());
+            if (geometry == null)
+                continue;
+
+            prop.copyTransformTo(transform);
+
+            for (Vec3 sample : samplePoints) {
+                PropGeometry.RayHit hit = geometry.raycast(sample, down, transform, RAY_LENGTH);
+                if (hit == null || hit.distance() >= closestDistance)
+                    continue;
+
+                double normalLength = hit.normal().length();
+                if (normalLength < 1.0e-8)
+                    continue;
+
+                double verticality = Math.abs(hit.normal().y) / normalLength;
+                if (verticality < MIN_WALKABLE_NORMAL_Y)
+                    continue;
+
+                double surfaceY = hit.location().y;
+                if (surfaceY < footY - MAX_BELOW_FEET)
+                    continue;
+                if (surfaceY > footY + RAY_START)
+                    continue;
+
+                closestDistance = hit.distance();
+                closestProp = prop;
+            }
+        }
+
+        return closestProp;
     }
 
     private static PropDefinition findSupportingDefinition(Entity entity, Iterable<Prop> props, ResourceManager resources) {

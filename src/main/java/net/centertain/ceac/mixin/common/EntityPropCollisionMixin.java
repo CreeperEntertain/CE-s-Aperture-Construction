@@ -2,6 +2,7 @@ package net.centertain.ceac.mixin.common;
 
 import net.centertain.ceac.prop.framework.physics.PropEntityCollision;
 import net.centertain.ceac.prop.framework.physics.PropPhysManager;
+import net.centertain.ceac.prop.framework.server.PropStepSoundServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,6 +28,14 @@ public abstract class EntityPropCollisionMixin {
         Vec3 vanillaMovement = cir.getReturnValue();
         Vec3 propMovement = PropPhysManager.clipEntityMovement(entity, vanillaMovement, movement);
         Vec3 safeMovement = PropEntityCollision.clipAgainstBlocks(entity, propMovement);
+
+        if (vanillaMovement.y < -1.0e-6 && propMovement.y > vanillaMovement.y + 1.0e-6)
+            PropStepSoundServer.playLandingImpact(
+                    entity,
+                    entity.getBoundingBox().move(safeMovement),
+                    entity.position().add(safeMovement),
+                    -vanillaMovement.y * 20.0
+            );
 
         cir.setReturnValue(safeMovement);
     }
