@@ -1,4 +1,4 @@
-package net.centertain.ceac.mixin;
+package net.centertain.ceac.mixin.client;
 
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;

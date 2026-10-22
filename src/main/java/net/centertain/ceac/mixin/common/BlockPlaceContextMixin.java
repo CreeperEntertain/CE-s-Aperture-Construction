@@ -1,4 +1,4 @@
-package net.centertain.ceac.mixin;
+package net.centertain.ceac.mixin.common;
 
 import net.centertain.ceac.prop.framework.common.PropHitResult;
 import net.minecraft.core.BlockPos;

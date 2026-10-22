@@ -1,4 +1,4 @@
-package net.centertain.ceac.mixin;
+package net.centertain.ceac.mixin.client;
 
 import net.centertain.ceac.network.ModNetworking;
 import net.centertain.ceac.prop.framework.client.PropMiningClient;

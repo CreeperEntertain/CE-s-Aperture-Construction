@@ -4,24 +4,24 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "ceac.refmap.json",
   "client": [
-    "EntityPropCollisionClientMixin",
-    "ForgeBlockModelRendererMixin",
-    "GameRendererAccessor",
-    "GameRendererMixin",
-    "LevelRendererAccessor",
-    "LevelRendererMixin",
-    "LightTextureAccessor",
-    "MinecraftMixin",
-    "MultiPlayerGameModeMixin",
-    "RenderSystemMixin"
+    "client.EntityPropCollisionClientMixin",
+    "client.ForgeBlockModelRendererMixin",
+    "client.GameRendererAccessor",
+    "client.GameRendererMixin",
+    "client.LevelRendererAccessor",
+    "client.LevelRendererMixin",
+    "client.LightTextureAccessor",
+    "client.MinecraftMixin",
+    "client.MultiPlayerGameModeMixin",
+    "client.RenderSystemMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "minVersion": "0.8",
   "mixins": [
-    "BlockPlaceContextMixin",
-    "EntityPropCollisionMixin",
-    "UseOnContextAccessor"
+    "common.BlockPlaceContextMixin",
+    "common.EntityPropCollisionMixin",
+    "common.UseOnContextAccessor"
   ]
 }

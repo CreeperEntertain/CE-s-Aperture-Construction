@@ -1,4 +1,4 @@
-package net.centertain.ceac.mixin;
+package net.centertain.ceac.mixin.client;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.GameRenderer;
