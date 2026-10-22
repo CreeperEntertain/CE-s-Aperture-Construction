@@ -1,5 +1,6 @@
 package net.centertain.ceac.prop.framework.server;
 
+import net.centertain.ceac.item.custom.PropPlacerItem;
 import net.centertain.ceac.prop.framework.Prop;
 import net.centertain.ceac.prop.framework.PropDefinition;
 import net.centertain.ceac.prop.framework.common.PropRaycast;
@@ -41,6 +42,17 @@ public final class PropInteractionManager {
             return;
 
         ItemStack stack = player.getItemInHand(packet.getHand());
+        if (stack.getItem() instanceof PropPlacerItem placer) {
+            placer.placeAt(
+                    player.level(),
+                    player,
+                    packet.getHand(),
+                    target.location(),
+                    target.face()
+            );
+            return;
+        }
+
         Vec3 insideSurface = target.location().subtract(
                 target.face().getStepX() * 1.0e-4,
                 target.face().getStepY() * 1.0e-4,

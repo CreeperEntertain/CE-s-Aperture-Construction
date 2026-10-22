@@ -5,6 +5,7 @@ import net.centertain.ceac.prop.framework.client.render.PropPreviewer;
 import net.centertain.ceac.prop.framework.enums.PropCollisionMode;
 import net.centertain.ceac.prop.ModProps;
 import net.centertain.ceac.prop.framework.enums.PropMotionMode;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -58,27 +59,44 @@ public class PropPlacerItem extends Item {
         if (hit.getType() == HitResult.Type.MISS)
             return InteractionResultHolder.pass(stack);
 
-        if (!level.isClientSide) {
-            Vec3 normal = Vec3.atLowerCornerOf(hit.getDirection().getNormal());
-            Vec3 position = hit.getLocation().add(normal.scale(0.001));
-            Matrix4f transform = new Matrix4f().translation(
-                    (float) position.x,
-                    (float) position.y,
-                    (float) position.z
-            );
-            Prop prop = new Prop(
-                    UUID.randomUUID(),
-                    ModProps.TEST_PROP.getId(),
-                    transform,
-                    PropCollisionMode.SOLID,
-                    PropMotionMode.DYNAMIC
-            );
-
-            Prop.placeInWorld(prop, level);
-            if (!player.getAbilities().instabuild)
-                stack.shrink(1);
-        }
+        if (!level.isClientSide)
+            placeAt(level, player, hand, hit.getLocation(), hit.getDirection());
 
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    public boolean placeAt(
+            Level level,
+            Player player,
+            InteractionHand hand,
+            Vec3 hitLocation,
+            Direction face
+    ) {
+        if (level.isClientSide)
+            return false;
+
+        ItemStack stack = player.getItemInHand(hand);
+        if (stack.isEmpty() || !(stack.getItem() instanceof PropPlacerItem))
+            return false;
+
+        Vec3 position = hitLocation.add(Vec3.atLowerCornerOf(face.getNormal()).scale(0.001));
+        Matrix4f transform = new Matrix4f().translation(
+                (float) position.x,
+                (float) position.y,
+                (float) position.z
+        );
+        Prop prop = new Prop(
+                UUID.randomUUID(),
+                ModProps.TEST_PROP.getId(),
+                transform,
+                PropCollisionMode.SOLID,
+                PropMotionMode.DYNAMIC
+        );
+        Prop.placeInWorld(prop, level);
+        if (!player.getAbilities().instabuild)
+            stack.shrink(1);
+
+        return true;
     }
 }
