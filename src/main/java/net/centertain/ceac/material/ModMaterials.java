@@ -1,6 +1,6 @@
 package net.centertain.ceac.material;
 
-import net.centertain.ceac.material.materials.ObservationConcreteWallMaterial;
+import net.centertain.ceac.material.materials.concrete.ObservationConcreteWallMaterial;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
