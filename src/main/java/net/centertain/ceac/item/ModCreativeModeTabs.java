@@ -177,7 +177,32 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.YELLOW_BACKPANEL.get());
                         output.accept(ModItems.YELLOW_BACKPANEL_LARGE.get());
 
+                        output.accept(ModItems.BARE_CONCRETE_CAST.get());
+                        output.accept(ModItems.CHECKERED_CONCRETE_FLOOR_TILES.get());
+                        output.accept(ModItems.CINDERBLOCKS.get());
+                        output.accept(ModItems.DARK_CONCRETE_FLOOR_TILES.get());
+                        output.accept(ModItems.DIRTY_CONCRETE_FLOOR.get());
+                        output.accept(ModItems.DIRTY_CONCRETE_FLOOR_TILES.get());
+                        output.accept(ModItems.DIRTY_REBAR_CONCRETE_BLOCKS.get());
+                        output.accept(ModItems.FACTORY_CONCRETE_WALL.get());
+                        output.accept(ModItems.GLUED_CONCRETE_PANELS.get());
+                        output.accept(ModItems.HEAVY_CONCRETE_CEILING.get());
+                        output.accept(ModItems.LIGHT_CONCRETE_FLOOR_TILES.get());
+                        output.accept(ModItems.MODULAR_CONCRETE.get());
                         output.accept(ModItems.OBSERVATION_CONCRETE_WALL.get());
+                        output.accept(ModItems.PAINTED_CONCRETE_BLOCK_PILLAR.get());
+                        output.accept(ModItems.PAINTED_CONCRETE_TILES.get());
+                        output.accept(ModItems.PAINTED_FACTORY_CONCRETE_WALL.get());
+                        output.accept(ModItems.REBAR_CONCRETE.get());
+                        output.accept(ModItems.REBAR_CONCRETE_BLOCKS.get());
+                        output.accept(ModItems.RUSTED_REBAR_CONCRETE.get());
+                        output.accept(ModItems.SMALL_DIRTY_CONCRETE_FLOOR_TILES.get());
+                        output.accept(ModItems.STAINED_HEAVY_CONCRETE_CEILING.get());
+                        output.accept(ModItems.STAINED_MODULAR_CONCRETE.get());
+                        output.accept(ModItems.STAINED_REBAR_CONCRETE.get());
+                        output.accept(ModItems.WEATHERED_REBAR_CONCRETE.get());
+                        output.accept(ModItems.WITHERED_MODULAR_CONCRETE.get());
+                        output.accept(ModItems.WITHERED_REBAR_CONCRETE_BLOCKS.get());
                     })
                     .build()
     );
