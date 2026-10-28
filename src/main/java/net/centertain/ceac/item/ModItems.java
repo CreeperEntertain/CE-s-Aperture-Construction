@@ -18,10 +18,10 @@ public final class ModItems {
 
     public static final RegistryObject<Item> PROP_PLACER = ITEMS.register("prop_placer", () -> new PropPlacerItem(new Item.Properties()));
 
-    public static final RegistryObject<Item> DECAL = ITEMS.register("decal", () -> new DecalItem(new Item.Properties()));
-    public static final RegistryObject<Item> SCRAPER = ITEMS.register("scraper", () -> new ScraperItem(new Item.Properties()));
-    public static final RegistryObject<Item> WRENCH = ITEMS.register("wrench", () -> new WrenchItem(new Item.Properties()));
-    public static final RegistryObject<Item> CROWBAR = ITEMS.register("crowbar", () -> new CrowbarItem(new Item.Properties()));
+    public static final RegistryObject<Item> DECAL = ITEMS.register("basics/decal", () -> new DecalItem(new Item.Properties()));
+    public static final RegistryObject<Item> SCRAPER = ITEMS.register("basics/scraper", () -> new ScraperItem(new Item.Properties()));
+    public static final RegistryObject<Item> WRENCH = ITEMS.register("basics/wrench", () -> new WrenchItem(new Item.Properties()));
+    public static final RegistryObject<Item> CROWBAR = ITEMS.register("basics/crowbar", () -> new CrowbarItem(new Item.Properties()));
 
 
     public static final RegistryObject<Item> BARE_BACKPANEL = ITEMS.register("bare_backpanel", () -> new BareBackpanelMatItem(new Item.Properties()));

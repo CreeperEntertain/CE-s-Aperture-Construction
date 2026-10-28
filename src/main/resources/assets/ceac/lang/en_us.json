@@ -14,10 +14,10 @@
 
   "item.ceac.prop_placer": "Prop (Test)",
 
-  "item.ceac.decal": "Decal",
-  "item.ceac.scraper": "Scraper",
-  "item.ceac.wrench": "Wrench",
-  "item.ceac.crowbar": "Crowbar",
+  "item.ceac.basics.decal": "Decal",
+  "item.ceac.basics.scraper": "Scraper",
+  "item.ceac.basics.wrench": "Wrench",
+  "item.ceac.basics.crowbar": "Crowbar",
 
 
 
