@@ -163,6 +163,17 @@
   "item.ceac.materials.tile.white_panel_1x2_withered": "White Panel (1x2, Withered)",
   "item.ceac.materials.tile.white_pin-hole_ceiling_tiles": "White Pin-Hole Ceiling Tiles",
 
+  "item.ceac.materials.wallpaper.generic_wallpaper": "Generic Wallpaper",
+  "item.ceac.materials.wallpaper.lobby_wallpaper": "Lobby Wallpaper",
+
+  "item.ceac.materials.wood.barbed_plywood": "Barbed Plywood",
+  "item.ceac.materials.wood.checkered_painted_wooden_tiles": "Checkered Painted Wooden Tiles",
+  "item.ceac.materials.wood.large_painted_wooden_tiles": "Large Painted Wooden Tiles",
+  "item.ceac.materials.wood.old_plywood": "Old Plywood",
+  "item.ceac.materials.wood.painted_wooden_tiles": "Painted Wooden Tiles",
+  "item.ceac.materials.wood.small_painted_wooden_tiles": "Small Painted Wooden Tiles",
+  "item.ceac.materials.wood.target_painted_wooden_tiles": "Target Painted Wooden Tiles",
+
 
 
   "block.ceac.basics.purchasing_terminal": "Purchasing Terminal",
