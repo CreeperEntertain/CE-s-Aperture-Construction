@@ -115,6 +115,19 @@
   "item.ceac.materials.metal.withered_cable_wall": "Withered Cable Wall",
   "item.ceac.materials.metal.withered_pained_metal_panel": "Withered Painted Metal Panel",
 
+  "item.ceac.materials.plaster.aged_plaster": "Aged Plaster",
+  "item.ceac.materials.plaster.bare_plaster": "Bare Plaster",
+  "item.ceac.materials.plaster.clean_plaster": "Clean Plaster",
+  "item.ceac.materials.plaster.dark_aged_plaster": "Dark Aged Plaster",
+  "item.ceac.materials.plaster.dark_clean_plaster": "Dark Clean Plaster",
+  "item.ceac.materials.plaster.mixed_aged_plaster": "Mixed Aged Plaster",
+  "item.ceac.materials.plaster.mixed_clean_plaster": "Mixed Clean Plaster",
+
+  "item.ceac.materials.plastic.beige_plastic_wall": "Beige Plastic Wall",
+  "item.ceac.materials.plastic.beige_reinforced_plastic_wall": "Beige Reinforced Plastic Wall",
+  "item.ceac.materials.plastic.reinforced_plastic_wall": "Reinforced Plastic Wall",
+  "item.ceac.materials.plastic.yellow_reinforced_plastic_wall": "Yellow Reinforced Plastic Wall",
+
 
 
   "block.ceac.basics.purchasing_terminal": "Purchasing Terminal",
