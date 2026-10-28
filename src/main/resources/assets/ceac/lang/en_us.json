@@ -45,10 +45,10 @@
 
   "block.ceac.material_shapes.basic_shapes.block": "Material Shape: Block",
 
-  "block.ceac.material_shape_bit": "Material Shape: Bit",
-  "block.ceac.material_shape_bit_pillar": "Material Shape: Bit (Pillar)",
-  "block.ceac.material_shape_half": "Material Shape: Half",
-  "block.ceac.material_shape_stairs": "Material Shape: Stairs",
+  "block.ceac.material_shapes.basic_shapes.halves.bit": "Material Shape: Bit",
+  "block.ceac.material_shapes.basic_shapes.halves.bit_pillar": "Material Shape: Bit (Pillar)",
+  "block.ceac.material_shapes.basic_shapes.halves.half": "Material Shape: Half",
+  "block.ceac.material_shapes.basic_shapes.halves.stairs": "Material Shape: Stairs",
 
   "block.ceac.material_shape_ninth": "Material Shape: Ninth",
   "block.ceac.material_shape_ninth_pillar": "Material Shape: Ninth (Pillar)",

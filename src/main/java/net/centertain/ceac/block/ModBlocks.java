@@ -57,10 +57,10 @@ public final class ModBlocks {
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("material_shapes/basic_shapes/block", () -> new net.centertain.ceac.block.custom.material_shapes.basic_shapes.Block(MATERIAL_SHAPE_PROPERTIES));
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_BIT = registerBlock("material_shape_bit", () -> new Bit(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_BIT_PILLAR = registerBlock("material_shape_bit_pillar", () -> new BitPillar(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF = registerBlock("material_shape_half", () -> new Half(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_STAIRS = registerBlock("material_shape_stairs", () -> new Stairs(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_BIT = registerBlock("material_shapes/basic_shapes/halves/bit", () -> new Bit(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_BIT_PILLAR = registerBlock("material_shapes/basic_shapes/halves/bit_pillar", () -> new BitPillar(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF = registerBlock("material_shapes/basic_shapes/halves/half", () -> new Half(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_STAIRS = registerBlock("material_shapes/basic_shapes/halves/stairs", () -> new Stairs(MATERIAL_SHAPE_PROPERTIES));
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_NINTH = registerBlock("material_shape_ninth", () -> new Ninth(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_NINTH_PILLAR = registerBlock("material_shape_ninth_pillar", () -> new NinthPillar(MATERIAL_SHAPE_PROPERTIES));
