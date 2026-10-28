@@ -55,7 +55,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> PURCHASING_TERMINAL = registerBlock("purchasing_terminal", () -> new PurchasingTerminal(MATERIAL_SHAPE_PROPERTIES), block -> new PurchasingTerminalItem(block, new Item.Properties()));
 
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("material_shape_block", () -> new net.centertain.ceac.block.custom.material_shapes.basic_shapes.Block(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("material_shapes/basic_shapes/block", () -> new net.centertain.ceac.block.custom.material_shapes.basic_shapes.Block(MATERIAL_SHAPE_PROPERTIES));
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_BIT = registerBlock("material_shape_bit", () -> new Bit(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_BIT_PILLAR = registerBlock("material_shape_bit_pillar", () -> new BitPillar(MATERIAL_SHAPE_PROPERTIES));
