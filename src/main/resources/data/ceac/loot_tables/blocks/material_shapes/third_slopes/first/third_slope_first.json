@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "ceac:block/material_shapes/third_slopes/first/third_slope_first"
+          "name": "ceac:material_shapes/third_slopes/first/third_slope_first"
         }
       ]
     }

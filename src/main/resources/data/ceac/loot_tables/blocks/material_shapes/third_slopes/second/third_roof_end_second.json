@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "ceac:block/material_shapes/third_slopes/second/third_roof_end_second"
+          "name": "ceac:material_shapes/third_slopes/second/third_roof_end_second"
         }
       ]
     }

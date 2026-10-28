@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "ceac:block/material_shapes/third_slopes/third/third_corner_inner_third"
+          "name": "ceac:material_shapes/third_slopes/third/third_corner_inner_third"
         }
       ]
     }
