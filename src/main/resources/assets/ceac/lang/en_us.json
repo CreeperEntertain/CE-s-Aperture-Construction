@@ -1,5 +1,7 @@
 {
-  "creativetab.ceac_tab": "CE's Aperture Construction",
+  "creativetab.basics": "CE's Aperture Construction Basics",
+  "creativetab.shapes": "CE's Aperture Construction Shapes",
+  "creativetab.materials": "CE's Aperture Construction Materials",
 
 
 
@@ -18,6 +20,21 @@
   "item.ceac.crowbar": "Crowbar",
 
 
+
+  "item.ceac.bare_backpanel": "Bare Backpanel",
+  "item.ceac.bare_backpanel_large": "Bare Backpanel (Large)",
+  "item.ceac.green_backpanel": "Green Backpanel",
+  "item.ceac.green_backpanel_large": "Green Backpanel (Large)",
+  "item.ceac.orange_backpanel": "Orange Backpanel",
+  "item.ceac.orange_backpanel_large": "Orange Backpanel (Large)",
+  "item.ceac.rusty_backpanel": "Rusty Backpanel",
+  "item.ceac.rusty_backpanel_large": "Rusty Backpanel (Large)",
+  "item.ceac.weathered_backpanel": "Weathered Backpanel",
+  "item.ceac.weathered_backpanel_large": "Weathered Backpanel (Large)",
+  "item.ceac.white_backpanel": "White Backpanel",
+  "item.ceac.white_backpanel_large": "White Backpanel (Large)",
+  "item.ceac.yellow_backpanel": "Yellow Backpanel",
+  "item.ceac.yellow_backpanel_large": "Yellow Backpanel (Large)",
 
   "item.ceac.observation_concrete_wall": "Observation Concrete Wall",
 

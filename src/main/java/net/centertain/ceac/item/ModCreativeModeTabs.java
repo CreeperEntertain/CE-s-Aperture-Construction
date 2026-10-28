@@ -11,146 +11,177 @@ import net.minecraftforge.registries.RegistryObject;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
+@SuppressWarnings("unused")
 public final class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
 
-    @SuppressWarnings("unused")
-    public static final RegistryObject<CreativeModeTab> CEAC_TAB = CREATIVE_MODE_TABS.register("ceac_tab",
+
+    public static final RegistryObject<CreativeModeTab> BASICS = CREATIVE_MODE_TABS.register("basics",
             () -> CreativeModeTab
                     .builder()
                     .icon(() -> new ItemStack(ModItems.DECAL.get()))
-                    .title(Component.translatable("creativetab.ceac_tab"))
-                    .displayItems((pParameters, pOutput) -> {
-                        pOutput.accept(ModItems.PROP_PLACER.get());
+                    .title(Component.translatable("creativetab.basics"))
+                    .displayItems((parameters, output) -> {
+                        output.accept(ModItems.PROP_PLACER.get());
 
-                        pOutput.accept(ModBlocks.PURCHASING_TERMINAL.get().asItem().getDefaultInstance());
+                        output.accept(ModBlocks.PURCHASING_TERMINAL.get().asItem().getDefaultInstance());
 
-                        pOutput.accept(ModItems.DECAL.get());
-                        pOutput.accept(ModItems.SCRAPER.get());
-                        pOutput.accept(ModItems.WRENCH.get());
-                        pOutput.accept(ModItems.CROWBAR.get());
-
-
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_BlOCK.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_BIT.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_BIT_PILLAR.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_STAIRS.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_NINTH.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_NINTH_PILLAR.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_STAIRS.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_SIXTEENTH.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_SIXTEENTH_PILLAR.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_STAIRS.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_EIGHTH.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_LAYER.get());
-
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_EIGHTH_SPHERE.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CYLINDER.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ARCH.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ARCH_OUTER.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ARCH_INNER.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_SPHERE.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER_END.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER_BEND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER_T_CROSS.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER_END.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER_BEND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER_T_CROSS.get());
-
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_SLOPE.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_FULL_CORNER_OUTER.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_FULL_CORNER_INNER.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_FULL_ROOF.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_FULL_ROOF_END.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_FULL_PYRAMID.get());
-
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_SLOPE_BOTTOM.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_CORNER_OUTER_BOTTOM.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_CORNER_INNER_BOTTOM.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_ROOF_BOTTOM.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_ROOF_END_BOTTOM.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_PYRAMID_BOTTOM.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_SLOPE_TOP.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_CORNER_OUTER_TOP.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_CORNER_INNER_TOP.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_ROOF_TOP.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_ROOF_END_TOP.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_HALF_PYRAMID_TOP.get());
-
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_SLOPE_FIRST.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_OUTER_FIRST.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_INNER_FIRST.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_FIRST.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_END_FIRST.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_PYRAMID_FIRST.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_SLOPE_SECOND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_OUTER_SECOND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_INNER_SECOND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_SECOND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_END_SECOND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_PYRAMID_SECOND.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_SLOPE_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_OUTER_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_INNER_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_END_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_THIRD_PYRAMID_THIRD.get());
-
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_FIRST.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_OUTER_FIRST.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_INNER_FIRST.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_FIRST.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_END_FIRST.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_PYRAMID_FIRST.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_SECOND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_OUTER_SECOND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_INNER_SECOND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_SECOND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_END_SECOND.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_PYRAMID_SECOND.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_OUTER_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_INNER_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_END_THIRD.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_PYRAMID_THIRD.get());
-
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_FOURTH.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_OUTER_FOURTH.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_INNER_FOURTH.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_FOURTH.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_END_FOURTH.get());
-                        pOutput.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_PYRAMID_FOURTH.get());
-
-
-
-                        pOutput.accept(ModItems.OBSERVATION_CONCRETE_WALL.get());
+                        output.accept(ModItems.DECAL.get());
+                        output.accept(ModItems.SCRAPER.get());
+                        output.accept(ModItems.WRENCH.get());
+                        output.accept(ModItems.CROWBAR.get());
                     })
                     .build()
     );
+
+    public static final RegistryObject<CreativeModeTab> SHAPES = CREATIVE_MODE_TABS.register("shapes",
+            () -> CreativeModeTab
+                    .builder()
+                    .icon(() -> new ItemStack(ModBlocks.MATERIAL_SHAPE_BlOCK.get()))
+                    .title(Component.translatable("creativetab.shapes"))
+                    .displayItems((parameters, output) -> {
+                        output.accept(ModBlocks.MATERIAL_SHAPE_BlOCK.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_BIT.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_BIT_PILLAR.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_STAIRS.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_NINTH.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_NINTH_PILLAR.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_STAIRS.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_SIXTEENTH.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_SIXTEENTH_PILLAR.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_STAIRS.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_EIGHTH.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_LAYER.get());
+
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_EIGHTH_SPHERE.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CYLINDER.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ARCH.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ARCH_OUTER.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ARCH_INNER.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_SPHERE.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER_END.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER_BEND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_CYLINDER_T_CROSS.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER_END.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER_BEND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIN_CYLINDER_T_CROSS.get());
+
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_SLOPE.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_FULL_CORNER_OUTER.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_FULL_CORNER_INNER.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_FULL_ROOF.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_FULL_ROOF_END.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_FULL_PYRAMID.get());
+
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_SLOPE_BOTTOM.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_CORNER_OUTER_BOTTOM.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_CORNER_INNER_BOTTOM.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_ROOF_BOTTOM.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_ROOF_END_BOTTOM.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_PYRAMID_BOTTOM.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_SLOPE_TOP.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_CORNER_OUTER_TOP.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_CORNER_INNER_TOP.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_ROOF_TOP.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_ROOF_END_TOP.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_HALF_PYRAMID_TOP.get());
+
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_SLOPE_FIRST.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_OUTER_FIRST.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_INNER_FIRST.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_FIRST.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_END_FIRST.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_PYRAMID_FIRST.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_SLOPE_SECOND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_OUTER_SECOND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_INNER_SECOND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_SECOND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_END_SECOND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_PYRAMID_SECOND.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_SLOPE_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_OUTER_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_CORNER_INNER_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_ROOF_END_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_THIRD_PYRAMID_THIRD.get());
+
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_FIRST.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_OUTER_FIRST.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_INNER_FIRST.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_FIRST.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_END_FIRST.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_PYRAMID_FIRST.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_SECOND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_OUTER_SECOND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_INNER_SECOND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_SECOND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_END_SECOND.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_PYRAMID_SECOND.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_OUTER_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_INNER_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_END_THIRD.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_PYRAMID_THIRD.get());
+
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_SLOPE_FOURTH.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_OUTER_FOURTH.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_CORNER_INNER_FOURTH.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_FOURTH.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_ROOF_END_FOURTH.get());
+                        output.accept(ModBlocks.MATERIAL_SHAPE_QUARTER_PYRAMID_FOURTH.get());
+                    })
+                    .build()
+    );
+
+    public static final RegistryObject<CreativeModeTab> MATERIALS = CREATIVE_MODE_TABS.register("materials",
+            () -> CreativeModeTab
+                    .builder()
+                    .icon(() -> new ItemStack(ModItems.OBSERVATION_CONCRETE_WALL.get()))
+                    .title(Component.translatable("creativetab.materials"))
+                    .displayItems((parameters, output) -> {
+                        output.accept(ModItems.BARE_BACKPANEL.get());
+                        output.accept(ModItems.BARE_BACKPANEL_LARGE.get());
+                        output.accept(ModItems.GREEN_BACKPANEL.get());
+                        output.accept(ModItems.GREEN_BACKPANEL_LARGE.get());
+                        output.accept(ModItems.ORANGE_BACKPANEL.get());
+                        output.accept(ModItems.ORANGE_BACKPANEL_LARGE.get());
+                        output.accept(ModItems.RUSTY_BACKPANEL.get());
+                        output.accept(ModItems.RUSTY_BACKPANEL_LARGE.get());
+                        output.accept(ModItems.WEATHERED_BACKPANEL.get());
+                        output.accept(ModItems.WEATHERED_BACKPANEL_LARGE.get());
+                        output.accept(ModItems.WHITE_BACKPANEL.get());
+                        output.accept(ModItems.WHITE_BACKPANEL_LARGE.get());
+                        output.accept(ModItems.YELLOW_BACKPANEL.get());
+                        output.accept(ModItems.YELLOW_BACKPANEL_LARGE.get());
+
+                        output.accept(ModItems.OBSERVATION_CONCRETE_WALL.get());
+                    })
+                    .build()
+    );
+
 
     private ModCreativeModeTabs() {}
 

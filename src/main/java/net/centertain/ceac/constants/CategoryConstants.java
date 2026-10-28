@@ -21,11 +21,25 @@ public final class CategoryConstants {
 
             public static final String MISC = "Miscellaneous";
 
+            public static final String BACKPANEL = "Backpanels";
             public static final String CONCRETE = "Concrete";
+            public static final String METAL = "Metal";
+            public static final String PLASTER = "Plaster";
+            public static final String PLASTIC = "Plastic";
+            public static final String TILE = "Tile";
+            public static final String WALLPAPER = "Wallpaper";
+            public static final String WOOD = "Wood";
 
             public static final List<String> SORTED = List.of(
                     MISC,
-                    CONCRETE
+                    BACKPANEL,
+                    CONCRETE,
+                    METAL,
+                    PLASTER,
+                    PLASTIC,
+                    TILE,
+                    WALLPAPER,
+                    WOOD
             );
         }
 
