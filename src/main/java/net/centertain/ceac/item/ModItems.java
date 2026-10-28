@@ -24,22 +24,22 @@ public final class ModItems {
     public static final RegistryObject<Item> CROWBAR = ITEMS.register("basics/crowbar", () -> new CrowbarItem(new Item.Properties()));
 
 
-    public static final RegistryObject<Item> BARE_BACKPANEL = ITEMS.register("bare_backpanel", () -> new BareBackpanelMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> BARE_BACKPANEL_LARGE = ITEMS.register("bare_backpanel_large", () -> new BareBackpanelLargeMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> GREEN_BACKPANEL = ITEMS.register("green_backpanel", () -> new GreenBackpanelMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> GREEN_BACKPANEL_LARGE = ITEMS.register("green_backpanel_large", () -> new GreenBackpanelLargeMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> ORANGE_BACKPANEL = ITEMS.register("orange_backpanel", () -> new OrangeBackpanelMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> ORANGE_BACKPANEL_LARGE = ITEMS.register("orange_backpanel_large", () -> new OrangeBackpanelLargeMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> RUSTY_BACKPANEL = ITEMS.register("rusty_backpanel", () -> new RustyBackpanelMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> RUSTY_BACKPANEL_LARGE = ITEMS.register("rusty_backpanel_large", () -> new RustyBackpanelLargeMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> WEATHERED_BACKPANEL = ITEMS.register("weathered_backpanel", () -> new WeatheredBackpanelMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> WEATHERED_BACKPANEL_LARGE = ITEMS.register("weathered_backpanel_large", () -> new WeatheredBackpanelLargeMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> WHITE_BACKPANEL = ITEMS.register("white_backpanel", () -> new WhiteBackpanelMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> WHITE_BACKPANEL_LARGE = ITEMS.register("white_backpanel_large", () -> new WhiteBackpanelLargeMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> YELLOW_BACKPANEL = ITEMS.register("yellow_backpanel", () -> new YellowBackpanelMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> YELLOW_BACKPANEL_LARGE = ITEMS.register("yellow_backpanel_large", () -> new YellowBackpanelLargeMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BARE_BACKPANEL = ITEMS.register("materials/backpanel/bare_backpanel", () -> new BareBackpanelMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BARE_BACKPANEL_LARGE = ITEMS.register("materials/backpanel/bare_backpanel_large", () -> new BareBackpanelLargeMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> GREEN_BACKPANEL = ITEMS.register("materials/backpanel/green_backpanel", () -> new GreenBackpanelMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> GREEN_BACKPANEL_LARGE = ITEMS.register("materials/backpanel/green_backpanel_large", () -> new GreenBackpanelLargeMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> ORANGE_BACKPANEL = ITEMS.register("materials/backpanel/orange_backpanel", () -> new OrangeBackpanelMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> ORANGE_BACKPANEL_LARGE = ITEMS.register("materials/backpanel/orange_backpanel_large", () -> new OrangeBackpanelLargeMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> RUSTY_BACKPANEL = ITEMS.register("materials/backpanel/rusty_backpanel", () -> new RustyBackpanelMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> RUSTY_BACKPANEL_LARGE = ITEMS.register("materials/backpanel/rusty_backpanel_large", () -> new RustyBackpanelLargeMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WEATHERED_BACKPANEL = ITEMS.register("materials/backpanel/weathered_backpanel", () -> new WeatheredBackpanelMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WEATHERED_BACKPANEL_LARGE = ITEMS.register("materials/backpanel/weathered_backpanel_large", () -> new WeatheredBackpanelLargeMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_BACKPANEL = ITEMS.register("materials/backpanel/white_backpanel", () -> new WhiteBackpanelMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_BACKPANEL_LARGE = ITEMS.register("materials/backpanel/white_backpanel_large", () -> new WhiteBackpanelLargeMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> YELLOW_BACKPANEL = ITEMS.register("materials/backpanel/yellow_backpanel", () -> new YellowBackpanelMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> YELLOW_BACKPANEL_LARGE = ITEMS.register("materials/backpanel/yellow_backpanel_large", () -> new YellowBackpanelLargeMatItem(new Item.Properties()));
 
-    public static final RegistryObject<Item> OBSERVATION_CONCRETE_WALL = ITEMS.register("observation_concrete_wall", () -> new ObservationConcreteWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> OBSERVATION_CONCRETE_WALL = ITEMS.register("materials/concrete/observation_concrete_wall", () -> new ObservationConcreteWallMatItem(new Item.Properties()));
 
 
     private ModItems() {}
