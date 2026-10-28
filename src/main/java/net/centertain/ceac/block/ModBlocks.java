@@ -102,19 +102,19 @@ public final class ModBlocks {
     public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_PYRAMID = registerBlock("material_shape_full_pyramid", () -> new FullPyramid(MATERIAL_SHAPE_PROPERTIES));
 
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_SLOPE_BOTTOM = registerBlock("material_shape_half_slope_bottom", () -> new HalfSlopeBottom(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_CORNER_OUTER_BOTTOM = registerBlock("material_shape_half_corner_outer_bottom", () -> new HalfCornerOuterBottom(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_CORNER_INNER_BOTTOM = registerBlock("material_shape_half_corner_inner_bottom", () -> new HalfCornerInnerBottom(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_ROOF_BOTTOM = registerBlock("material_shape_half_roof_bottom", () -> new HalfRoofBottom(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_ROOF_END_BOTTOM = registerBlock("material_shape_half_roof_end_bottom", () -> new HalfRoofEndBottom(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_PYRAMID_BOTTOM = registerBlock("material_shape_half_pyramid_bottom", () -> new HalfPyramidBottom(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_SLOPE_BOTTOM = registerBlock("material_shapes/half_slopes/bottom/half_slope_bottom", () -> new HalfSlopeBottom(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_CORNER_OUTER_BOTTOM = registerBlock("material_shapes/half_slopes/bottom/half_corner_outer_bottom", () -> new HalfCornerOuterBottom(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_CORNER_INNER_BOTTOM = registerBlock("material_shapes/half_slopes/bottom/half_corner_inner_bottom", () -> new HalfCornerInnerBottom(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_ROOF_BOTTOM = registerBlock("material_shapes/half_slopes/bottom/half_roof_bottom", () -> new HalfRoofBottom(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_ROOF_END_BOTTOM = registerBlock("material_shapes/half_slopes/bottom/half_roof_end_bottom", () -> new HalfRoofEndBottom(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_PYRAMID_BOTTOM = registerBlock("material_shapes/half_slopes/bottom/half_pyramid_bottom", () -> new HalfPyramidBottom(MATERIAL_SHAPE_PROPERTIES));
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_SLOPE_TOP = registerBlock("material_shape_half_slope_top", () -> new HalfSlopeTop(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_CORNER_OUTER_TOP = registerBlock("material_shape_half_corner_outer_top", () -> new HalfCornerOuterTop(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_CORNER_INNER_TOP = registerBlock("material_shape_half_corner_inner_top", () -> new HalfCornerInnerTop(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_ROOF_TOP = registerBlock("material_shape_half_roof_top", () -> new HalfRoofTop(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_ROOF_END_TOP = registerBlock("material_shape_half_roof_end_top", () -> new HalfRoofEndTop(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_PYRAMID_TOP = registerBlock("material_shape_half_pyramid_top", () -> new HalfPyramidTop(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_SLOPE_TOP = registerBlock("material_shapes/half_slopes/top/half_slope_top", () -> new HalfSlopeTop(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_CORNER_OUTER_TOP = registerBlock("material_shapes/half_slopes/top/half_corner_outer_top", () -> new HalfCornerOuterTop(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_CORNER_INNER_TOP = registerBlock("material_shapes/half_slopes/top/half_corner_inner_top", () -> new HalfCornerInnerTop(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_ROOF_TOP = registerBlock("material_shapes/half_slopes/top/half_roof_top", () -> new HalfRoofTop(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_ROOF_END_TOP = registerBlock("material_shapes/half_slopes/top/half_roof_end_top", () -> new HalfRoofEndTop(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_PYRAMID_TOP = registerBlock("material_shapes/half_slopes/top/half_pyramid_top", () -> new HalfPyramidTop(MATERIAL_SHAPE_PROPERTIES));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_SLOPE_FIRST = registerBlock("material_shapes/third_slopes/first/third_slope_first", () -> new ThirdSlopeFirst(MATERIAL_SHAPE_PROPERTIES));
