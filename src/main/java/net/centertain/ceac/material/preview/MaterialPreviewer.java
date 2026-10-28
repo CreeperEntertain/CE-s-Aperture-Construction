@@ -367,14 +367,14 @@ public final class MaterialPreviewer {
 
             switch (Math.floorMod(materialRotation, 4)) {
                 case 1 -> {
-                    rotatedDeltaX = deltaY;
-                    rotatedDeltaY = -deltaX;
+                    rotatedDeltaX = -deltaY;
+                    rotatedDeltaY = deltaX;
                 } case 2 -> {
                     rotatedDeltaX = -deltaX;
                     rotatedDeltaY = -deltaY;
                 } case 3 -> {
-                    rotatedDeltaX = -deltaY;
-                    rotatedDeltaY = deltaX;
+                    rotatedDeltaX = deltaY;
+                    rotatedDeltaY = -deltaX;
                 } default -> {
                     rotatedDeltaX = deltaX;
                     rotatedDeltaY = deltaY;
