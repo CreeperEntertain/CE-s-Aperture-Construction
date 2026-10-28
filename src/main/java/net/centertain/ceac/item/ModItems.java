@@ -2,6 +2,7 @@ package net.centertain.ceac.item;
 
 import net.centertain.ceac.item.custom.*;
 import net.centertain.ceac.item.custom.materials.*;
+import net.centertain.ceac.material.materials.dev.GradientMaterial;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -23,6 +24,7 @@ public final class ModItems {
     public static final RegistryObject<Item> CROWBAR = ITEMS.register("crowbar", () -> new CrowbarItem(new Item.Properties()));
 
     public static final RegistryObject<Item> OBSERVATION_CONCRETE_WALL = ITEMS.register("observation_concrete_wall", () -> new ObservationConcreteWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> GRADIENT = ITEMS.register("gradient", () -> new GradientMatItem(new Item.Properties()));
 
 
     private ModItems() {}

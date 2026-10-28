@@ -1,6 +1,7 @@
 package net.centertain.ceac.material;
 
 import net.centertain.ceac.material.materials.concrete.ObservationConcreteWallMaterial;
+import net.centertain.ceac.material.materials.dev.GradientMaterial;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -21,6 +22,7 @@ public final class ModMaterials {
 
 
     public static final RegistryObject<Material> OBSERVATION_CONCRETE_WALL = MATERIALS.register("observation_concrete_wall", ObservationConcreteWallMaterial::new);
+    public static final RegistryObject<Material> GRADIENT = MATERIALS.register("gradient", GradientMaterial::new);
 
 
     private ModMaterials() {}
