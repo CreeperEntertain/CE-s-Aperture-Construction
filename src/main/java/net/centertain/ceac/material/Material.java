@@ -103,12 +103,21 @@ public abstract class Material {
             BlockPos pos,
             BlockState state
     ) {
+        return getCoordinate(face, pos, state, 0);
+    }
+
+    public Vector2i getCoordinate(
+            MaterialShapeFace face,
+            BlockPos pos,
+            BlockState state,
+            int rotation
+    ) {
         MaterialShape shape = face.getOwner();
         List<Vec3> vertices = face.getVertices()
                 .stream()
                 .map(vertex -> shape.transformPointToWorld(state, vertex))
                 .toList();
-        return getCoordinate(vertices, pos);
+        return getCoordinate(vertices, pos, rotation);
     }
 
     public Vector2i getCoordinate(
@@ -116,17 +125,27 @@ public abstract class Material {
             BlockPos pos,
             BlockState state
     ) {
+        return getCoordinate(instance, pos, state, 0);
+    }
+
+    public Vector2i getCoordinate(
+            MaterialShapeFaceInstance instance,
+            BlockPos pos,
+            BlockState state,
+            int rotation
+    ) {
         MaterialShape shape = instance.face().getOwner();
         List<Vec3> vertices = instance.getVertices()
                 .stream()
                 .map(vertex -> shape.transformPointToWorld(state, vertex))
                 .toList();
-        return getCoordinate(vertices, pos);
+        return getCoordinate(vertices, pos, rotation);
     }
 
     private Vector2i getCoordinate(
             List<Vec3> vertices,
-            BlockPos pos
+            BlockPos pos,
+            int rotation
     ) {
         Vec3 a = vertices.get(0);
         Vec3 b = vertices.get(1);
@@ -145,30 +164,47 @@ public abstract class Material {
         int width = tilingSize.x;
         int height = tilingSize.y;
 
-        return switch (side) {
-            case UP -> new Vector2i(
-                    Math.floorMod(pos.getX(), width),
-                    Math.floorMod(pos.getZ(), height)
+        int gridX;
+        int gridY;
+
+        switch (side) {
+            case UP -> {
+                gridX = pos.getX();
+                gridY = pos.getZ();
+            } case DOWN -> {
+                gridX = pos.getX();
+                gridY = -pos.getZ() - 1;
+            } case NORTH -> {
+                gridX = -pos.getX() - 1;
+                gridY = -pos.getY() - 1;
+            } case SOUTH -> {
+                gridX = pos.getX();
+                gridY = -pos.getY() - 1;
+            } case WEST -> {
+                gridX = pos.getZ();
+                gridY = -pos.getY() - 1;
+            } case EAST -> {
+                gridX = -pos.getZ() - 1;
+                gridY = -pos.getY() - 1;
+            } default -> throw new IllegalStateException("Unexpected direction: " + side);
+        }
+
+        return switch (Math.floorMod(rotation, 4)) {
+            case 1 -> new Vector2i(
+                    Math.floorMod(gridY, width),
+                    Math.floorMod(-gridX - 1, height)
             );
-            case DOWN -> new Vector2i(
-                    Math.floorMod(pos.getX(), width),
-                    Math.floorMod(-pos.getZ() - 1, height)
+            case 2 -> new Vector2i(
+                    Math.floorMod(-gridX - 1, width),
+                    Math.floorMod(-gridY - 1, height)
             );
-            case NORTH -> new Vector2i(
-                    Math.floorMod(-pos.getX() - 1, width),
-                    Math.floorMod(-pos.getY() - 1, height)
+            case 3 -> new Vector2i(
+                    Math.floorMod(-gridY - 1, width),
+                    Math.floorMod(gridX, height)
             );
-            case SOUTH -> new Vector2i(
-                    Math.floorMod(pos.getX(), width),
-                    Math.floorMod(-pos.getY() - 1, height)
-            );
-            case WEST -> new Vector2i(
-                    Math.floorMod(pos.getZ(), width),
-                    Math.floorMod(-pos.getY() - 1, height)
-            );
-            case EAST -> new Vector2i(
-                    Math.floorMod(-pos.getZ() - 1, width),
-                    Math.floorMod(-pos.getY() - 1, height)
+            default -> new Vector2i(
+                    Math.floorMod(gridX, width),
+                    Math.floorMod(gridY, height)
             );
         };
     }

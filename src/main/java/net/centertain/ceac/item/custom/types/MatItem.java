@@ -52,6 +52,11 @@ public abstract class MatItem extends BasicItem {
 
     private static final String OFFSET_X = "MaterialOffsetX";
     private static final String OFFSET_Y = "MaterialOffsetY";
+    private static final String ROTATION = "MaterialRotation";
+
+    private static final String TEXTURE_LOCKED = "MaterialTextureLocked";
+    private static final String LOCKED_COORDINATE_X = "MaterialLockedCoordinateX";
+    private static final String LOCKED_COORDINATE_Y = "MaterialLockedCoordinateY";
 
     private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIALS;
     private static final double DEFAULT_PRICE = PriceConstants.DEFAULT_MAT_ITEM;
@@ -112,12 +117,22 @@ public abstract class MatItem extends BasicItem {
         );
     }
 
+    public int getMaterialRotation(ItemStack stack) {
+        return Math.floorMod(stack.getOrCreateTag().getInt(ROTATION), 4);
+    }
+
+    public void setMaterialRotation(ItemStack stack, int rotation) {
+        stack.getOrCreateTag().putInt(ROTATION, Math.floorMod(rotation, 4));
+    }
+
     public Vector2i getMaterialCoordinateWithOffset(
             ItemStack stack,
             Vector2i materialCoordinate
     ) {
-        Vector2i offset = getMaterialCoordinateOffset(stack);
+        if (isTextureLocked(stack))
+            return getLockedMaterialCoordinate(stack);
 
+        Vector2i offset = getMaterialCoordinateOffset(stack);
         int width = material.get().getTilingSize().x;
         int height = material.get().getTilingSize().y;
 
@@ -139,6 +154,33 @@ public abstract class MatItem extends BasicItem {
         tag.putInt(OFFSET_X, Math.floorMod(offset.x, width));
         tag.putInt(OFFSET_Y, Math.floorMod(offset.y, height));
     }
+
+    public boolean isTextureLocked(ItemStack stack) {
+        return stack.getOrCreateTag().getBoolean(TEXTURE_LOCKED);
+    }
+
+    public void setTextureLocked(ItemStack stack, boolean locked) {
+        stack.getOrCreateTag().putBoolean(TEXTURE_LOCKED, locked);
+    }
+
+    public Vector2i getLockedMaterialCoordinate(ItemStack stack) {
+        CompoundTag tag = stack.getOrCreateTag();
+        int width = material.get().getTilingSize().x;
+        int height = material.get().getTilingSize().y;
+        return new Vector2i(
+                Math.floorMod(tag.getInt(LOCKED_COORDINATE_X), width),
+                Math.floorMod(tag.getInt(LOCKED_COORDINATE_Y), height)
+        );
+    }
+
+    public void setLockedMaterialCoordinate(ItemStack stack, Vector2i coordinate) {
+        int width = material.get().getTilingSize().x;
+        int height = material.get().getTilingSize().y;
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putInt(LOCKED_COORDINATE_X, Math.floorMod(coordinate.x, width));
+        tag.putInt(LOCKED_COORDINATE_Y, Math.floorMod(coordinate.y, height));
+    }
+
 
     @Override
     public void inventoryTick(
@@ -207,13 +249,14 @@ public abstract class MatItem extends BasicItem {
 
         MaterialShapeFaceInstance instance = faceHit.instance;
 
-        Vector2i materialCoordinate = material.get().getCoordinate(instance, pos, state);
+        Vector2i materialCoordinate = material.get().getCoordinate(instance, pos, state, getMaterialRotation(stack));
 
         MaterialPreviewer.update(
                 material.get(),
                 getMaterialCoordinateWithOffset(stack, materialCoordinate),
                 pos,
-                instance
+                instance,
+                getMaterialRotation(stack)
         );
     }
 
@@ -264,7 +307,9 @@ public abstract class MatItem extends BasicItem {
             return InteractionResult.PASS;
 
         boolean wholePiece = player.isShiftKeyDown();
-        Vector2i materialCoordinate = material.get().getCoordinate(instance, pos, state);
+        Vector2i materialCoordinate = material.get().getCoordinate(
+                instance, pos, state, getMaterialRotation(context.getItemInHand())
+        );
 
         if (!level.isClientSide)
             serverSide(
@@ -306,6 +351,8 @@ public abstract class MatItem extends BasicItem {
             MaterialShapeFaceInstance instance,
             boolean wholePiece
     ) {
+        int rotation = getMaterialRotation(stack);
+
         if (wholePiece) {
             Map<MaterialFaceKey, MaterialShapeBlockEntity.MaterialAssignment> assignments = new HashMap<>();
             for (MaterialShapeFaceInstance target : shape.getFaceInstances(state, level, pos)) {
@@ -320,13 +367,14 @@ public abstract class MatItem extends BasicItem {
 
                 Vector2i coordinate = getMaterialCoordinateWithOffset(
                         stack,
-                        material.get().getCoordinate(target, pos, state)
+                        material.get().getCoordinate(target, pos, state, rotation)
                 );
 
                 assignments.put(target.key(), new MaterialShapeBlockEntity.MaterialAssignment(
                         material.get(),
                         coordinate.x,
-                        coordinate.y
+                        coordinate.y,
+                        rotation
                 ));
             }
             blockEntity.setMaterials(assignments);
@@ -334,7 +382,8 @@ public abstract class MatItem extends BasicItem {
             blockEntity.setMaterial(
                     instance.key(),
                     material.get(),
-                    getMaterialCoordinateWithOffset(stack, materialCoordinate)
+                    getMaterialCoordinateWithOffset(stack, materialCoordinate),
+                    rotation
             );
 
         VoxelShape pieceVolume = wholePiece

@@ -17,7 +17,7 @@ import java.util.Optional;
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public final class ModNetworking {
-    private static final String PROTOCOL_VERSION = "4";
+    private static final String PROTOCOL_VERSION = "5";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             ResourceLocation.fromNamespaceAndPath(MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
