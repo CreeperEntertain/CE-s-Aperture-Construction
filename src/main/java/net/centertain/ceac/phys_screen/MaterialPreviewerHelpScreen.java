@@ -15,7 +15,7 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 
 public class MaterialPreviewerHelpScreen extends PhysScreen {
     public static final int WIDTH = 150;
-    public static final int HEIGHT = 147;
+    public static final int HEIGHT = 168;
 
     public MaterialPreviewerHelpScreen() {
         super(Component.literal("Material Preview Help Screen"));
@@ -41,7 +41,8 @@ public class MaterialPreviewerHelpScreen extends PhysScreen {
                 ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/phys_screen/key_a.png"),
                 ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/phys_screen/key_s.png"),
                 ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/phys_screen/key_d.png"),
-                ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/phys_screen/key_r.png")
+                ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/phys_screen/key_r.png"),
+                ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/phys_screen/key_e.png")
         };
         String[] prompts = {
                 "Toggle Help UI",
@@ -49,7 +50,8 @@ public class MaterialPreviewerHelpScreen extends PhysScreen {
                 "Shift Material Left",
                 "Shift Material Down",
                 "Shift Material Right",
-                "Rotate Material 90°"
+                "Rotate Material 90°",
+                "Lock Offset"
         };
 
         List<PhysElement> keyPrompts = new ArrayList<>();

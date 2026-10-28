@@ -96,6 +96,7 @@ public final class MaterialPlacement {
             case GLFW.GLFW_KEY_A -> shiftMaterialCoordinate(Direction.LEFT);
             case GLFW.GLFW_KEY_D -> shiftMaterialCoordinate(Direction.RIGHT);
             case GLFW.GLFW_KEY_R -> rotateMaterial();
+            case GLFW.GLFW_KEY_E -> toggleTextureLock();
         }
     }
 
@@ -152,7 +153,66 @@ public final class MaterialPlacement {
         ModNetworking.CHANNEL.sendToServer(new MaterialOffsetPacket(
                 hand,
                 matItem.getMaterialCoordinateOffset(stack),
-                newRotation
+                newRotation,
+                matItem.isTextureLocked(stack),
+                matItem.getLockedMaterialCoordinate(stack)
+        ));
+    }
+
+    private static void toggleTextureLock() {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        if (player == null || minecraft.level == null)
+            return;
+
+        InteractionHand hand;
+        ItemStack stack;
+        MatItem matItem;
+        if (player.getMainHandItem().getItem() instanceof MatItem mainHandItem) {
+            hand = InteractionHand.MAIN_HAND;
+            stack = player.getMainHandItem();
+            matItem = mainHandItem;
+        } else if (player.getOffhandItem().getItem() instanceof MatItem offHandItem) {
+            hand = InteractionHand.OFF_HAND;
+            stack = player.getOffhandItem();
+            matItem = offHandItem;
+        } else
+            return;
+
+        Vector2i selectedCoordinate = MaterialPreviewer.getMaterialCoordinate();
+        BlockPos position = MaterialPreviewer.getPosition();
+        MaterialShapeFaceInstance face = MaterialPreviewer.getFace();
+        if (
+                selectedCoordinate == null ||
+                position == null ||
+                face == null ||
+                MaterialPreviewer.getMaterial() != matItem.getMaterial()
+        )
+            return;
+
+        if (!matItem.isTextureLocked(stack)) {
+            matItem.setLockedMaterialCoordinate(stack, selectedCoordinate);
+            matItem.setTextureLocked(stack, true);
+        } else {
+            Vector2i lockedCoordinate = matItem.getLockedMaterialCoordinate(stack);
+            BlockState state = minecraft.level.getBlockState(position);
+            Vector2i baseCoordinate = matItem.getMaterial().getCoordinate(
+                    face, position, state, matItem.getMaterialRotation(stack)
+            );
+
+            matItem.setMaterialCoordinateOffset(stack, new Vector2i(
+                    lockedCoordinate.x - baseCoordinate.x,
+                    lockedCoordinate.y - baseCoordinate.y
+            ));
+            matItem.setTextureLocked(stack, false);
+        }
+
+        ModNetworking.CHANNEL.sendToServer(new MaterialOffsetPacket(
+                hand,
+                matItem.getMaterialCoordinateOffset(stack),
+                matItem.getMaterialRotation(stack),
+                matItem.isTextureLocked(stack),
+                matItem.getLockedMaterialCoordinate(stack)
         ));
     }
 
@@ -200,14 +260,26 @@ public final class MaterialPlacement {
             }
         }
 
-        Vector2i offset = matItem.getMaterialCoordinateOffset(stack);
-        Vector2i newOffset = new Vector2i(offset.x - textureDeltaX, offset.y - textureDeltaY);
-        matItem.setMaterialCoordinateOffset(stack, newOffset);
+        if (matItem.isTextureLocked(stack)) {
+            Vector2i lockedCoordinate = matItem.getLockedMaterialCoordinate(stack);
+            matItem.setLockedMaterialCoordinate(stack, new Vector2i(
+                    lockedCoordinate.x - textureDeltaX,
+                    lockedCoordinate.y - textureDeltaY
+            ));
+        } else {
+            Vector2i offset = matItem.getMaterialCoordinateOffset(stack);
+            matItem.setMaterialCoordinateOffset(stack, new Vector2i(
+                    offset.x - textureDeltaX,
+                    offset.y - textureDeltaY
+            ));
+        }
 
         ModNetworking.CHANNEL.sendToServer(new MaterialOffsetPacket(
                 hand,
-                newOffset,
-                matItem.getMaterialRotation(stack)
+                matItem.getMaterialCoordinateOffset(stack),
+                matItem.getMaterialRotation(stack),
+                matItem.isTextureLocked(stack),
+                matItem.getLockedMaterialCoordinate(stack)
         ));
     }
 

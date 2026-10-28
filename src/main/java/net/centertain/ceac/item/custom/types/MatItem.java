@@ -54,6 +54,10 @@ public abstract class MatItem extends BasicItem {
     private static final String OFFSET_Y = "MaterialOffsetY";
     private static final String ROTATION = "MaterialRotation";
 
+    private static final String TEXTURE_LOCKED = "MaterialTextureLocked";
+    private static final String LOCKED_COORDINATE_X = "MaterialLockedCoordinateX";
+    private static final String LOCKED_COORDINATE_Y = "MaterialLockedCoordinateY";
+
     private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIALS;
     private static final double DEFAULT_PRICE = PriceConstants.DEFAULT_MAT_ITEM;
 
@@ -125,8 +129,10 @@ public abstract class MatItem extends BasicItem {
             ItemStack stack,
             Vector2i materialCoordinate
     ) {
-        Vector2i offset = getMaterialCoordinateOffset(stack);
+        if (isTextureLocked(stack))
+            return getLockedMaterialCoordinate(stack);
 
+        Vector2i offset = getMaterialCoordinateOffset(stack);
         int width = material.get().getTilingSize().x;
         int height = material.get().getTilingSize().y;
 
@@ -148,6 +154,33 @@ public abstract class MatItem extends BasicItem {
         tag.putInt(OFFSET_X, Math.floorMod(offset.x, width));
         tag.putInt(OFFSET_Y, Math.floorMod(offset.y, height));
     }
+
+    public boolean isTextureLocked(ItemStack stack) {
+        return stack.getOrCreateTag().getBoolean(TEXTURE_LOCKED);
+    }
+
+    public void setTextureLocked(ItemStack stack, boolean locked) {
+        stack.getOrCreateTag().putBoolean(TEXTURE_LOCKED, locked);
+    }
+
+    public Vector2i getLockedMaterialCoordinate(ItemStack stack) {
+        CompoundTag tag = stack.getOrCreateTag();
+        int width = material.get().getTilingSize().x;
+        int height = material.get().getTilingSize().y;
+        return new Vector2i(
+                Math.floorMod(tag.getInt(LOCKED_COORDINATE_X), width),
+                Math.floorMod(tag.getInt(LOCKED_COORDINATE_Y), height)
+        );
+    }
+
+    public void setLockedMaterialCoordinate(ItemStack stack, Vector2i coordinate) {
+        int width = material.get().getTilingSize().x;
+        int height = material.get().getTilingSize().y;
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putInt(LOCKED_COORDINATE_X, Math.floorMod(coordinate.x, width));
+        tag.putInt(LOCKED_COORDINATE_Y, Math.floorMod(coordinate.y, height));
+    }
+
 
     @Override
     public void inventoryTick(
