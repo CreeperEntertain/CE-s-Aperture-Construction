@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "ceac:material_shape_slope"
+          "name": "ceac:material_shapes/full_slopes/full_pyramid"
         }
       ]
     }
