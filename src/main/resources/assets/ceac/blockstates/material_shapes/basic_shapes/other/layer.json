@@ -2,7 +2,7 @@
   "multipart": [
     {
       "apply": {
-        "model": "cceac:block/material_shapes/basic_shapes/other/layer"
+        "model": "ceac:block/material_shapes/basic_shapes/other/layer"
       }
     }
   ]
