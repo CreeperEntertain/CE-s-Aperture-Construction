@@ -117,26 +117,26 @@ public final class ModBlocks {
     public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_PYRAMID_TOP = registerBlock("material_shape_half_pyramid_top", () -> new HalfPyramidTop(MATERIAL_SHAPE_PROPERTIES));
 
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_SLOPE_FIRST = registerBlock("material_shape_third_slope_first", () -> new ThirdSlopeFirst(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_OUTER_FIRST = registerBlock("material_shape_third_corner_outer_first", () -> new ThirdCornerOuterFirst(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_INNER_FIRST = registerBlock("material_shape_third_corner_inner_first", () -> new ThirdCornerInnerFirst(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_FIRST = registerBlock("material_shape_third_roof_first", () -> new ThirdRoofFirst(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_END_FIRST = registerBlock("material_shape_third_roof_end_first", () -> new ThirdRoofEndFirst(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_PYRAMID_FIRST = registerBlock("material_shape_third_pyramid_first", () -> new ThirdPyramidFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_SLOPE_FIRST = registerBlock("material_shapes/third_slopes/first/third_slope_first", () -> new ThirdSlopeFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_OUTER_FIRST = registerBlock("material_shapes/third_slopes/first/third_corner_outer_first", () -> new ThirdCornerOuterFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_INNER_FIRST = registerBlock("material_shapes/third_slopes/first/third_corner_inner_first", () -> new ThirdCornerInnerFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_FIRST = registerBlock("material_shapes/third_slopes/first/third_roof_first", () -> new ThirdRoofFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_END_FIRST = registerBlock("material_shapes/third_slopes/first/third_roof_end_first", () -> new ThirdRoofEndFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_PYRAMID_FIRST = registerBlock("material_shapes/third_slopes/first/third_pyramid_first", () -> new ThirdPyramidFirst(MATERIAL_SHAPE_PROPERTIES));
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_SLOPE_SECOND = registerBlock("material_shape_third_slope_second", () -> new ThirdSlopeSecond(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_OUTER_SECOND = registerBlock("material_shape_third_corner_outer_second", () -> new ThirdCornerOuterSecond(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_INNER_SECOND = registerBlock("material_shape_third_corner_inner_second", () -> new ThirdCornerInnerSecond(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_SECOND = registerBlock("material_shape_third_roof_second", () -> new ThirdRoofSecond(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_END_SECOND = registerBlock("material_shape_third_roof_end_second", () -> new ThirdRoofEndSecond(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_PYRAMID_SECOND = registerBlock("material_shape_third_pyramid_second", () -> new ThirdPyramidSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_SLOPE_SECOND = registerBlock("material_shapes/third_slopes/second/third_slope_second", () -> new ThirdSlopeSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_OUTER_SECOND = registerBlock("material_shapes/third_slopes/second/third_corner_outer_second", () -> new ThirdCornerOuterSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_INNER_SECOND = registerBlock("material_shapes/third_slopes/second/third_corner_inner_second", () -> new ThirdCornerInnerSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_SECOND = registerBlock("material_shapes/third_slopes/second/third_roof_second", () -> new ThirdRoofSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_END_SECOND = registerBlock("material_shapes/third_slopes/second/third_roof_end_second", () -> new ThirdRoofEndSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_PYRAMID_SECOND = registerBlock("material_shapes/third_slopes/second/third_pyramid_second", () -> new ThirdPyramidSecond(MATERIAL_SHAPE_PROPERTIES));
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_SLOPE_THIRD = registerBlock("material_shape_third_slope_third", () -> new ThirdSlopeThird(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_OUTER_THIRD = registerBlock("material_shape_third_corner_outer_third", () -> new ThirdCornerOuterThird(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_INNER_THIRD = registerBlock("material_shape_third_corner_inner_third", () -> new ThirdCornerInnerThird(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_THIRD = registerBlock("material_shape_third_roof_third", () -> new ThirdRoofThird(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_END_THIRD = registerBlock("material_shape_third_roof_end_third", () -> new ThirdRoofEndThird(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_PYRAMID_THIRD = registerBlock("material_shape_third_pyramid_third", () -> new ThirdPyramidThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_SLOPE_THIRD = registerBlock("material_shapes/third_slopes/third/third_slope_third", () -> new ThirdSlopeThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_OUTER_THIRD = registerBlock("material_shapes/third_slopes/third/third_corner_outer_third", () -> new ThirdCornerOuterThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_CORNER_INNER_THIRD = registerBlock("material_shapes/third_slopes/third/third_corner_inner_third", () -> new ThirdCornerInnerThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_THIRD = registerBlock("material_shapes/third_slopes/third/third_roof_third", () -> new ThirdRoofThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_ROOF_END_THIRD = registerBlock("material_shapes/third_slopes/third/third_roof_end_third", () -> new ThirdRoofEndThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_PYRAMID_THIRD = registerBlock("material_shapes/third_slopes/third/third_pyramid_third", () -> new ThirdPyramidThird(MATERIAL_SHAPE_PROPERTIES));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_FIRST = registerBlock("material_shapes/quarter_slopes/first/quarter_slope_first", () -> new QuarterSlopeFirst(MATERIAL_SHAPE_PROPERTIES));

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "ceac:block/material_shapes/third_slopes/first/third_pyramid_first"
+        }
+      ]
+    }
+  ]
+}
