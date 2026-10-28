@@ -26,22 +26,22 @@
     "ceac:material_shapes/basic_shapes/other/layer",
 
 
-    "ceac:material_shapes/round/pipes_archeseighth_sphere",
-    "ceac:material_shapes/round/pipes_archesquarter_cylinder",
-    "ceac:material_shapes/round/pipes_archesquarter_arch",
-    "ceac:material_shapes/round/pipes_archesquarter_arch_outer",
-    "ceac:material_shapes/round/pipes_archesquarter_arch_inner",
+    "ceac:material_shapes/round/pipes_arches/eighth_sphere",
+    "ceac:material_shapes/round/pipes_arches/quarter_cylinder",
+    "ceac:material_shapes/round/pipes_arches/quarter_arch",
+    "ceac:material_shapes/round/pipes_arches/quarter_arch_outer",
+    "ceac:material_shapes/round/pipes_arches/quarter_arch_inner",
 
-    "ceac:material_shapes/round/cylinders.sphere",
-    "ceac:material_shapes/round/cylinders.cylinder",
-    "ceac:material_shapes/round/cylinders.cylinder_end",
-    "ceac:material_shapes/round/cylinders.cylinder_bend",
-    "ceac:material_shapes/round/cylinders.cylinder_t_cross",
+    "ceac:material_shapes/round/cylinders/sphere",
+    "ceac:material_shapes/round/cylinders/cylinder",
+    "ceac:material_shapes/round/cylinders/cylinder_end",
+    "ceac:material_shapes/round/cylinders/cylinder_bend",
+    "ceac:material_shapes/round/cylinders/cylinder_t_cross",
 
-    "ceac:material_shapes/round/thin_cylinders.thin_cylinder",
-    "ceac:material_shapes/round/thin_cylinders.thin_cylinder_end",
-    "ceac:material_shapes/round/thin_cylinders.thin_cylinder_bend",
-    "ceac:material_shapes/round/thin_cylinders.thin_cylinder_t_cross",
+    "ceac:material_shapes/round/thin_cylinders/thin_cylinder",
+    "ceac:material_shapes/round/thin_cylinders/thin_cylinder_end",
+    "ceac:material_shapes/round/thin_cylinders/thin_cylinder_bend",
+    "ceac:material_shapes/round/thin_cylinders/thin_cylinder_t_cross",
 
 
     "ceac:material_shapes/full_slopes/slope",
