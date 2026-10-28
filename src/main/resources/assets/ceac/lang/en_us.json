@@ -1,5 +1,7 @@
 {
-  "creativetab.ceac_tab": "CE's Aperture Construction",
+  "creativetab.basics": "CE's Aperture Construction: Basics",
+  "creativetab.shapes": "CE's Aperture Construction: Shapes",
+  "creativetab.materials": "CE's Aperture Construction: Materials",
 
 
 
@@ -19,6 +21,21 @@
 
 
 
+  "item.ceac.bare_backpanel": "Bare Backpanel",
+  "item.ceac.bare_backpanel_large": "Bare Backpanel (Large)",
+  "item.ceac.green_backpanel": "Green Backpanel",
+  "item.ceac.green_backpanel_large": "Green Backpanel (Large)",
+  "item.ceac.orange_backpanel": "Orange Backpanel",
+  "item.ceac.orange_backpanel_large": "Orange Backpanel (Large)",
+  "item.ceac.rusty_backpanel": "Rusty Backpanel",
+  "item.ceac.rusty_backpanel_large": "Rusty Backpanel (Large)",
+  "item.ceac.weathered_backpanel": "Weathered Backpanel",
+  "item.ceac.weathered_backpanel_large": "Weathered Backpanel (Large)",
+  "item.ceac.white_backpanel": "White Backpanel",
+  "item.ceac.white_backpanel_large": "White Backpanel (Large)",
+  "item.ceac.yellow_backpanel": "Yellow Backpanel",
+  "item.ceac.yellow_backpanel_large": "Yellow Backpanel (Large)",
+
   "item.ceac.observation_concrete_wall": "Observation Concrete Wall",
 
 
@@ -26,17 +43,17 @@
   "block.ceac.purchasing_terminal": "Purchasing Terminal",
 
 
-  "block.ceac.material_shape_block": "Material Shape: Block",
+  "block.ceac.material_shapes.basic_shapes.block": "Material Shape: Block",
 
-  "block.ceac.material_shape_bit": "Material Shape: Bit",
-  "block.ceac.material_shape_bit_pillar": "Material Shape: Bit (Pillar)",
-  "block.ceac.material_shape_half": "Material Shape: Half",
-  "block.ceac.material_shape_stairs": "Material Shape: Stairs",
+  "block.ceac.material_shapes.basic_shapes.halves.bit": "Material Shape: Bit",
+  "block.ceac.material_shapes.basic_shapes.halves.bit_pillar": "Material Shape: Bit (Pillar)",
+  "block.ceac.material_shapes.basic_shapes.halves.half": "Material Shape: Half",
+  "block.ceac.material_shapes.basic_shapes.halves.stairs": "Material Shape: Stairs",
 
-  "block.ceac.material_shape_ninth": "Material Shape: Ninth",
-  "block.ceac.material_shape_ninth_pillar": "Material Shape: Ninth (Pillar)",
-  "block.ceac.material_shape_third": "Material Shape: Third",
-  "block.ceac.material_shape_third_stairs": "Material Shape: Third Stairs",
+  "block.ceac.material_shapes.basic_shapes.thirds.ninth": "Material Shape: Ninth",
+  "block.ceac.material_shapes.basic_shapes.thirds.ninth_pillar": "Material Shape: Ninth (Pillar)",
+  "block.ceac.material_shapes.basic_shapes.thirds.third": "Material Shape: Third",
+  "block.ceac.material_shapes.basic_shapes.thirds.third_stairs": "Material Shape: Third Stairs",
 
   "block.ceac.material_shape_sixteenth": "Material Shape: Sixteenth",
   "block.ceac.material_shape_sixteenth_pillar": "Material Shape: Sixteenth (Pillar)",
