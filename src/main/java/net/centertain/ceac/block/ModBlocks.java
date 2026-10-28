@@ -52,7 +52,7 @@ public final class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
 
 
-    public static final RegistryObject<Block> PURCHASING_TERMINAL = registerBlock("purchasing_terminal", () -> new PurchasingTerminal(MATERIAL_SHAPE_PROPERTIES), block -> new PurchasingTerminalItem(block, new Item.Properties()));
+    public static final RegistryObject<Block> PURCHASING_TERMINAL = registerBlock("basics/purchasing_terminal", () -> new PurchasingTerminal(MATERIAL_SHAPE_PROPERTIES), block -> new PurchasingTerminalItem(block, new Item.Properties()));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_BlOCK = registerBlock("material_shapes/basic_shapes/block", () -> new net.centertain.ceac.block.custom.material_shapes.basic_shapes.Block(MATERIAL_SHAPE_PROPERTIES));
