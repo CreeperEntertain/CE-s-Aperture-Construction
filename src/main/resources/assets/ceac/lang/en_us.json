@@ -1,7 +1,7 @@
 {
-  "creativetab.basics": "CE's Aperture Construction Basics",
-  "creativetab.shapes": "CE's Aperture Construction Shapes",
-  "creativetab.materials": "CE's Aperture Construction Materials",
+  "creativetab.basics": "CE's Aperture Construction: Basics",
+  "creativetab.shapes": "CE's Aperture Construction: Shapes",
+  "creativetab.materials": "CE's Aperture Construction: Materials",
 
 
 
@@ -43,7 +43,7 @@
   "block.ceac.purchasing_terminal": "Purchasing Terminal",
 
 
-  "block.ceac.material_shape_block": "Material Shape: Block",
+  "block.ceac.material_shapes.basic_shapes.block": "Material Shape: Block",
 
   "block.ceac.material_shape_bit": "Material Shape: Bit",
   "block.ceac.material_shape_bit_pillar": "Material Shape: Bit (Pillar)",
