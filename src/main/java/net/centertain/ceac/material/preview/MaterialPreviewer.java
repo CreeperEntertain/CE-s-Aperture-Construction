@@ -359,8 +359,8 @@ public final class MaterialPreviewer {
         for (var entry : material.getTextures().entrySet()) {
             Vector2i coordinate = entry.getKey();
 
-            int deltaX = coordinate.x - materialCoordinate.x;
-            int deltaY = coordinate.y - materialCoordinate.y;
+            int deltaX = Math.floorMod(coordinate.x - materialCoordinate.x, material.getTilingSize().x);
+            int deltaY = Math.floorMod(coordinate.y - materialCoordinate.y, material.getTilingSize().y);
 
             int rotatedDeltaX;
             int rotatedDeltaY;

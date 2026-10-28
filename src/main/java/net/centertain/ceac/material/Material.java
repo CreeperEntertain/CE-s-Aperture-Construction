@@ -191,16 +191,16 @@ public abstract class Material {
 
         return switch (Math.floorMod(rotation, 4)) {
             case 1 -> new Vector2i(
-                    Math.floorMod(-gridY, width),
+                    Math.floorMod(-gridY - 1, width),
                     Math.floorMod(gridX, height)
             );
             case 2 -> new Vector2i(
-                    Math.floorMod(-gridX, width),
-                    Math.floorMod(-gridY, height)
+                    Math.floorMod(-gridX - 1, width),
+                    Math.floorMod(-gridY - 1, height)
             );
             case 3 -> new Vector2i(
                     Math.floorMod(gridY, width),
-                    Math.floorMod(-gridX, height)
+                    Math.floorMod(-gridX - 1, height)
             );
             default -> new Vector2i(
                     Math.floorMod(gridX, width),
