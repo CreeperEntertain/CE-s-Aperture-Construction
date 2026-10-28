@@ -62,10 +62,10 @@ public final class ModBlocks {
     public static final RegistryObject<Block> MATERIAL_SHAPE_HALF = registerBlock("material_shapes/basic_shapes/halves/half", () -> new Half(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_STAIRS = registerBlock("material_shapes/basic_shapes/halves/stairs", () -> new Stairs(MATERIAL_SHAPE_PROPERTIES));
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_NINTH = registerBlock("material_shape_ninth", () -> new Ninth(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_NINTH_PILLAR = registerBlock("material_shape_ninth_pillar", () -> new NinthPillar(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD = registerBlock("material_shape_third", () -> new Third(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_STAIRS = registerBlock("material_shape_third_stairs", () -> new ThirdStairs(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_NINTH = registerBlock("material_shapes/basic_shapes/thirds/ninth", () -> new Ninth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_NINTH_PILLAR = registerBlock("material_shapes/basic_shapes/thirds/ninth_pillar", () -> new NinthPillar(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD = registerBlock("material_shapes/basic_shapes/thirds/third", () -> new Third(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_STAIRS = registerBlock("material_shapes/basic_shapes/thirds/third_stairs", () -> new ThirdStairs(MATERIAL_SHAPE_PROPERTIES));
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_SIXTEENTH = registerBlock("material_shape_sixteenth", () -> new Sixteenth(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_SIXTEENTH_PILLAR = registerBlock("material_shape_sixteenth_pillar", () -> new SixteenthPillar(MATERIAL_SHAPE_PROPERTIES));

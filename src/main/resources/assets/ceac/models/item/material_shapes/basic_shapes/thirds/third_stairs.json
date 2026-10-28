@@ -1,5 +1,5 @@
 {
-  "parent": "ceac:block/material_shape_ninth",
+  "parent": "ceac:block/material_shapes/basic_shapes/thirds/third_stairs",
   "display": {
     "thirdperson_righthand": {
       "rotation": [75, 45, 0],
