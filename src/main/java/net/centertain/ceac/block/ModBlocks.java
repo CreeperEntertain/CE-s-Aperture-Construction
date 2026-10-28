@@ -67,13 +67,13 @@ public final class ModBlocks {
     public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD = registerBlock("material_shapes/basic_shapes/thirds/third", () -> new Third(MATERIAL_SHAPE_PROPERTIES));
     public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_STAIRS = registerBlock("material_shapes/basic_shapes/thirds/third_stairs", () -> new ThirdStairs(MATERIAL_SHAPE_PROPERTIES));
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_SIXTEENTH = registerBlock("material_shape_sixteenth", () -> new Sixteenth(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_SIXTEENTH_PILLAR = registerBlock("material_shape_sixteenth_pillar", () -> new SixteenthPillar(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER = registerBlock("material_shape_quarter", () -> new Quarter(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_STAIRS = registerBlock("material_shape_quarter_stairs", () -> new QuarterStairs(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_SIXTEENTH = registerBlock("material_shapes/basic_shapes/quarters/sixteenth", () -> new Sixteenth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_SIXTEENTH_PILLAR = registerBlock("material_shapes/basic_shapes/quarters/sixteenth_pillar", () -> new SixteenthPillar(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER = registerBlock("material_shapes/basic_shapes/quarters/quarter", () -> new Quarter(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_STAIRS = registerBlock("material_shapes/basic_shapes/quarters/quarter_stairs", () -> new QuarterStairs(MATERIAL_SHAPE_PROPERTIES));
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_EIGHTH = registerBlock("material_shape_eighth", () -> new Eighth(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_LAYER = registerBlock("material_shape_layer", () -> new Layer(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_EIGHTH = registerBlock("material_shapes/basic_shapes/other/eighth", () -> new Eighth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_LAYER = registerBlock("material_shapes/basic_shapes/other/layer", () -> new Layer(MATERIAL_SHAPE_PROPERTIES));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_EIGHTH_SPHERE = registerBlock("material_shape_eighth_sphere", () -> new EighthSphere(MATERIAL_SHAPE_PROPERTIES));

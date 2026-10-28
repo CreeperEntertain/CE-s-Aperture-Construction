@@ -1,5 +1,5 @@
 {
-  "parent": "ceac:block/material_shape_sixteenth_pillar",
+  "parent": "ceac:block/material_shapes/basic_shapes/quarters/sixteenth_pillar",
   "display": {
     "thirdperson_righthand": {
       "rotation": [75, 45, 0],

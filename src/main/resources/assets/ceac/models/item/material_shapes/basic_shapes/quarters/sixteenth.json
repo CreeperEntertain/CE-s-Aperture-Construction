@@ -1,5 +1,5 @@
 {
-  "parent": "ceac:block/material_shape_eighth",
+  "parent": "ceac:block/material_shapes/basic_shapes/quarters/sixteenth",
   "display": {
     "thirdperson_righthand": {
       "rotation": [75, 45, 0],
