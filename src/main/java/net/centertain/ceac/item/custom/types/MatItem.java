@@ -216,7 +216,7 @@ public abstract class MatItem extends BasicItem {
 
         MaterialShapeFaceInstance instance = faceHit.instance;
 
-        Vector2i materialCoordinate = material.get().getCoordinate(instance, pos, state);
+        Vector2i materialCoordinate = material.get().getCoordinate(instance, pos, state, getMaterialRotation(stack));
 
         MaterialPreviewer.update(
                 material.get(),
@@ -274,7 +274,9 @@ public abstract class MatItem extends BasicItem {
             return InteractionResult.PASS;
 
         boolean wholePiece = player.isShiftKeyDown();
-        Vector2i materialCoordinate = material.get().getCoordinate(instance, pos, state);
+        Vector2i materialCoordinate = material.get().getCoordinate(
+                instance, pos, state, getMaterialRotation(context.getItemInHand())
+        );
 
         if (!level.isClientSide)
             serverSide(
@@ -332,7 +334,7 @@ public abstract class MatItem extends BasicItem {
 
                 Vector2i coordinate = getMaterialCoordinateWithOffset(
                         stack,
-                        material.get().getCoordinate(target, pos, state)
+                        material.get().getCoordinate(target, pos, state, rotation)
                 );
 
                 assignments.put(target.key(), new MaterialShapeBlockEntity.MaterialAssignment(

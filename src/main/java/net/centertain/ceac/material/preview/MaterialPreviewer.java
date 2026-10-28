@@ -194,6 +194,7 @@ public final class MaterialPreviewer {
         return true;
     }
 
+    @SuppressWarnings("SuspiciousNameCombination")
     public static boolean render(
             PoseStack poseStack,
             MultiBufferSource.BufferSource bufferSource
@@ -361,7 +362,26 @@ public final class MaterialPreviewer {
             int deltaX = coordinate.x - materialCoordinate.x;
             int deltaY = coordinate.y - materialCoordinate.y;
 
-            Vec3 offset = uAxis.scale(deltaX).add(vAxis.scale(deltaY));
+            int rotatedDeltaX;
+            int rotatedDeltaY;
+
+            switch (Math.floorMod(materialRotation, 4)) {
+                case 1 -> {
+                    rotatedDeltaX = deltaY;
+                    rotatedDeltaY = -deltaX;
+                } case 2 -> {
+                    rotatedDeltaX = -deltaX;
+                    rotatedDeltaY = -deltaY;
+                } case 3 -> {
+                    rotatedDeltaX = -deltaY;
+                    rotatedDeltaY = deltaX;
+                } default -> {
+                    rotatedDeltaX = deltaX;
+                    rotatedDeltaY = deltaY;
+                }
+            }
+
+            Vec3 offset = uAxis.scale(rotatedDeltaX).add(vAxis.scale(rotatedDeltaY));
 
             int alpha = coordinate.equals(materialCoordinate)
                     ? SELECTED_ALPHA
