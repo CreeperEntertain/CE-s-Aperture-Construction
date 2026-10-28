@@ -1,5 +1,5 @@
 {
-  "parent": "ceac:block/material_shape_full_corner_inner",
+  "parent": "ceac:block/material_shapes/full_slopes/slope",
   "display": {
     "thirdperson_righthand": {
       "rotation": [75, 45, 0],

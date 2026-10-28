@@ -94,12 +94,12 @@ public final class ModBlocks {
     public static final RegistryObject<Block> MATERIAL_SHAPE_THIN_CYLINDER_T_CROSS = registerBlock("material_shape_thin_cylinder_t_cross", () -> new ThinCylinderTCross(MATERIAL_SHAPE_PROPERTIES));
 
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shape_slope", () -> new Slope(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_CORNER_OUTER = registerBlock("material_shape_full_corner_outer", () -> new FullCornerOuter(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_CORNER_INNER = registerBlock("material_shape_full_corner_inner", () -> new FullCornerInner(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_ROOF = registerBlock("material_shape_full_roof", () -> new FullRoof(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_ROOF_END = registerBlock("material_shape_full_roof_end", () -> new FullRoofEnd(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_PYRAMID = registerBlock("material_shape_full_pyramid", () -> new FullPyramid(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_SLOPE = registerBlock("material_shapes/full_slopes/slope", () -> new Slope(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_CORNER_OUTER = registerBlock("material_shapes/full_slopes/full_corner_outer", () -> new FullCornerOuter(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_CORNER_INNER = registerBlock("material_shapes/full_slopes/full_corner_inner", () -> new FullCornerInner(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_ROOF = registerBlock("material_shapes/full_slopes/full_roof", () -> new FullRoof(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_ROOF_END = registerBlock("material_shapes/full_slopes/full_roof_end", () -> new FullRoofEnd(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_FULL_PYRAMID = registerBlock("material_shapes/full_slopes/full_pyramid", () -> new FullPyramid(MATERIAL_SHAPE_PROPERTIES));
 
 
     public static final RegistryObject<Block> MATERIAL_SHAPE_HALF_SLOPE_BOTTOM = registerBlock("material_shapes/half_slopes/bottom/half_slope_bottom", () -> new HalfSlopeBottom(MATERIAL_SHAPE_PROPERTIES));

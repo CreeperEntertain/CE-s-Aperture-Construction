@@ -44,12 +44,12 @@
     "ceac:material_shape_thin_cylinder_t_cross",
 
 
-    "ceac:material_shape_slope",
-    "ceac:material_shape_full_corner_outer",
-    "ceac:material_shape_full_corner_inner",
-    "ceac:material_shape_full_roof",
-    "ceac:material_shape_full_roof_end",
-    "ceac:material_shape_full_pyramid",
+    "ceac:material_shapes/full_slopes/slope",
+    "ceac:material_shapes/full_slopes/full_corner_outer",
+    "ceac:material_shapes/full_slopes/full_corner_inner",
+    "ceac:material_shapes/full_slopes/full_roof",
+    "ceac:material_shapes/full_slopes/full_roof_end",
+    "ceac:material_shapes/full_slopes/full_pyramid",
 
 
     "ceac:material_shapes/half_slopes/bottom/half_slope_bottom",
