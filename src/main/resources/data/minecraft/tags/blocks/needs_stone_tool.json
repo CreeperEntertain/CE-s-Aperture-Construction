@@ -5,25 +5,25 @@
 
 
 
-    "ceac:material_shape_block",
+    "ceac:material_shapes/basic_shapes/block",
 
-    "ceac:material_shape_bit",
-    "ceac:material_shape_bit_pillar",
-    "ceac:material_shape_half",
-    "ceac:material_shape_stairs",
+    "ceac:material_shapes/basic_shapes/halves/bit",
+    "ceac:material_shapes/basic_shapes/halves/bit_pillar",
+    "ceac:material_shapes/basic_shapes/halves/half",
+    "ceac:material_shapes/basic_shapes/halves/stairs",
 
-    "ceac:material_shape_ninth",
-    "ceac:material_shape_ninth_pillar",
-    "ceac:material_shape_third",
-    "ceac:material_shape_third_stairs",
+    "ceac:material_shapes/basic_shapes/thirds/ninth",
+    "ceac:material_shapes/basic_shapes/thirds/ninth_pillar",
+    "ceac:material_shapes/basic_shapes/thirds/third",
+    "ceac:material_shapes/basic_shapes/thirds/third_stairs",
 
-    "ceac:material_shape_sixteenth",
-    "ceac:material_shape_sixteenth_pillar",
-    "ceac:material_shape_quarter",
-    "ceac:material_shape_quarter_stairs",
+    "ceac:material_shapes/basic_shapes/quarters/sixteenth",
+    "ceac:material_shapes/basic_shapes/quarters/sixteenth_pillar",
+    "ceac:material_shapes/basic_shapes/quarters/quarter",
+    "ceac:material_shapes/basic_shapes/quarters/quarter_stairs",
 
-    "ceac:material_shape_eighth",
-    "ceac:material_shape_layer",
+    "ceac:material_shapes/basic_shapes/other/eighth",
+    "ceac:material_shapes/basic_shapes/other/layer",
 
 
     "ceac:material_shape_eighth_sphere",
@@ -89,32 +89,32 @@
     "ceac:material_shape_third_pyramid_third",
 
 
-    "ceac:material_shape_quarter_slope_first",
-    "ceac:material_shape_quarter_corner_outer_first",
-    "ceac:material_shape_quarter_corner_inner_first",
-    "ceac:material_shape_quarter_roof_first",
-    "ceac:material_shape_quarter_roof_end_first",
-    "ceac:material_shape_quarter_pyramid_first",
+    "ceac:material_shapes/quarter_slopes/first/quarter_slope_first",
+    "ceac:material_shapes/quarter_slopes/first/quarter_corner_outer_first",
+    "ceac:material_shapes/quarter_slopes/first/quarter_corner_inner_first",
+    "ceac:material_shapes/quarter_slopes/first/quarter_roof_first",
+    "ceac:material_shapes/quarter_slopes/first/quarter_roof_end_first",
+    "ceac:material_shapes/quarter_slopes/first/quarter_pyramid_first",
 
-    "ceac:material_shape_quarter_slope_second",
-    "ceac:material_shape_quarter_corner_outer_second",
-    "ceac:material_shape_quarter_corner_inner_second",
-    "ceac:material_shape_quarter_roof_second",
-    "ceac:material_shape_quarter_roof_end_second",
-    "ceac:material_shape_quarter_pyramid_second",
+    "ceac:material_shapes/quarter_slopes/second/quarter_slope_second",
+    "ceac:material_shapes/quarter_slopes/second/quarter_corner_outer_second",
+    "ceac:material_shapes/quarter_slopes/second/quarter_corner_inner_second",
+    "ceac:material_shapes/quarter_slopes/second/quarter_roof_second",
+    "ceac:material_shapes/quarter_slopes/second/quarter_roof_end_second",
+    "ceac:material_shapes/quarter_slopes/second/quarter_pyramid_second",
 
-    "ceac:material_shape_quarter_slope_third",
-    "ceac:material_shape_quarter_corner_outer_third",
-    "ceac:material_shape_quarter_corner_inner_third",
-    "ceac:material_shape_quarter_roof_third",
-    "ceac:material_shape_quarter_roof_end_third",
-    "ceac:material_shape_quarter_pyramid_third",
+    "ceac:material_shapes/quarter_slopes/third/quarter_slope_third",
+    "ceac:material_shapes/quarter_slopes/third/quarter_corner_outer_third",
+    "ceac:material_shapes/quarter_slopes/third/quarter_corner_inner_third",
+    "ceac:material_shapes/quarter_slopes/third/quarter_roof_third",
+    "ceac:material_shapes/quarter_slopes/third/quarter_roof_end_third",
+    "ceac:material_shapes/quarter_slopes/third/quarter_pyramid_third",
 
-    "ceac:material_shape_quarter_slope_fourth",
-    "ceac:material_shape_quarter_corner_outer_fourth",
-    "ceac:material_shape_quarter_corner_inner_fourth",
-    "ceac:material_shape_quarter_roof_fourth",
-    "ceac:material_shape_quarter_roof_end_fourth",
-    "ceac:material_shape_quarter_pyramid_fourth"
+    "ceac:material_shapes/quarter_slopes/fourth/quarter_slope_fourth",
+    "ceac:material_shapes/quarter_slopes/fourth/quarter_corner_outer_fourth",
+    "ceac:material_shapes/quarter_slopes/fourth/quarter_corner_inner_fourth",
+    "ceac:material_shapes/quarter_slopes/fourth/quarter_roof_fourth",
+    "ceac:material_shapes/quarter_slopes/fourth/quarter_roof_end_fourth",
+    "ceac:material_shapes/quarter_slopes/fourth/quarter_pyramid_fourth"
   ]
 }

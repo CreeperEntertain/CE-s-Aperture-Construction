@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "ceac:material_shapes/quarter_slopes/fourth/quarter_roof_fourth"
+        }
+      ]
+    }
+  ]
+}

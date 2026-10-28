@@ -139,33 +139,33 @@ public final class ModBlocks {
     public static final RegistryObject<Block> MATERIAL_SHAPE_THIRD_PYRAMID_THIRD = registerBlock("material_shape_third_pyramid_third", () -> new ThirdPyramidThird(MATERIAL_SHAPE_PROPERTIES));
 
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_FIRST = registerBlock("material_shape_quarter_slope_first", () -> new QuarterSlopeFirst(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_OUTER_FIRST = registerBlock("material_shape_quarter_corner_outer_first", () -> new QuarterCornerOuterFirst(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_INNER_FIRST = registerBlock("material_shape_quarter_corner_inner_first", () -> new QuarterCornerInnerFirst(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_FIRST = registerBlock("material_shape_quarter_roof_first", () -> new QuarterRoofFirst(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_END_FIRST = registerBlock("material_shape_quarter_roof_end_first", () -> new QuarterRoofEndFirst(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_PYRAMID_FIRST = registerBlock("material_shape_quarter_pyramid_first", () -> new QuarterPyramidFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_FIRST = registerBlock("material_shapes/quarter_slopes/first/quarter_slope_first", () -> new QuarterSlopeFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_OUTER_FIRST = registerBlock("material_shapes/quarter_slopes/first/quarter_corner_outer_first", () -> new QuarterCornerOuterFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_INNER_FIRST = registerBlock("material_shapes/quarter_slopes/first/quarter_corner_inner_first", () -> new QuarterCornerInnerFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_FIRST = registerBlock("material_shapes/quarter_slopes/first/quarter_roof_first", () -> new QuarterRoofFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_END_FIRST = registerBlock("material_shapes/quarter_slopes/first/quarter_roof_end_first", () -> new QuarterRoofEndFirst(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_PYRAMID_FIRST = registerBlock("material_shapes/quarter_slopes/first/quarter_pyramid_first", () -> new QuarterPyramidFirst(MATERIAL_SHAPE_PROPERTIES));
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_SECOND = registerBlock("material_shape_quarter_slope_second", () -> new QuarterSlopeSecond(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_OUTER_SECOND = registerBlock("material_shape_quarter_corner_outer_second", () -> new QuarterCornerOuterSecond(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_INNER_SECOND = registerBlock("material_shape_quarter_corner_inner_second", () -> new QuarterCornerInnerSecond(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_SECOND = registerBlock("material_shape_quarter_roof_second", () -> new QuarterRoofSecond(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_END_SECOND = registerBlock("material_shape_quarter_roof_end_second", () -> new QuarterRoofEndSecond(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_PYRAMID_SECOND = registerBlock("material_shape_quarter_pyramid_second", () -> new QuarterPyramidSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_SECOND = registerBlock("material_shapes/quarter_slopes/second/quarter_slope_second", () -> new QuarterSlopeSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_OUTER_SECOND = registerBlock("material_shapes/quarter_slopes/second/quarter_corner_outer_second", () -> new QuarterCornerOuterSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_INNER_SECOND = registerBlock("material_shapes/quarter_slopes/second/quarter_corner_inner_second", () -> new QuarterCornerInnerSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_SECOND = registerBlock("material_shapes/quarter_slopes/second/quarter_roof_second", () -> new QuarterRoofSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_END_SECOND = registerBlock("material_shapes/quarter_slopes/second/quarter_roof_end_second", () -> new QuarterRoofEndSecond(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_PYRAMID_SECOND = registerBlock("material_shapes/quarter_slopes/second/quarter_pyramid_second", () -> new QuarterPyramidSecond(MATERIAL_SHAPE_PROPERTIES));
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_THIRD = registerBlock("material_shape_quarter_slope_third", () -> new QuarterSlopeThird(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_OUTER_THIRD = registerBlock("material_shape_quarter_corner_outer_third", () -> new QuarterCornerOuterThird(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_INNER_THIRD = registerBlock("material_shape_quarter_corner_inner_third", () -> new QuarterCornerInnerThird(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_THIRD = registerBlock("material_shape_quarter_roof_third", () -> new QuarterRoofThird(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_END_THIRD = registerBlock("material_shape_quarter_roof_end_third", () -> new QuarterRoofEndThird(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_PYRAMID_THIRD = registerBlock("material_shape_quarter_pyramid_third", () -> new QuarterPyramidThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_THIRD = registerBlock("material_shapes/quarter_slopes/third/quarter_slope_third", () -> new QuarterSlopeThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_OUTER_THIRD = registerBlock("material_shapes/quarter_slopes/third/quarter_corner_outer_third", () -> new QuarterCornerOuterThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_INNER_THIRD = registerBlock("material_shapes/quarter_slopes/third/quarter_corner_inner_third", () -> new QuarterCornerInnerThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_THIRD = registerBlock("material_shapes/quarter_slopes/third/quarter_roof_third", () -> new QuarterRoofThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_END_THIRD = registerBlock("material_shapes/quarter_slopes/third/quarter_roof_end_third", () -> new QuarterRoofEndThird(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_PYRAMID_THIRD = registerBlock("material_shapes/quarter_slopes/third/quarter_pyramid_third", () -> new QuarterPyramidThird(MATERIAL_SHAPE_PROPERTIES));
 
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_FOURTH = registerBlock("material_shape_quarter_slope_fourth", () -> new QuarterSlopeFourth(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_OUTER_FOURTH = registerBlock("material_shape_quarter_corner_outer_fourth", () -> new QuarterCornerOuterFourth(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_INNER_FOURTH = registerBlock("material_shape_quarter_corner_inner_fourth", () -> new QuarterCornerInnerFourth(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_FOURTH = registerBlock("material_shape_quarter_roof_fourth", () -> new QuarterRoofFourth(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_END_FOURTH = registerBlock("material_shape_quarter_roof_end_fourth", () -> new QuarterRoofEndFourth(MATERIAL_SHAPE_PROPERTIES));
-    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_PYRAMID_FOURTH = registerBlock("material_shape_quarter_pyramid_fourth", () -> new QuarterPyramidFourth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_SLOPE_FOURTH = registerBlock("material_shapes/quarter_slopes/fourth/quarter_slope_fourth", () -> new QuarterSlopeFourth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_OUTER_FOURTH = registerBlock("material_shapes/quarter_slopes/fourth/quarter_corner_outer_fourth", () -> new QuarterCornerOuterFourth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_CORNER_INNER_FOURTH = registerBlock("material_shapes/quarter_slopes/fourth/quarter_corner_inner_fourth", () -> new QuarterCornerInnerFourth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_FOURTH = registerBlock("material_shapes/quarter_slopes/fourth/quarter_roof_fourth", () -> new QuarterRoofFourth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_ROOF_END_FOURTH = registerBlock("material_shapes/quarter_slopes/fourth/quarter_roof_end_fourth", () -> new QuarterRoofEndFourth(MATERIAL_SHAPE_PROPERTIES));
+    public static final RegistryObject<Block> MATERIAL_SHAPE_QUARTER_PYRAMID_FOURTH = registerBlock("material_shapes/quarter_slopes/fourth/quarter_pyramid_fourth", () -> new QuarterPyramidFourth(MATERIAL_SHAPE_PROPERTIES));
 
 
     private static <T extends Block> RegistryObject<T> registerBlock(

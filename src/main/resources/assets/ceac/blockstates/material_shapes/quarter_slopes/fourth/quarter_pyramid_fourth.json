@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "ceac:block/material_shapes/quarter_slopes/fourth/quarter_pyramid_fourth"
+      }
+    }
+  ]
+}
