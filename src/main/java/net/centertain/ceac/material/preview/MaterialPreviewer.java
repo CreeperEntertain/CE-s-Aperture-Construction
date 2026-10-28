@@ -42,6 +42,7 @@ public final class MaterialPreviewer {
 
     private static @Nullable Material material;
     private static @Nullable Vector2i materialCoordinate;
+    private static int materialRotation = 0;
     private static @Nullable BlockPos position;
     private static @Nullable MaterialShapeFaceInstance face;
 
@@ -58,6 +59,9 @@ public final class MaterialPreviewer {
     }
     public static @Nullable Vector2i getMaterialCoordinate() {
         return materialCoordinate;
+    }
+    public static int getMaterialRotation() {
+        return materialRotation;
     }
     public static @Nullable BlockPos getPosition() {
         return position;
@@ -78,6 +82,9 @@ public final class MaterialPreviewer {
     public static void setMaterialCoordinate(@Nullable Vector2i newMaterialCoordinate) {
         materialCoordinate = newMaterialCoordinate;
     }
+    public static void setMaterialRotation(int newMaterialRotation) {
+        materialRotation = Math.floorMod(newMaterialRotation, 4);
+    }
     public static void setPosition(@Nullable BlockPos newPosition) {
         position = newPosition;
     }
@@ -90,10 +97,12 @@ public final class MaterialPreviewer {
             Material newMaterial,
             Vector2i newMaterialCoordinate,
             BlockPos newPosition,
-            MaterialShapeFaceInstance newFace
+            MaterialShapeFaceInstance newFace,
+            int newMaterialRotation
     ) {
         material = newMaterial;
         materialCoordinate = newMaterialCoordinate;
+        materialRotation = newMaterialRotation;
         position = newPosition;
         face = newFace;
         init();
@@ -101,6 +110,7 @@ public final class MaterialPreviewer {
     public static void destroy() {
         material = null;
         materialCoordinate = null;
+        materialRotation = 0;
         position = null;
         face = null;
     }
@@ -366,13 +376,19 @@ public final class MaterialPreviewer {
             for (int i = 0; i < plane.length; i++) {
                 Vec3 point = plane[i].add(offset);
 
+                double[] rotatedUV = rotateUV(
+                        planeUV[i][0],
+                        planeUV[i][1],
+                        materialRotation
+                );
+
                 putVertex(
                         consumer,
                         pose,
                         point,
                         normal,
-                        planeUV[i][0],
-                        planeUV[i][1],
+                        rotatedUV[0],
+                        rotatedUV[1],
                         alpha,
                         entrySprite
                 );
@@ -384,6 +400,15 @@ public final class MaterialPreviewer {
         poseStack.popPose();
 
         return true;
+    }
+
+    private static double[] rotateUV(double u, double v, int rotation) {
+        return switch (Math.floorMod(rotation, 4)) {
+            case 1 -> new double[]{v, 1.0 - u};
+            case 2 -> new double[]{1.0 - u, 1.0 - v};
+            case 3 -> new double[]{1.0 - v, u};
+            default -> new double[]{u, v};
+        };
     }
 
     private static Vec3 getTexturePlanePoint(

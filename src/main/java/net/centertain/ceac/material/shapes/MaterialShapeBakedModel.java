@@ -70,17 +70,21 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
                 int faceIndex = findFace(entry.source());
 
                 BakedQuad quad = entry.quad();
+                int rotation = 0;
 
                 if (faceIndex >= 0) {
                     MaterialFaceKey key = new MaterialFaceKey(entry.pieceIndex(), faceIndex);
 
                     MaterialShapeBlockEntity.MaterialAssignment assignment = materials == null
                             ? null : materials.get(key);
-                    if (assignment != null)
+                    if (assignment != null) {
                         quad = retexture(quad, assignment);
+                        rotation = assignment.rotation();
+                    }
                 }
 
-                result.add(transformQuad(quad, state));
+                quad = transformQuad(quad, state);
+                result.add(rotateQuadUV(quad, rotation));
             }
 
             return result;
@@ -103,13 +107,17 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
                 for (BakedQuad quad : original) {
                     int faceIndex = findFace(quad);
                     BakedQuad pieceQuad = quad;
+                    int rotation = 0;
                     if (faceIndex >= 0 && materials != null) {
                         MaterialShapeBlockEntity.MaterialAssignment assignment =
                                 materials.get(new MaterialFaceKey(pieceIndex, faceIndex));
-                        if (assignment != null)
+                        if (assignment != null) {
                             pieceQuad = retexture(pieceQuad, assignment);
+                            rotation = assignment.rotation();
+                        }
                     }
-                    result.add(transformQuad(pieceQuad, state, axis));
+                    pieceQuad = transformQuad(pieceQuad, state, axis);
+                    result.add(rotateQuadUV(pieceQuad, rotation));
                 }
             }
             return result;
@@ -117,16 +125,20 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
 
         for (BakedQuad quad : original) {
             int faceIndex = findFace(quad);
+            int rotation = 0;
 
             if (faceIndex >= 0 && materials != null) {
                 MaterialFaceKey key = new MaterialFaceKey(0, faceIndex);
                 MaterialShapeBlockEntity.MaterialAssignment assignment = materials.get(key);
 
-                if (assignment != null)
+                if (assignment != null) {
                     quad = retexture(quad, assignment);
+                    rotation = assignment.rotation();
+                }
             }
 
-            result.add(transformQuad(quad, state));
+            quad = transformQuad(quad, state);
+            result.add(rotateQuadUV(quad, rotation));
         }
 
         return result;
@@ -286,15 +298,76 @@ public class MaterialShapeBakedModel extends BakedModelWrapper<BakedModel> {
         );
     }
 
-    private Vec3 transformDirection(
-            Vec3 direction,
-            Vec3 x,
-            Vec3 y,
-            Vec3 z
-    ) {
-        return x.scale(direction.x)
-                .add(y.scale(direction.y))
-                .add(z.scale(direction.z));
+    private BakedQuad rotateQuadUV(BakedQuad original, int rotation) {
+        int turns = Math.floorMod(rotation, 4);
+        if (turns == 0)
+            return original;
+
+        int[] vertices = original.getVertices().clone();
+        VertexFormat format = DefaultVertexFormat.BLOCK;
+
+        int stride = format.getIntegerSize();
+        int uvOffset = format.getOffset(2) / Integer.BYTES;
+
+        double minU = Double.POSITIVE_INFINITY;
+        double maxU = Double.NEGATIVE_INFINITY;
+        double minV = Double.POSITIVE_INFINITY;
+        double maxV = Double.NEGATIVE_INFINITY;
+
+        for (int i = 0; i < 4; i++) {
+            int offset = i * stride + uvOffset;
+
+            double u = Float.intBitsToFloat(vertices[offset]);
+            double v = Float.intBitsToFloat(vertices[offset + 1]);
+
+            minU = Math.min(minU, u);
+            maxU = Math.max(maxU, u);
+            minV = Math.min(minV, v);
+            maxV = Math.max(maxV, v);
+        }
+
+        double width = maxU - minU;
+        double height = maxV - minV;
+        if (width <= 1.0e-8 || height <= 1.0e-8)
+            return original;
+
+        for (int i = 0; i < 4; i++) {
+            int offset = i * stride + uvOffset;
+
+            double u = Float.intBitsToFloat(vertices[offset]);
+            double v = Float.intBitsToFloat(vertices[offset + 1]);
+
+            double normalizedU = (u - minU) / width;
+            double normalizedV = (v - minV) / height;
+
+            double rotatedU = normalizedU;
+            double rotatedV = normalizedV;
+
+            switch (turns) {
+                case 1 -> {
+                    rotatedU = normalizedV;
+                    rotatedV = 1.0 - normalizedU;
+                } case 2 -> {
+                    rotatedU = 1.0 - normalizedU;
+                    rotatedV = 1.0 - normalizedV;
+                } case 3 -> {
+                    rotatedU = 1.0 - normalizedV;
+                    rotatedV = normalizedU;
+                }
+            }
+
+            vertices[offset] = Float.floatToRawIntBits((float) (minU + rotatedU * width));
+            vertices[offset + 1] = Float.floatToRawIntBits((float) (minV + rotatedV * height));
+        }
+
+        return new BakedQuad(
+                vertices,
+                original.getTintIndex(),
+                original.getDirection(),
+                original.getSprite(),
+                original.isShade(),
+                original.hasAmbientOcclusion()
+        );
     }
 
     private double getTextureU(

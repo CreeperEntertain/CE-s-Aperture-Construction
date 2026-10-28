@@ -87,7 +87,41 @@ public final class MaterialPlacement {
             case GLFW.GLFW_KEY_S -> shiftMaterialCoordinate(Direction.DOWN);
             case GLFW.GLFW_KEY_A -> shiftMaterialCoordinate(Direction.LEFT);
             case GLFW.GLFW_KEY_D -> shiftMaterialCoordinate(Direction.RIGHT);
+            case GLFW.GLFW_KEY_R -> rotateMaterial();
         }
+    }
+
+    private static void rotateMaterial() {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        if (player == null)
+            return;
+
+        InteractionHand hand;
+        ItemStack stack;
+        MatItem matItem;
+
+        if (player.getMainHandItem().getItem() instanceof MatItem mainHandItem) {
+            hand = InteractionHand.MAIN_HAND;
+            stack = player.getMainHandItem();
+            matItem = mainHandItem;
+        } else if (player.getOffhandItem().getItem() instanceof MatItem offHandItem) {
+            hand = InteractionHand.OFF_HAND;
+            stack = player.getOffhandItem();
+            matItem = offHandItem;
+        } else
+            return;
+
+        int rotation = (matItem.getMaterialRotation(stack) + 1) % 4;
+
+        matItem.setMaterialRotation(stack, rotation);
+        MaterialPreviewer.setMaterialRotation(rotation);
+
+        ModNetworking.CHANNEL.sendToServer(new MaterialOffsetPacket(
+                hand,
+                matItem.getMaterialCoordinateOffset(stack),
+                rotation
+        ));
     }
 
     private static void shiftMaterialCoordinate(
@@ -129,6 +163,10 @@ public final class MaterialPlacement {
 
         matItem.setMaterialCoordinateOffset(stack, newOffset);
 
-        ModNetworking.CHANNEL.sendToServer(new MaterialOffsetPacket(hand, newOffset));
+        ModNetworking.CHANNEL.sendToServer(new MaterialOffsetPacket(
+                hand,
+                newOffset,
+                matItem.getMaterialRotation(stack)
+        ));
     }
 }

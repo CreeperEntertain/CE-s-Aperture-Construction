@@ -14,14 +14,17 @@ public class MaterialOffsetPacket {
     private final InteractionHand hand;
     private final int x;
     private final int y;
+    private final int rotation;
 
     public MaterialOffsetPacket(
             InteractionHand hand,
-            Vector2i offset
+            Vector2i offset,
+            int rotation
     ) {
         this.hand = hand;
         this.x = offset.x;
         this.y = offset.y;
+        this.rotation = Math.floorMod(rotation, 4);
     }
 
     public static void encode(
@@ -31,6 +34,7 @@ public class MaterialOffsetPacket {
         buffer.writeEnum(packet.hand);
         buffer.writeInt(packet.x);
         buffer.writeInt(packet.y);
+        buffer.writeInt(packet.rotation);
     }
 
     public static MaterialOffsetPacket decode(
@@ -40,8 +44,9 @@ public class MaterialOffsetPacket {
 
         int x = buffer.readInt();
         int y = buffer.readInt();
+        int rotation = buffer.readInt();
 
-        return new MaterialOffsetPacket(hand, new Vector2i(x, y));
+        return new MaterialOffsetPacket(hand, new Vector2i(x, y), rotation);
     }
 
     public static void handle(
@@ -58,6 +63,7 @@ public class MaterialOffsetPacket {
             if (!(stack.getItem() instanceof MatItem matItem))
                 return;
             matItem.setMaterialCoordinateOffset(stack, new Vector2i(packet.x, packet.y));
+            matItem.setMaterialRotation(stack, packet.rotation);
         });
 
         context.setPacketHandled(true);

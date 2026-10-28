@@ -35,28 +35,26 @@ public class MaterialShapeBlockEntity extends BlockEntity {
     }
 
     public void setMaterial(
-            int face,
+            MaterialFaceKey key,
             Material material,
             Vector2i materialCoordinate
     ) {
-        setMaterial(
-                new MaterialFaceKey(0, face),
-                material,
-                materialCoordinate
-        );
+        setMaterial(key,material, materialCoordinate, 0);
     }
 
     public void setMaterial(
             MaterialFaceKey key,
             Material material,
-            Vector2i materialCoordinate
+            Vector2i materialCoordinate,
+            int rotation
     ) {
         setMaterials(Map.of(
                 key,
                 new MaterialAssignment(
                         material,
                         materialCoordinate.x,
-                        materialCoordinate.y
+                        materialCoordinate.y,
+                        rotation
                 )
         ));
     }
@@ -184,6 +182,7 @@ public class MaterialShapeBlockEntity extends BlockEntity {
             materialTag.putString("Id", id.toString());
             materialTag.putInt("X", assignment.x);
             materialTag.putInt("Y", assignment.y);
+            materialTag.putInt("Rotation", assignment.rotation);
 
             materialsTag.put(entry.getKey().toString(), materialTag);
         }
@@ -222,7 +221,8 @@ public class MaterialShapeBlockEntity extends BlockEntity {
             loaded.put(faceKey, new MaterialAssignment(
                     material,
                     materialTag.getInt("X"),
-                    materialTag.getInt("Y")
+                    materialTag.getInt("Y"),
+                    materialTag.getInt("Rotation")
             ));
         }
 
@@ -289,6 +289,15 @@ public class MaterialShapeBlockEntity extends BlockEntity {
     public record MaterialAssignment(
             Material material,
             int x,
-            int y
-    ) {}
+            int y,
+            int rotation
+    ) {
+        public MaterialAssignment {
+            rotation = Math.floorMod(rotation, 4);
+        }
+
+        public MaterialAssignment(Material material, int x, int y)  {
+            this(material, x, y, 0);
+        }
+    }
 }

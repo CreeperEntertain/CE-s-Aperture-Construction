@@ -52,6 +52,7 @@ public abstract class MatItem extends BasicItem {
 
     private static final String OFFSET_X = "MaterialOffsetX";
     private static final String OFFSET_Y = "MaterialOffsetY";
+    private static final String ROTATION = "MaterialRotation";
 
     private static final String DEFAULT_CATEGORY = CategoryConstants.Main.MATERIALS;
     private static final double DEFAULT_PRICE = PriceConstants.DEFAULT_MAT_ITEM;
@@ -110,6 +111,14 @@ public abstract class MatItem extends BasicItem {
                 tag.getInt(OFFSET_X),
                 tag.getInt(OFFSET_Y)
         );
+    }
+
+    public int getMaterialRotation(ItemStack stack) {
+        return Math.floorMod(stack.getOrCreateTag().getInt(ROTATION), 4);
+    }
+
+    public void setMaterialRotation(ItemStack stack, int rotation) {
+        stack.getOrCreateTag().putInt(ROTATION, Math.floorMod(rotation, 4));
     }
 
     public Vector2i getMaterialCoordinateWithOffset(
@@ -213,7 +222,8 @@ public abstract class MatItem extends BasicItem {
                 material.get(),
                 getMaterialCoordinateWithOffset(stack, materialCoordinate),
                 pos,
-                instance
+                instance,
+                getMaterialRotation(stack)
         );
     }
 
@@ -306,6 +316,8 @@ public abstract class MatItem extends BasicItem {
             MaterialShapeFaceInstance instance,
             boolean wholePiece
     ) {
+        int rotation = getMaterialRotation(stack);
+
         if (wholePiece) {
             Map<MaterialFaceKey, MaterialShapeBlockEntity.MaterialAssignment> assignments = new HashMap<>();
             for (MaterialShapeFaceInstance target : shape.getFaceInstances(state, level, pos)) {
@@ -326,7 +338,8 @@ public abstract class MatItem extends BasicItem {
                 assignments.put(target.key(), new MaterialShapeBlockEntity.MaterialAssignment(
                         material.get(),
                         coordinate.x,
-                        coordinate.y
+                        coordinate.y,
+                        rotation
                 ));
             }
             blockEntity.setMaterials(assignments);
@@ -334,7 +347,8 @@ public abstract class MatItem extends BasicItem {
             blockEntity.setMaterial(
                     instance.key(),
                     material.get(),
-                    getMaterialCoordinateWithOffset(stack, materialCoordinate)
+                    getMaterialCoordinateWithOffset(stack, materialCoordinate),
+                    rotation
             );
 
         VoxelShape pieceVolume = wholePiece
