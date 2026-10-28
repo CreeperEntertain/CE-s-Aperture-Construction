@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "ceac:block/material_shapes/third_slopes/third/third_pyramid_third"
+      }
+    }
+  ]
+}

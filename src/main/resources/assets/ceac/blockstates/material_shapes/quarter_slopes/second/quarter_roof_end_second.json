@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "ceac:block/material_shapes/quarter_slopes/second/quarter_roof_end_second"
+      }
+    }
+  ]
+}
