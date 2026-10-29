@@ -137,7 +137,7 @@ public final class ModItems {
 
     public static final RegistryObject<Item> BEIGE_PLASTIC_WALL = ITEMS.register("materials/plastic/beige_plastic_wall", () -> new BeigePlasticWallMatItem(new Item.Properties()));
     public static final RegistryObject<Item> BEIGE_REINFORCED_PLASTIC_WALL = ITEMS.register("materials/plastic/beige_reinforced_plastic_wall", () -> new BeigeReinforcedPlasticWallMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> REINFORCED_PLASTIC_WALL = ITEMS.register("materials/plastic/reiforced_plastic_wall", () -> new ReinforcedPlasticWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> REINFORCED_PLASTIC_WALL = ITEMS.register("materials/plastic/reinforced_plastic_wall", () -> new ReinforcedPlasticWallMatItem(new Item.Properties()));
     public static final RegistryObject<Item> YELLOW_REINFORCED_PLASTIC_WALL = ITEMS.register("materials/plastic/yellow_reinforced_plastic_wall", () -> new YellowReinforcedPlasticWallMatItem(new Item.Properties()));
 
     public static final RegistryObject<Item> CHECKERED_DARK_CERAMIC_TILES = ITEMS.register("materials/tile/checkered_dark_ceramic_tiles", () -> new CheckeredDarkCeramicTilesMatItem(new Item.Properties()));
