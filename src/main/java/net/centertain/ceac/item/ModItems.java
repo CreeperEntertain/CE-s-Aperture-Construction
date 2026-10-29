@@ -4,6 +4,8 @@ import net.centertain.ceac.item.custom.*;
 import net.centertain.ceac.item.custom.materials.backpanel.*;
 import net.centertain.ceac.item.custom.materials.concrete.*;
 import net.centertain.ceac.item.custom.materials.metal.*;
+import net.centertain.ceac.item.custom.materials.tile.*;
+import net.centertain.ceac.material.materials.tile.CheckeredDarkCeramicTilesDirtyMaterial;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -119,6 +121,40 @@ public final class ModItems {
     public static final RegistryObject<Item> WEATHERED_CORRUGATED_METAL = ITEMS.register("materials/metal/weathered_corrugated_metal", () -> new WeatheredCorrugatedMetalMatItem(new Item.Properties()));
     public static final RegistryObject<Item> WITHERED_CABLE_WALL = ITEMS.register("materials/metal/withered_cable_wall", () -> new WitheredCableWallMatItem(new Item.Properties()));
     public static final RegistryObject<Item> WITHERED_PAINTED_METAL_PANEL = ITEMS.register("materials/metal/withered_painted_metal_panel", () -> new WitheredPaintedMetalPanelMatItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> CHECKERED_DARK_CERAMIC_TILES = ITEMS.register("materials/tile/checkered_dark_ceramic_tiles", () -> new CheckeredDarkCeramicTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> CHECKERED_DARK_CERAMIC_TILES_DIRTY = ITEMS.register("materials/tile/checkered_dark_ceramic_tiles_dirty", () -> new CheckeredDarkCeramicTilesDirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> CHECKERED_ORANGE_TILES = ITEMS.register("materials/tile/checkered_orange_tiles", () -> new CheckeredOrangeTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> CHECKERED_WHITE_CERAMIC_TILES = ITEMS.register("materials/tile/checkered_white_ceramic_tiles", () -> new CheckeredWhiteCeramicTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_CERAMIC_TILES = ITEMS.register("materials/tile/dark_ceramic_tiles", () -> new DarkCeramicTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_CERAMIC_TILES_DIRTY = ITEMS.register("materials/tile/dark_ceramic_tiles_dirty", () -> new DarkCeramicTilesDirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_OFFICE_FLOOR_TILES = ITEMS.register("materials/tile/dark_office_floor_tiles", () -> new DarkOfficeFloorTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_PAINTED_BRICKS = ITEMS.register("materials/tile/dark_painted_bricks", () -> new DarkPaintedBricksMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_PIN_HOLE_CEILING_TILES = ITEMS.register("materials/tile/dark_pin-hole_ceiling_tiles", () -> new DarkPinHoleCeilingTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DECAYED_WHITE_PAINTED_BRICKS = ITEMS.register("materials/tile/decayed_white_painted_bricks", () -> new DecayedWhitePaintedBricksMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DIRTY_FLOOR_TILES = ITEMS.register("materials/tile/dirty_floor_tiles", () -> new DirtyFloorTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> ORANGE_TILES = ITEMS.register("materials/tile/orange_tiles", () -> new OrangeTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> PATTERNED_WHITE_PANELS = ITEMS.register("materials/tile/patterned_white_panels", () -> new PatternedWhitePanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_CERAMIC_TILES = ITEMS.register("materials/tile/white_ceramic_tiles", () -> new WhiteCeramicTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_OFFICE_FLOOR_TILES = ITEMS.register("materials/tile/white_office_floor_tiles", () -> new WhiteOfficeFloorTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PAINTED_BRICKS = ITEMS.register("materials/tile/white_painted_bricks", () -> new WhitePaintedBricksMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_05X05 = ITEMS.register("materials/tile/white_panel_05x05", () -> new WhitePanel05x05MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_05X05_DIRTY = ITEMS.register("materials/tile/white_panel_05x05_dirty", () -> new WhitePanel05x05DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_05X05_WITHERED = ITEMS.register("materials/tile/white_panel_05x05_withered", () -> new WhitePanel05x05WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_05X1 = ITEMS.register("materials/tile/white_panel_05x1", () -> new WhitePanel05x1MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_05X1_DIRTY = ITEMS.register("materials/tile/white_panel_05x1_dirty", () -> new WhitePanel05x1DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_05X1_WITHERED = ITEMS.register("materials/tile/white_panel_05x1_withered", () -> new WhitePanel05x1WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_05X2 = ITEMS.register("materials/tile/white_panel_05x2", () -> new WhitePanel05x2MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_05X2_DIRTY = ITEMS.register("materials/tile/white_panel_05x2_dirty", () -> new WhitePanel05x2DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_05X2_WITHERED = ITEMS.register("materials/tile/white_panel_05x2_withered", () -> new WhitePanel05x2WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_1X1 = ITEMS.register("materials/tile/white_panel_1x1", () -> new WhitePanel1x1MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_1X1_DIRTY = ITEMS.register("materials/tile/white_panel_1x1_dirty", () -> new WhitePanel1x1DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_1X1_WITHERED = ITEMS.register("materials/tile/white_panel_1x1_withered", () -> new WhitePanel1x1WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_1X2 = ITEMS.register("materials/tile/white_panel_1x2", () -> new WhitePanel1x2MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_1X2_VARIATION = ITEMS.register("materials/tile/white_panel_1x2_variation", () -> new WhitePanel1x2VariationMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_1X2_DIRTY = ITEMS.register("materials/tile/white_panel_1x2_dirty", () -> new WhitePanel1x2DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PANEL_1X2_WITHERED = ITEMS.register("materials/tile/white_panel_1x2_withered", () -> new WhitePanel1x2WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WHITE_PIN_HOLE_CEILING_TILES = ITEMS.register("materials/tile/white_pin-hole_ceiling_tiles", () -> new WhitePinHoleCeilingTilesMatItem(new Item.Properties()));
 
 
 

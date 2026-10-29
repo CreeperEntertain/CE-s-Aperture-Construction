@@ -255,6 +255,42 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.WEATHERED_CORRUGATED_METAL.get());
                         output.accept(ModItems.WITHERED_CABLE_WALL.get());
                         output.accept(ModItems.WITHERED_PAINTED_METAL_PANEL.get());
+
+
+
+                        output.accept(ModItems.CHECKERED_DARK_CERAMIC_TILES.get());
+                        output.accept(ModItems.CHECKERED_DARK_CERAMIC_TILES_DIRTY.get());
+                        output.accept(ModItems.CHECKERED_ORANGE_TILES.get());
+                        output.accept(ModItems.CHECKERED_WHITE_CERAMIC_TILES.get());
+                        output.accept(ModItems.DARK_CERAMIC_TILES.get());
+                        output.accept(ModItems.DARK_CERAMIC_TILES_DIRTY.get());
+                        output.accept(ModItems.DARK_OFFICE_FLOOR_TILES.get());
+                        output.accept(ModItems.DARK_PAINTED_BRICKS.get());
+                        output.accept(ModItems.DARK_PIN_HOLE_CEILING_TILES.get());
+                        output.accept(ModItems.DECAYED_WHITE_PAINTED_BRICKS.get());
+                        output.accept(ModItems.DIRTY_FLOOR_TILES.get());
+                        output.accept(ModItems.ORANGE_TILES.get());
+                        output.accept(ModItems.PATTERNED_WHITE_PANELS.get());
+                        output.accept(ModItems.WHITE_CERAMIC_TILES.get());
+                        output.accept(ModItems.WHITE_OFFICE_FLOOR_TILES.get());
+                        output.accept(ModItems.WHITE_PAINTED_BRICKS.get());
+                        output.accept(ModItems.WHITE_PANEL_05X05.get());
+                        output.accept(ModItems.WHITE_PANEL_05X05_DIRTY.get());
+                        output.accept(ModItems.WHITE_PANEL_05X05_WITHERED.get());
+                        output.accept(ModItems.WHITE_PANEL_05X1.get());
+                        output.accept(ModItems.WHITE_PANEL_05X1_DIRTY.get());
+                        output.accept(ModItems.WHITE_PANEL_05X1_WITHERED.get());
+                        output.accept(ModItems.WHITE_PANEL_05X2.get());
+                        output.accept(ModItems.WHITE_PANEL_05X2_DIRTY.get());
+                        output.accept(ModItems.WHITE_PANEL_05X2_WITHERED.get());
+                        output.accept(ModItems.WHITE_PANEL_1X1.get());
+                        output.accept(ModItems.WHITE_PANEL_1X1_DIRTY.get());
+                        output.accept(ModItems.WHITE_PANEL_1X1_WITHERED.get());
+                        output.accept(ModItems.WHITE_PANEL_1X2.get());
+                        output.accept(ModItems.WHITE_PANEL_1X2_VARIATION.get());
+                        output.accept(ModItems.WHITE_PANEL_1X2_DIRTY.get());
+                        output.accept(ModItems.WHITE_PANEL_1X2_WITHERED.get());
+                        output.accept(ModItems.WHITE_PIN_HOLE_CEILING_TILES.get());
                     })
                     .build()
     );

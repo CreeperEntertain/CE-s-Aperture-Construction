@@ -3,6 +3,7 @@ package net.centertain.ceac.material;
 import net.centertain.ceac.material.materials.backpanel.*;
 import net.centertain.ceac.material.materials.concrete.*;
 import net.centertain.ceac.material.materials.metal.*;
+import net.centertain.ceac.material.materials.tile.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -116,6 +117,44 @@ public final class ModMaterials {
     public static final RegistryObject<Material> WEATHERED_CORRUGATED_METAL = MATERIALS.register("weathered_corrugated_metal", WeatheredCorrugatedMetalMaterial::new);
     public static final RegistryObject<Material> WITHERED_CABLE_WALL = MATERIALS.register("withered_cable_wall", WitheredCableWallMaterial::new);
     public static final RegistryObject<Material> WITHERED_PAINTED_METAL_PANEL = MATERIALS.register("withered_painted_metal_panel", WitheredPaintedMetalPanelMaterial::new);
+
+    // Other material types missing.
+
+    public static final RegistryObject<Material> CHECKERED_DARK_CERAMIC_TILES = MATERIALS.register("checkered_dark_ceramic_tiles", CheckeredDarkCeramicTilesMaterial::new);
+    public static final RegistryObject<Material> CHECKERED_DARK_CERAMIC_TILES_DIRTY = MATERIALS.register("checkered_dark_ceramic_tiles_dirty", CheckeredDarkCeramicTilesDirtyMaterial::new);
+    public static final RegistryObject<Material> CHECKERED_ORANGE_TILES = MATERIALS.register("checkered_orange_tiles", CheckeredOrangeTilesMaterial::new);
+    public static final RegistryObject<Material> CHECKERED_WHITE_CERAMIC_TILES = MATERIALS.register("checkered_white_ceramic_tiles", CheckeredWhiteCeramicTilesMaterial::new);
+    public static final RegistryObject<Material> DARK_CERAMIC_TILES = MATERIALS.register("dark_ceramic_tiles", DarkCeramicTilesMaterial::new);
+    public static final RegistryObject<Material> DARK_CERAMIC_TILES_DIRTY = MATERIALS.register("dark_ceramic_tiles_dirty", DarkCeramicTilesDirtyMaterial::new);
+    public static final RegistryObject<Material> DARK_OFFICE_FLOOR_TILES = MATERIALS.register("dark_office_floor_tiles", DarkOfficeFloorTilesMaterial::new);
+    public static final RegistryObject<Material> DARK_PAINTED_BRICKS = MATERIALS.register("dark_painted_bricks", DarkPaintedBricksMaterial::new);
+    public static final RegistryObject<Material> DARK_PIN_HOLE_CEILING_TILES = MATERIALS.register("dark_pin-hole_ceiling_tiles", DarkPinHoleCeilingTilesMaterial::new);
+    public static final RegistryObject<Material> DECAYED_WHITE_PAINTED_BRICKS = MATERIALS.register("decayed_white_painted_bricks", DecayedWhitePaintedBricksMaterial::new);
+    public static final RegistryObject<Material> DIRTY_FLOOR_TILES = MATERIALS.register("dirty_floor_tiles", DirtyFloorTilesMaterial::new);
+    public static final RegistryObject<Material> ORANGE_TILES = MATERIALS.register("orange_tiles", OrangeTilesMaterial::new);
+    public static final RegistryObject<Material> PATTERNED_WHITE_PANELS = MATERIALS.register("patterned_white_panels", PatternedWhitePanelsMaterial::new);
+    public static final RegistryObject<Material> WHITE_CERAMIC_TILES = MATERIALS.register("white_ceramic_tiles", WhiteCeramicTilesMaterial::new);
+    public static final RegistryObject<Material> WHITE_OFFICE_FLOOR_TILES = MATERIALS.register("white_office_floor_tiles", WhiteOfficeFloorTilesMaterial::new);
+    public static final RegistryObject<Material> WHITE_PAINTED_BRICKS = MATERIALS.register("white_painted_bricks", WhitePaintedBricksMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_05X05 = MATERIALS.register("white_panel_05x05", WhitePanel05x05Material::new);
+    public static final RegistryObject<Material> WHITE_PANEL_05X05_DIRTY = MATERIALS.register("white_panel_05x05_dirty", WhitePanel05x05DirtyMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_05X05_WITHERED = MATERIALS.register("white_panel_05x05_withered", WhitePanel05x05WitheredMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_05X1 = MATERIALS.register("white_panel_05x1", WhitePanel05x1Material::new);
+    public static final RegistryObject<Material> WHITE_PANEL_05X1_DIRTY = MATERIALS.register("white_panel_05x1_dirty", WhitePanel05x1DirtyMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_05X1_WITHERED = MATERIALS.register("white_panel_05x1_withered", WhitePanel05x1WitheredMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_05X2 = MATERIALS.register("white_panel_05x2", WhitePanel05x2Material::new);
+    public static final RegistryObject<Material> WHITE_PANEL_05X2_DIRTY = MATERIALS.register("white_panel_05x2_dirty", WhitePanel05x2DirtyMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_05X2_WITHERED = MATERIALS.register("white_panel_05x2_withered", WhitePanel05x2WitheredMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_1X1 = MATERIALS.register("white_panel_1x1", WhitePanel1x1Material::new);
+    public static final RegistryObject<Material> WHITE_PANEL_1X1_DIRTY = MATERIALS.register("white_panel_1x1_dirty", WhitePanel1x1DirtyMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_1X1_WITHERED = MATERIALS.register("white_panel_1x1_withered", WhitePanel1x1WitheredMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_1X2 = MATERIALS.register("white_panel_1x2", WhitePanel1x2Material::new);
+    public static final RegistryObject<Material> WHITE_PANEL_1X2_VARIATION = MATERIALS.register("white_panel_1x2_variation", WhitePanel1x2VariationMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_1X2_DIRTY = MATERIALS.register("white_panel_1x2_dirty", WhitePanel1x2DirtyMaterial::new);
+    public static final RegistryObject<Material> WHITE_PANEL_1X2_WITHERED = MATERIALS.register("white_panel_1x2_withered", WhitePanel1x2WitheredMaterial::new);
+    public static final RegistryObject<Material> WHITE_PIN_HOLE_CEILING_TILES = MATERIALS.register("white_pin-hole_ceiling_tiles", WhitePinHoleCeilingTilesMaterial::new);
+
+    // Other material types missing.
 
 
 
