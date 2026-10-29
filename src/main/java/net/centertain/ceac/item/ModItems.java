@@ -3,6 +3,7 @@ package net.centertain.ceac.item;
 import net.centertain.ceac.item.custom.*;
 import net.centertain.ceac.item.custom.materials.backpanel.*;
 import net.centertain.ceac.item.custom.materials.concrete.*;
+import net.centertain.ceac.item.custom.materials.metal.*;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -14,6 +15,7 @@ import static net.centertain.ceac.CeacMod.MOD_ID;
 public final class ModItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
+
 
 
     public static final RegistryObject<Item> PROP_PLACER = ITEMS.register("prop_placer", () -> new PropPlacerItem(new Item.Properties()));
@@ -62,9 +64,62 @@ public final class ModItems {
     public static final RegistryObject<Item> STAINED_HEAVY_CONCRETE_CEILING = ITEMS.register("materials/concrete/stained_heavy_concrete_ceiling", () -> new StainedHeavyConcreteCeilingMatItem(new Item.Properties()));
     public static final RegistryObject<Item> STAINED_MODULAR_CONCRETE = ITEMS.register("materials/concrete/stained_modular_concrete", () -> new StainedModularConcreteMatItem(new Item.Properties()));
     public static final RegistryObject<Item> STAINED_REBAR_CONCRETE = ITEMS.register("materials/concrete/stained_rebar_concrete", () -> new StainedRebarConcreteMatItem(new Item.Properties()));
-    public static final RegistryObject<Item> WEATHERED_REBAR_CONCRETE = ITEMS.register("materials/concrete/weathered_rebar_concrete", () -> new StainedRebarConcreteMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WEATHERED_REBAR_CONCRETE = ITEMS.register("materials/concrete/weathered_rebar_concrete", () -> new WeatheredRebarConcreteMatItem(new Item.Properties()));
     public static final RegistryObject<Item> WITHERED_MODULAR_CONCRETE = ITEMS.register("materials/concrete/withered_modular_concrete", () -> new WitheredModularConcreteMatItem(new Item.Properties()));
     public static final RegistryObject<Item> WITHERED_REBAR_CONCRETE_BLOCKS = ITEMS.register("materials/concrete/withered_rebar_concrete_blocks", () -> new WitheredRebarConcreteBlocksMatItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> BLACK_METAL_TILES = ITEMS.register("materials/metal/black_metal_tiles", () -> new BlackMetalTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_05X05 = ITEMS.register("materials/metal/black_panel_05x05", () -> new BlackPanel05x05MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_05X05_DIRTY = ITEMS.register("materials/metal/black_panel_05x05_dirty", () -> new BlackPanel05x05DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_05X05_WITHERED = ITEMS.register("materials/metal/black_panel_05x05_withered", () -> new BlackPanel05x05WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_05X1 = ITEMS.register("materials/metal/black_panel_05x1", () -> new BlackPanel05x1MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_05X1_DIRTY = ITEMS.register("materials/metal/black_panel_05x1_dirty", () -> new BlackPanel05x1DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_05X1_WITHERED = ITEMS.register("materials/metal/black_panel_05x1_withered", () -> new BlackPanel05x1WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_05X2 = ITEMS.register("materials/metal/black_panel_05x2", () -> new BlackPanel05x2MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_05X2_DIRTY = ITEMS.register("materials/metal/black_panel_05x2_dirty", () -> new BlackPanel05x2DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_05X2_WITHERED = ITEMS.register("materials/metal/black_panel_05x2_withered", () -> new BlackPanel05x2WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_1X1 = ITEMS.register("materials/metal/black_panel_1x1", () -> new BlackPanel1x1MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_1X1_DIRTY = ITEMS.register("materials/metal/black_panel_1x1_dirty", () -> new BlackPanel1x1DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_1X1_WITHERED = ITEMS.register("materials/metal/black_panel_1x1_withered", () -> new BlackPanel1x1WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_1X2 = ITEMS.register("materials/metal/black_panel_1x2", () -> new BlackPanel1x2MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_1X2_DIRTY = ITEMS.register("materials/metal/black_panel_1x2_dirty", () -> new BlackPanel1x2DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_1X2_WITHERED = ITEMS.register("materials/metal/black_panel_1x2_withered", () -> new BlackPanel1x2WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_2X2 = ITEMS.register("materials/metal/black_panel_2x2", () -> new BlackPanel2x2MatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_2X2_DIRTY = ITEMS.register("materials/metal/black_panel_2x2_dirty", () -> new BlackPanel2x2DirtyMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_PANEL_2X2_WITHERED = ITEMS.register("materials/metal/black_panel_2x2_withered", () -> new BlackPanel2x2WitheredMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLACK_ROUNDED_METAL_TILES = ITEMS.register("materials/metal/black_rounded_metal_tiles", () -> new BlackRoundedMetalTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLUE_METAL_PANELS = ITEMS.register("materials/metal/blue_metal_panels", () -> new BlueMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLUE_RECTANGULAR_METAL_PANELS = ITEMS.register("materials/metal/blue_rectangular_metal_panels", () -> new BlueRectangularMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BLUE_SQUARE_METAL_PANELS = ITEMS.register("materials/metal/blue_square_metal_panels", () -> new BlueSquareMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BOLTED_METAL_WALL = ITEMS.register("materials/metal/bolted_metal_wall", () -> new BoltedMetalWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> CABLE_WALL = ITEMS.register("materials/metal/cable_wall", () -> new CableWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> CORRUGATED_METAL = ITEMS.register("materials/metal/corrugated_metal", () -> new CorrugatedMetalMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_METAL_FLOOR_TILES = ITEMS.register("materials/metal/dark_metal_floor_tiles", () -> new DarkMetalFloorTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_ROUNDED_METAL_TILES = ITEMS.register("materials/metal/dark_rounded_metal_tiles", () -> new DarkRoundedMetalTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_RUSTED_METAL_PANELS = ITEMS.register("materials/metal/dark_rusted_metal_panels", () -> new DarkRustedMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_WITHERED_PAINTED_METAL_PANEL = ITEMS.register("materials/metal/dark_withered_painted_metal_panel", () -> new DarkWitheredPaintedMetalPanelMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DIRTY_RUSTED_METAL_PANELS = ITEMS.register("materials/metal/dirty_rusted_metal_panels", () -> new DirtyRustedMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> FACTORY_CONTAINER = ITEMS.register("materials/metal/factory_container", () -> new FactoryContainerMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> FACTORY_CONTAINER_SIDE = ITEMS.register("materials/metal/factory_container_side", () -> new FactoryContainerSideMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> FRAMED_GREEN_METAL_PANELS = ITEMS.register("materials/metal/framed_green_metal_panels", () -> new FramedGreenMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> GREEN_METAL_PANELS = ITEMS.register("materials/metal/green_metal_panels", () -> new GreenMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> LACQUERED_IRREGULAR_METAL_PANELS = ITEMS.register("materials/metal/lacquered_irregular_metal_panels", () -> new LacqueredIrregularMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> LACQUERED_RECTANGULAR_METAL_PANELS = ITEMS.register("materials/metal/lacquered_rectangular_metal_panels", () -> new LacqueredRectangularMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> LARGE_BLACK_METAL_TILES = ITEMS.register("materials/metal/large_black_metal_tiles", () -> new LargeBlackMetalTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> LARGE_BLUE_METAL_PANEL = ITEMS.register("materials/metal/large_blue_metal_panel", () -> new LargeBlueMetalPanelMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> METAL_BEAM_CONNECTOR = ITEMS.register("materials/metal/metal_beam_connector", () -> new MetalBeamConnectorMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> METAL_FLOOR_TILES = ITEMS.register("materials/metal/metal_floor_tiles", () -> new MetalFloorTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> PAINTED_METAL_WALL = ITEMS.register("materials/metal/painted_metal_wall", () -> new PaintedMetalWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> PAINTED_SHEET_METAL = ITEMS.register("materials/metal/painted_sheet_metal", () -> new PaintedSheetMetalMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> REINFORCED_GREEN_METAL_PANELS = ITEMS.register("materials/metal/reinforced_green_metal_panels", () -> new ReinforcedGreenMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> RUSTED_RECTANGULAR_METAL_PANELS = ITEMS.register("materials/metal/rusted_rectangular_metal_panels", () -> new RustedRectangularMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> RUSTED_SHEET_METAL = ITEMS.register("materials/metal/rusted_sheet_metal", () -> new RustedSheetMetalMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> SMALL_BLACK_METAL_TILES = ITEMS.register("materials/metal/small_black_metal_tiles", () -> new SmallBlackMetalTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WEATHERED_BLUE_RECTANGULAR_METAL_PANELS = ITEMS.register("materials/metal/weathered_blue_rectangular_metal_panels", () -> new WeatheredBlueRectangularMetalPanelsMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WEATHERED_CORRUGATED_METAL = ITEMS.register("materials/metal/weathered_corrugated_metal", () -> new WeatheredCorrugatedMetalMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WITHERED_CABLE_WALL = ITEMS.register("materials/metal/withered_cable_wall", () -> new WitheredCableWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> WITHERED_PAINTED_METAL_PANEL = ITEMS.register("materials/metal/withered_painted_metal_panel", () -> new WitheredPaintedMetalPanelMatItem(new Item.Properties()));
+
 
 
     private ModItems() {}

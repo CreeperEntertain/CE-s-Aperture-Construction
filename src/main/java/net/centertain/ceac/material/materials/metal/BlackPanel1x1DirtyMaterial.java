@@ -15,7 +15,7 @@ public class BlackPanel1x1DirtyMaterial extends Material {
                 "Black Metal Panel (1x1, Dirty)",
                 SoundType.METAL,
                 Map.ofEntries(
-                        Map.entry(new Vector2i(0,0), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_metal_panel_1x1_dirty/main"))
+                        Map.entry(new Vector2i(0,0), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_panel_1x1_dirty/main"))
                 )
         );
     }

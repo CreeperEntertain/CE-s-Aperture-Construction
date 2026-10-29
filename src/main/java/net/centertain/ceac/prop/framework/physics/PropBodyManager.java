@@ -222,16 +222,15 @@ public final class PropBodyManager {
             material.restitution(physics.getRestitution());
             shapeDefinition.baseMaterial(material);
 
-            if (useTriangleMesh) {
+            if (useTriangleMesh)
                 b3CreateMeshShape(
                         body,
                         shapeDefinition,
                         mesh,
                         PropPhysGeometry.toBoxVec(scale)
                 );
-            } else {
+            else
                 b3CreateHullShape(body, shapeDefinition, hull);
-            }
 
             return new PropBody(
                     prop,

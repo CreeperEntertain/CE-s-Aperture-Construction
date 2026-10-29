@@ -22,6 +22,7 @@ public final class ModMaterials {
             MATERIALS.makeRegistry(RegistryBuilder::new);
 
 
+
     public static final RegistryObject<Material> BARE_BACKPANEL = MATERIALS.register("bare_backpanel", BareBackpanelMaterial::new);
     public static final RegistryObject<Material> BARE_BACKPANEL_LARGE = MATERIALS.register("bare_backpanel_large", BareBackpanelLargeMaterial::new);
     public static final RegistryObject<Material> GREEN_BACKPANEL = MATERIALS.register("green_backpanel", GreenBackpanelMaterial::new);
@@ -94,7 +95,7 @@ public final class ModMaterials {
     public static final RegistryObject<Material> DARK_ROUNDED_METAL_TILES = MATERIALS.register("dark_rounded_metal_tiles", DarkRoundedMetalTilesMaterial::new);
     public static final RegistryObject<Material> DARK_RUSTED_METAL_PANELS = MATERIALS.register("dark_rusted_metal_panels", DarkRustedMetalPanelsMaterial::new);
     public static final RegistryObject<Material> DARK_WITHERED_PAINTED_METAL_PANEL = MATERIALS.register("dark_withered_painted_metal_panel", DarkWitheredPaintedMetalPanelMaterial::new);
-    public static final RegistryObject<Material> DIRTY_RUSTED_METAL_PANELS = MATERIALS.register("dirty_rusted_metal_panel", DirtyRustedMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> DIRTY_RUSTED_METAL_PANELS = MATERIALS.register("dirty_rusted_metal_panels", DirtyRustedMetalPanelsMaterial::new);
     public static final RegistryObject<Material> FACTORY_CONTAINER = MATERIALS.register("factory_container", FactoryContainerMaterial::new);
     public static final RegistryObject<Material> FACTORY_CONTAINER_SIDE = MATERIALS.register("factory_container_side", FactoryContainerSideMaterial::new);
     public static final RegistryObject<Material> FRAMED_GREEN_METAL_PANELS = MATERIALS.register("framed_green_metal_panels", FramedGreenMetalPanelsMaterials::new);
@@ -115,6 +116,7 @@ public final class ModMaterials {
     public static final RegistryObject<Material> WEATHERED_CORRUGATED_METAL = MATERIALS.register("weathered_corrugated_metal", WeatheredCorrugatedMetalMaterial::new);
     public static final RegistryObject<Material> WITHERED_CABLE_WALL = MATERIALS.register("withered_cable_wall", WitheredCableWallMaterial::new);
     public static final RegistryObject<Material> WITHERED_PAINTED_METAL_PANEL = MATERIALS.register("withered_painted_metal_panel", WitheredPaintedMetalPanelMaterial::new);
+
 
 
     private ModMaterials() {}

@@ -15,10 +15,10 @@ public class BlackPanel2x2WitheredMaterial extends Material {
                 "Black Metal Panel (2x2, Withered)",
                 SoundType.METAL,
                 Map.ofEntries(
-                        Map.entry(new Vector2i(0,0), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_metal_panel_2x2_withered/top_left")),
-                        Map.entry(new Vector2i(1,0), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_metal_panel_2x2_withered/top_right")),
-                        Map.entry(new Vector2i(0,1), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_metal_panel_2x2_withered/bottom_left")),
-                        Map.entry(new Vector2i(1,1), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_metal_panel_2x2_withered/bottom_right"))
+                        Map.entry(new Vector2i(0,0), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_panel_2x2_withered/top_left")),
+                        Map.entry(new Vector2i(1,0), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_panel_2x2_withered/top_right")),
+                        Map.entry(new Vector2i(0,1), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_panel_2x2_withered/bottom_left")),
+                        Map.entry(new Vector2i(1,1), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_panel_2x2_withered/bottom_right"))
                 )
         );
     }
