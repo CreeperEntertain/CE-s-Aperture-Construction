@@ -3,6 +3,7 @@ package net.centertain.ceac.material;
 import net.centertain.ceac.material.materials.backpanel.*;
 import net.centertain.ceac.material.materials.concrete.*;
 import net.centertain.ceac.material.materials.metal.*;
+import net.centertain.ceac.material.materials.plaster.*;
 import net.centertain.ceac.material.materials.tile.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -117,6 +118,14 @@ public final class ModMaterials {
     public static final RegistryObject<Material> WEATHERED_CORRUGATED_METAL = MATERIALS.register("weathered_corrugated_metal", WeatheredCorrugatedMetalMaterial::new);
     public static final RegistryObject<Material> WITHERED_CABLE_WALL = MATERIALS.register("withered_cable_wall", WitheredCableWallMaterial::new);
     public static final RegistryObject<Material> WITHERED_PAINTED_METAL_PANEL = MATERIALS.register("withered_painted_metal_panel", WitheredPaintedMetalPanelMaterial::new);
+
+    public static final RegistryObject<Material> AGED_PLASTER = MATERIALS.register("aged_plaster", AgedPlasterMaterial::new);
+    public static final RegistryObject<Material> BARE_PLASTER = MATERIALS.register("bare_plaster", BarePlasterMaterial::new);
+    public static final RegistryObject<Material> CLEAN_PLASTER = MATERIALS.register("clean_plaster", CleanPlasterMaterial::new);
+    public static final RegistryObject<Material> DARK_AGED_PLASTER = MATERIALS.register("dark_aged_plaster", DarkAgedPlasterMaterial::new);
+    public static final RegistryObject<Material> DARK_CLEAN_PLASTER = MATERIALS.register("dark_clean_plaster", DarkCleanPlasterMaterial::new);
+    public static final RegistryObject<Material> MIXED_AGED_PLASTER = MATERIALS.register("mixed_aged_plaster", MixedAgedPlasterMaterial::new);
+    public static final RegistryObject<Material> MIXED_CLEAN_PLASTER = MATERIALS.register("mixed_clean_plaster", MixedCleanPlasterMaterial::new);
 
     // Other material types missing.
 

@@ -4,6 +4,7 @@ import net.centertain.ceac.item.custom.*;
 import net.centertain.ceac.item.custom.materials.backpanel.*;
 import net.centertain.ceac.item.custom.materials.concrete.*;
 import net.centertain.ceac.item.custom.materials.metal.*;
+import net.centertain.ceac.item.custom.materials.plaster.*;
 import net.centertain.ceac.item.custom.materials.tile.*;
 import net.centertain.ceac.material.materials.tile.CheckeredDarkCeramicTilesDirtyMaterial;
 import net.minecraft.world.item.Item;
@@ -121,6 +122,14 @@ public final class ModItems {
     public static final RegistryObject<Item> WEATHERED_CORRUGATED_METAL = ITEMS.register("materials/metal/weathered_corrugated_metal", () -> new WeatheredCorrugatedMetalMatItem(new Item.Properties()));
     public static final RegistryObject<Item> WITHERED_CABLE_WALL = ITEMS.register("materials/metal/withered_cable_wall", () -> new WitheredCableWallMatItem(new Item.Properties()));
     public static final RegistryObject<Item> WITHERED_PAINTED_METAL_PANEL = ITEMS.register("materials/metal/withered_painted_metal_panel", () -> new WitheredPaintedMetalPanelMatItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> AGED_PLASTER = ITEMS.register("materials/plaster/aged_plaster", () -> new AgedPlasterMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BARE_PLASTER = ITEMS.register("materials/plaster/bare_plaster", () -> new BarePlasterMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> CLEAN_PLASTER = ITEMS.register("materials/plaster/clean_plaster", () -> new CleanPlasterMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_AGED_PLASTER = ITEMS.register("materials/plaster/dark_aged_plaster", () -> new DarkAgedPlasterMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> DARK_CLEAN_PLASTER = ITEMS.register("materials/plaster/dark_clean_plaster", () -> new DarkCleanPlasterMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> MIXED_AGED_PLASTER = ITEMS.register("materials/plaster/mixed_aged_plaster", () -> new MixedAgedPlasterMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> MIXED_CLEAN_PLASTER = ITEMS.register("materials/plaster/mixed_clean_plaster", () -> new MixedCleanPlasterMatItem(new Item.Properties()));
 
     public static final RegistryObject<Item> CHECKERED_DARK_CERAMIC_TILES = ITEMS.register("materials/tile/checkered_dark_ceramic_tiles", () -> new CheckeredDarkCeramicTilesMatItem(new Item.Properties()));
     public static final RegistryObject<Item> CHECKERED_DARK_CERAMIC_TILES_DIRTY = ITEMS.register("materials/tile/checkered_dark_ceramic_tiles_dirty", () -> new CheckeredDarkCeramicTilesDirtyMatItem(new Item.Properties()));

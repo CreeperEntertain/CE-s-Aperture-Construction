@@ -256,7 +256,13 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.WITHERED_CABLE_WALL.get());
                         output.accept(ModItems.WITHERED_PAINTED_METAL_PANEL.get());
 
-
+                        output.accept(ModItems.AGED_PLASTER.get());
+                        output.accept(ModItems.BARE_PLASTER.get());
+                        output.accept(ModItems.CLEAN_PLASTER.get());
+                        output.accept(ModItems.DARK_AGED_PLASTER.get());
+                        output.accept(ModItems.DARK_CLEAN_PLASTER.get());
+                        output.accept(ModItems.MIXED_AGED_PLASTER.get());
+                        output.accept(ModItems.MIXED_CLEAN_PLASTER.get());
 
                         output.accept(ModItems.CHECKERED_DARK_CERAMIC_TILES.get());
                         output.accept(ModItems.CHECKERED_DARK_CERAMIC_TILES_DIRTY.get());
