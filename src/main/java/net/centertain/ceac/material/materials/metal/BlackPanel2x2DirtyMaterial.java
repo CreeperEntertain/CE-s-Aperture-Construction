@@ -9,8 +9,8 @@ import java.util.Map;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
-public class BlackMetalPanel2x2DirtyMaterial extends Material {
-    public BlackMetalPanel2x2DirtyMaterial() {
+public class BlackPanel2x2DirtyMaterial extends Material {
+    public BlackPanel2x2DirtyMaterial() {
         super(
                 "Black Metal Panel (2x2, Dirty)",
                 SoundType.METAL,

@@ -9,13 +9,13 @@ import java.util.Map;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
-public class BlackMetalPanel05x05Material extends Material {
-    public BlackMetalPanel05x05Material() {
+public class BlackPanel1x1DirtyMaterial extends Material {
+    public BlackPanel1x1DirtyMaterial() {
         super(
-                "Black Metal Panel (0.5x0.5)",
+                "Black Metal Panel (1x1, Dirty)",
                 SoundType.METAL,
                 Map.ofEntries(
-                        Map.entry(new Vector2i(0,0), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_metal_panel_05x05/main"))
+                        Map.entry(new Vector2i(0,0), ResourceLocation.fromNamespaceAndPath(MOD_ID, "material/metal/black_metal_panel_1x1_dirty/main"))
                 )
         );
     }

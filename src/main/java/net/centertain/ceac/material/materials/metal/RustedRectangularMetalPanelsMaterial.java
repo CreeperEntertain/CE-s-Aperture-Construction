@@ -9,8 +9,8 @@ import java.util.Map;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
-public class RustedRectangularMetalPanels extends Material {
-    public RustedRectangularMetalPanels() {
+public class RustedRectangularMetalPanelsMaterial extends Material {
+    public RustedRectangularMetalPanelsMaterial() {
         super(
                 "Rusted Rectangular Metal Panels",
                 SoundType.METAL,

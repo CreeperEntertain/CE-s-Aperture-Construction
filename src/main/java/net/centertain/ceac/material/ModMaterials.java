@@ -2,6 +2,7 @@ package net.centertain.ceac.material;
 
 import net.centertain.ceac.material.materials.backpanel.*;
 import net.centertain.ceac.material.materials.concrete.*;
+import net.centertain.ceac.material.materials.metal.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -62,6 +63,58 @@ public final class ModMaterials {
     public static final RegistryObject<Material> WEATHERED_REBAR_CONCRETE = MATERIALS.register("weathered_rebar_concrete", WeatheredRebarConcreteMaterial::new);
     public static final RegistryObject<Material> WITHERED_MODULAR_CONCRETE = MATERIALS.register("withered_modular_concrete", WitheredModularConcreteMaterial::new);
     public static final RegistryObject<Material> WITHERED_REBAR_CONCRETE_BLOCKS = MATERIALS.register("withered_rebar_concrete_blocks", WitheredRebarConcreteBlocksMaterial::new);
+
+    public static final RegistryObject<Material> BLACK_METAL_TILES = MATERIALS.register("black_metal_tiles", BlackMetalTilesMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_05X05 = MATERIALS.register("black_metal_panel_05x05", BlackPanel05x05Material::new);
+    public static final RegistryObject<Material> BLACK_PANEL_05X05_DIRTY = MATERIALS.register("black_metal_panel_05x05_dirty", BlackPanel05x05DirtyMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_05X05_WITHERED = MATERIALS.register("black_metal_panel_05x05_withered", BlackPanel05x05WitheredMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_05X1 = MATERIALS.register("black_metal_panel_05x1", BlackPanel05x1Material::new);
+    public static final RegistryObject<Material> BLACK_PANEL_05X1_DIRTY = MATERIALS.register("black_metal_panel_05x1_dirty", BlackPanel05x1DirtyMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_05X1_WITHERED = MATERIALS.register("black_metal_panel_05x1_withered", BlackPanel05x1WitheredMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_05X2 = MATERIALS.register("black_metal_panel_05x2", BlackPanel05x2Material::new);
+    public static final RegistryObject<Material> BLACK_PANEL_05X2_DIRTY = MATERIALS.register("black_metal_panel_05x2_dirty", BlackPanel05x2DirtyMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_05X2_WITHERED = MATERIALS.register("black_metal_panel_05x2_withered", BlackPanel05x2WitheredMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_1X1 = MATERIALS.register("black_metal_panel_1x1", BlackPanel1x1Material::new);
+    public static final RegistryObject<Material> BLACK_PANEL_1X1_DIRTY = MATERIALS.register("black_metal_panel_1x1_dirty", BlackPanel1x1DirtyMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_1X1_WITHERED = MATERIALS.register("black_metal_panel_1x1_withered", BlackPanel1x1WitheredMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_1X2 = MATERIALS.register("black_metal_panel_1x2", BlackPanel1x2Material::new);
+    public static final RegistryObject<Material> BLACK_PANEL_1X2_DIRTY = MATERIALS.register("black_metal_panel_1x2_dirty", BlackPanel1x2DirtyMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_1X2_WITHERED = MATERIALS.register("black_metal_panel_1x2_withered", BlackPanel1x2WitheredMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_2X2 = MATERIALS.register("black_metal_panel_2x2", BlackPanel2x2Material::new);
+    public static final RegistryObject<Material> BLACK_PANEL_2X2_DIRTY = MATERIALS.register("black_metal_panel_2x2_dirty", BlackPanel2x2DirtyMaterial::new);
+    public static final RegistryObject<Material> BLACK_PANEL_2X2_WITHERED = MATERIALS.register("black_metal_panel_2x2_withered", BlackPanel2x2WitheredMaterial::new);
+    public static final RegistryObject<Material> BLACK_ROUNDED_METAL_TILES = MATERIALS.register("black_rounded_metal_tiles", BlackRoundedMetalTilesMaterial::new);
+    public static final RegistryObject<Material> BLUE_METAL_PANELS = MATERIALS.register("blue_metal_panels", BlueMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> BLUE_RECTANGULAR_METAL_PANELS = MATERIALS.register("blue_rectangular_metal_panels", BlueRectangularMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> BLUE_SQUARE_METAL_PANELS = MATERIALS.register("blue_square_metal_panels", BlueSquareMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> BOLTED_METAL_WALL = MATERIALS.register("bolted_metal_wall", BoltedMetalWallMaterial::new);
+    public static final RegistryObject<Material> CABLE_WALL = MATERIALS.register("cable_wall", CableWallMaterial::new);
+    public static final RegistryObject<Material> CORRUGATED_METAL = MATERIALS.register("corrugated_metal", CorrugatedMetalMaterial::new);
+    public static final RegistryObject<Material> DARK_METAL_FLOOR_TILES = MATERIALS.register("dark_metal_floor_tiles", DarkMetalFloorTilesMaterial::new);
+    public static final RegistryObject<Material> DARK_ROUNDED_METAL_TILES = MATERIALS.register("dark_rounded_metal_tiles", DarkRoundedMetalTilesMaterial::new);
+    public static final RegistryObject<Material> DARK_RUSTED_METAL_PANELS = MATERIALS.register("dark_rusted_metal_panels", DarkRustedMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> DARK_WITHERED_PAINTED_METAL_PANEL = MATERIALS.register("dark_withered_painted_metal_panel", DarkWitheredPaintedMetalPanelMaterial::new);
+    public static final RegistryObject<Material> DIRTY_RUSTED_METAL_PANELS = MATERIALS.register("dirty_rusted_metal_panel", DirtyRustedMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> FACTORY_CONTAINER = MATERIALS.register("factory_container", FactoryContainerMaterial::new);
+    public static final RegistryObject<Material> FACTORY_CONTAINER_SIDE = MATERIALS.register("factory_container_side", FactoryContainerSideMaterial::new);
+    public static final RegistryObject<Material> FRAMED_GREEN_METAL_PANELS = MATERIALS.register("framed_green_metal_panels", FramedGreenMetalPanelsMaterials::new);
+    public static final RegistryObject<Material> GREEN_METAL_PANELS = MATERIALS.register("green_metal_panels", GreenMetalPanelsMaterials::new);
+    public static final RegistryObject<Material> LACQUERED_IRREGULAR_METAL_PANELS = MATERIALS.register("lacquered_irregular_metal_panels", LacqueredIrregularMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> LACQUERED_RECTANGULAR_METAL_PANELS = MATERIALS.register("lacquered_rectangular_metal_panels", LacqueredRectangularMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> LARGE_BLACK_METAL_TILES = MATERIALS.register("large_black_metal_tiles", LargeBlackMetalTilesMaterial::new);
+    public static final RegistryObject<Material> LARGE_BLUE_METAL_PANEL = MATERIALS.register("large_blue_metal_panel", LargeBlueMetalPanelMaterial::new);
+    public static final RegistryObject<Material> METAL_BEAM_CONNECTOR = MATERIALS.register("metal_beam_connector", MetalBeamConnectorMaterial::new);
+    public static final RegistryObject<Material> METAL_FLOOR_TILES = MATERIALS.register("metal_floor_tiles", MetalFloorTilesMaterial::new);
+    public static final RegistryObject<Material> PAINTED_METAL_WALL = MATERIALS.register("painted_metal_wall", PaintedMetalWallMaterial::new);
+    public static final RegistryObject<Material> PAINTED_SHEET_METAL = MATERIALS.register("painted_sheet_metal", PaintedSheetMetalMaterial::new);
+    public static final RegistryObject<Material> REINFORCED_GREEN_METAL_PANELS = MATERIALS.register("reinforced_green_metal_panels", ReinforcedGreenMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> RUSTED_RECTANGULAR_METAL_PANELS = MATERIALS.register("rusted_rectangular_metal_panels", RustedRectangularMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> RUSTED_SHEET_METAL = MATERIALS.register("rusted_sheet_metal", RustedSheetMetalMaterial::new);
+    public static final RegistryObject<Material> SMALL_BLACK_METAL_TILES = MATERIALS.register("small_black_metal_tiles", SmallBlackMetalTilesMaterial::new);
+    public static final RegistryObject<Material> WEATHERED_BLUE_RECTANGULAR_METAL_PANELS = MATERIALS.register("weathered_blue_rectangular_metal_panels", WeatheredBlueRectangularMetalPanelsMaterial::new);
+    public static final RegistryObject<Material> WEATHERED_CORRUGATED_METAL = MATERIALS.register("weathered_corrugated_metal", WeatheredCorrugatedMetalMaterial::new);
+    public static final RegistryObject<Material> WITHERED_CABLE_WALL = MATERIALS.register("withered_cable_wall", WitheredCableWallMaterial::new);
+    public static final RegistryObject<Material> WITHERED_PAINTED_METAL_PANEL = MATERIALS.register("withered_painted_metal_panel", WitheredPaintedMetalPanelMaterial::new);
 
 
     private ModMaterials() {}

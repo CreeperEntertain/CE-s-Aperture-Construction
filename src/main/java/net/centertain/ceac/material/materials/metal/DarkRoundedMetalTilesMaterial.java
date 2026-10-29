@@ -9,8 +9,8 @@ import java.util.Map;
 
 import static net.centertain.ceac.CeacMod.MOD_ID;
 
-public class DarkRoundedMetalTiles extends Material {
-    public DarkRoundedMetalTiles() {
+public class DarkRoundedMetalTilesMaterial extends Material {
+    public DarkRoundedMetalTilesMaterial() {
         super(
                 "Dark Rounded Metal Tiles",
                 SoundType.METAL,
