@@ -302,6 +302,17 @@ public final class ModCreativeModeTabs {
                         output.accept(ModItems.WHITE_PANEL_1X2_DIRTY.get());
                         output.accept(ModItems.WHITE_PANEL_1X2_WITHERED.get());
                         output.accept(ModItems.WHITE_PIN_HOLE_CEILING_TILES.get());
+
+                        output.accept(ModItems.GENERIC_WALLPAPER.get());
+                        output.accept(ModItems.LOBBY_WALLPAPER.get());
+
+                        output.accept(ModItems.BARBED_PLYWOOD.get());
+                        output.accept(ModItems.CHECKERED_PAINTED_WOODEN_TILES.get());
+                        output.accept(ModItems.LARGE_PAINTED_WOODEN_TILES.get());
+                        output.accept(ModItems.OLD_PLYWOOD.get());
+                        output.accept(ModItems.PAINTED_WOODEN_TILES.get());
+                        output.accept(ModItems.SMALL_PAINTED_WOODEN_TILES.get());
+                        output.accept(ModItems.TARGET_PAINTED_WOODEN_TILES.get());
                     })
                     .build()
     );

@@ -10,6 +10,9 @@ import net.centertain.ceac.item.custom.materials.plastic.BeigeReinforcedPlasticW
 import net.centertain.ceac.item.custom.materials.plastic.ReinforcedPlasticWallMatItem;
 import net.centertain.ceac.item.custom.materials.plastic.YellowReinforcedPlasticWallMatItem;
 import net.centertain.ceac.item.custom.materials.tile.*;
+import net.centertain.ceac.item.custom.materials.wallpaper.GenericWallpaperMatItem;
+import net.centertain.ceac.item.custom.materials.wallpaper.LobbyWallpaperMatItem;
+import net.centertain.ceac.item.custom.materials.wood.*;
 import net.centertain.ceac.material.materials.tile.CheckeredDarkCeramicTilesDirtyMaterial;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -173,6 +176,17 @@ public final class ModItems {
     public static final RegistryObject<Item> WHITE_PANEL_1X2_DIRTY = ITEMS.register("materials/tile/white_panel_1x2_dirty", () -> new WhitePanel1x2DirtyMatItem(new Item.Properties()));
     public static final RegistryObject<Item> WHITE_PANEL_1X2_WITHERED = ITEMS.register("materials/tile/white_panel_1x2_withered", () -> new WhitePanel1x2WitheredMatItem(new Item.Properties()));
     public static final RegistryObject<Item> WHITE_PIN_HOLE_CEILING_TILES = ITEMS.register("materials/tile/white_pin-hole_ceiling_tiles", () -> new WhitePinHoleCeilingTilesMatItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> GENERIC_WALLPAPER = ITEMS.register("materials/wallpaper/generic_wallpaper", () -> new GenericWallpaperMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> LOBBY_WALLPAPER = ITEMS.register("materials/wallpaper/lobby_wallpaper", () -> new LobbyWallpaperMatItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> BARBED_PLYWOOD = ITEMS.register("materials/wood/barbed_plywood", () -> new BarbedPlywoodMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> CHECKERED_PAINTED_WOODEN_TILES = ITEMS.register("materials/wood/checkered_painted_wooden_tiles", () -> new CheckeredPaintedWoodenTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> LARGE_PAINTED_WOODEN_TILES = ITEMS.register("materials/wood/large_painted_wooden_tiles", () -> new LargePaintedWoodenTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> OLD_PLYWOOD = ITEMS.register("materials/wood/old_plywood", () -> new OldPlywoodMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> PAINTED_WOODEN_TILES = ITEMS.register("materials/wood/painted_wooden_tiles", () -> new PaintedWoodenTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> SMALL_PAINTED_WOODEN_TILES = ITEMS.register("materials/wood/small_painted_wooden_tiles", () -> new SmallPaintedWoodenTilesMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> TARGET_PAINTED_WOODEN_TILES = ITEMS.register("materials/wood/target_painted_wooden_tiles", () -> new TargetPaintedWoodenTilesMatItem(new Item.Properties()));
 
 
 

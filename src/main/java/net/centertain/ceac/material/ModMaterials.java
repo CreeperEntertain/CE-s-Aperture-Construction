@@ -9,6 +9,9 @@ import net.centertain.ceac.material.materials.plastic.BeigeReinforcedPlasticWall
 import net.centertain.ceac.material.materials.plastic.ReinforcedPlasticWallMaterial;
 import net.centertain.ceac.material.materials.plastic.YellowReinforcedPlasticWallMaterial;
 import net.centertain.ceac.material.materials.tile.*;
+import net.centertain.ceac.material.materials.wallpaper.GenericWallpaperMaterial;
+import net.centertain.ceac.material.materials.wallpaper.LobbyWallpaperMaterial;
+import net.centertain.ceac.material.materials.wood.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -170,7 +173,16 @@ public final class ModMaterials {
     public static final RegistryObject<Material> WHITE_PANEL_1X2_WITHERED = MATERIALS.register("white_panel_1x2_withered", WhitePanel1x2WitheredMaterial::new);
     public static final RegistryObject<Material> WHITE_PIN_HOLE_CEILING_TILES = MATERIALS.register("white_pin-hole_ceiling_tiles", WhitePinHoleCeilingTilesMaterial::new);
 
-    // Other material types missing.
+    public static final RegistryObject<Material> GENERIC_WALLPAPER = MATERIALS.register("generic_wallpaper", GenericWallpaperMaterial::new);
+    public static final RegistryObject<Material> LOBBY_WALLPAPER = MATERIALS.register("lobby_wallpaper", LobbyWallpaperMaterial::new);
+
+    public static final RegistryObject<Material> BARBED_PLYWOOD = MATERIALS.register("barbed_plywood", BarbedPlywoodMaterial::new);
+    public static final RegistryObject<Material> CHECKERED_PAINTED_WOODEN_TILES = MATERIALS.register("checkered_painted_wooden_tiles", CheckeredPaintedWoodenTilesMaterial::new);
+    public static final RegistryObject<Material> LARGE_PAINTED_WOODEN_TILES = MATERIALS.register("large_painted_wooden_tiles", LargePaintedWoodenTilesMaterial::new);
+    public static final RegistryObject<Material> OLD_PLYWOOD = MATERIALS.register("old_plywood", OldPlywoodMaterial::new);
+    public static final RegistryObject<Material> PAINTED_WOODEN_TILES = MATERIALS.register("painted_wooden_tiles", PaintedWoodenTilesMaterial::new);
+    public static final RegistryObject<Material> SMALL_PAINTED_WOODEN_TILES = MATERIALS.register("small_painted_wooden_tiles", SmallPaintedWoodenTilesMaterial::new);
+    public static final RegistryObject<Material> TARGET_PAINTED_WOODEN_TILES = MATERIALS.register("target_painted_wooden_tiles", TargetPaintedWoodenTilesMaterial::new);
 
 
 
