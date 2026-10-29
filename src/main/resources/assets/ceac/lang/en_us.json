@@ -9,6 +9,7 @@
   "tooltip.ceac.scraper.desc": "Press middle mouse to toggle x-ray mode",
   "tooltip.ceac.wrench.desc": "Crouch to rotate material shapes counter-clockwise",
   "tooltip.ceac.crowbar.desc": "Crouch to remove all materials",
+  "tooltip.ceac.material.desc": "Press middle mouse whilst looking at a shape for more options",
 
 
 
