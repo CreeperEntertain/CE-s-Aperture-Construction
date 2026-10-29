@@ -5,6 +5,10 @@ import net.centertain.ceac.item.custom.materials.backpanel.*;
 import net.centertain.ceac.item.custom.materials.concrete.*;
 import net.centertain.ceac.item.custom.materials.metal.*;
 import net.centertain.ceac.item.custom.materials.plaster.*;
+import net.centertain.ceac.item.custom.materials.plastic.BeigePlasticWallMatItem;
+import net.centertain.ceac.item.custom.materials.plastic.BeigeReinforcedPlasticWallMatItem;
+import net.centertain.ceac.item.custom.materials.plastic.ReinforcedPlasticWallMatItem;
+import net.centertain.ceac.item.custom.materials.plastic.YellowReinforcedPlasticWallMatItem;
 import net.centertain.ceac.item.custom.materials.tile.*;
 import net.centertain.ceac.material.materials.tile.CheckeredDarkCeramicTilesDirtyMaterial;
 import net.minecraft.world.item.Item;
@@ -130,6 +134,11 @@ public final class ModItems {
     public static final RegistryObject<Item> DARK_CLEAN_PLASTER = ITEMS.register("materials/plaster/dark_clean_plaster", () -> new DarkCleanPlasterMatItem(new Item.Properties()));
     public static final RegistryObject<Item> MIXED_AGED_PLASTER = ITEMS.register("materials/plaster/mixed_aged_plaster", () -> new MixedAgedPlasterMatItem(new Item.Properties()));
     public static final RegistryObject<Item> MIXED_CLEAN_PLASTER = ITEMS.register("materials/plaster/mixed_clean_plaster", () -> new MixedCleanPlasterMatItem(new Item.Properties()));
+
+    public static final RegistryObject<Item> BEIGE_PLASTIC_WALL = ITEMS.register("materials/plastic/beige_plastic_wall", () -> new BeigePlasticWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> BEIGE_REINFORCED_PLASTIC_WALL = ITEMS.register("materials/plastic/beige_reinforced_plastic_wall", () -> new BeigeReinforcedPlasticWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> REINFORCED_PLASTIC_WALL = ITEMS.register("materials/plastic/reiforced_plastic_wall", () -> new ReinforcedPlasticWallMatItem(new Item.Properties()));
+    public static final RegistryObject<Item> YELLOW_REINFORCED_PLASTIC_WALL = ITEMS.register("materials/plastic/yellow_reinforced_plastic_wall", () -> new YellowReinforcedPlasticWallMatItem(new Item.Properties()));
 
     public static final RegistryObject<Item> CHECKERED_DARK_CERAMIC_TILES = ITEMS.register("materials/tile/checkered_dark_ceramic_tiles", () -> new CheckeredDarkCeramicTilesMatItem(new Item.Properties()));
     public static final RegistryObject<Item> CHECKERED_DARK_CERAMIC_TILES_DIRTY = ITEMS.register("materials/tile/checkered_dark_ceramic_tiles_dirty", () -> new CheckeredDarkCeramicTilesDirtyMatItem(new Item.Properties()));

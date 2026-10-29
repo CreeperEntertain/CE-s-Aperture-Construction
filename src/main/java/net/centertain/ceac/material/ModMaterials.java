@@ -4,6 +4,10 @@ import net.centertain.ceac.material.materials.backpanel.*;
 import net.centertain.ceac.material.materials.concrete.*;
 import net.centertain.ceac.material.materials.metal.*;
 import net.centertain.ceac.material.materials.plaster.*;
+import net.centertain.ceac.material.materials.plastic.BeigePlasticWallMaterial;
+import net.centertain.ceac.material.materials.plastic.BeigeReinforcedPlasticWallMaterial;
+import net.centertain.ceac.material.materials.plastic.ReinforcedPlasticWallMaterial;
+import net.centertain.ceac.material.materials.plastic.YellowReinforcedPlasticWallMaterial;
 import net.centertain.ceac.material.materials.tile.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -127,7 +131,10 @@ public final class ModMaterials {
     public static final RegistryObject<Material> MIXED_AGED_PLASTER = MATERIALS.register("mixed_aged_plaster", MixedAgedPlasterMaterial::new);
     public static final RegistryObject<Material> MIXED_CLEAN_PLASTER = MATERIALS.register("mixed_clean_plaster", MixedCleanPlasterMaterial::new);
 
-    // Other material types missing.
+    public static final RegistryObject<Material> BEIGE_PLASTIC_WALL = MATERIALS.register("beige_plastic_wall", BeigePlasticWallMaterial::new);
+    public static final RegistryObject<Material> BEIGE_REINFORCED_PLASTIC_WALL = MATERIALS.register("beige_reinforced_plastic_wall", BeigeReinforcedPlasticWallMaterial::new);
+    public static final RegistryObject<Material> REINFORCED_PLASTIC_WALL = MATERIALS.register("reinforced_plastic_wall", ReinforcedPlasticWallMaterial::new);
+    public static final RegistryObject<Material> YELLOW_REINFORCED_PLASTIC_WALL = MATERIALS.register("yellow_reinforced_plastic_wall", YellowReinforcedPlasticWallMaterial::new);
 
     public static final RegistryObject<Material> CHECKERED_DARK_CERAMIC_TILES = MATERIALS.register("checkered_dark_ceramic_tiles", CheckeredDarkCeramicTilesMaterial::new);
     public static final RegistryObject<Material> CHECKERED_DARK_CERAMIC_TILES_DIRTY = MATERIALS.register("checkered_dark_ceramic_tiles_dirty", CheckeredDarkCeramicTilesDirtyMaterial::new);
